@@ -1,11 +1,9 @@
-**This is a fork of https://github.com/QuantGeekDev/mongo-mcp**
-
-# 🗄️ MongoDB MCP Server for LLMS
+# 🗄️ LanceDB MCP Server for LLMS
 
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-blue.svg)](https://nodejs.org/en/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Model Context Protocol (MCP) server that enables LLMs to interact directly with MongoDB databases. Query collections, inspect schemas, and manage data seamlessly through natural language.
+A Model Context Protocol (MCP) server that enables LLMs to interact directly with LanceDB database. Query collections, inspect schemas, and manage data seamlessly through natural language.
 
 ## ✨ Features
 

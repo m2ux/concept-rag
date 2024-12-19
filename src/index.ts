@@ -5,22 +5,23 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { connectToMongoDB, closeMongoDB } from "./mongodb/client.js";
+import { connectToLanceDB, closeLanceDB } from "./lancedb/client.js";
 import { ToolRegistry } from "./tools/registry.js";
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
-  console.error("Please provide a MongoDB connection URL");
+  console.error("Please provide a LanceDB database URI");
   process.exit(1);
 }
 const databaseUrl = args[0];
+const tableName = "langchain"
 
 const toolRegistry = new ToolRegistry();
 
 const server = new Server(
   {
-    name: "mongodb-mcp",
-    version: "0.1.1",
+    name: "lancedb-mcp",
+    version: "0.1.0",
   },
   {
     capabilities: {
@@ -69,10 +70,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 async function runServer() {
   try {
-    await connectToMongoDB(databaseUrl);
+    await connectToLanceDB(databaseUrl, tableName);
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error("MongoDB MCP server running on stdio");
+    console.error("LanceDB MCP server running on stdio");
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);
@@ -81,7 +82,7 @@ async function runServer() {
 
 process.on("SIGINT", async () => {
   try {
-    await closeMongoDB();
+    await closeLanceDB();
   } finally {
     process.exit(0);
   }
