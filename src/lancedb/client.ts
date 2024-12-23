@@ -13,7 +13,7 @@ export async function connectToLanceDB(databaseUrl: string, tableName: string) {
     console.error(`Connecting to database: ${databaseUrl}`);
     client = await lancedb.connect(databaseUrl);
     table = await client.openTable(tableName);
-    vectorStore = new LanceDB(new OllamaEmbeddings({model: "snowflake-arctic-embed2"}), { uri: databaseUrl })
+    vectorStore = new LanceDB(new OllamaEmbeddings({model: "snowflake-arctic-embed2"}), { table })
   } catch (error) {
     console.error("LanceDB connection error:", error);
     throw error;
