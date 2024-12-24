@@ -1,4 +1,5 @@
 import { BaseTool } from "./base/tool.js";
+import { CatalogSearchTool } from "./operations/catalog_search.js";
 import { SearchTool } from "./operations/search.js";
 import { McpError, ErrorCode, Tool } from "@modelcontextprotocol/sdk/types.js";
 
@@ -7,6 +8,7 @@ export class ToolRegistry {
 
   constructor() {
     this.registerTool(new SearchTool());
+    this.registerTool(new CatalogSearchTool());
   }
 
   registerTool(tool: BaseTool<any>) {

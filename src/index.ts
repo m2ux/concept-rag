@@ -14,7 +14,8 @@ if (args.length === 0) {
   process.exit(1);
 }
 const databaseUrl = args[0];
-const tableName = "langchain"
+const chunksTableName = "langchain"
+const catalogTableName = "catalog"
 
 const toolRegistry = new ToolRegistry();
 
@@ -70,7 +71,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 async function runServer() {
   try {
-    await connectToLanceDB(databaseUrl, tableName);
+    await connectToLanceDB(databaseUrl, chunksTableName, catalogTableName);
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.error("LanceDB MCP server running on stdio");

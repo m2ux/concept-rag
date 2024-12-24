@@ -1,13 +1,14 @@
-import { vectorStore } from "../../lancedb/client.js";
+import { chunksVectorStore } from "../../lancedb/client.js";
 import { BaseTool, ToolParams } from "../base/tool.js";
 
 export interface SearchParams extends ToolParams {
   text: string;
+  source?: string;
 }
 
 export class SearchTool extends BaseTool<SearchParams> {
-  name = "search";
-  description = "Search for relevant chunks in the vector store";
+  name = "chunks_search";
+  description = "Search for relevant document chunks in the vector store";
   inputSchema = {
     type: "object" as const,
     properties: {
@@ -16,14 +17,19 @@ export class SearchTool extends BaseTool<SearchParams> {
         description: "Search string",
         default: {},
       },
+      source: {
+        type: "string",
+        description: "Optional source document to filter the search",
+        default: {},
+      },
     },
-    required: ["text"],
+    required: ["text", "source"],
   };
 
   async execute(params: SearchParams) {
     try {
-      const retriever = vectorStore.asRetriever();
-      const results = await retriever.invoke(params.text);
+      const retriever = chunksVectorStore.asRetriever(); //TODO: we aren't actually filtering here by source but we should
+      const results = await retriever.invoke(params.text, );
 
       return {
         content: [

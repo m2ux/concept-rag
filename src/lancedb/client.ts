@@ -5,15 +5,22 @@ import {
 import { Ollama, OllamaEmbeddings } from "@langchain/ollama";
 
 export let client: lancedb.Connection;
-export let table: lancedb.Table;
-export let vectorStore: LanceDB; 
+export let chunksTable: lancedb.Table;
+export let chunksVectorStore: LanceDB; 
+export let catalogTable: lancedb.Table;
+export let catalogVectorStore: LanceDB; 
 
-export async function connectToLanceDB(databaseUrl: string, tableName: string) {
+export async function connectToLanceDB(databaseUrl: string, chunksTableName: string, catalogTableName: string) {
   try {
     console.error(`Connecting to database: ${databaseUrl}`);
     client = await lancedb.connect(databaseUrl);
-    table = await client.openTable(tableName);
-    vectorStore = new LanceDB(new OllamaEmbeddings({model: "snowflake-arctic-embed2"}), { table })
+
+    chunksTable = await client.openTable(chunksTableName);
+    chunksVectorStore = new LanceDB(new OllamaEmbeddings({model: "snowflake-arctic-embed2"}), { table: chunksTable })
+
+    catalogTable = await client.openTable(catalogTableName);
+    catalogVectorStore = new LanceDB(new OllamaEmbeddings({model: "snowflake-arctic-embed2"}), { table: catalogTable })
+
   } catch (error) {
     console.error("LanceDB connection error:", error);
     throw error;
