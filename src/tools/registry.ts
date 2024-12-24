@@ -10,7 +10,7 @@ export class ToolRegistry {
   constructor() {
     this.registerTool(new ChunksSearchTool());
     this.registerTool(new CatalogSearchTool());
-    //this.registerTool(new BroadSearchTool());
+    this.registerTool(new BroadSearchTool());
   }
 
   registerTool(tool: BaseTool<any>) {

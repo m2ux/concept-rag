@@ -6,8 +6,8 @@ export interface BroadSearchParams extends ToolParams {
 }
 
 export class BroadSearchTool extends BaseTool<BroadSearchParams> {
-  name = "global_chunks_search";
-  description = "Global search for relevant document chunks in the vector store. Use with caution as it can return information from irrelevant sources";
+  name = "all_chunks_search";
+  description = "Search for relevant document chunks in the vector store across all documents. Use with caution as it can return information from irrelevant sources";
   inputSchema = {
     type: "object" as const,
     properties: {
