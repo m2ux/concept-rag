@@ -1,14 +1,16 @@
 import { BaseTool } from "./base/tool.js";
+import { BroadSearchTool } from "./operations/broad_chunks_search.js";
 import { CatalogSearchTool } from "./operations/catalog_search.js";
-import { SearchTool } from "./operations/search.js";
+import { ChunksSearchTool } from "./operations/chunks_search.js";
 import { McpError, ErrorCode, Tool } from "@modelcontextprotocol/sdk/types.js";
 
 export class ToolRegistry {
   private tools: Map<string, BaseTool<any>> = new Map();
 
   constructor() {
-    this.registerTool(new SearchTool());
+    this.registerTool(new ChunksSearchTool());
     this.registerTool(new CatalogSearchTool());
+    //this.registerTool(new BroadSearchTool());
   }
 
   registerTool(tool: BaseTool<any>) {

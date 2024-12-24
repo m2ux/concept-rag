@@ -1,13 +1,13 @@
-import { catalogTable, catalogVectorStore, chunksVectorStore } from "../../lancedb/client.js";
+import { chunksVectorStore } from "../../lancedb/client.js";
 import { BaseTool, ToolParams } from "../base/tool.js";
 
-export interface CatalogSearchParams extends ToolParams {
+export interface BroadSearchParams extends ToolParams {
   text: string;
 }
 
-export class CatalogSearchTool extends BaseTool<CatalogSearchParams> {
-  name = "catalog_search";
-  description = "Search for relevant documents in the catalog";
+export class BroadSearchTool extends BaseTool<BroadSearchParams> {
+  name = "global_chunks_search";
+  description = "Global search for relevant document chunks in the vector store. Use with caution as it can return information from irrelevant sources";
   inputSchema = {
     type: "object" as const,
     properties: {
@@ -15,14 +15,14 @@ export class CatalogSearchTool extends BaseTool<CatalogSearchParams> {
         type: "string",
         description: "Search string",
         default: {},
-      },
+      }
     },
     required: ["text"],
   };
 
-  async execute(params: CatalogSearchParams) {
+  async execute(params: BroadSearchParams) {
     try {
-      const retriever = catalogVectorStore.asRetriever({});
+      const retriever = chunksVectorStore.asRetriever();
       const results = await retriever.invoke(params.text);
 
       return {
