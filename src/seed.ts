@@ -61,10 +61,6 @@ async function generateContentOverview(rawDocs: any, model: BaseLanguageModelInt
 }
 
 async function catalogRecordExists(catalogTable: lancedb.Table, hash: string): Promise<boolean> {
-  if (overwrite) { // nothing exists if we are in the overwrite mode //TODO: this should probably be replaced by checking if the table exists
-    return false;
-  }
-
   const query = catalogTable.query().where(`hash="${hash}"`).limit(1);
   const results = await query.toArray();
   return results.length > 0;
@@ -81,7 +77,7 @@ const model = new Ollama({ model: defaults.SUMMARIZATION_MODEL });
 
 // prepares documents for summarization
 // returns already existing sources and new catalog records
-async function processDocuments(rawDocs: any, catalogTable: lancedb.Table) {
+async function processDocuments(rawDocs: any, catalogTable: lancedb.Table, skipExistsCheck: boolean) {
     // group rawDocs by source for further processing
     const docsBySource = rawDocs.reduce((acc: Record<string, any[]>, doc: any) => {
         const source = doc.metadata.source;
@@ -102,7 +98,7 @@ async function processDocuments(rawDocs: any, catalogTable: lancedb.Table) {
         const hash = crypto.createHash('sha256').update(fileContent).digest('hex');
 
         // Check if a source document with the same hash already exists in the catalog
-        const exists = await catalogRecordExists(catalogTable, hash);
+        const exists = skipExistsCheck ? false : await catalogRecordExists(catalogTable, hash);
         if (exists) {
             console.log(`Document with hash ${hash} already exists in the catalog. Skipping...`);
             skipSources.push(source);
@@ -122,16 +118,27 @@ async function seed() {
     const db = await lancedb.connect(databaseDir);
 
     let catalogTable : lancedb.Table;
+    let catalogTableExists = true;
     let chunksTable : lancedb.Table;
 
-    catalogTable = await db.openTable(defaults.CATALOG_TABLE_NAME);
-    chunksTable = await db.openTable(defaults.CHUNKS_TABLE_NAME);
+    try {
+        catalogTable = await db.openTable(defaults.CATALOG_TABLE_NAME);
+    } catch (e) {
+        console.error(`Looks like the catalog table "${defaults.CATALOG_TABLE_NAME}" doesn't exist. We'll create it later.`);
+        catalogTableExists = false;
+    }
+
+    try {
+        chunksTable = await db.openTable(defaults.CHUNKS_TABLE_NAME);
+    } catch (e) {
+        console.error(`Looks like the chunks table "${defaults.CHUNKS_TABLE_NAME}" doesn't exist. We'll create it later.`);
+    }
 
     // try dropping the tables if we need to overwrite
     if (overwrite) {
         try {
-            await db.dropTable("catalog");
-            await db.dropTable("langchain");
+            await db.dropTable(defaults.CATALOG_TABLE_NAME);
+            await db.dropTable(defaults.CHUNKS_TABLE_NAME);
         } catch (e) {
             console.log("Error dropping tables. Maybe they don't exist!");
         }
@@ -148,7 +155,7 @@ async function seed() {
 
     console.log("Loading LanceDB catalog store...")
 
-    const { skipSources, catalogRecords } = await processDocuments(rawDocs, catalogTable);
+    const { skipSources, catalogRecords } = await processDocuments(rawDocs, catalogTable, overwrite || !catalogTableExists);
     const catalogStore = catalogRecords.length > 0 ? 
         await LanceDB.fromDocuments(catalogRecords, 
             new OllamaEmbeddings({model: defaults.EMBEDDING_MODEL}), 
