@@ -3,6 +3,7 @@ import {
   LanceDB, LanceDBArgs
 } from "@langchain/community/vectorstores/lancedb";
 import { Ollama, OllamaEmbeddings } from "@langchain/ollama";
+import * as defaults from '../config'
 
 export let client: lancedb.Connection;
 export let chunksTable: lancedb.Table;
@@ -16,10 +17,10 @@ export async function connectToLanceDB(databaseUrl: string, chunksTableName: str
     client = await lancedb.connect(databaseUrl);
 
     chunksTable = await client.openTable(chunksTableName);
-    chunksVectorStore = new LanceDB(new OllamaEmbeddings({model: "snowflake-arctic-embed2"}), { table: chunksTable })
+    chunksVectorStore = new LanceDB(new OllamaEmbeddings({model: defaults.EMBEDDING_MODEL}), { table: chunksTable })
 
     catalogTable = await client.openTable(catalogTableName);
-    catalogVectorStore = new LanceDB(new OllamaEmbeddings({model: "snowflake-arctic-embed2"}), { table: catalogTable })
+    catalogVectorStore = new LanceDB(new OllamaEmbeddings({model: defaults.EMBEDDING_MODEL}), { table: catalogTable })
 
   } catch (error) {
     console.error("LanceDB connection error:", error);

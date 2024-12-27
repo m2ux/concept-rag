@@ -7,6 +7,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { connectToLanceDB, closeLanceDB } from "./lancedb/client.js";
 import { ToolRegistry } from "./tools/registry.js";
+import * as defaults from './config'
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
@@ -14,8 +15,6 @@ if (args.length === 0) {
   process.exit(1);
 }
 const databaseUrl = args[0];
-const chunksTableName = "langchain"
-const catalogTableName = "catalog"
 
 const toolRegistry = new ToolRegistry();
 
@@ -71,7 +70,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 async function runServer() {
   try {
-    await connectToLanceDB(databaseUrl, chunksTableName, catalogTableName);
+    await connectToLanceDB(databaseUrl, defaults.CHUNKS_TABLE_NAME, defaults.CATALOG_TABLE_NAME);
     const transport = new StdioServerTransport();
     await server.connect(transport);
     console.error("LanceDB MCP server running on stdio");
