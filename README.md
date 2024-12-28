@@ -3,26 +3,17 @@
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-blue.svg)](https://nodejs.org/en/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Model Context Protocol (MCP) server that enables LLMs to interact directly with LanceDB database. Query collections, inspect schemas, and manage data seamlessly through natural language.
+A Model Context Protocol (MCP) server that enables LLMs to interact directly the documents that they have on-disk through agentic RAG and hybrid search. Ask LLMs questions about the dataset as a whole or about specific documents.
 
 ## ✨ Features
 
-- 🔍 Collection schema inspection
-- 📊 Document querying and filtering
-- 📈 Index management
-- 📝 Document operations (insert, update, delete)
-
-## Demo Video
-
-
-https://github.com/user-attachments/assets/2389bf23-a10d-49f9-bca9-2b39a1ebe654
-
-
-
+- 🔍 LanceDB-powered serverless vector index and document summary catalog.
+- 📊 Efficient use of LLM tokens. The LLM itself looks up what it needs when it needs.
+- 📈 Security. The index is stored locally so no data is transferred to the Cloud when using a local LLM.
 
 ## 🚀 Quick Start
 
-To get started, find your mongodb connection url and add this configuration to your Claude Desktop config file:
+To get started, create a local directory to store the index and add this configuration to your Claude Desktop config file:
 
 **MacOS**: `~/Library/Application\ Support/Claude/claude_desktop_config.json`  
 **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
@@ -33,8 +24,8 @@ To get started, find your mongodb connection url and add this configuration to y
     "mongodb": {
       "command": "npx",
       "args": [
-        "mongo-mcp",
-        "mongodb://<username>:<password>@<host>:<port>/<database>?authSource=admin"
+        "lance-mcp",
+        "PATH_TO_LOCAL_INDEX_DIR"
       ]
     }
   }
@@ -45,31 +36,10 @@ To get started, find your mongodb connection url and add this configuration to y
 
 - Node.js 18+
 - npx
-- Docker and Docker Compose (for local sandbox testing only)
 - MCP Client (Claude Desktop App for example)
-
-### Test Sandbox Setup
-
-If you don't have a mongo db server to connect to and want to create a sample sandbox, follow these steps
-
-1. Start MongoDB using Docker Compose:
-
-```bash
-docker-compose up -d
-```
-
-2. Seed the database with test data:
-
-```bash
-npm run seed
-```
-
-### Configure Claude Desktop
-
-Add this configuration to your Claude Desktop config file:
-
-**MacOS**: `~/Library/Application\ Support/Claude/claude_desktop_config.json`  
-**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+- Summarization and embedding models installed (see config.ts - by default we use Ollama models)
+  - `ollama pull snowflake-arctic-embed2`
+  - `ollama pull llama3.1:8b`
 
 #### Local Development Mode:
 
@@ -79,38 +49,33 @@ Add this configuration to your Claude Desktop config file:
     "mongodb": {
       "command": "node",
       "args": [
-        "dist/index.js",
-        "mongodb://root:example@localhost:27017/test?authSource=admin"
+        "PATH_TO_LANCE_MCP/dist/index.js",
+        "PATH_TO_LOCAL_INDEX_DIR"
       ]
     }
   }
 }
 ```
 
-### Test Sandbox Data Structure
+### Seed Data
 
-The seed script creates three collections with sample data:
+The seed script creates two tables in LanceDB - one for the catalog of document summaries, and another one - for vectorized documents' chunks.
+To run the seed script use the following command:
+```console
+npm run seed -- --dbpath <PATH_TO_LOCAL_INDEX_DIR> --filesdir <PATH_TO_DOCS>
+```
 
-#### Users
+You can use sample data from the docs/ directory. Feel free to adjust the default summarization and embedding models in the config.ts file. If you need to recreate the index, simply rerun the seed script with the `--overwrite` option.
 
-- Personal info (name, email, age)
-- Nested address with coordinates
-- Arrays of interests
-- Membership dates
+#### Catalog
 
-#### Products
+- Document summary
+- Metadata
 
-- Product details (name, SKU, category)
-- Nested specifications
-- Price and inventory info
-- Tags and ratings
+#### Chunks
 
-#### Orders
-
-- Order details with items
-- User references
-- Shipping and payment info
-- Status tracking
+- Vectorized document chunk
+- Metadata
 
 ## 🎯 Example Prompts
 
@@ -150,21 +115,16 @@ Try these prompts with Claude to explore the functionality:
 
 ## 📝 Available Tools
 
-The server provides these tools for database interaction:
+The server provides these tools for interaction with the index:
 
-### Query Tools
+### Catalog Tools
 
-- `find`: Query documents with filtering and projection
-- `listCollections`: List available collections
-- `insertOne`: Insert a single document
-- `updateOne`: Update a single document
-- `deleteOne`: Delete a single document
+- `catalog_search`: Search for relevant documents in the catalog
 
-### Index Tools
+### Chunks Tools
 
-- `createIndex`: Create a new index
-- `dropIndex`: Remove an index
-- `indexes`: List indexes for a collection
+- `chunks_search`: Find relevant chunks based on a specific document from the catalog
+- `all_chunks_search`: Find relevant chunks from all known documents
 
 ## 📜 License
 
