@@ -7,7 +7,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { connectToLanceDB, closeLanceDB } from "./lancedb/client.js";
 import { ToolRegistry } from "./tools/registry.js";
-import * as defaults from './config'
+import * as defaults from './config.js'
 
 const args = process.argv.slice(2);
 if (args.length === 0) {
@@ -20,8 +20,8 @@ const toolRegistry = new ToolRegistry();
 
 const server = new Server(
   {
-    name: "lancedb-mcp",
-    version: "0.1.0",
+    name: "lance-mcp",
+    version: "0.2.0",
   },
   {
     capabilities: {

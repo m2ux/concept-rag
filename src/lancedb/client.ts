@@ -3,7 +3,7 @@ import {
   LanceDB, LanceDBArgs
 } from "@langchain/community/vectorstores/lancedb";
 import { Ollama, OllamaEmbeddings } from "@langchain/ollama";
-import * as defaults from '../config'
+import * as defaults from '../config.js'
 
 export let client: lancedb.Connection;
 export let chunksTable: lancedb.Table;
