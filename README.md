@@ -43,7 +43,7 @@ To get started, create a local directory to store the index and add this configu
 
 ### Demo
 
-https://github.com/user-attachments/assets/90bfdea9-9edd-4cf6-bb04-94c9c84e4825
+<img src="https://github.com/user-attachments/assets/90bfdea9-9edd-4cf6-bb04-94c9c84e4825" width="50%">
 
 #### Local Development Mode:
 
