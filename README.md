@@ -41,6 +41,10 @@ To get started, create a local directory to store the index and add this configu
   - `ollama pull snowflake-arctic-embed2`
   - `ollama pull llama3.1:8b`
 
+### Demo
+
+
+
 #### Local Development Mode:
 
 ```json
@@ -56,6 +60,9 @@ To get started, create a local directory to store the index and add this configu
   }
 }
 ```
+Use `npm run build` to build the project.
+
+Use `npx @modelcontextprotocol/inspector dist/index.js PATH_TO_LOCAL_INDEX_DIR` to run the MCP tool inspector.
 
 ### Seed Data
 
@@ -81,36 +88,9 @@ You can use sample data from the docs/ directory. Feel free to adjust the defaul
 
 Try these prompts with Claude to explore the functionality:
 
-### Basic Operations
-
 ```plaintext
-"What collections are available in the database?"
-"Show me the schema for the users collection"
-"Find all users in San Francisco"
-```
-
-### Advanced Queries
-
-```plaintext
-"Find all electronics products that are in stock and cost less than $1000"
-"Show me all orders from the user john@example.com"
-"List the products with ratings above 4.5"
-```
-
-### Index Management
-
-```plaintext
-"What indexes exist on the users collection?"
-"Create an index on the products collection for the 'category' field"
-"List all indexes across all collections"
-```
-
-### Document Operations
-
-```plaintext
-"Insert a new product with name 'Gaming Laptop' in the products collection"
-"Update the status of order with ID X to 'shipped'"
-"Find and delete all products that are out of stock"
+"What documents do we have in the catalog?"
+"Why is the US healthcare system so broken?"
 ```
 
 ## 📝 Available Tools
