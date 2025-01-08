@@ -3,7 +3,7 @@
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-blue.svg)](https://nodejs.org/en/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Model Context Protocol (MCP) server that enables LLMs to interact directly the documents that they have on-disk through agentic RAG and hybrid search. Ask LLMs questions about the dataset as a whole or about specific documents.
+A Model Context Protocol (MCP) server that enables LLMs to interact directly the documents that they have on-disk through agentic RAG and hybrid search in LanceDB. Ask LLMs questions about the dataset as a whole or about specific documents.
 
 ## ✨ Features
 
