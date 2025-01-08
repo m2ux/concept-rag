@@ -21,7 +21,7 @@ To get started, create a local directory to store the index and add this configu
 ```json
 {
   "mcpServers": {
-    "mongodb": {
+    "lancedb": {
       "command": "npx",
       "args": [
         "lance-mcp",
@@ -50,7 +50,7 @@ To get started, create a local directory to store the index and add this configu
 ```json
 {
   "mcpServers": {
-    "mongodb": {
+    "lancedb": {
       "command": "node",
       "args": [
         "PATH_TO_LANCE_MCP/dist/index.js",
