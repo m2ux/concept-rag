@@ -9,7 +9,7 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "lancedb-mcp": "dist/index.js"
+    "lance-mcp": "dist/index.js"
   },
   "files": [
     "dist"
