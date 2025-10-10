@@ -31,8 +31,9 @@ Choose between two architectures based on your needs:
    # Edit .env and add your OpenRouter API key
    ```
 
-3. **Add to Claude Desktop config:**
+3. **Add to MCP Client config:**
 
+   **Claude Desktop**  
    **MacOS**: `~/Library/Application\ Support/Claude/claude_desktop_config.json`  
    **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
@@ -50,9 +51,28 @@ Choose between two architectures based on your needs:
    }
    ```
 
+   **Cursor**  
+   **MacOS**: `~/.cursor/mcp.json`  
+   **Windows**: `%APPDATA%/Cursor/User/mcp.json`  
+   **Linux**: `~/.cursor/mcp.json`
+
+   ```json
+   {
+     "mcpServers": {
+       "lancedb": {
+         "command": "node",
+         "args": [
+           "PATH_TO_LANCE_MCP/dist/simple_index.js",
+           "PATH_TO_LOCAL_INDEX_DIR"
+         ]
+       }
+     }
+   }
+   ```
+
 ### 🏠 Alternative: Full Local (Ollama)
 
-**For completely offline operation:**
+**For completely offline operation, use the same config format but with the traditional server:**
 
 ```json
 {
@@ -68,16 +88,18 @@ Choose between two architectures based on your needs:
 }
 ```
 
+*Use this same JSON structure for both Claude Desktop and Cursor configuration files.*
+
 ### Prerequisites
 
 **Hybrid Approach (Recommended):**
 - Node.js 18+
 - OpenRouter API key
-- MCP Client (Claude Desktop App)
+- MCP Client (Claude Desktop or Cursor)
 
 **Full Local Approach:**
 - Node.js 18+ 
-- MCP Client (Claude Desktop App)
+- MCP Client (Claude Desktop or Cursor)
 - Ollama with models:
   - `ollama pull snowflake-arctic-embed2`
   - `ollama pull llama3.1:8b`
