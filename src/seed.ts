@@ -6,6 +6,7 @@ import {
 import {
   DirectoryLoader
 } from 'langchain/document_loaders/fs/directory';
+import * as path from 'path';
 import {
   LanceDB, LanceDBArgs
 } from "@langchain/community/vectorstores/lancedb";
@@ -18,6 +19,12 @@ import { BaseLanguageModelInterface, BaseLanguageModelCallOptions } from "@langc
 import { PromptTemplate } from "@langchain/core/prompts";
 import * as crypto from 'crypto';
 import * as defaults from './config'
+
+// Handle unhandled promise rejections to prevent crashes
+process.on('unhandledRejection', (reason, promise) => {
+    console.warn('⚠️  Caught unhandled promise rejection:', reason);
+    // Don't exit the process, just log the error
+});
 
 const argv: minimist.ParsedArgs = minimist(process.argv.slice(2),{boolean: "overwrite"});
 
@@ -66,12 +73,55 @@ async function catalogRecordExists(catalogTable: lancedb.Table, hash: string): P
   return results.length > 0;
 }
 
-const directoryLoader = new DirectoryLoader(
-  filesDir,
-  {
-   ".pdf": (path: string) => new PDFLoader(path),
-  },
-);
+// Custom function to load files with error handling
+async function loadDocumentsWithErrorHandling(filesDir: string) {
+    const documents: Document[] = [];
+    const failedFiles: string[] = [];
+    
+    try {
+        const files = await fs.promises.readdir(filesDir);
+        const pdfFiles = files.filter(file => file.toLowerCase().endsWith('.pdf'));
+        
+        console.log(`Found ${pdfFiles.length} PDF files to process...`);
+        
+        for (const pdfFile of pdfFiles) {
+            const fullPath = path.join(filesDir, pdfFile);
+            try {
+                console.log(`Loading: ${pdfFile}`);
+                const loader = new PDFLoader(fullPath);
+                
+                // Wrap the load in a promise with timeout to catch deep rejections
+                const loadPromise = new Promise<Document[]>(async (resolve, reject) => {
+                    try {
+                        const docs = await loader.load();
+                        resolve(docs);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+                
+                const docs = await loadPromise;
+                documents.push(...docs);
+                console.log(`✅ Successfully loaded: ${pdfFile} (${docs.length} pages)`);
+            } catch (error) {
+                console.warn(`⚠️  Skipping ${pdfFile} due to error: ${error.message}`);
+                failedFiles.push(pdfFile);
+            }
+        }
+        
+        if (failedFiles.length > 0) {
+            console.log(`\n📝 Summary: Successfully loaded ${pdfFiles.length - failedFiles.length}/${pdfFiles.length} files`);
+            console.log(`❌ Failed files (skipped):`);
+            failedFiles.forEach(file => console.log(`   - ${file}`));
+            console.log('');
+        }
+        
+        return documents;
+    } catch (error) {
+        console.error('Error reading directory:', error.message);
+        throw error;
+    }
+}
 
 const model = new Ollama({ model: defaults.SUMMARIZATION_MODEL });
 
@@ -144,9 +194,9 @@ async function seed() {
         }
     }
 
-    // load files from the files path
+    // load files from the files path with error handling
     console.log("Loading files...")
-    const rawDocs = await directoryLoader.load();
+    const rawDocs = await loadDocumentsWithErrorHandling(filesDir);
 
     // overwrite the metadata as large metadata can give lancedb problems
     for (const doc of rawDocs) {
