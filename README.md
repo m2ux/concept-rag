@@ -162,17 +162,6 @@ The server provides these tools for intelligent document interaction:
 - **`chunks_search`**: Find specific information within a chosen document
 - **`all_chunks_search`**: Search across all documents for detailed information
 
-## 🔒 Security
-
-This project follows security best practices:
-
-- ✅ **No hardcoded API keys** - Uses environment variables only
-- ✅ **Local data storage** - Your documents stay on your machine  
-- ✅ **Secure configuration** - `.env` files are gitignored
-- ✅ **Security documentation** - See [SECURITY.md](SECURITY.md) for details
-
-**Never commit API keys to version control!**
-
 ## 🏗️ Architecture
 
 ### Hybrid Approach (Recommended)
