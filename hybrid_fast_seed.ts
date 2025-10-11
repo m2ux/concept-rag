@@ -207,9 +207,10 @@ async function findPdfFilesRecursively(dir: string): Promise<string[]> {
     return pdfFiles;
 }
 
-async function loadDocumentsWithErrorHandling(filesDir: string) {
+async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: lancedb.Table | null, skipExistsCheck: boolean) {
     const documents: Document[] = [];
     const failedFiles: string[] = [];
+    const skippedFiles: string[] = [];
     
     try {
         // Check if filesDir is a file or directory
@@ -221,11 +222,29 @@ async function loadDocumentsWithErrorHandling(filesDir: string) {
         console.log(`🔍 Recursively scanning ${filesDir} for PDF files...`);
         const pdfFiles = await findPdfFilesRecursively(filesDir);
         
-        console.log(`📚 Found ${pdfFiles.length} PDF files, processing all of them...`);
+        console.log(`📚 Found ${pdfFiles.length} PDF files`);
+        
+        if (!skipExistsCheck && catalogTable) {
+            console.log(`🔍 Checking which files are already in database...`);
+        }
         
         for (const pdfFile of pdfFiles) {
+            const relativePath = path.relative(filesDir, pdfFile);
+            
             try {
-                const relativePath = path.relative(filesDir, pdfFile);
+                // Calculate hash first (fast operation)
+                if (!skipExistsCheck && catalogTable) {
+                    const fileContent = await fs.promises.readFile(pdfFile);
+                    const hash = crypto.createHash('sha256').update(fileContent).digest('hex');
+                    
+                    const exists = await catalogRecordExists(catalogTable, hash);
+                    if (exists) {
+                        console.log(`📚 ${relativePath} already in database (hash: ${hash.slice(0, 8)}...). Skipping loading.`);
+                        skippedFiles.push(relativePath);
+                        continue; // Skip loading this file entirely
+                    }
+                }
+                
                 console.log(`Loading: ${relativePath}`);
                 const loader = new PDFLoader(pdfFile);
                 
@@ -239,7 +258,6 @@ async function loadDocumentsWithErrorHandling(filesDir: string) {
                 documents.push(...docs);
                 console.log(`✅ Successfully loaded: ${relativePath} (${docs.length} pages)`);
             } catch (error: any) {
-                const relativePath = path.relative(filesDir, pdfFile);
                 const errorMsg = error?.message || String(error);
                 // Clean up common error messages for better readability
                 let cleanErrorMsg = errorMsg;
@@ -257,9 +275,11 @@ async function loadDocumentsWithErrorHandling(filesDir: string) {
             }
         }
         
+        const loadedCount = pdfFiles.length - failedFiles.length - skippedFiles.length;
+        console.log(`\n📝 Summary: ${loadedCount} files loaded, ${skippedFiles.length} skipped (already in DB), ${failedFiles.length} failed`);
+        
         if (failedFiles.length > 0) {
-            console.log(`\n📝 Summary: Successfully loaded ${pdfFiles.length - failedFiles.length}/${pdfFiles.length} files`);
-            console.log(`❌ Failed files (skipped): ${failedFiles.join(', ')}`);
+            console.log(`❌ Failed files: ${failedFiles.join(', ')}`);
         }
         
         return documents;
@@ -325,7 +345,7 @@ async function createLanceTableWithSimpleEmbeddings(
     }
 }
 
-async function processDocuments(rawDocs: Document[], catalogTable: lancedb.Table | null, skipExistsCheck: boolean) {
+async function processDocuments(rawDocs: Document[]) {
     const docsBySource = rawDocs.reduce((acc: Record<string, Document[]>, doc: Document) => {
         const source = doc.metadata.source;
         if (!acc[source]) {
@@ -335,28 +355,21 @@ async function processDocuments(rawDocs: Document[], catalogTable: lancedb.Table
         return acc;
     }, {});
 
-    let skipSources: string[] = [];
     let catalogRecords: Document[] = [];
 
     for (const [source, docs] of Object.entries(docsBySource)) {
         const fileContent = await fs.promises.readFile(source);
         const hash = crypto.createHash('sha256').update(fileContent).digest('hex');
 
-        const exists = skipExistsCheck ? false : (catalogTable ? await catalogRecordExists(catalogTable, hash) : false);
-        if (exists) {
-            console.log(`📚 File ${path.basename(source)} already exists in database (hash: ${hash.slice(0, 8)}...). Skipping...`);
-            skipSources.push(source);
-        } else {
-            console.log(`🤖 Generating summary with OpenRouter for: ${path.basename(source)}`);
-            const contentOverview = await generateContentOverview(docs);
-            catalogRecords.push(new Document({ 
-                pageContent: contentOverview, 
-                metadata: { source, hash } 
-            }));
-        }
+        console.log(`🤖 Generating summary with OpenRouter for: ${path.basename(source)}`);
+        const contentOverview = await generateContentOverview(docs);
+        catalogRecords.push(new Document({ 
+            pageContent: contentOverview, 
+            metadata: { source, hash } 
+        }));
     }
 
-    return { skipSources, catalogRecords };
+    return catalogRecords;
 }
 
 async function hybridFastSeed() {
@@ -388,11 +401,12 @@ async function hybridFastSeed() {
 
     // Load files
     console.log("Loading files...");
-    const rawDocs = await loadDocumentsWithErrorHandling(filesDir);
+    const rawDocs = await loadDocumentsWithErrorHandling(filesDir, catalogTable, overwrite || !catalogTableExists);
 
     if (rawDocs.length === 0) {
-        console.error("❌ No documents were successfully loaded. Exiting.");
-        process.exit(1);
+        console.log("✅ No new documents to process - all files already exist in database.");
+        console.log("🎉 Seeding completed successfully (no changes needed)!");
+        process.exit(0);
     }
 
     // Simplify metadata
@@ -401,7 +415,7 @@ async function hybridFastSeed() {
     }
 
     console.log("🚀 Creating catalog with OpenRouter summaries...");
-    const { skipSources, catalogRecords } = await processDocuments(rawDocs, catalogTable, overwrite || !catalogTableExists);
+    const catalogRecords = await processDocuments(rawDocs);
     
     if (catalogRecords.length > 0) {
         console.log("📊 Creating catalog table with fast local embeddings...");
@@ -409,16 +423,13 @@ async function hybridFastSeed() {
     }
 
     console.log(`Number of new catalog records: ${catalogRecords.length}`);
-    console.log(`Number of skipped sources: ${skipSources.length}`);
-    
-    const filteredRawDocs = rawDocs.filter((doc: Document) => !skipSources.includes(doc.metadata.source));
 
     console.log("🔧 Creating chunks with fast local embeddings...");
     const splitter = new RecursiveCharacterTextSplitter({
         chunkSize: 500,
         chunkOverlap: 10,
     });
-    const docs = await splitter.splitDocuments(filteredRawDocs);
+    const docs = await splitter.splitDocuments(rawDocs);
     
     if (docs.length > 0) {
         console.log(`📊 Processing ${docs.length} chunks...`);
