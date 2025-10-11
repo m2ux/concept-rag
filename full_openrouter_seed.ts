@@ -4,11 +4,11 @@ import {
   RecursiveCharacterTextSplitter
 } from 'langchain/text_splitter';
 import * as path from 'path';
-import {
-  LanceDB, LanceDBArgs
-} from "@langchain/community/vectorstores/lancedb";
+// import {
+//   LanceDB, LanceDBArgs
+// } from "@langchain/community/vectorstores/lancedb"; // Removed due to dependency issues
 import { Document } from "@langchain/core/documents";
-import { OpenAIEmbeddings } from "@langchain/openai";
+// import { OpenAIEmbeddings } from "@langchain/openai"; // Removed due to dependency issues
 import * as fs from 'fs';
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import * as crypto from 'crypto';
@@ -21,14 +21,18 @@ process.on('unhandledRejection', (reason, promise) => {
 
 const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: "overwrite"});
 
-const databaseDir = argv["dbpath"];
+const databaseDir = argv["dbpath"] || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".lance_mcp");
 const filesDir = argv["filesdir"];
 const overwrite = argv["overwrite"];
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
 function validateArgs() {
-    if (!databaseDir || !filesDir) {
-        console.error("Please provide a database path (--dbpath) and a directory with files (--filesdir) to process");
+    if (!filesDir) {
+        console.error("Please provide a directory with files (--filesdir) to process");
+        console.error("Usage: npx tsx full_openrouter_seed.ts --filesdir <directory> [--dbpath <path>] [--overwrite]");
+        console.error("  --filesdir: Directory containing PDF files to process (required)");
+        console.error("  --dbpath: Database path (optional, defaults to ~/.lance_mcp)");
+        console.error("  --overwrite: Overwrite existing database tables (optional)");
         process.exit(1);
     }
     
@@ -89,15 +93,102 @@ async function generateContentOverview(rawDocs: Document[]): Promise<string> {
     }
 }
 
-// Create OpenRouter embeddings (using OpenAI models via OpenRouter)
-function createOpenRouterEmbeddings() {
-    return new OpenAIEmbeddings({
-        model: "text-embedding-3-small", // Fast and cost-effective
-        apiKey: openrouterApiKey,
-        configuration: {
-            baseURL: "https://openrouter.ai/api/v1",
-        },
-    });
+// Simple local embedding function using TF-IDF-like approach
+function createSimpleEmbedding(text: string): number[] {
+    // Create a simple 384-dimensional embedding using character/word features
+    const embedding = new Array(384).fill(0);
+    
+    // Use text characteristics to create a unique vector
+    const words = text.toLowerCase().split(/\s+/);
+    const chars = text.toLowerCase();
+    
+    // Fill embedding with features based on text content
+    for (let i = 0; i < Math.min(words.length, 100); i++) {
+        const word = words[i];
+        const hash = simpleHash(word);
+        embedding[hash % 384] += 1;
+    }
+    
+    // Add character-level features
+    for (let i = 0; i < Math.min(chars.length, 1000); i++) {
+        const charCode = chars.charCodeAt(i);
+        embedding[charCode % 384] += 0.1;
+    }
+    
+    // Add length and structure features
+    embedding[0] = text.length / 1000; // Normalized length
+    embedding[1] = words.length / 100; // Normalized word count
+    embedding[2] = (text.match(/\./g) || []).length / 10; // Sentence count
+    
+    // Normalize the vector
+    const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+    return embedding.map(val => norm > 0 ? val / norm : 0);
+}
+
+function simpleHash(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+}
+
+async function createLanceTableWithSimpleEmbeddings(
+    db: lancedb.Connection,
+    documents: Document[],
+    tableName: string,
+    mode?: "overwrite"
+): Promise<lancedb.Table> {
+    
+    console.log(`🔄 Creating simple embeddings for ${documents.length} documents...`);
+    
+    // Generate fast local embeddings
+    const data = documents.map((doc, i) => ({
+        id: i.toString(),
+        text: doc.pageContent,
+        source: doc.metadata.source || '',
+        hash: doc.metadata.hash || '',
+        loc: JSON.stringify(doc.metadata.loc || {}),
+        vector: createSimpleEmbedding(doc.pageContent)
+    }));
+    
+    console.log(`✅ Generated ${data.length} embeddings locally (instant)`);
+    
+    // Handle existing tables
+    if (mode === "overwrite") {
+        try {
+            await db.dropTable(tableName);
+            console.log(`🗑️ Dropped existing table: ${tableName}`);
+        } catch (e) {
+            // Table might not exist
+        }
+        const table = await db.createTable(tableName, data);
+        console.log(`✅ Created LanceDB table: ${tableName}`);
+        return table;
+    } else {
+        // Check if table already exists
+        try {
+            const existingTables = await db.tableNames();
+            if (existingTables.includes(tableName)) {
+                // Table exists, add to it
+                const table = await db.openTable(tableName);
+                if (data.length > 0) {
+                    await table.add(data);
+                    console.log(`✅ Added ${data.length} new records to existing table: ${tableName}`);
+                }
+                return table;
+            }
+        } catch (e) {
+            // Continue to create new table
+        }
+        
+        // Create new table
+        const table = await db.createTable(tableName, data);
+        console.log(`✅ Created LanceDB table: ${tableName}`);
+        return table;
+    }
 }
 
 async function catalogRecordExists(catalogTable: lancedb.Table, hash: string): Promise<boolean> {
@@ -110,22 +201,52 @@ async function catalogRecordExists(catalogTable: lancedb.Table, hash: string): P
     }
 }
 
+async function findPdfFilesRecursively(dir: string): Promise<string[]> {
+    const pdfFiles: string[] = [];
+    
+    try {
+        const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+        
+        for (const entry of entries) {
+            const fullPath = path.join(dir, entry.name);
+            
+            if (entry.isDirectory()) {
+                // Recursively search subdirectories
+                const subDirPdfs = await findPdfFilesRecursively(fullPath);
+                pdfFiles.push(...subDirPdfs);
+            } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.pdf')) {
+                pdfFiles.push(fullPath);
+            }
+        }
+    } catch (error) {
+        console.warn(`⚠️ Error scanning directory ${dir}: ${error.message}`);
+    }
+    
+    return pdfFiles;
+}
+
 // Load documents with robust error handling
-async function loadDocumentsWithErrorHandling(filesDir: string, maxFiles: number = 8) {
+async function loadDocumentsWithErrorHandling(filesDir: string) {
     const documents: Document[] = [];
     const failedFiles: string[] = [];
     
     try {
-        const files = await fs.promises.readdir(filesDir);
-        const pdfFiles = files.filter(file => file.toLowerCase().endsWith('.pdf')).slice(0, maxFiles);
+        // Check if filesDir is a file or directory
+        const stats = await fs.promises.stat(filesDir);
+        if (!stats.isDirectory()) {
+            throw new Error(`Path is not a directory: ${filesDir}. Please provide a directory path, not a file path.`);
+        }
         
-        console.log(`📚 Processing ${pdfFiles.length} PDF files (limited to ${maxFiles} for faster processing)...`);
+        console.log(`🔍 Recursively scanning ${filesDir} for PDF files...`);
+        const pdfFiles = await findPdfFilesRecursively(filesDir);
+        
+        console.log(`📚 Found ${pdfFiles.length} PDF files, processing all of them...`);
         
         for (const pdfFile of pdfFiles) {
-            const fullPath = path.join(filesDir, pdfFile);
             try {
-                console.log(`Loading: ${pdfFile}`);
-                const loader = new PDFLoader(fullPath);
+                const relativePath = path.relative(filesDir, pdfFile);
+                console.log(`Loading: ${relativePath}`);
+                const loader = new PDFLoader(pdfFile);
                 
                 // Add timeout for PDF loading
                 const docs = await Promise.race([
@@ -136,18 +257,29 @@ async function loadDocumentsWithErrorHandling(filesDir: string, maxFiles: number
                 ]) as Document[];
                 
                 documents.push(...docs);
-                console.log(`✅ Successfully loaded: ${pdfFile} (${docs.length} pages)`);
-            } catch (error) {
-                console.warn(`⚠️  Skipping ${pdfFile} due to error: ${error.message}`);
-                failedFiles.push(pdfFile);
+                console.log(`✅ Successfully loaded: ${relativePath} (${docs.length} pages)`);
+            } catch (error: any) {
+                const relativePath = path.relative(filesDir, pdfFile);
+                const errorMsg = error?.message || String(error);
+                // Clean up common error messages for better readability
+                let cleanErrorMsg = errorMsg;
+                if (errorMsg.includes('Bad encoding in flate stream')) {
+                    cleanErrorMsg = 'Bad PDF encoding';
+                } else if (errorMsg.includes('PDF loading timeout')) {
+                    cleanErrorMsg = 'Loading timeout';
+                } else if (errorMsg.includes('Invalid PDF structure')) {
+                    cleanErrorMsg = 'Invalid PDF format';
+                } else if (errorMsg.length > 50) {
+                    cleanErrorMsg = errorMsg.substring(0, 50) + '...';
+                }
+                console.warn(`⚠️  Skipping ${relativePath}: ${cleanErrorMsg}`);
+                failedFiles.push(relativePath);
             }
         }
         
         if (failedFiles.length > 0) {
             console.log(`\n📝 Summary: Successfully loaded ${pdfFiles.length - failedFiles.length}/${pdfFiles.length} files`);
-            console.log(`❌ Failed files (skipped):`);
-            failedFiles.forEach(file => console.log(`   - ${file}`));
-            console.log('');
+            console.log(`❌ Failed files (skipped): ${failedFiles.join(', ')}`);
         }
         
         return documents;
@@ -226,7 +358,7 @@ async function fullOpenRouterSeed() {
 
     // Load files with error handling
     console.log("Loading files...");
-    const rawDocs = await loadDocumentsWithErrorHandling(filesDir, 8);
+    const rawDocs = await loadDocumentsWithErrorHandling(filesDir);
 
     if (rawDocs.length === 0) {
         console.error("❌ No documents were successfully loaded. Exiting.");
@@ -241,18 +373,9 @@ async function fullOpenRouterSeed() {
     console.log("🚀 Creating catalog with OpenRouter summarization...");
     const { skipSources, catalogRecords } = await processDocuments(rawDocs, catalogTable, overwrite || !catalogTableExists);
     
-    const openrouterEmbeddings = createOpenRouterEmbeddings();
-    
     if (catalogRecords.length > 0) {
-        console.log("📊 Creating catalog vector store with OpenRouter embeddings...");
-        const catalogStore = await LanceDB.fromDocuments(catalogRecords, 
-            openrouterEmbeddings, 
-            { 
-                mode: overwrite ? "overwrite" : undefined, 
-                uri: databaseDir, 
-                tableName: defaults.CATALOG_TABLE_NAME 
-            } as LanceDBArgs);
-        console.log("✅ Catalog store created");
+        console.log("📊 Creating catalog table with fast local embeddings...");
+        await createLanceTableWithSimpleEmbeddings(db, catalogRecords, defaults.CATALOG_TABLE_NAME, overwrite ? "overwrite" : undefined);
     }
 
     console.log("Number of new catalog records: ", catalogRecords.length);
@@ -260,7 +383,7 @@ async function fullOpenRouterSeed() {
     
     const filteredRawDocs = rawDocs.filter((doc: Document) => !skipSources.includes(doc.metadata.source));
 
-    console.log("🔧 Creating chunks vector store with OpenRouter embeddings...");
+    console.log("🔧 Creating chunks with fast local embeddings...");
     const splitter = new RecursiveCharacterTextSplitter({
         chunkSize: 500,
         chunkOverlap: 10,
@@ -268,16 +391,8 @@ async function fullOpenRouterSeed() {
     const docs = await splitter.splitDocuments(filteredRawDocs);
     
     if (docs.length > 0) {
-        console.log(`📊 Processing ${docs.length} chunks with OpenRouter embeddings (much faster than Ollama)...`);
-        
-        const vectorStore = await LanceDB.fromDocuments(docs, 
-            openrouterEmbeddings,
-            { 
-                mode: overwrite ? "overwrite" : undefined, 
-                uri: databaseDir, 
-                tableName: defaults.CHUNKS_TABLE_NAME 
-            } as LanceDBArgs);
-        console.log("✅ Chunks vector store created with OpenRouter embeddings");
+        console.log(`📊 Processing ${docs.length} chunks...`);
+        await createLanceTableWithSimpleEmbeddings(db, docs, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined);
     }
 
     console.log("Number of new chunks: ", docs.length);

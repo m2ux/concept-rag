@@ -19,15 +19,44 @@ process.on('unhandledRejection', (reason: any, promise) => {
 
 // Suppress PDF.js warnings that clutter output
 const originalConsoleWarn = console.warn;
+const originalConsoleError = console.error;
+const originalConsoleLog = console.log;
+
+// Suppress console.warn
 console.warn = (...args: any[]) => {
     const message = args.join(' ');
     if (message.includes('Ran out of space in font private use area') ||
         message.includes('font private use area') ||
+        message.includes('private use area') ||
         message.includes('FormatError') ||
         message.includes('webpack://') ) {
         return; // Suppress these verbose warnings
     }
     originalConsoleWarn.apply(console, args);
+};
+
+// Suppress console.error for the same messages
+console.error = (...args: any[]) => {
+    const message = args.join(' ');
+    if (message.includes('Ran out of space in font private use area') ||
+        message.includes('font private use area') ||
+        message.includes('private use area') ||
+        message.includes('Warning:') && message.includes('font')) {
+        return; // Suppress these verbose warnings
+    }
+    originalConsoleError.apply(console, args);
+};
+
+// Also suppress console.log for these warnings (some libraries use it)
+console.log = (...args: any[]) => {
+    const message = args.join(' ');
+    if (message.includes('Warning:') && (
+        message.includes('Ran out of space in font private use area') ||
+        message.includes('font private use area') ||
+        message.includes('private use area'))) {
+        return; // Suppress these verbose warnings
+    }
+    originalConsoleLog.apply(console, args);
 };
 
 const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: "overwrite"});
@@ -144,6 +173,16 @@ async function generateContentOverview(rawDocs: Document[]): Promise<string> {
     }
 }
 
+async function catalogRecordExists(catalogTable: lancedb.Table, hash: string): Promise<boolean> {
+    try {
+        const query = catalogTable.query().where(`hash="${hash}"`).limit(1);
+        const results = await query.toArray();
+        return results.length > 0;
+    } catch (error) {
+        return false; // If table doesn't exist or query fails, record doesn't exist
+    }
+}
+
 async function findPdfFilesRecursively(dir: string): Promise<string[]> {
     const pdfFiles: string[] = [];
     
@@ -244,6 +283,7 @@ async function createLanceTableWithSimpleEmbeddings(
         id: i.toString(),
         text: doc.pageContent,
         source: doc.metadata.source || '',
+        hash: doc.metadata.hash || '',
         loc: JSON.stringify(doc.metadata.loc || {}),
         vector: createSimpleEmbedding(doc.pageContent)
     }));
@@ -258,28 +298,34 @@ async function createLanceTableWithSimpleEmbeddings(
         } catch (e) {
             // Table might not exist
         }
+        const table = await db.createTable(tableName, data);
+        console.log(`✅ Created LanceDB table: ${tableName}`);
+        return table;
     } else {
         // Check if table already exists
         try {
             const existingTables = await db.tableNames();
             if (existingTables.includes(tableName)) {
-                throw new Error(`Table '${tableName}' already exists. Use --overwrite flag to replace it, or use a different database path.`);
+                // Table exists, add to it
+                const table = await db.openTable(tableName);
+                if (data.length > 0) {
+                    await table.add(data);
+                    console.log(`✅ Added ${data.length} new records to existing table: ${tableName}`);
+                }
+                return table;
             }
         } catch (e) {
-            // If it's not the "table exists" error, continue
-            if (e.message.includes('already exists')) {
-                throw e;
-            }
+            // Continue to create new table
         }
+        
+        // Create new table
+        const table = await db.createTable(tableName, data);
+        console.log(`✅ Created LanceDB table: ${tableName}`);
+        return table;
     }
-    
-    const table = await db.createTable(tableName, data);
-    console.log(`✅ Created LanceDB table: ${tableName}`);
-    
-    return table;
 }
 
-async function processDocuments(rawDocs: Document[]) {
+async function processDocuments(rawDocs: Document[], catalogTable: lancedb.Table | null, skipExistsCheck: boolean) {
     const docsBySource = rawDocs.reduce((acc: Record<string, Document[]>, doc: Document) => {
         const source = doc.metadata.source;
         if (!acc[source]) {
@@ -289,21 +335,28 @@ async function processDocuments(rawDocs: Document[]) {
         return acc;
     }, {});
 
+    let skipSources: string[] = [];
     let catalogRecords: Document[] = [];
 
     for (const [source, docs] of Object.entries(docsBySource)) {
         const fileContent = await fs.promises.readFile(source);
         const hash = crypto.createHash('sha256').update(fileContent).digest('hex');
 
-        console.log(`🤖 Generating summary with OpenRouter for: ${path.basename(source)}`);
-        const contentOverview = await generateContentOverview(docs);
-        catalogRecords.push(new Document({ 
-            pageContent: contentOverview, 
-            metadata: { source, hash } 
-        }));
+        const exists = skipExistsCheck ? false : (catalogTable ? await catalogRecordExists(catalogTable, hash) : false);
+        if (exists) {
+            console.log(`📚 File ${path.basename(source)} already exists in database (hash: ${hash.slice(0, 8)}...). Skipping...`);
+            skipSources.push(source);
+        } else {
+            console.log(`🤖 Generating summary with OpenRouter for: ${path.basename(source)}`);
+            const contentOverview = await generateContentOverview(docs);
+            catalogRecords.push(new Document({ 
+                pageContent: contentOverview, 
+                metadata: { source, hash } 
+            }));
+        }
     }
 
-    return catalogRecords;
+    return { skipSources, catalogRecords };
 }
 
 async function hybridFastSeed() {
@@ -311,11 +364,23 @@ async function hybridFastSeed() {
 
     const db = await lancedb.connect(databaseDir);
 
+    let catalogTable: lancedb.Table | null = null;
+    let catalogTableExists = true;
+
+    try {
+        catalogTable = await db.openTable(defaults.CATALOG_TABLE_NAME);
+    } catch (e) {
+        console.log(`Catalog table "${defaults.CATALOG_TABLE_NAME}" doesn't exist. Will create it.`);
+        catalogTableExists = false;
+    }
+
     if (overwrite) {
         try {
             await db.dropTable(defaults.CATALOG_TABLE_NAME);
             await db.dropTable(defaults.CHUNKS_TABLE_NAME);
             console.log("🗑️ Dropped existing tables");
+            catalogTable = null;
+            catalogTableExists = false;
         } catch (e) {
             console.log("Tables didn't exist");
         }
@@ -336,19 +401,24 @@ async function hybridFastSeed() {
     }
 
     console.log("🚀 Creating catalog with OpenRouter summaries...");
-    const catalogRecords = await processDocuments(rawDocs);
+    const { skipSources, catalogRecords } = await processDocuments(rawDocs, catalogTable, overwrite || !catalogTableExists);
     
     if (catalogRecords.length > 0) {
         console.log("📊 Creating catalog table with fast local embeddings...");
         await createLanceTableWithSimpleEmbeddings(db, catalogRecords, defaults.CATALOG_TABLE_NAME, overwrite ? "overwrite" : undefined);
     }
 
+    console.log(`Number of new catalog records: ${catalogRecords.length}`);
+    console.log(`Number of skipped sources: ${skipSources.length}`);
+    
+    const filteredRawDocs = rawDocs.filter((doc: Document) => !skipSources.includes(doc.metadata.source));
+
     console.log("🔧 Creating chunks with fast local embeddings...");
     const splitter = new RecursiveCharacterTextSplitter({
         chunkSize: 500,
         chunkOverlap: 10,
     });
-    const docs = await splitter.splitDocuments(rawDocs);
+    const docs = await splitter.splitDocuments(filteredRawDocs);
     
     if (docs.length > 0) {
         console.log(`📊 Processing ${docs.length} chunks...`);
