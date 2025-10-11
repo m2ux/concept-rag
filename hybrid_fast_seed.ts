@@ -11,20 +11,39 @@ import * as crypto from 'crypto';
 import * as defaults from './src/config.js'
 
 // Handle unhandled promise rejections to prevent crashes
-process.on('unhandledRejection', (reason, promise) => {
-    console.warn('⚠️  Caught unhandled promise rejection:', reason);
+process.on('unhandledRejection', (reason: any, promise) => {
+    // Only show concise error message, not full stack trace
+    const message = reason?.message || String(reason);
+    console.warn(`⚠️  PDF processing error: ${message}`);
 });
+
+// Suppress PDF.js warnings that clutter output
+const originalConsoleWarn = console.warn;
+console.warn = (...args: any[]) => {
+    const message = args.join(' ');
+    if (message.includes('Ran out of space in font private use area') ||
+        message.includes('font private use area') ||
+        message.includes('FormatError') ||
+        message.includes('webpack://') ) {
+        return; // Suppress these verbose warnings
+    }
+    originalConsoleWarn.apply(console, args);
+};
 
 const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: "overwrite"});
 
-const databaseDir = argv["dbpath"];
+const databaseDir = argv["dbpath"] || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".lance_mcp");
 const filesDir = argv["filesdir"];
 const overwrite = argv["overwrite"];
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
 function validateArgs() {
-    if (!databaseDir || !filesDir) {
-        console.error("Please provide a database path (--dbpath) and a directory with files (--filesdir) to process");
+    if (!filesDir) {
+        console.error("Please provide a directory with files (--filesdir) to process");
+        console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [--overwrite]");
+        console.error("  --filesdir: Directory containing PDF files to process (required)");
+        console.error("  --dbpath: Database path (optional, defaults to ~/.lance_mcp)");
+        console.error("  --overwrite: Overwrite existing database tables (optional)");
         process.exit(1);
     }
     
@@ -117,7 +136,7 @@ async function generateContentOverview(rawDocs: Document[]): Promise<string> {
     
     try {
         const summary = await callOpenRouterChat(combinedText);
-        console.log(`📝 Generated summary: ${summary}`);
+        console.log(`✅ Summary generated successfully`);
         return summary;
     } catch (error) {
         console.warn(`⚠️ OpenRouter summarization failed: ${error.message}`);
@@ -149,7 +168,7 @@ async function findPdfFilesRecursively(dir: string): Promise<string[]> {
     return pdfFiles;
 }
 
-async function loadDocumentsWithErrorHandling(filesDir: string, maxFiles: number = 8) {
+async function loadDocumentsWithErrorHandling(filesDir: string) {
     const documents: Document[] = [];
     const failedFiles: string[] = [];
     
@@ -161,10 +180,9 @@ async function loadDocumentsWithErrorHandling(filesDir: string, maxFiles: number
         }
         
         console.log(`🔍 Recursively scanning ${filesDir} for PDF files...`);
-        const allPdfFiles = await findPdfFilesRecursively(filesDir);
-        const pdfFiles = allPdfFiles.slice(0, maxFiles);
+        const pdfFiles = await findPdfFilesRecursively(filesDir);
         
-        console.log(`📚 Found ${allPdfFiles.length} PDF files, processing first ${pdfFiles.length}...`);
+        console.log(`📚 Found ${pdfFiles.length} PDF files, processing all of them...`);
         
         for (const pdfFile of pdfFiles) {
             try {
@@ -181,9 +199,21 @@ async function loadDocumentsWithErrorHandling(filesDir: string, maxFiles: number
                 
                 documents.push(...docs);
                 console.log(`✅ Successfully loaded: ${relativePath} (${docs.length} pages)`);
-            } catch (error) {
+            } catch (error: any) {
                 const relativePath = path.relative(filesDir, pdfFile);
-                console.warn(`⚠️  Skipping ${relativePath} due to error: ${error.message}`);
+                const errorMsg = error?.message || String(error);
+                // Clean up common error messages for better readability
+                let cleanErrorMsg = errorMsg;
+                if (errorMsg.includes('Bad encoding in flate stream')) {
+                    cleanErrorMsg = 'Bad PDF encoding';
+                } else if (errorMsg.includes('PDF loading timeout')) {
+                    cleanErrorMsg = 'Loading timeout';
+                } else if (errorMsg.includes('Invalid PDF structure')) {
+                    cleanErrorMsg = 'Invalid PDF format';
+                } else if (errorMsg.length > 50) {
+                    cleanErrorMsg = errorMsg.substring(0, 50) + '...';
+                }
+                console.warn(`⚠️  Skipping ${relativePath}: ${cleanErrorMsg}`);
                 failedFiles.push(relativePath);
             }
         }
@@ -220,12 +250,26 @@ async function createLanceTableWithSimpleEmbeddings(
     
     console.log(`✅ Generated ${data.length} embeddings locally (instant)`);
     
-    // Create table
+    // Handle existing tables
     if (mode === "overwrite") {
         try {
             await db.dropTable(tableName);
+            console.log(`🗑️ Dropped existing table: ${tableName}`);
         } catch (e) {
             // Table might not exist
+        }
+    } else {
+        // Check if table already exists
+        try {
+            const existingTables = await db.tableNames();
+            if (existingTables.includes(tableName)) {
+                throw new Error(`Table '${tableName}' already exists. Use --overwrite flag to replace it, or use a different database path.`);
+            }
+        } catch (e) {
+            // If it's not the "table exists" error, continue
+            if (e.message.includes('already exists')) {
+                throw e;
+            }
         }
     }
     
@@ -279,7 +323,7 @@ async function hybridFastSeed() {
 
     // Load files
     console.log("Loading files...");
-    const rawDocs = await loadDocumentsWithErrorHandling(filesDir, 8);
+    const rawDocs = await loadDocumentsWithErrorHandling(filesDir);
 
     if (rawDocs.length === 0) {
         console.error("❌ No documents were successfully loaded. Exiting.");
