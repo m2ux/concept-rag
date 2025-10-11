@@ -125,21 +125,52 @@ async function generateContentOverview(rawDocs: Document[]): Promise<string> {
     }
 }
 
+async function findPdfFilesRecursively(dir: string): Promise<string[]> {
+    const pdfFiles: string[] = [];
+    
+    try {
+        const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+        
+        for (const entry of entries) {
+            const fullPath = path.join(dir, entry.name);
+            
+            if (entry.isDirectory()) {
+                // Recursively search subdirectories
+                const subDirPdfs = await findPdfFilesRecursively(fullPath);
+                pdfFiles.push(...subDirPdfs);
+            } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.pdf')) {
+                pdfFiles.push(fullPath);
+            }
+        }
+    } catch (error) {
+        console.warn(`⚠️ Error scanning directory ${dir}: ${error.message}`);
+    }
+    
+    return pdfFiles;
+}
+
 async function loadDocumentsWithErrorHandling(filesDir: string, maxFiles: number = 8) {
     const documents: Document[] = [];
     const failedFiles: string[] = [];
     
     try {
-        const files = await fs.promises.readdir(filesDir);
-        const pdfFiles = files.filter(file => file.toLowerCase().endsWith('.pdf')).slice(0, maxFiles);
+        // Check if filesDir is a file or directory
+        const stats = await fs.promises.stat(filesDir);
+        if (!stats.isDirectory()) {
+            throw new Error(`Path is not a directory: ${filesDir}. Please provide a directory path, not a file path.`);
+        }
         
-        console.log(`📚 Processing ${pdfFiles.length} PDF files...`);
+        console.log(`🔍 Recursively scanning ${filesDir} for PDF files...`);
+        const allPdfFiles = await findPdfFilesRecursively(filesDir);
+        const pdfFiles = allPdfFiles.slice(0, maxFiles);
+        
+        console.log(`📚 Found ${allPdfFiles.length} PDF files, processing first ${pdfFiles.length}...`);
         
         for (const pdfFile of pdfFiles) {
-            const fullPath = path.join(filesDir, pdfFile);
             try {
-                console.log(`Loading: ${pdfFile}`);
-                const loader = new PDFLoader(fullPath);
+                const relativePath = path.relative(filesDir, pdfFile);
+                console.log(`Loading: ${relativePath}`);
+                const loader = new PDFLoader(pdfFile);
                 
                 const docs = await Promise.race([
                     loader.load(),
@@ -149,10 +180,11 @@ async function loadDocumentsWithErrorHandling(filesDir: string, maxFiles: number
                 ]) as Document[];
                 
                 documents.push(...docs);
-                console.log(`✅ Successfully loaded: ${pdfFile} (${docs.length} pages)`);
+                console.log(`✅ Successfully loaded: ${relativePath} (${docs.length} pages)`);
             } catch (error) {
-                console.warn(`⚠️  Skipping ${pdfFile} due to error: ${error.message}`);
-                failedFiles.push(pdfFile);
+                const relativePath = path.relative(filesDir, pdfFile);
+                console.warn(`⚠️  Skipping ${relativePath} due to error: ${error.message}`);
+                failedFiles.push(relativePath);
             }
         }
         
