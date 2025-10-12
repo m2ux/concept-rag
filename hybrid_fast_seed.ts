@@ -17,7 +17,8 @@ process.on('unhandledRejection', (reason: any, promise) => {
     // Skip PDF processing errors since they're handled in the main loop
     if (message.includes('Bad encoding in flate stream') || 
         message.includes('PDF loading timeout') || 
-        message.includes('Invalid PDF structure')) {
+        message.includes('Invalid PDF structure') ||
+        message.includes('PDF contains no pages')) {
         return; // Already handled by main error handling
     }
     console.warn(`⚠️  PDF processing error: ${message}`);
@@ -257,7 +258,7 @@ async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: la
                 if (!skipExistsCheck && catalogTable && hash !== 'unknown') {
                     const exists = await catalogRecordExists(catalogTable, hash);
                     if (exists) {
-                        console.log(`📚 [${hash.slice(0, 4)}..${hash.slice(-4)}] Skipping - ${truncateFilePath(relativePath)}`);
+                        console.log(`⏭️ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)}`);
                         skippedFiles.push(relativePath);
                         continue; // Skip loading this file entirely
                     }
@@ -272,8 +273,12 @@ async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: la
                     )
                 ]) as Document[];
                 
+                if (docs.length === 0) {
+                    throw new Error('PDF contains no pages');
+                }
+                
                 documents.push(...docs);
-                console.log(`📚 [${hash.slice(0, 4)}..${hash.slice(-4)}] Loaded   - ${truncateFilePath(relativePath)} (${docs.length} pages)`);
+                console.log(`📥 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${docs.length} pages)`);
             } catch (error: any) {
                 const errorMsg = error?.message || String(error);
                 // Clean up common error messages for better readability
@@ -284,22 +289,20 @@ async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: la
                     cleanErrorMsg = 'Loading timeout';
                 } else if (errorMsg.includes('Invalid PDF structure')) {
                     cleanErrorMsg = 'Invalid PDF format';
+                } else if (errorMsg.includes('PDF contains no pages')) {
+                    cleanErrorMsg = 'Empty PDF (0 pages)';
                 } else if (errorMsg.length > 50) {
                     cleanErrorMsg = errorMsg.substring(0, 50) + '...';
                 }
                 
                 const hashDisplay = hash !== 'unknown' ? `[${hash.slice(0, 4)}..${hash.slice(-4)}]` : '[????..????]';
-                console.log(`📚 ${hashDisplay} Error    - ${truncateFilePath(relativePath)}: ${cleanErrorMsg}`);
+                console.log(`⚠️ ${hashDisplay} ${truncateFilePath(relativePath)}`);
                 failedFiles.push(relativePath);
             }
         }
         
         const loadedCount = pdfFiles.length - failedFiles.length - skippedFiles.length;
-        console.log(`\n📝 Summary: ${loadedCount} files loaded, ${skippedFiles.length} skipped (already in DB), ${failedFiles.length} failed`);
-        
-        if (failedFiles.length > 0) {
-            console.log(`❌ Failed files: ${failedFiles.join(', ')}`);
-        }
+        console.log(`\n📊 Summary: • 📥 Loaded: ${loadedCount} • ⏭️ Skipped: ${skippedFiles.length} • ⚠️ Error: ${failedFiles.length}`);
         
         return documents;
     } catch (error) {
