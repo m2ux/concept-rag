@@ -14,6 +14,12 @@ import * as defaults from './src/config.js'
 process.on('unhandledRejection', (reason: any, promise) => {
     // Only show concise error message, not full stack trace
     const message = reason?.message || String(reason);
+    // Skip PDF processing errors since they're handled in the main loop
+    if (message.includes('Bad encoding in flate stream') || 
+        message.includes('PDF loading timeout') || 
+        message.includes('Invalid PDF structure')) {
+        return; // Already handled by main error handling
+    }
     console.warn(`⚠️  PDF processing error: ${message}`);
 });
 
@@ -160,6 +166,13 @@ function simpleHash(str: string): number {
     return Math.abs(hash);
 }
 
+function truncateFilePath(filePath: string, maxLength: number = 180): string {
+    if (filePath.length <= maxLength) {
+        return filePath;
+    }
+    return filePath.slice(0, maxLength - 3) + '...';
+}
+
 async function generateContentOverview(rawDocs: Document[]): Promise<string> {
     const combinedText = rawDocs.map(doc => doc.pageContent).join('\n\n').slice(0, 10000);
     
@@ -231,21 +244,25 @@ async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: la
         for (const pdfFile of pdfFiles) {
             const relativePath = path.relative(filesDir, pdfFile);
             
+            // Calculate hash first (available for all cases)
+            let hash = 'unknown';
             try {
-                // Calculate hash first (fast operation)
-                if (!skipExistsCheck && catalogTable) {
-                    const fileContent = await fs.promises.readFile(pdfFile);
-                    const hash = crypto.createHash('sha256').update(fileContent).digest('hex');
-                    
+                const fileContent = await fs.promises.readFile(pdfFile);
+                hash = crypto.createHash('sha256').update(fileContent).digest('hex');
+            } catch (hashError) {
+                // If we can't read the file for hashing, we'll use 'unknown'
+            }
+            
+            try {
+                if (!skipExistsCheck && catalogTable && hash !== 'unknown') {
                     const exists = await catalogRecordExists(catalogTable, hash);
                     if (exists) {
-                        console.log(`📚 ${relativePath} already in database (hash: ${hash.slice(0, 8)}...). Skipping loading.`);
+                        console.log(`📚 [${hash.slice(0, 4)}..${hash.slice(-4)}] Skipping - ${truncateFilePath(relativePath)}`);
                         skippedFiles.push(relativePath);
                         continue; // Skip loading this file entirely
                     }
                 }
                 
-                console.log(`Loading: ${relativePath}`);
                 const loader = new PDFLoader(pdfFile);
                 
                 const docs = await Promise.race([
@@ -256,7 +273,7 @@ async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: la
                 ]) as Document[];
                 
                 documents.push(...docs);
-                console.log(`✅ Successfully loaded: ${relativePath} (${docs.length} pages)`);
+                console.log(`📚 [${hash.slice(0, 4)}..${hash.slice(-4)}] Loaded   - ${truncateFilePath(relativePath)} (${docs.length} pages)`);
             } catch (error: any) {
                 const errorMsg = error?.message || String(error);
                 // Clean up common error messages for better readability
@@ -270,7 +287,9 @@ async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: la
                 } else if (errorMsg.length > 50) {
                     cleanErrorMsg = errorMsg.substring(0, 50) + '...';
                 }
-                console.warn(`⚠️  Skipping ${relativePath}: ${cleanErrorMsg}`);
+                
+                const hashDisplay = hash !== 'unknown' ? `[${hash.slice(0, 4)}..${hash.slice(-4)}]` : '[????..????]';
+                console.log(`📚 ${hashDisplay} Error    - ${truncateFilePath(relativePath)}: ${cleanErrorMsg}`);
                 failedFiles.push(relativePath);
             }
         }
