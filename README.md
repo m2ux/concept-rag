@@ -371,6 +371,18 @@ npx tsx test/conceptual_search_test.ts
 **Runtime search:** No additional API calls to OpenRouter (vector search is local)  
 **Note:** When used with AI agents (Cursor, Claude Desktop), the agent incurs costs for processing search results
 
+## 🙏 Acknowledgments
+
+This project is forked from [lance-mcp](https://github.com/adiom-data/lance-mcp) by [adiom-data](https://github.com/adiom-data). The original project provided the foundational MCP server architecture and LanceDB integration. This fork extends the original with:
+
+- Conceptual search using corpus-driven concept extraction
+- WordNet semantic enrichment for synonym expansion
+- Multi-signal hybrid ranking (vector + BM25 + concept matching)
+- Enhanced AI models (Claude Sonnet 4.5 + Grok-4-fast)
+- Incremental seeding capabilities
+
+We're grateful to the original author for creating and open-sourcing this excellent foundation!
+
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
