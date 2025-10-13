@@ -64,7 +64,7 @@ cp .env.example .env
 ```
 
 **Claude Desktop**
-**MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
 **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
 ```json
