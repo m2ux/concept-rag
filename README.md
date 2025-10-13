@@ -21,6 +21,7 @@ A powerful MCP server that enables LLMs to interact with documents through conce
 ## 🚀 Quick Start
 
 **Requirements:**
+
 - Node.js 18+
 - OpenRouter API key ([sign up here](https://openrouter.ai/keys))
 - Python 3.9+ with NLTK (for WordNet)
@@ -47,6 +48,7 @@ cp .env.example .env
 ### 2. Configure MCP Client
 
 **Cursor** (`~/.cursor/mcp.json`):
+
 ```json
 {
   "mcpServers": {
@@ -61,8 +63,8 @@ cp .env.example .env
 }
 ```
 
-**Claude Desktop**  
-**MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**Claude Desktop**
+**MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
 ```json
@@ -137,6 +139,7 @@ npx tsx hybrid_fast_seed.ts \
 ```
 
 **What happens during seeding:**
+
 - 📄 Loads PDF files (with OCR fallback for scanned documents)
 - 🔍 **Smart detection**: Skips files already in database (unless `--overwrite` used)
 - 🧠 Extracts 100+ concepts per document (Claude Sonnet 4.5)
@@ -149,11 +152,11 @@ npx tsx hybrid_fast_seed.ts \
 
 1. **Open Cursor settings** and navigate to MCP configuration
 2. **Edit your MCP config file:**
-   
+
    **Linux/macOS**: `~/.cursor/mcp.json`
    **Windows**: `%APPDATA%/Cursor/User/mcp.json`
-
 3. **Add the configuration:**
+
    ```json
    {
      "mcpServers": {
@@ -169,6 +172,7 @@ npx tsx hybrid_fast_seed.ts \
    ```
 
    **Replace the paths with your actual paths:**
+
    ```bash
    # Find your full paths
    pwd     # In concept-rag directory
@@ -215,11 +219,13 @@ npx tsx hybrid_fast_seed.ts \
 ```
 
 **What's created:**
+
 - **Catalog table**: Document summaries with embedded concepts
-- **Chunks table**: Detailed text segments for deep search  
+- **Chunks table**: Detailed text segments for deep search
 - **Concepts table**: Extracted concepts with co-occurrence relationships
 
 **Features:**
+
 - 🧠 **Comprehensive**: Extracts 100+ concepts per document (Claude Sonnet 4.5)
 - 📝 **Fast summaries**: Grok-4-fast for quick overviews
 - 🌐 **WordNet enriched**: Automatic synonym and hierarchy expansion
@@ -229,15 +235,18 @@ npx tsx hybrid_fast_seed.ts \
 ### 📋 Seeding Options
 
 **Required:**
+
 - `--dbpath`: Directory to store the LanceDB database
-- `--filesdir`: Directory containing PDF files to process  
+- `--filesdir`: Directory containing PDF files to process
 
 **Optional:**
+
 - `--overwrite`: Recreate database from scratch (deletes existing data)
   - **Without this flag:** Only processes new or changed files (incremental mode)
   - **With this flag:** Reprocesses everything (useful for testing or upgrades)
-  
+
 **Incremental vs Full Seeding:**
+
 ```bash
 # Incremental (recommended for updates) - Only new/changed files
 npx tsx hybrid_fast_seed.ts --dbpath ~/.lance_mcp --filesdir ~/Documents/pdfs
@@ -247,6 +256,7 @@ npx tsx hybrid_fast_seed.ts --dbpath ~/.lance_mcp --filesdir ~/Documents/pdfs --
 ```
 
 **Time savings with incremental:**
+
 - Initial 100 docs: ~25 minutes + ~$4.80
 - Add 10 new docs: ~3 minutes + ~$0.48 ✨
 - Add 1 new doc: ~15 seconds + ~$0.05 ✨
@@ -277,36 +287,42 @@ npx tsx hybrid_fast_seed.ts --dbpath ~/.lance_mcp --filesdir ~/Documents/pdfs --
 The server provides **3 conceptual search tools**:
 
 ### 🗂️ `catalog_search`
+
 Search document summaries to find relevant sources
+
 - Query expansion with corpus concepts + WordNet
 - Returns: Documents with concept matches and scores
 
-### 📄 `chunks_search`  
+### 📄 `chunks_search`
+
 Find specific information within a chosen document
+
 - Requires `source` parameter (document path)
 - Concept-aware search within single document
 
 ### 🔍 `broad_chunks_search`
+
 Search across ALL documents for detailed information
+
 - Returns: Top 10 most relevant chunks from entire corpus
 - Full conceptual expansion and multi-signal ranking
 
 ## 🏗️ Architecture
 
 ```
-Documents 
-    ↓
-PDF Processing (with OCR fallback)
-    ↓
-┌─────────────────┬───────────────────┐
-│                 │                   │
-Concept          Summary            Chunks
-Extraction       Generation         Creation
-(Sonnet 4.5)     (Grok-4-fast)     (Local)
-    ↓                 ↓                 ↓
-Concepts          Catalog           Chunks
-Table             Table             Table
-    └─────────────────┴───────────────┘
+                 PDF Documents 
+                      ↓
+        Processing (with OCR fallback)
+                      ↓
+     ┌────────────────┬────────────────┐
+     │                │                │
+ Concept          Summary            Chunks
+ Extraction       Generation         Creation
+ (Sonnet 4.5)     (Grok-4-fast)     (Local)
+     ↓                ↓                ↓
+ Concepts          Catalog           Chunks
+ Table             Table             Table
+     └────────────────┴────────────────┘
                       │
             Conceptual Search Engine
                  (5 signals)
@@ -320,6 +336,7 @@ Table             Table             Table
 ## 🛠️ Development
 
 ### File Structure
+
 ```
 hybrid_fast_seed.ts              # Seeding with concept extraction
 src/
@@ -361,14 +378,15 @@ npx tsx test/conceptual_search_test.ts
 ## 💰 Cost Breakdown
 
 **Seeding costs (OpenRouter):**
+
 - Concept extraction: ~$0.041/doc (Claude Sonnet 4.5)
 - Summarization: ~$0.007/doc (Grok-4-fast)
 - **Total: ~$0.048 per document**
 
-**For 100 documents: ~$4.80**  
+**For 100 documents: ~$4.80**
 **For 1,000 documents: ~$48**
 
-**Runtime search:** No additional API calls to OpenRouter (vector search is local)  
+**Runtime search:** No additional API calls to OpenRouter (vector search is local)
 **Note:** When used with AI agents (Cursor, Claude Desktop), the agent incurs costs for processing search results
 
 ## 🙏 Acknowledgments
