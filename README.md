@@ -14,7 +14,6 @@ A powerful MCP server that enables LLMs to interact with documents through conce
 - ⚡ **Lightning Fast**: Cloud AI + local embeddings, no timeout issues
 - 🛡️ **Robust PDF Handling**: Gracefully handles corrupted files with OCR fallback
 - 📊 **Comprehensive Indexing**: Extracts 100+ concepts per document
-- 🔒 **Security First**: Local storage with secure API key management
 
 ## 🚀 Quick Start
 
