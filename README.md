@@ -1,9 +1,11 @@
-# 🧠 LanceDB MCP Server with Conceptual Search
+# 🧠 ConceptRAG
 
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-blue.svg)](https://nodejs.org/en/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Model Context Protocol (MCP) server that enables LLMs to interact directly with documents through **conceptual search** powered by LanceDB. Features corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking for superior search accuracy.
+**Conceptual RAG for Model Context Protocol**
+
+A powerful MCP server that enables LLMs to interact with documents through conceptual search. Combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking powered by LanceDB for superior retrieval accuracy.
 
 ## ✨ Features
 
@@ -51,8 +53,8 @@ cp .env.example .env
     "lancedb": {
       "command": "node",
       "args": [
-        "/path/to/lance-mcp/dist/conceptual_index.js",
-        "/home/username/.lance_mcp"
+        "/path/to/concept-rag/dist/conceptual_index.js",
+        "/home/username/.concept_rag"
       ]
     }
   }
@@ -69,8 +71,8 @@ cp .env.example .env
     "lancedb": {
       "command": "node",
       "args": [
-        "/path/to/lance-mcp/dist/conceptual_index.js",
-        "/home/username/.lance_mcp"
+        "/path/to/concept-rag/dist/conceptual_index.js",
+        "/home/username/.concept_rag"
       ]
     }
   }
@@ -85,8 +87,8 @@ cp .env.example .env
 
 ```bash
 # Clone and build
-git clone https://github.com/m2ux/lance-mcp.git
-cd lance-mcp
+git clone https://github.com/m2ux/concept-rag.git
+cd concept-rag
 npm install
 npm run build
 ```
@@ -123,13 +125,13 @@ source .env
 
 # Initial seeding (create database from scratch)
 npx tsx hybrid_fast_seed.ts \
-  --dbpath ~/.lance_mcp \
+  --dbpath ~/.concept_rag \
   --filesdir ~/Documents/my-pdfs \
   --overwrite
 
 # OR: Incremental seeding (add new/changed documents only - much faster!)
 npx tsx hybrid_fast_seed.ts \
-  --dbpath ~/.lance_mcp \
+  --dbpath ~/.concept_rag \
   --filesdir ~/Documents/my-pdfs
   # Note: Omit --overwrite to skip already-processed files
 ```
@@ -158,7 +160,7 @@ npx tsx hybrid_fast_seed.ts \
        "lancedb": {
          "command": "node",
          "args": [
-           "/path/to/your/lance-mcp/dist/simple_index.js",
+           "/path/to/your/concept-rag/dist/simple_index.js",
            "/home/your-username/.lance_mcp"
          ]
        }
@@ -169,8 +171,8 @@ npx tsx hybrid_fast_seed.ts \
    **Replace the paths with your actual paths:**
    ```bash
    # Find your full paths
-   pwd  # In lance-mcp directory
-   echo ~/.lance_mcp  # Database location
+   pwd     # In concept-rag directory
+   echo ~/.concept_rag  # Database location
    ```
 
 ### Step 5: Restart Cursor
@@ -207,7 +209,7 @@ export OPENROUTER_API_KEY=your_key_here
 
 # Run seeding with conceptual indexing
 npx tsx hybrid_fast_seed.ts \
-  --dbpath ~/.lance_mcp \
+  --dbpath ~/.concept_rag \
   --filesdir ~/Documents/your-pdfs \
   --overwrite
 ```
@@ -342,7 +344,7 @@ src/
 npm run build
 
 # Test with MCP Inspector
-npx @modelcontextprotocol/inspector dist/conceptual_index.js ~/.lance_mcp
+npx @modelcontextprotocol/inspector dist/conceptual_index.js ~/.concept_rag
 
 # Run concept extraction tests
 npx tsx test/conceptual_search_test.ts

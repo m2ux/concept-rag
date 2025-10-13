@@ -1,15 +1,15 @@
 {
-  "name": "lance-mcp",
-  "version": "0.2.2",
+  "name": "concept-rag",
+  "version": "1.0.0",
   "author": {
     "name": "Alex Komyagin",
     "email": "alex@adiom.io"
   },
-  "description": "MCP server for interacting with LanceDB database",
+  "description": "Conceptual RAG with LanceDB, WordNet, and multi-signal hybrid search for MCP",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "lance-mcp": "dist/conceptual_index.js"
+    "concept-rag": "dist/conceptual_index.js"
   },
   "files": [
     "dist"
@@ -53,9 +53,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/adiom-data/lance-mcp.git"
+    "url": "https://github.com/m2ux/concept-rag.git"
   },
   "bugs": {
-    "url": "https://github.com/adiom-data/lance-mcp/issues"
-  }
+    "url": "https://github.com/m2ux/concept-rag/issues"
+  },
+  "homepage": "https://github.com/m2ux/concept-rag"
 }
