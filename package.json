@@ -9,7 +9,7 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "lance-mcp": "dist/index.js"
+    "lance-mcp": "dist/conceptual_index.js"
   },
   "files": [
     "dist"
@@ -18,7 +18,7 @@
     "build": "tsc && shx chmod +x dist/*.js",
     "prepare": "npm run build",
     "watch": "tsc --watch",
-    "seed": "tsx src/seed.ts"
+    "seed": "tsx hybrid_fast_seed.ts"
   },
   "keywords": [
     "mcp",
@@ -32,8 +32,6 @@
     "@lancedb/lancedb": "^0.15.0",
     "@langchain/community": "^0.3.24",
     "@langchain/core": "^0.2.36",
-    "@langchain/ollama": "^0.1.4",
-    "@langchain/openai": "^0.6.13",
     "@modelcontextprotocol/sdk": "1.1.1",
     "apache-arrow": "^21.0.0",
     "minimist": "^1.2.8",

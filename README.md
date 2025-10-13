@@ -1,174 +1,147 @@
-# 🗄️ LanceDB MCP Server for LLMS
+# 🧠 LanceDB MCP Server with Conceptual Search
 
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-blue.svg)](https://nodejs.org/en/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Model Context Protocol (MCP) server that enables LLMs to interact directly with documents through agentic RAG and hybrid search in LanceDB. Features both **Ollama-based** and **cloud-based** architectures for maximum flexibility and performance.
+A Model Context Protocol (MCP) server that enables LLMs to interact directly with documents through **conceptual search** powered by LanceDB. Features corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking for superior search accuracy.
 
 ## ✨ Features
 
-- 🔍 **LanceDB-powered** serverless vector index and intelligent document catalog
-- 🤖 **Dual Architecture**: Choose between Ollama (local) or OpenRouter (cloud) for AI operations
-- ⚡ **Lightning Fast**: Hybrid approach with cloud summarization + local embeddings
-- 🛡️ **Robust PDF Handling**: Gracefully handles corrupted files and continues processing
-- 📊 **Efficient Token Usage**: LLM looks up exactly what it needs, when it needs it
+- 🧠 **Conceptual Search**: Corpus concepts + WordNet + hybrid signals for intelligent retrieval
+- 🔍 **Multi-Signal Ranking**: Vector similarity, BM25, title matching, concept matching, synonym expansion
+- 🤖 **LLM-Powered**: Claude Sonnet 4.5 for concept extraction, Grok-4-fast for summaries
+- 🌐 **WordNet Integration**: Synonym expansion and hierarchical concept navigation (161K+ words)
+- ⚡ **Lightning Fast**: Cloud AI + local embeddings, no timeout issues
+- 🛡️ **Robust PDF Handling**: Gracefully handles corrupted files with OCR fallback
+- 📊 **Comprehensive Indexing**: Extracts 100+ concepts per document
 - 🔒 **Security First**: Local storage with secure API key management
-- 🚀 **No Timeouts**: Eliminates Ollama timeout issues with fast cloud processing
 
 ## 🚀 Quick Start
 
-Choose between two architectures based on your needs:
+**Requirements:**
+- Node.js 18+
+- OpenRouter API key ([sign up here](https://openrouter.ai/keys))
+- Python 3.9+ with NLTK (for WordNet)
+- MCP Client (Claude Desktop or Cursor)
 
-### 🌟 Recommended: Hybrid (OpenRouter + Local)
+### 1. Setup Environment
 
-**Fast, reliable, and no local AI dependencies required!**
+```bash
+# Clone and install
+git clone https://github.com/m2ux/lance-mcp.git
+cd lance-mcp
+npm install
+npm run build
 
-1. **Get OpenRouter API Key**: Sign up at [OpenRouter.ai](https://openrouter.ai/keys)
+# Install WordNet
+pip3 install nltk
+python3 -c "import nltk; nltk.download('wordnet'); nltk.download('omw-1.4')"
 
-2. **Set up environment:**
-   ```bash
-   cp .env.example .env
-   # Edit .env and add your OpenRouter API key
-   ```
+# Configure API key
+cp .env.example .env
+# Edit .env and add your OpenRouter API key
+```
 
-3. **Add to MCP Client config:**
+### 2. Configure MCP Client
 
-   **Claude Desktop**  
-   **MacOS**: `~/Library/Application\ Support/Claude/claude_desktop_config.json`  
-   **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
-
-   ```json
-   {
-     "mcpServers": {
-       "lancedb": {
-         "command": "node",
-         "args": [
-           "PATH_TO_LANCE_MCP/dist/simple_index.js",
-           "PATH_TO_LOCAL_INDEX_DIR"
-         ]
-       }
-     }
-   }
-   ```
-
-   **Cursor**  
-   **MacOS**: `~/.cursor/mcp.json`  
-   **Windows**: `%APPDATA%/Cursor/User/mcp.json`  
-   **Linux**: `~/.cursor/mcp.json`
-
-   ```json
-   {
-     "mcpServers": {
-       "lancedb": {
-         "command": "node",
-         "args": [
-           "PATH_TO_LANCE_MCP/dist/simple_index.js",
-           "PATH_TO_LOCAL_INDEX_DIR"
-         ]
-       }
-     }
-   }
-   ```
-
-### 🏠 Alternative: Full Local (Ollama)
-
-**For completely offline operation, use the same config format but with the traditional server:**
-
+**Cursor** (`~/.cursor/mcp.json`):
 ```json
 {
   "mcpServers": {
     "lancedb": {
-      "command": "node", 
+      "command": "node",
       "args": [
-        "PATH_TO_LANCE_MCP/dist/index.js",
-        "PATH_TO_LOCAL_INDEX_DIR"
+        "/path/to/lance-mcp/dist/conceptual_index.js",
+        "/home/username/.lance_mcp"
       ]
     }
   }
 }
 ```
 
-*Use this same JSON structure for both Claude Desktop and Cursor configuration files.*
+**Claude Desktop**  
+**MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
-### Prerequisites
-
-**Hybrid Approach (Recommended):**
-- Node.js 18+
-- OpenRouter API key
-- MCP Client (Claude Desktop or Cursor)
-
-**Full Local Approach:**
-- Node.js 18+ 
-- MCP Client (Claude Desktop or Cursor)
-- Ollama with models:
-  - `ollama pull snowflake-arctic-embed2`
-  - `ollama pull llama3.1:8b`
-
-## 🎬 End-to-End Walkthrough (Hybrid Approach)
-
-**Complete setup from PDFs to working Cursor integration in 10 minutes!**
-
-### Step 1: Prerequisites & Setup
-
-1. **Ensure you have Node.js 18+:**
-   ```bash
-   node --version  # Should show v18+ 
-   ```
-
-2. **Clone and build the project:**
-   ```bash
-   git clone https://github.com/m2ux/lance-mcp.git
-   cd lance-mcp
-   npm install
-   npm run build
-   ```
-
-### Step 2: Get OpenRouter API Key
-
-1. **Sign up at [OpenRouter.ai](https://openrouter.ai/keys)**
-2. **Create an API key** (starts with `sk-or-v1-...`)
-3. **Set up environment:**
-   ```bash
-   # Copy the example file
-   cp .env.example .env
-   
-   # Edit .env and replace with your actual key
-   nano .env  # or use your preferred editor
-   ```
-
-### Step 3: Prepare Your PDFs
-
-```bash
-# Example: Organize your PDFs in a folder
-mkdir -p ~/Documents/my-pdfs
-# Copy your PDF files to ~/Documents/my-pdfs/
-# e.g., programming books, research papers, documentation, etc.
+```json
+{
+  "mcpServers": {
+    "lancedb": {
+      "command": "node",
+      "args": [
+        "/path/to/lance-mcp/dist/conceptual_index.js",
+        "/home/username/.lance_mcp"
+      ]
+    }
+  }
+}
 ```
 
-### Step 4: Run Hybrid Seeding
+## 🎬 End-to-End Walkthrough
+
+**Complete setup from PDFs to working conceptual search in 15 minutes!**
+
+### Step 1: Setup & Build
 
 ```bash
-# Set environment and run seeding
+# Clone and build
+git clone https://github.com/m2ux/lance-mcp.git
+cd lance-mcp
+npm install
+npm run build
+```
+
+### Step 2: Install WordNet
+
+```bash
+# Install Python NLTK
+pip3 install nltk
+
+# Download WordNet data
+python3 -c "import nltk; nltk.download('wordnet'); nltk.download('omw-1.4')"
+
+# Verify installation
+python3 -c "from nltk.corpus import wordnet as wn; print(f'✅ WordNet ready: {len(list(wn.all_synsets()))} synsets')"
+```
+
+### Step 3: Configure OpenRouter API Key
+
+```bash
+# Copy example environment file
+cp .env.example .env
+
+# Edit .env and add your OpenRouter API key
+# Get one at: https://openrouter.ai/keys
+nano .env  # or use your preferred editor
+```
+
+### Step 4: Seed Your Documents
+
+```bash
+# Set environment
 source .env
+
+# Initial seeding (create database from scratch)
 npx tsx hybrid_fast_seed.ts \
   --dbpath ~/.lance_mcp \
   --filesdir ~/Documents/my-pdfs \
   --overwrite
 
-# Expected output:
-# ✅ Successfully loaded X/Y files
-# 🤖 Generating summary with OpenRouter for: [filename]
-# 📝 Generated summary: [AI summary]
-# ✅ Created N catalog records
-# ✅ Created M chunk records
-# 🎉 Seeding completed successfully!
+# OR: Incremental seeding (add new/changed documents only - much faster!)
+npx tsx hybrid_fast_seed.ts \
+  --dbpath ~/.lance_mcp \
+  --filesdir ~/Documents/my-pdfs
+  # Note: Omit --overwrite to skip already-processed files
 ```
 
 **What happens during seeding:**
-- 📄 Loads PDF files (skips corrupted ones automatically)
-- 🤖 Generates intelligent summaries using Claude 3.5 Haiku 
+- 📄 Loads PDF files (with OCR fallback for scanned documents)
+- 🔍 **Smart detection**: Skips files already in database (unless `--overwrite` used)
+- 🧠 Extracts 100+ concepts per document (Claude Sonnet 4.5)
+- 📝 Generates summaries (Grok-4-fast)
+- 🌐 Enriches with WordNet synonyms and hierarchies
 - ⚡ Creates fast local embeddings (384-dimensional)
-- 💾 Stores everything in LanceDB at `~/.lance_mcp`
+- 💾 Stores in 3 LanceDB tables: catalog, chunks, concepts
 
 ### Step 5: Configure Cursor
 
@@ -196,168 +169,205 @@ npx tsx hybrid_fast_seed.ts \
    **Replace the paths with your actual paths:**
    ```bash
    # Find your full paths
-   pwd  # Note this path for the first argument
-   echo ~/.lance_mcp  # Note this path for the second argument
+   pwd  # In lance-mcp directory
+   echo ~/.lance_mcp  # Database location
    ```
 
-### Step 6: Restart Cursor
+### Step 5: Restart Cursor
 
 ```bash
-# Close Cursor completely and restart it
-# The MCP server should now be available
+# Reload window in Cursor: Cmd/Ctrl + Shift + P → "Reload Window"
+# The conceptual search tools should now be available
 ```
 
-### Step 7: Test the Integration
+### Step 6: Test Conceptual Search
 
-**Open Cursor and try these commands:**
-
-1. **Check what documents are available:**
-   ```
-   What documents do we have in the catalog?
-   ```
-
-2. **Search for specific topics:**
-   ```
-   Find information about [your topic]
-   ```
-
-3. **Get detailed information:**
-   ```
-   Search for specific details about [topic] in the [document name] document
-   ```
-
-### Step 8: Example Usage Session
-
-**Here's a real example conversation:**
+**Try these example queries:**
 
 ```
-You: "What documents do we have in the catalog?"
+1. "What documents do we have?"
+   → Uses: catalog_search with concept expansion
 
-Cursor: [Lists your documents with AI-generated summaries]
+2. "Find information about strategic thinking"
+   → Expands to: strategy, tactics, planning, decision making, etc.
+   → Returns: Relevant documents with concept matches
 
-You: "Find information about error handling patterns"
-
-Cursor: [Searches across documents and returns relevant chunks about error handling]
-
-You: "Give me more details about error handling from the Rust programming book"
-
-Cursor: [Searches specifically within the Rust book for error handling information]
+3. "Search for leadership principles"
+   → Finds: Documents about leadership, management, command, etc.
+   → Shows matched concepts and expanded terms
 ```
-
-### 🎯 Pro Tips
-
-- **Large document collections?** Start with `--filesdir` pointing to a small subset first
-- **Corrupted PDFs?** The system automatically skips them and continues
-- **Need to reprocess?** Use `--overwrite` to recreate the database
-- **API costs?** Typically $0.10-0.50 for 100+ documents (only summarization is paid)
-
-### Demo
-
-<img src="https://github.com/user-attachments/assets/90bfdea9-9edd-4cf6-bb04-94c9c84e4825" width="50%">
-
-### 🔧 Development Setup
-
-1. **Build the project:**
-   ```bash
-   npm run build
-   ```
-
-2. **Test with MCP Inspector:**
-   ```bash
-   # Hybrid approach
-   npx @modelcontextprotocol/inspector dist/simple_index.js PATH_TO_LOCAL_INDEX_DIR
-   
-   # Local approach  
-   npx @modelcontextprotocol/inspector dist/index.js PATH_TO_LOCAL_INDEX_DIR
-   ```
 
 ## 📚 Data Seeding
 
-### 🌟 Hybrid Seeding (Recommended)
-
-**Fast, reliable seeding with OpenRouter AI summarization:**
+**Seed your documents with concept extraction:**
 
 ```bash
 # Set up environment
 export OPENROUTER_API_KEY=your_key_here
 
-# Run hybrid seeding (fast cloud AI + local embeddings)
-npx tsx hybrid_fast_seed.ts --dbpath ~/.lance_mcp --filesdir ~/Documents/ebooks --overwrite
+# Run seeding with conceptual indexing
+npx tsx hybrid_fast_seed.ts \
+  --dbpath ~/.lance_mcp \
+  --filesdir ~/Documents/your-pdfs \
+  --overwrite
 ```
+
+**What's created:**
+- **Catalog table**: Document summaries with embedded concepts
+- **Chunks table**: Detailed text segments for deep search  
+- **Concepts table**: Extracted concepts with co-occurrence relationships
 
 **Features:**
-- ⚡ **Lightning fast** - Cloud AI summarization via Claude 3.5 Haiku
-- 🛡️ **Robust** - Automatically skips corrupted PDFs and continues
-- 🚀 **No timeouts** - Eliminates Ollama hanging issues
-- 💰 **Cost effective** - Only pays for summarization, embeddings are free
-
-### 🏠 Traditional Seeding (Ollama)
-
-```bash
-npm run seed -- --dbpath <PATH_TO_LOCAL_INDEX_DIR> --filesdir <PATH_TO_DOCS>
-```
-
-**Note:** Requires Ollama running locally and may experience timeouts with large documents.
+- 🧠 **Comprehensive**: Extracts 100+ concepts per document (Claude Sonnet 4.5)
+- 📝 **Fast summaries**: Grok-4-fast for quick overviews
+- 🌐 **WordNet enriched**: Automatic synonym and hierarchy expansion
+- 🛡️ **Robust**: Auto-skips corrupted PDFs, OCR fallback for scanned docs
+- 💰 **Seeding cost**: ~$4.80 per 100 documents (one-time)
 
 ### 📋 Seeding Options
 
+**Required:**
 - `--dbpath`: Directory to store the LanceDB database
 - `--filesdir`: Directory containing PDF files to process  
-- `--overwrite`: Recreate the database from scratch
 
-The seeding process creates two tables:
-- **Catalog**: AI-generated document summaries and metadata
-- **Chunks**: Vectorized document segments for detailed search
+**Optional:**
+- `--overwrite`: Recreate database from scratch (deletes existing data)
+  - **Without this flag:** Only processes new or changed files (incremental mode)
+  - **With this flag:** Reprocesses everything (useful for testing or upgrades)
+  
+**Incremental vs Full Seeding:**
+```bash
+# Incremental (recommended for updates) - Only new/changed files
+npx tsx hybrid_fast_seed.ts --dbpath ~/.lance_mcp --filesdir ~/Documents/pdfs
 
-## 🎯 Example Prompts
+# Full (initial setup or rebuild) - Process everything
+npx tsx hybrid_fast_seed.ts --dbpath ~/.lance_mcp --filesdir ~/Documents/pdfs --overwrite
+```
 
-Try these prompts with Claude to explore the functionality:
+**Time savings with incremental:**
+- Initial 100 docs: ~25 minutes + ~$4.80
+- Add 10 new docs: ~3 minutes + ~$0.48 ✨
+- Add 1 new doc: ~15 seconds + ~$0.05 ✨
 
-```plaintext
-"What documents do we have in the catalog?"
-"Find information about Rust programming patterns"
-"What are the main topics covered in the embedded systems book?"
-"Search for design patterns in object-oriented programming"
+## 🎯 Example Queries
+
+**Conceptual search finds documents by meaning, not just keywords:**
+
+```
+"What documents do we have?"
+→ Lists catalog with AI summaries and extracted concepts
+
+"Find information about strategic thinking"
+→ Expands: strategy, tactics, planning, decision making
+→ Finds: All documents with related concepts
+
+"Search for leadership principles"  
+→ Expands: leadership, management, command, authority
+→ Returns: Chunks from ANY document about leadership
+
+"How do threads synchronize?"
+→ Expands: concurrency, mutex, semaphore, locks
+→ Finds: Technical docs even without exact wording
 ```
 
 ## 📝 Available Tools
 
-The server provides these tools for intelligent document interaction:
+The server provides **3 conceptual search tools**:
 
-### 🗂️ Catalog Tools
-- **`catalog_search`**: Search document summaries to find relevant sources
+### 🗂️ `catalog_search`
+Search document summaries to find relevant sources
+- Query expansion with corpus concepts + WordNet
+- Returns: Documents with concept matches and scores
 
-### 📄 Chunks Tools  
-- **`chunks_search`**: Find specific information within a chosen document
-- **`all_chunks_search`**: Search across all documents for detailed information
+### 📄 `chunks_search`  
+Find specific information within a chosen document
+- Requires `source` parameter (document path)
+- Concept-aware search within single document
+
+### 🔍 `broad_chunks_search`
+Search across ALL documents for detailed information
+- Returns: Top 10 most relevant chunks from entire corpus
+- Full conceptual expansion and multi-signal ranking
 
 ## 🏗️ Architecture
 
-### Hybrid Approach (Recommended)
 ```
-Documents → PDF Processing → OpenRouter (Summarization) → Local Embeddings → LanceDB
-```
-
-### Local Approach  
-```
-Documents → PDF Processing → Ollama (Summarization + Embeddings) → LanceDB
+Documents 
+    ↓
+PDF Processing (with OCR fallback)
+    ↓
+┌─────────────────┬───────────────────┐
+│                 │                   │
+Concept          Summary            Chunks
+Extraction       Generation         Creation
+(Sonnet 4.5)     (Grok-4-fast)     (Local)
+    ↓                 ↓                 ↓
+Concepts          Catalog           Chunks
+Table             Table             Table
+    └─────────────────┴───────────────┘
+                      │
+            Conceptual Search Engine
+                 (5 signals)
+                      │
+        ┌─────────────┼─────────────┐
+        │             │             │
+    Corpus        WordNet       Hybrid
+    Concepts      Synonyms      Scoring
 ```
 
 ## 🛠️ Development
 
 ### File Structure
-- `hybrid_fast_seed.ts` - OpenRouter-based seeding (recommended)
-- `src/simple_index.ts` - Ollama-free MCP server  
-- `src/index.ts` - Traditional Ollama-based server
-- `src/seed.ts` - Traditional Ollama-based seeding
+```
+hybrid_fast_seed.ts              # Seeding with concept extraction
+src/
+├── conceptual_index.ts          # MCP server entry point
+├── concepts/                    # Concept extraction & indexing
+│   ├── concept_extractor.ts    # LLM-based extraction
+│   ├── concept_index.ts         # Index builder
+│   ├── query_expander.ts        # Query expansion
+│   └── types.ts                 # Shared types
+├── wordnet/                     # WordNet integration
+│   └── wordnet_service.ts       # Python NLTK bridge
+├── lancedb/                     # Database clients
+│   └── conceptual_search_client.ts  # Search engine
+└── tools/                       # MCP tools
+    └── conceptual_registry.ts   # Tool registry
+```
+
+### Testing
+
+```bash
+# Build project
+npm run build
+
+# Test with MCP Inspector
+npx @modelcontextprotocol/inspector dist/conceptual_index.js ~/.lance_mcp
+
+# Run concept extraction tests
+npx tsx test/conceptual_search_test.ts
+```
 
 ### Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes (ensure no API keys in code!)
-4. Test with both architectures if applicable
+4. Run tests: `npm run build` and verify no errors
 5. Submit a pull request
+
+## 💰 Cost Breakdown
+
+**Seeding costs (OpenRouter):**
+- Concept extraction: ~$0.041/doc (Claude Sonnet 4.5)
+- Summarization: ~$0.007/doc (Grok-4-fast)
+- **Total: ~$0.048 per document**
+
+**For 100 documents: ~$4.80**  
+**For 1,000 documents: ~$48**
+
+**Runtime search:** No additional API calls to OpenRouter (vector search is local)  
+**Note:** When used with AI agents (Cursor, Claude Desktop), the agent incurs costs for processing search results
 
 ## 📜 License
 
