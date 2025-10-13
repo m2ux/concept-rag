@@ -10,7 +10,9 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import * as crypto from 'crypto';
 import { execSync, spawn } from 'child_process';
 import * as os from 'os';
-import * as defaults from './src/config.js'
+import * as defaults from './src/config.js';
+import { ConceptExtractor } from './src/concepts/concept_extractor.js';
+import { ConceptIndexBuilder } from './src/concepts/concept_index.js';
 
 // ASCII progress bar utility with gradual progress for both stages
 function drawProgressBar(stage: 'converting' | 'processing', current: number, total: number, width: number = 40): string {
@@ -71,6 +73,8 @@ console.warn = (...args: any[]) => {
         message.includes('font private use area') ||
         message.includes('private use area') ||
         message.includes('FormatError') ||
+        message.includes('FlateDecode') ||
+        message.includes('Empty') && message.includes('stream') ||
         message.includes('webpack://') ) {
         return; // Suppress these verbose warnings
     }
@@ -83,6 +87,8 @@ console.error = (...args: any[]) => {
     if (message.includes('Ran out of space in font private use area') ||
         message.includes('font private use area') ||
         message.includes('private use area') ||
+        message.includes('FlateDecode') ||
+        message.includes('Empty') && message.includes('stream') ||
         message.includes('Warning:') && message.includes('font')) {
         return; // Suppress these verbose warnings
     }
@@ -95,7 +101,9 @@ console.log = (...args: any[]) => {
     if (message.includes('Warning:') && (
         message.includes('Ran out of space in font private use area') ||
         message.includes('font private use area') ||
-        message.includes('private use area'))) {
+        message.includes('private use area') ||
+        message.includes('FlateDecode') ||
+        message.includes('Empty') && message.includes('stream'))) {
         return; // Suppress these verbose warnings
     }
     originalConsoleLog.apply(console, args);
@@ -141,7 +149,7 @@ async function callOpenRouterChat(text: string): Promise<string> {
             'X-Title': 'Lance MCP Server'
         },
         body: JSON.stringify({
-            model: 'anthropic/claude-3-5-sonnet-20241022',
+            model: 'x-ai/grok-4-fast',  // Grok-4-fast: blazing fast for simple summaries
             messages: [{
                 role: 'user',
                 content: `Write a high-level one sentence content overview based on the text below. WRITE THE CONTENT OVERVIEW ONLY:\n\n${text.slice(0, 8000)}`
@@ -711,6 +719,9 @@ async function processDocuments(rawDocs: Document[]) {
     }, {});
 
     let catalogRecords: Document[] = [];
+    
+    // Initialize concept extractor
+    const conceptExtractor = new ConceptExtractor(process.env.OPENROUTER_API_KEY || '');
 
     for (const [source, docs] of Object.entries(docsBySource)) {
         // Use existing hash from document metadata if available (for consistency)
@@ -725,18 +736,33 @@ async function processDocuments(rawDocs: Document[]) {
         const sourceBasename = path.basename(source);
         
         if (isOcrProcessed) {
-            console.log(`🤖 Generating summary with OpenRouter for: ${sourceBasename} (OCR processed)`);
+            console.log(`🤖 Generating summary + concepts for: ${sourceBasename} (OCR processed)`);
         } else {
-            console.log(`🤖 Generating summary with OpenRouter for: ${sourceBasename}`);
+            console.log(`🤖 Generating summary + concepts for: ${sourceBasename}`);
         }
         
         const contentOverview = await generateContentOverview(docs);
+        
+        // ENHANCED: Extract concepts using LLM
+        const concepts = await conceptExtractor.extractConcepts(docs);
+        console.log(`✅ Found: ${concepts.primary_concepts.length} concepts, ${concepts.technical_terms.length} terms`);
+        
+        // Include concepts in the embedded content for better vector search
+        const enrichedContent = `
+${contentOverview}
+
+Key Concepts: ${concepts.primary_concepts.join(', ')}
+Technical Terms: ${concepts.technical_terms.join(', ')}
+Categories: ${concepts.categories.join(', ')}
+`.trim();
+        
         const catalogRecord = new Document({ 
-            pageContent: contentOverview, 
+            pageContent: enrichedContent, 
             metadata: { 
                 source, 
                 hash,
-                ocr_processed: isOcrProcessed
+                ocr_processed: isOcrProcessed,
+                concepts: concepts  // STORE STRUCTURED CONCEPTS
             } 
         });
         
@@ -808,8 +834,37 @@ async function hybridFastSeed() {
     }
 
     console.log(`Number of new catalog records: ${catalogRecords.length}`);
+    
+    // Build and store concept index
+    if (catalogRecords.length > 0) {
+        console.log("\n🧠 Building concept index from extracted concepts...");
+        const conceptBuilder = new ConceptIndexBuilder();
+        const conceptRecords = await conceptBuilder.buildConceptIndex(catalogRecords);
+        
+        console.log(`✅ Built ${conceptRecords.length} unique concept records`);
+        
+        if (conceptRecords.length > 0) {
+            try {
+                // Drop existing concepts table if overwrite
+                if (overwrite) {
+                    try {
+                        await db.dropTable('concepts');
+                        console.log("  🗑️  Dropped existing concepts table");
+                    } catch (e) {
+                        // Table didn't exist, that's fine
+                    }
+                }
+                
+                await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts');
+                console.log("✅ Concept index created successfully");
+            } catch (error: any) {
+                console.error("⚠️  Error creating concept table:", error.message);
+                console.log("  Continuing with seeding...");
+            }
+        }
+    }
 
-    console.log("🔧 Creating chunks with fast local embeddings...");
+    console.log("\n🔧 Creating chunks with fast local embeddings...");
     const splitter = new RecursiveCharacterTextSplitter({
         chunkSize: 500,
         chunkOverlap: 10,
@@ -821,7 +876,7 @@ async function hybridFastSeed() {
         await createLanceTableWithSimpleEmbeddings(db, docs, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined);
     }
 
-    console.log(`✅ Created ${catalogRecords.length} catalog records`);
+    console.log(`\n✅ Created ${catalogRecords.length} catalog records`);
     console.log(`✅ Created ${docs.length} chunk records`);
     console.log("🎉 Seeding completed successfully!");
 }
