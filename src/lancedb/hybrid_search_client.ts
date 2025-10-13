@@ -42,7 +42,7 @@ function simpleHash(str: string): number {
 }
 
 // BM25-like scoring for text relevance
-function calculateBM25Score(queryTerms: string[], documentText: string, documentSource: string): number {
+export function calculateBM25Score(queryTerms: string[], documentText: string, documentSource: string): number {
     const k1 = 1.5; // Term frequency saturation
     const b = 0.75; // Length normalization
     
@@ -76,7 +76,7 @@ function calculateBM25Score(queryTerms: string[], documentText: string, document
 }
 
 // Extract filename/title from source path
-function extractTitle(sourcePath: string): string {
+export function extractTitle(sourcePath: string): string {
     const parts = sourcePath.split('/');
     const filename = parts[parts.length - 1];
     // Remove file extension and common separators
@@ -89,7 +89,7 @@ function extractTitle(sourcePath: string): string {
 }
 
 // Check if query terms appear in title
-function titleMatchScore(queryTerms: string[], sourcePath: string): number {
+export function titleMatchScore(queryTerms: string[], sourcePath: string): number {
     const title = extractTitle(sourcePath).toLowerCase();
     let score = 0;
     
