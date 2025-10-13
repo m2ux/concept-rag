@@ -29,8 +29,8 @@ A powerful MCP server that enables LLMs to interact with documents through conce
 
 ```bash
 # Clone and install
-git clone https://github.com/m2ux/lance-mcp.git
-cd lance-mcp
+git clone https://github.com/m2ux/concept-rag.git
+cd concept-rag
 npm install
 npm run build
 
