@@ -1,9 +1,7 @@
-# 🧠 Concept RAG
+# 🧠 Concept RAG: Conceptual RAG MCP Server
 
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-blue.svg)](https://nodejs.org/en/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-**Conceptual RAG for Model Context Protocol**
 
 A powerful MCP server that enables LLMs to interact with documents through conceptual search. Combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking powered by LanceDB for superior retrieval accuracy.
 
@@ -16,7 +14,6 @@ A powerful MCP server that enables LLMs to interact with documents through conce
 - ⚡ **Lightning Fast**: Cloud AI + local embeddings, no timeout issues
 - 🛡️ **Robust PDF Handling**: Gracefully handles corrupted files with OCR fallback
 - 📊 **Comprehensive Indexing**: Extracts 100+ concepts per document
-- 🔒 **Security First**: Local storage with secure API key management
 
 ## 🚀 Quick Start
 
@@ -32,7 +29,8 @@ A powerful MCP server that enables LLMs to interact with documents through conce
 ```bash
 # Clone and install
 git clone https://github.com/m2ux/concept-rag.git
-cd lance-mcp
+cd concept-rag
+
 npm install
 npm run build
 
