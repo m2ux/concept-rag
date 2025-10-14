@@ -95,7 +95,7 @@ languages including Java, C++, and Python.
     console.log('-'.repeat(60));
     console.log('  To test query expansion:');
     console.log('  1. Run: npm run build');
-    console.log('  2. Seed database: npx tsx hybrid_fast_seed.ts --dbpath ~/.lance_mcp_test --filesdir ~/Documents/sample-docs --overwrite');
+    console.log('  2. Seed database: npx tsx hybrid_fast_seed.ts --dbpath ~/.concept_rag/test --filesdir ~/Documents/sample-docs --overwrite');
     console.log('  3. Test search with debug: use MCP inspector or Cursor');
     
     // Summary

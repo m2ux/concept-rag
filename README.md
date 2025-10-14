@@ -31,7 +31,7 @@ A powerful MCP server that enables LLMs to interact with documents through conce
 
 ```bash
 # Clone and install
-git clone https://github.com/m2ux/lance-mcp.git
+git clone https://github.com/m2ux/concept-rag.git
 cd lance-mcp
 npm install
 npm run build
@@ -160,11 +160,11 @@ npx tsx hybrid_fast_seed.ts \
    ```json
    {
      "mcpServers": {
-       "lancedb": {
+       "concept-rag": {
          "command": "node",
          "args": [
            "/path/to/your/concept-rag/dist/simple_index.js",
-           "/home/your-username/.lance_mcp"
+           "/home/your-username/.concept_rag"
          ]
        }
      }
@@ -249,10 +249,10 @@ npx tsx hybrid_fast_seed.ts \
 
 ```bash
 # Incremental (recommended for updates) - Only new/changed files
-npx tsx hybrid_fast_seed.ts --dbpath ~/.lance_mcp --filesdir ~/Documents/pdfs
+npx tsx hybrid_fast_seed.ts --dbpath ~/.concept_rag --filesdir ~/Documents/pdfs
 
 # Full (initial setup or rebuild) - Process everything
-npx tsx hybrid_fast_seed.ts --dbpath ~/.lance_mcp --filesdir ~/Documents/pdfs --overwrite
+npx tsx hybrid_fast_seed.ts --dbpath ~/.concept_rag --filesdir ~/Documents/pdfs --overwrite
 ```
 
 **Time savings with incremental:**
