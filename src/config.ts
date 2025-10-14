@@ -2,7 +2,7 @@
 export const CATALOG_TABLE_NAME = "catalog";
 export const CHUNKS_TABLE_NAME = "chunks";
 export const CONCEPTS_TABLE_NAME = "concepts";
-export const DATABASE_URL = "~/.lance_mcp";  // Default database location
+export const DATABASE_URL = "~/.concept_rag";
 
 // OpenRouter configuration
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
