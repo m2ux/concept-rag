@@ -854,16 +854,6 @@ async function hybridFastSeed() {
     }
 
     console.log("🚀 Creating catalog with OpenRouter summaries...");
-    
-    // Check API rate limits before starting
-    const openRouterKey = process.env.OPENROUTER_API_KEY;
-    if (openRouterKey) {
-        const { ConceptExtractor } = await import('./src/concepts/concept_extractor.js');
-        const extractor = new ConceptExtractor(openRouterKey);
-        await extractor.checkRateLimits();
-        console.log(); // Blank line after rate limit info
-    }
-    
     const catalogRecords = await processDocuments(rawDocs);
     
     if (catalogRecords.length > 0) {
