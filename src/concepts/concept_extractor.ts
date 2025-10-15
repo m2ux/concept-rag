@@ -83,52 +83,26 @@ export class ConceptExtractor {
         
         console.log(`  📄 Split into ${chunks.length} chunks for processing`);
         
-        // Generate ONE summary from the beginning of the document
-        console.log(`  📝 Generating document summary from first section...`);
-        const summaryChunk = content.slice(0, Math.min(50000, content.length)); // First 50k chars
-        const documentSummary = await this.generateSummary(summaryChunk);
-        
         const allExtractions: ConceptMetadata[] = [];
         
-        // Extract concepts from each chunk (without generating summaries)
+        // Extract concepts from each chunk
         for (let i = 0; i < chunks.length; i++) {
             console.log(`  🔄 Processing chunk ${i + 1}/${chunks.length}...`);
             const extracted = await this.extractConceptsFromChunk(chunks[i]);
             allExtractions.push(extracted);
         }
         
-        // Merge all extractions with the single document summary
-        return this.mergeConceptExtractions(allExtractions, documentSummary);
+        // Merge all extractions
+        return this.mergeConceptExtractions(allExtractions);
     }
     
-    // Generate summary for a document
-    private async generateSummary(contentSample: string): Promise<string> {
-        const estimatedTokens = Math.ceil(contentSample.length / 4);
-        const contextLimit = 1048576;
-        const maxTokens = Math.min(contextLimit - estimatedTokens - 10000, 2000);
-        
-        const prompt = `Provide a comprehensive 2-3 sentence summary of this document:
-
-${contentSample}
-
-Summary:`;
-        
-        try {
-            const response = await this.callOpenRouter(prompt, maxTokens);
-            return response.trim();
-        } catch (error) {
-            console.warn(`  ⚠️  Summary generation failed, using default`);
-            return 'Document summary unavailable.';
-        }
-    }
-    
-    // Extract concepts from a chunk (no summary generation)
+    // Extract concepts from a chunk
     private async extractConceptsFromChunk(chunk: string): Promise<ConceptMetadata> {
         const estimatedTokens = Math.ceil(chunk.length / 4) + 1000;
         const contextLimit = 1048576;
         const maxTokens = Math.min(contextLimit - estimatedTokens - 10000, 65536);
         
-        const prompt = `Extract concepts from this text as JSON (no summary needed):
+        const prompt = `Extract concepts from this text as JSON:
 
 ${chunk}
 
@@ -165,22 +139,20 @@ Use lowercase. Output only JSON.`;
             return {
                 primary_concepts: concepts.primary_concepts || [],
                 categories: concepts.categories || [],
-                related_concepts: concepts.related_concepts || [],
-                summary: '' // No summary for chunks
+                related_concepts: concepts.related_concepts || []
             };
         } catch (error) {
             console.warn(`  ⚠️  Chunk extraction failed: ${error.message}`);
             return {
                 primary_concepts: [],
                 categories: [],
-                related_concepts: [],
-                summary: ''
+                related_concepts: []
             };
         }
     }
     
     // Merge multiple concept extractions into one
-    private mergeConceptExtractions(extractions: ConceptMetadata[], documentSummary: string): ConceptMetadata {
+    private mergeConceptExtractions(extractions: ConceptMetadata[]): ConceptMetadata {
         const mergedConcepts = new Set<string>();
         const mergedCategories = new Set<string>();
         const mergedRelated = new Set<string>();
@@ -196,8 +168,7 @@ Use lowercase. Output only JSON.`;
         return {
             primary_concepts: Array.from(mergedConcepts),
             categories: Array.from(mergedCategories).slice(0, 7),
-            related_concepts: Array.from(mergedRelated).slice(0, 50),
-            summary: documentSummary
+            related_concepts: Array.from(mergedRelated).slice(0, 50)
         };
     }
     
@@ -212,15 +183,14 @@ Use lowercase. Output only JSON.`;
             65536  // Gemini's actual max output tokens (~65.5k)
         );
         
-        const prompt = `Read this document and extract ALL significant concepts as a JSON object.
+        const prompt = `Extract ALL significant concepts from this document as JSON.
 
 ${contentSample}
 
-Return JSON with these 4 fields:
+Return JSON with these 3 fields:
 1. primary_concepts: Array of 80-150 strings (concepts, methods, ideas, processes from the document)
 2. categories: Array of 3-7 strings (broad domain names)
 3. related_concepts: Array of 20-40 strings (related research topics)
-4. summary: String (2-3 sentences)
 
 Example concepts: "strategic thinking", "complexity theory", "agent-based modeling", "urban scaling"
 Use lowercase. Exclude metadata (page numbers, ISBNs, dates).
@@ -338,8 +308,7 @@ Output complete JSON with ALL fields fully populated:`;
             return {
                 primary_concepts: [],
                 categories: ['General'],
-                related_concepts: [],
-                summary: 'Concept extraction failed for this document.'
+                related_concepts: []
             };
         }
     }
@@ -352,8 +321,8 @@ Output complete JSON with ALL fields fully populated:`;
         console.log(`  📄 Processing full document: ${allContent.length.toLocaleString()} characters (~${Math.round(allContent.length / 4)} tokens)`);
         console.log(`  ✅ Full document content prepared (no sampling)`);
         
-        return allContent;
-    }
+            return allContent;
+        }
     
     private async callOpenRouter(prompt: string, maxTokens: number, retryCount = 0): Promise<string> {
         const maxRetries = 3;
@@ -377,18 +346,18 @@ Output complete JSON with ALL fields fully populated:`;
             console.log(`  🔧 Request details: model=${requestBody.model}, max_tokens=${requestBody.max_tokens}`);
             console.log(`  🔧 Prompt length: ${prompt.length.toLocaleString()} chars`);
             
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${this.openRouterApiKey}`,
-                    'Content-Type': 'application/json',
-                    'HTTP-Referer': 'https://github.com/m2ux/lance-mcp',
-                    'X-Title': 'LanceDB MCP Concept Extraction'
-                },
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${this.openRouterApiKey}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': 'https://github.com/m2ux/lance-mcp',
+                'X-Title': 'LanceDB MCP Concept Extraction'
+            },
                 body: JSON.stringify(requestBody)
-            });
-            
-            if (!response.ok) {
+        });
+        
+        if (!response.ok) {
                 const errorText = await response.text();
                 console.error(`  ❌ OpenRouter API error: ${response.status} ${response.statusText}`);
                 console.error(`  Response: ${errorText.substring(0, 500)}`);
@@ -402,9 +371,9 @@ Output complete JSON with ALL fields fully populated:`;
                     }
                 }
                 
-                throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
-            }
-            
+            throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+        }
+        
             // Try to parse response, handle large responses carefully
             let data;
             try {
@@ -429,12 +398,12 @@ Output complete JSON with ALL fields fully populated:`;
                 }
                 throw parseError;
             }
-            
-            if (!data.choices || data.choices.length === 0) {
+        
+        if (!data.choices || data.choices.length === 0) {
                 console.error('  ❌ No choices in API response:', JSON.stringify(data).substring(0, 500));
-                throw new Error('No response from OpenRouter API');
-            }
-            
+            throw new Error('No response from OpenRouter API');
+        }
+        
             // Debug: Check finish_reason and response content
             const finishReason = data.choices[0].finish_reason;
             const content = data.choices[0].message.content;

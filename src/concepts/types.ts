@@ -24,7 +24,6 @@ export interface ConceptMetadata {
     primary_concepts: string[];         // All important concepts, methods, ideas
     categories: string[];               // 2-3 domains
     related_concepts: string[];         // 3-5 related topics
-    summary: string;                    // Brief description
 }
 
 // Search result with concept scoring

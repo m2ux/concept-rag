@@ -83,8 +83,7 @@ async function extractAndFormatConcepts(documentQuery: string, outputFormat: str
             total_concepts: totalConcepts,
             primary_concepts: concepts.primary_concepts || [],
             related_concepts: concepts.related_concepts || [],
-            categories: concepts.categories || [],
-            summary: concepts.summary || ""
+            categories: concepts.categories || []
         };
         
         fs.writeFileSync(outputPath, JSON.stringify(jsonOutput, null, 2));
@@ -126,12 +125,6 @@ async function extractAndFormatConcepts(documentQuery: string, outputFormat: str
                 markdown += `- ${category}\n`;
             });
             markdown += `\n`;
-        }
-        
-        // Summary
-        if (concepts.summary) {
-            markdown += `## Summary\n\n`;
-            markdown += `${concepts.summary}\n`;
         }
         
         fs.writeFileSync(outputPath, markdown);
