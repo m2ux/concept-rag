@@ -6,7 +6,11 @@ import { createSimpleEmbedding } from "../lancedb/hybrid_search_client.js";
 export class ConceptIndexBuilder {
     
     // Build concept index from documents with metadata
-    async buildConceptIndex(documents: Document[]): Promise<ConceptRecord[]> {
+    // Now also accepts chunks to calculate chunk_count
+    async buildConceptIndex(
+        documents: Document[],
+        chunks?: Document[]
+    ): Promise<ConceptRecord[]> {
         const conceptMap = new Map<string, ConceptRecord>();
         
         console.log('📊 Building concept index from document metadata...');
@@ -20,27 +24,16 @@ export class ConceptIndexBuilder {
             
             const source = doc.metadata.source;
             
-            // Process primary concepts (higher weight)
+            // Process primary concepts (all concepts)
             for (const concept of metadata.primary_concepts || []) {
                 this.addOrUpdateConcept(
                     conceptMap, 
-                    concept, 
+                    concept,
+                    'thematic',  // All concepts are thematic
                     source,
                     metadata.categories[0] || 'General',
                     metadata.related_concepts || [],
-                    2.0  // Primary concepts get double weight
-                );
-            }
-            
-            // Process technical terms (standard weight)
-            for (const term of metadata.technical_terms || []) {
-                this.addOrUpdateConcept(
-                    conceptMap,
-                    term,
-                    source,
-                    metadata.categories[0] || 'Technical',
-                    [],
-                    1.0
+                    1.0  // Standard weight
                 );
             }
         }
@@ -50,12 +43,18 @@ export class ConceptIndexBuilder {
         // Build co-occurrence relationships
         this.enrichWithCoOccurrence(conceptMap, documents);
         
+        // ENHANCED: Calculate chunk_count if chunks are provided
+        if (chunks && chunks.length > 0) {
+            this.calculateChunkCounts(conceptMap, chunks);
+        }
+        
         return Array.from(conceptMap.values());
     }
     
     private addOrUpdateConcept(
         map: Map<string, ConceptRecord>,
         concept: string,
+        conceptType: 'thematic' | 'terminology',
         source: string,
         category: string,
         relatedConcepts: string[],
@@ -68,11 +67,13 @@ export class ConceptIndexBuilder {
         if (!map.has(key)) {
             map.set(key, {
                 concept: key,
+                concept_type: conceptType,  // Store type for differentiated search
                 category,
                 sources: [],
                 related_concepts: [...relatedConcepts.map(c => c.toLowerCase().trim())],
                 embeddings: createSimpleEmbedding(concept),
                 weight: 0,
+                chunk_count: 0,  // ENHANCED: Initialize chunk count
                 enrichment_source: 'corpus'
             });
         }
@@ -109,10 +110,9 @@ export class ConceptIndexBuilder {
             if (!metadata) continue;
             
             // Collect all terms from this document
-            const allTerms = [
-                ...(metadata.primary_concepts || []),
-                ...(metadata.technical_terms || [])
-            ].map(t => t.toLowerCase().trim()).filter(t => t);
+            const allTerms = (metadata.primary_concepts || [])
+                .map(t => t.toLowerCase().trim())
+                .filter(t => t);
             
             // Count co-occurrences (undirected graph)
             for (let i = 0; i < allTerms.length; i++) {
@@ -166,6 +166,40 @@ export class ConceptIndexBuilder {
         console.log(`  ✅ Enriched ${enrichedCount} concepts with co-occurrence data`);
     }
     
+    // ENHANCED: Calculate how many chunks reference each concept
+    private calculateChunkCounts(
+        conceptMap: Map<string, ConceptRecord>,
+        chunks: Document[]
+    ) {
+        console.log('  📊 Calculating chunk counts for concepts...');
+        
+        const chunkCounts = new Map<string, number>();
+        
+        // Count chunks for each concept
+        for (const chunk of chunks) {
+            const chunkConcepts = chunk.metadata.concepts as string[] || [];
+            
+            for (const concept of chunkConcepts) {
+                const key = concept.toLowerCase().trim();
+                if (key) {
+                    chunkCounts.set(key, (chunkCounts.get(key) || 0) + 1);
+                }
+            }
+        }
+        
+        // Update concept records with chunk counts
+        let updatedCount = 0;
+        for (const [concept, count] of chunkCounts.entries()) {
+            const record = conceptMap.get(concept);
+            if (record) {
+                record.chunk_count = count;
+                updatedCount++;
+            }
+        }
+        
+        console.log(`  ✅ Updated ${updatedCount} concepts with chunk counts`);
+    }
+    
     // Create LanceDB table for concepts
     async createConceptTable(
         db: lancedb.Connection,
@@ -176,6 +210,7 @@ export class ConceptIndexBuilder {
         const data = concepts.map((concept, idx) => ({
             id: idx.toString(),
             concept: concept.concept,
+            concept_type: concept.concept_type,  // Include type for filtering
             category: concept.category,
             sources: JSON.stringify(concept.sources),
             related_concepts: JSON.stringify(concept.related_concepts),
@@ -183,6 +218,7 @@ export class ConceptIndexBuilder {
             broader_terms: JSON.stringify(concept.broader_terms || []),
             narrower_terms: JSON.stringify(concept.narrower_terms || []),
             weight: concept.weight,
+            chunk_count: concept.chunk_count,  // ENHANCED: Include chunk count
             enrichment_source: concept.enrichment_source,
             vector: concept.embeddings
         }));

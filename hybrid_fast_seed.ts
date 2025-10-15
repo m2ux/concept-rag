@@ -13,6 +13,7 @@ import * as os from 'os';
 import * as defaults from './src/config.js';
 import { ConceptExtractor } from './src/concepts/concept_extractor.js';
 import { ConceptIndexBuilder } from './src/concepts/concept_index.js';
+import { ConceptChunkMatcher } from './src/concepts/concept_chunk_matcher.js';
 
 // ASCII progress bar utility with gradual progress for both stages
 function drawProgressBar(stage: 'converting' | 'processing', current: number, total: number, width: number = 40): string {
@@ -111,7 +112,7 @@ console.log = (...args: any[]) => {
 
 const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: "overwrite"});
 
-const databaseDir = argv["dbpath"] || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".lance_mcp");
+const databaseDir = argv["dbpath"] || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag");
 const filesDir = argv["filesdir"];
 const overwrite = argv["overwrite"];
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
@@ -121,7 +122,7 @@ function validateArgs() {
         console.error("Please provide a directory with files (--filesdir) to process");
         console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [--overwrite]");
         console.error("  --filesdir: Directory containing PDF files to process (required)");
-        console.error("  --dbpath: Database path (optional, defaults to ~/.lance_mcp)");
+        console.error("  --dbpath: Database path (optional, defaults to ~/.concept_rag)");
         console.error("  --overwrite: Overwrite existing database tables (optional)");
         process.exit(1);
     }
@@ -662,14 +663,30 @@ async function createLanceTableWithSimpleEmbeddings(
     console.log(`🔄 Creating simple embeddings for ${documents.length} documents...`);
     
     // Generate fast local embeddings
-    const data = documents.map((doc, i) => ({
-        id: i.toString(),
-        text: doc.pageContent,
-        source: doc.metadata.source || '',
-        hash: doc.metadata.hash || '',
-        loc: JSON.stringify(doc.metadata.loc || {}),
-        vector: createSimpleEmbedding(doc.pageContent)
-    }));
+    // Enhanced: Include concept metadata if present
+    const data = documents.map((doc, i) => {
+        const baseData: any = {
+            id: i.toString(),
+            text: doc.pageContent,
+            source: doc.metadata.source || '',
+            hash: doc.metadata.hash || '',
+            loc: JSON.stringify(doc.metadata.loc || {}),
+            vector: createSimpleEmbedding(doc.pageContent)
+        };
+        
+        // Add concept metadata if present (for chunks)
+        if (doc.metadata.concepts) {
+            baseData.concepts = JSON.stringify(doc.metadata.concepts);
+        }
+        if (doc.metadata.concept_categories) {
+            baseData.concept_categories = JSON.stringify(doc.metadata.concept_categories);
+        }
+        if (doc.metadata.concept_density !== undefined) {
+            baseData.concept_density = doc.metadata.concept_density;
+        }
+        
+        return baseData;
+    });
     
     console.log(`✅ Generated ${data.length} embeddings locally (instant)`);
     
@@ -744,15 +761,27 @@ async function processDocuments(rawDocs: Document[]) {
         const contentOverview = await generateContentOverview(docs);
         
         // ENHANCED: Extract concepts using LLM
-        const concepts = await conceptExtractor.extractConcepts(docs);
-        console.log(`✅ Found: ${concepts.primary_concepts.length} concepts, ${concepts.technical_terms.length} terms`);
+        let concepts;
+        try {
+            concepts = await conceptExtractor.extractConcepts(docs);
+            console.log(`✅ Found: ${concepts.primary_concepts.length} concepts`);
+        } catch (error) {
+            console.error(`❌ Concept extraction failed for ${sourceBasename}:`, error.message);
+            // Use empty concepts if extraction fails
+            concepts = {
+                primary_concepts: [],
+                categories: ['General'],
+                related_concepts: [],
+                summary: contentOverview
+            };
+            console.log(`⚠️  Continuing with empty concepts for this document`);
+        }
         
         // Include concepts in the embedded content for better vector search
         const enrichedContent = `
 ${contentOverview}
 
 Key Concepts: ${concepts.primary_concepts.join(', ')}
-Technical Terms: ${concepts.technical_terms.join(', ')}
 Categories: ${concepts.categories.join(', ')}
 `.trim();
         
@@ -826,6 +855,16 @@ async function hybridFastSeed() {
     }
 
     console.log("🚀 Creating catalog with OpenRouter summaries...");
+    
+    // Check API rate limits before starting
+    const openRouterKey = process.env.OPENROUTER_API_KEY;
+    if (openRouterKey) {
+        const { ConceptExtractor } = await import('./src/concepts/concept_extractor.js');
+        const extractor = new ConceptExtractor(openRouterKey);
+        await extractor.checkRateLimits();
+        console.log(); // Blank line after rate limit info
+    }
+    
     const catalogRecords = await processDocuments(rawDocs);
     
     if (catalogRecords.length > 0) {
@@ -835,13 +874,98 @@ async function hybridFastSeed() {
 
     console.log(`Number of new catalog records: ${catalogRecords.length}`);
     
-    // Build and store concept index
+    // Build and store concept index (moved to after chunk creation for chunk_count)
+    // We'll create chunks first, then build concept index with chunk stats
+
+    console.log("\n🔧 Creating chunks with fast local embeddings...");
+    const splitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 500,
+        chunkOverlap: 10,
+    });
+    const docs = await splitter.splitDocuments(rawDocs);
+    
+    // ENHANCED: Enrich chunks with concept metadata
+    if (catalogRecords.length > 0 && docs.length > 0) {
+        console.log("\n🧠 Enriching chunks with concept metadata...");
+        
+        // Create a map of source -> concepts
+        const sourceConceptsMap = new Map<string, any>();
+        for (const catalogRecord of catalogRecords) {
+            if (catalogRecord.metadata.concepts) {
+                sourceConceptsMap.set(
+                    catalogRecord.metadata.source,
+                    catalogRecord.metadata.concepts
+                );
+            }
+        }
+        
+        // Enrich each chunk with concepts from its source document
+        const matcher = new ConceptChunkMatcher();
+        let enrichedCount = 0;
+        
+        for (const chunk of docs) {
+            const source = chunk.metadata.source;
+            const documentConcepts = sourceConceptsMap.get(source);
+            
+            if (documentConcepts) {
+                const matched = matcher.matchConceptsToChunk(
+                    chunk.pageContent,
+                    documentConcepts
+                );
+                
+                // Add concept metadata to chunk
+                chunk.metadata.concepts = matched.concepts;
+                chunk.metadata.concept_categories = matched.categories;
+                chunk.metadata.concept_density = matched.density;
+                
+                if (matched.concepts.length > 0) {
+                    enrichedCount++;
+                }
+            }
+        }
+        
+        const stats = matcher.getMatchingStats(
+            docs.filter(d => d.metadata.concepts).map(d => ({
+                text: d.pageContent,
+                source: d.metadata.source || '',
+                concepts: d.metadata.concepts || [],
+                concept_categories: d.metadata.concept_categories || [],
+                concept_density: d.metadata.concept_density || 0
+            }))
+        );
+        
+        console.log(`✅ Enriched ${enrichedCount} chunks with concepts`);
+        console.log(`  📊 Stats: ${stats.chunksWithConcepts} chunks with concepts, avg ${stats.avgConceptsPerChunk.toFixed(1)} concepts/chunk`);
+        if (stats.topConcepts.length > 0) {
+            console.log(`  🔝 Top concepts: ${stats.topConcepts.slice(0, 5).map(c => c.concept).join(', ')}`);
+        }
+    }
+    
+    if (docs.length > 0) {
+        console.log(`📊 Processing ${docs.length} chunks...`);
+        await createLanceTableWithSimpleEmbeddings(db, docs, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined);
+    }
+
+    // ENHANCED: Build concept index with chunk statistics
     if (catalogRecords.length > 0) {
-        console.log("\n🧠 Building concept index from extracted concepts...");
+        console.log("\n🧠 Building concept index with chunk statistics...");
         const conceptBuilder = new ConceptIndexBuilder();
-        const conceptRecords = await conceptBuilder.buildConceptIndex(catalogRecords);
+        const conceptRecords = await conceptBuilder.buildConceptIndex(catalogRecords, docs);
         
         console.log(`✅ Built ${conceptRecords.length} unique concept records`);
+        
+        // Log concepts with highest chunk counts
+        const topConceptsByChunks = conceptRecords
+            .filter(c => c.chunk_count > 0)
+            .sort((a, b) => b.chunk_count - a.chunk_count)
+            .slice(0, 5);
+        
+        if (topConceptsByChunks.length > 0) {
+            console.log(`  🔝 Top concepts by chunk count:`);
+            topConceptsByChunks.forEach(c => {
+                console.log(`    • "${c.concept}" appears in ${c.chunk_count} chunks`);
+            });
+        }
         
         if (conceptRecords.length > 0) {
             try {
@@ -862,18 +986,6 @@ async function hybridFastSeed() {
                 console.log("  Continuing with seeding...");
             }
         }
-    }
-
-    console.log("\n🔧 Creating chunks with fast local embeddings...");
-    const splitter = new RecursiveCharacterTextSplitter({
-        chunkSize: 500,
-        chunkOverlap: 10,
-    });
-    const docs = await splitter.splitDocuments(rawDocs);
-    
-    if (docs.length > 0) {
-        console.log(`📊 Processing ${docs.length} chunks...`);
-        await createLanceTableWithSimpleEmbeddings(db, docs, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined);
     }
 
     console.log(`\n✅ Created ${catalogRecords.length} catalog records`);

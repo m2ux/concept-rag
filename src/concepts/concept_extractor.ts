@@ -4,86 +4,339 @@ import { ConceptMetadata } from "./types.js";
 export class ConceptExtractor {
     
     private openRouterApiKey: string;
+    private lastRequestTime: number = 0;
+    private minRequestInterval: number = 3000; // 3 seconds between requests
     
     constructor(apiKey: string) {
         this.openRouterApiKey = apiKey;
     }
     
+    private async rateLimitDelay(): Promise<void> {
+        const now = Date.now();
+        const timeSinceLastRequest = now - this.lastRequestTime;
+        if (timeSinceLastRequest < this.minRequestInterval) {
+            const delayNeeded = this.minRequestInterval - timeSinceLastRequest;
+            console.log(`  ⏱️  Rate limiting: waiting ${Math.round(delayNeeded/1000)}s before next request...`);
+            await new Promise(resolve => setTimeout(resolve, delayNeeded));
+        }
+        this.lastRequestTime = Date.now();
+    }
+    
+    async checkRateLimits(): Promise<void> {
+        try {
+            const response = await fetch('https://openrouter.ai/api/v1/key', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${this.openRouterApiKey}`
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const { limit_remaining, usage_daily, is_free_tier } = data.data;
+                
+                console.log(`  💳 Rate limit status:`);
+                if (limit_remaining !== null) {
+                    console.log(`     Credits remaining: ${limit_remaining}`);
+                } else {
+                    console.log(`     Credits: Unlimited`);
+                }
+                console.log(`     Usage today: ${usage_daily || 0}`);
+                console.log(`     Free tier: ${is_free_tier ? 'Yes' : 'No'}`);
+                
+                if (limit_remaining !== null && limit_remaining < 1) {
+                    console.warn(`  ⚠️  WARNING: Low/no credits remaining!`);
+                }
+            }
+        } catch (error) {
+            // Don't fail extraction if rate limit check fails
+            console.warn(`  ⚠️  Could not check rate limits: ${error}`);
+        }
+    }
+    
     // Extract concepts from document using LLM
     async extractConcepts(docs: Document[]): Promise<ConceptMetadata> {
-        const contentSample = this.sampleContent(docs);
+        const fullContent = this.sampleContent(docs);
+        const estimatedTokens = Math.ceil(fullContent.length / 4);
         
-        const prompt = `You are an exhaustive document analyzer. Extract EVERY significant concept from this document for semantic search. Be extremely thorough - this is for building a comprehensive search index.
+        // Split large documents (>100k tokens) into multiple chunks
+        const tokenLimit = 100000; // 100k token limit for splitting
+        
+        if (estimatedTokens > tokenLimit) {
+            console.log(`  📚 Large document (${estimatedTokens.toLocaleString()} tokens) - splitting into chunks...`);
+            return await this.extractConceptsMultiPass(fullContent, tokenLimit);
+        }
+        
+        // Regular extraction for smaller documents
+        return await this.extractConceptsSinglePass(fullContent);
+    }
+    
+    // Multi-pass extraction for large documents
+    private async extractConceptsMultiPass(content: string, tokenLimit: number): Promise<ConceptMetadata> {
+        const charsPerToken = 4;
+        const charLimit = tokenLimit * charsPerToken; // ~400k chars per chunk
+        
+        const chunks: string[] = [];
+        for (let i = 0; i < content.length; i += charLimit) {
+            chunks.push(content.slice(i, i + charLimit));
+        }
+        
+        console.log(`  📄 Split into ${chunks.length} chunks for processing`);
+        
+        // Generate ONE summary from the beginning of the document
+        console.log(`  📝 Generating document summary from first section...`);
+        const summaryChunk = content.slice(0, Math.min(50000, content.length)); // First 50k chars
+        const documentSummary = await this.generateSummary(summaryChunk);
+        
+        const allExtractions: ConceptMetadata[] = [];
+        
+        // Extract concepts from each chunk (without generating summaries)
+        for (let i = 0; i < chunks.length; i++) {
+            console.log(`  🔄 Processing chunk ${i + 1}/${chunks.length}...`);
+            const extracted = await this.extractConceptsFromChunk(chunks[i]);
+            allExtractions.push(extracted);
+        }
+        
+        // Merge all extractions with the single document summary
+        return this.mergeConceptExtractions(allExtractions, documentSummary);
+    }
+    
+    // Generate summary for a document
+    private async generateSummary(contentSample: string): Promise<string> {
+        const estimatedTokens = Math.ceil(contentSample.length / 4);
+        const contextLimit = 1048576;
+        const maxTokens = Math.min(contextLimit - estimatedTokens - 10000, 2000);
+        
+        const prompt = `Provide a comprehensive 2-3 sentence summary of this document:
 
-Document Content:
 ${contentSample}
 
-Return a JSON object with:
-1. "primary_concepts": [MINIMUM 40, TARGET 60+ high-level topics/themes - extract EVERYTHING discussed, no matter how briefly]
-2. "technical_terms": [MINIMUM 60, TARGET 100+ specific terms, methodologies, theories, names, or specialized vocabulary - list EVERY significant term you encounter]
-3. "categories": [3-7 broad domains/fields this document relates to]
-4. "related_concepts": [MINIMUM 20, TARGET 30+ topics someone researching this would also explore]
-5. "summary": "2-3 sentence overview"
-
-TARGET: 120-200+ TOTAL ITEMS across all categories
-
-CRITICAL - Be EXHAUSTIVE, not selective:
-- Extract EVERY concept, no matter how minor
-- Include ALL proper names (authors, theories, movements, people, places)
-- Include ALL methodologies, frameworks, and systems mentioned
-- Include ALL philosophical, theoretical, and practical concepts
-- Include ALL domain-specific terminology and jargon
-- Include variations and related forms (e.g., "strategy", "strategic", "strategist")
-- If the document has 100+ concepts, extract all 100+
-- Better to over-extract than miss anything
-
-Example output for a philosophy/strategy book (showing EXHAUSTIVE extraction):
-{
-  "primary_concepts": ["military strategy", "tactical planning", "strategic thinking", "competitive advantage", "deception tactics", "terrain analysis", "leadership principles", "force deployment", "situational awareness", "adaptive strategy", "resource management", "psychological warfare", "timing and opportunity", "intelligence gathering", "organizational structure", "battlefield dynamics", "strategic positioning", "defensive strategy", "offensive operations", "alliance building", "enemy assessment", "morale management", "supply chain logistics", "communication systems", "command hierarchy", "tactical flexibility", "strategic patience", "environmental factors", "risk assessment", "contingency planning", "victory conditions", "defeat prevention", "force composition", "training methodologies", "historical analysis", "comparative strategy", "ethical considerations", "political context", "economic factors", "technological advantages"],
-  "technical_terms": ["flanking maneuver", "strategic positioning", "tactical retreat", "force multiplier", "center of gravity", "lines of communication", "fog of war", "strategic depth", "operational tempo", "asymmetric warfare", "attrition strategy", "maneuver warfare", "strategic surprise", "defensive perimeter", "offensive momentum", "calculated risk", "strategic initiative", "tactical flexibility", "organizational culture", "command structure", "battlefield geometry", "strategic deception", "operational security", "force concentration", "strategic patience", "pincer movement", "feint", "envelopment", "breakthrough", "encirclement", "retreat", "advance", "reconnaissance", "surveillance", "intelligence", "counterintelligence", "propaganda", "morale", "discipline", "training", "drill", "logistics", "supply lines", "reinforcements", "reserves", "vanguard", "rearguard", "scouts", "messengers", "signals", "fortifications", "siegecraft", "ambush", "raid", "skirmish", "engagement", "battle", "campaign", "war", "peace", "treaty", "alliance", "coalition", "terrain", "weather", "season", "climate", "geography", "topography", "mountains", "rivers", "plains", "forests", "cities", "fortresses", "roads", "passes", "bridges", "weapons", "armor", "cavalry", "infantry", "archers", "artillery", "navy", "militia", "mercenaries", "generals", "officers", "soldiers", "spies", "diplomats"],
-  "categories": ["Military Strategy", "Philosophy", "Leadership", "Organizational Theory", "Decision Making", "History", "Political Science"],
-  "related_concepts": ["game theory", "organizational behavior", "competitive strategy", "strategic management", "decision theory", "risk management", "systems thinking", "complexity theory", "negotiation tactics", "conflict resolution", "power dynamics", "strategic communication", "resource allocation", "game theory", "prisoner's dilemma", "zero-sum games", "coalition formation", "strategic alliances", "competitive intelligence", "scenario planning", "strategic foresight", "operational excellence"],
-  "summary": "This document covers military strategy and tactical principles applicable to competitive situations, emphasizing adaptability, strategic thinking, and understanding of environmental factors in achieving objectives."
-}
-
-MANDATORY REQUIREMENTS:
-- Use lowercase for concepts and terms
-- MINIMUM 120 total items, TARGET 200+ across all categories
-- If you extract fewer than 100 items, you have failed - go back and extract more
-- Include EVERY name, theory, methodology, framework, person, place, event, concept
-- Extract EVERYTHING - even tangentially related concepts
-- Break down compound concepts into individual terms
-- Include synonyms and variations (e.g., "strategy", "strategic planning", "strategic thinking")
-- Extract from the ENTIRE sample provided (beginning, middle, end)
-- When in doubt, ALWAYS include it - over-extraction is desired
-
-Return ONLY the JSON object, no markdown formatting or explanation.`;
+Summary:`;
         
         try {
-            const response = await this.callOpenRouter(prompt);
+            const response = await this.callOpenRouter(prompt, maxTokens);
+            return response.trim();
+        } catch (error) {
+            console.warn(`  ⚠️  Summary generation failed, using default`);
+            return 'Document summary unavailable.';
+        }
+    }
+    
+    // Extract concepts from a chunk (no summary generation)
+    private async extractConceptsFromChunk(chunk: string): Promise<ConceptMetadata> {
+        const estimatedTokens = Math.ceil(chunk.length / 4) + 1000;
+        const contextLimit = 1048576;
+        const maxTokens = Math.min(contextLimit - estimatedTokens - 10000, 65536);
+        
+        const prompt = `Extract concepts from this text as JSON (no summary needed):
+
+${chunk}
+
+Return JSON:
+{
+  "primary_concepts": ["80-150 concepts, methods, ideas"],
+  "categories": ["3-7 domains"],
+  "related_concepts": ["20-40 related topics"]
+}
+
+Use lowercase. Output only JSON.`;
+        
+        try {
+            const response = await this.callOpenRouter(prompt, maxTokens);
             
-            // Try to parse JSON, handling markdown code blocks if present
+            // Save debug file
+            const timestamp = Date.now();
+            const debugFile = `debug_chunk_${timestamp}.txt`;
+            await import('fs').then(fs => {
+                fs.promises.writeFile(debugFile, response, 'utf-8').catch(() => {});
+            });
+            
+            // Parse response
             let jsonText = response.trim();
-            
-            // Remove markdown code blocks if present
-            if (jsonText.startsWith('```')) {
-                jsonText = jsonText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+            if (jsonText.includes('```')) {
+                const jsonMatch = jsonText.match(/```json?\s*([\s\S]*?)\s*```/);
+                if (jsonMatch) {
+                    jsonText = jsonMatch[1].trim();
+                }
             }
             
             const concepts = JSON.parse(jsonText);
             
-            // Validate structure
-            if (!concepts.primary_concepts || !concepts.technical_terms || !concepts.categories) {
-                throw new Error('Invalid concept structure returned from LLM');
+            return {
+                primary_concepts: concepts.primary_concepts || [],
+                categories: concepts.categories || [],
+                related_concepts: concepts.related_concepts || [],
+                summary: '' // No summary for chunks
+            };
+        } catch (error) {
+            console.warn(`  ⚠️  Chunk extraction failed: ${error.message}`);
+            return {
+                primary_concepts: [],
+                categories: [],
+                related_concepts: [],
+                summary: ''
+            };
+        }
+    }
+    
+    // Merge multiple concept extractions into one
+    private mergeConceptExtractions(extractions: ConceptMetadata[], documentSummary: string): ConceptMetadata {
+        const mergedConcepts = new Set<string>();
+        const mergedCategories = new Set<string>();
+        const mergedRelated = new Set<string>();
+        
+        for (const extraction of extractions) {
+            extraction.primary_concepts.forEach(c => mergedConcepts.add(c.toLowerCase()));
+            extraction.categories.forEach(c => mergedCategories.add(c));
+            extraction.related_concepts.forEach(c => mergedRelated.add(c.toLowerCase()));
+        }
+        
+        console.log(`  ✅ Merged: ${mergedConcepts.size} unique concepts from ${extractions.length} chunks`);
+        
+        return {
+            primary_concepts: Array.from(mergedConcepts),
+            categories: Array.from(mergedCategories).slice(0, 7),
+            related_concepts: Array.from(mergedRelated).slice(0, 50),
+            summary: documentSummary
+        };
+    }
+    
+    // Single-pass extraction for regular documents
+    private async extractConceptsSinglePass(contentSample: string): Promise<ConceptMetadata> {
+        // Calculate appropriate max_tokens based on input size
+        // Gemini 2.5 Flash has 1M context total (input + output must fit)
+        const estimatedInputTokens = Math.ceil(contentSample.length / 4) + 2000; // ~4 chars per token + prompt overhead
+        const contextLimit = 1048576; // 1M tokens total
+        const dynamicMaxTokens = Math.min(
+            contextLimit - estimatedInputTokens - 10000, // Reserve buffer
+            65536  // Gemini's actual max output tokens (~65.5k)
+        );
+        
+        const prompt = `Read this document and extract ALL significant concepts as a JSON object.
+
+${contentSample}
+
+Return JSON with these 4 fields:
+1. primary_concepts: Array of 80-150 strings (concepts, methods, ideas, processes from the document)
+2. categories: Array of 3-7 strings (broad domain names)
+3. related_concepts: Array of 20-40 strings (related research topics)
+4. summary: String (2-3 sentences)
+
+Example concepts: "strategic thinking", "complexity theory", "agent-based modeling", "urban scaling"
+Use lowercase. Exclude metadata (page numbers, ISBNs, dates).
+
+Output complete JSON with ALL fields fully populated:`;
+        
+        try {
+            const response = await this.callOpenRouter(prompt, dynamicMaxTokens);
+            
+            // Save raw response to file for debugging
+            const timestamp = Date.now();
+            const debugFile = `debug_response_${timestamp}.txt`;
+            await import('fs').then(fs => {
+                fs.promises.writeFile(debugFile, response, 'utf-8').catch(err => 
+                    console.warn(`  ⚠️  Could not save debug file: ${err.message}`)
+                );
+            });
+            console.log(`  💾 Saved raw response to: ${debugFile}`);
+            
+            // Try to parse JSON, handling markdown code blocks
+            let jsonText = response.trim();
+            
+            // Remove markdown code blocks if present
+            if (jsonText.includes('```')) {
+                // Extract JSON from markdown code blocks
+                const jsonMatch = jsonText.match(/```json?\s*([\s\S]*?)\s*```/);
+                if (jsonMatch) {
+                    jsonText = jsonMatch[1].trim();
+                } else {
+                    // Fallback: remove all ``` markers
+                    jsonText = jsonText.replace(/```json?\s*/g, '').replace(/```\s*/g, '').trim();
+                }
             }
+            
+            // Validate JSON ends properly (light check only)
+            if (!jsonText.endsWith('}') && !jsonText.endsWith('"}')) {
+                console.warn('  ⚠️  JSON response appears truncated, attempting recovery...');
+                console.warn(`  📝 Last 200 chars: "${jsonText.slice(-200).replace(/\n/g, '\\n')}"`);
+                
+                // Find the last complete array or string field
+                let recovered = false;
+                let closedJson = jsonText;
+                
+                // Try to close incomplete array item
+                const lastQuote = jsonText.lastIndexOf('"');
+                const lastComma = jsonText.lastIndexOf(',');
+                const lastBracket = jsonText.lastIndexOf('[');
+                const lastArrayClose = jsonText.lastIndexOf(']');
+                
+                if (lastQuote > lastArrayClose && lastQuote > lastComma) {
+                    // We're in the middle of a string, close it
+                    closedJson = jsonText.substring(0, lastComma > lastArrayClose ? lastComma : lastQuote + 1);
+                }
+                
+                // Find last complete field and close arrays/object
+                const lastCompleteArray = closedJson.lastIndexOf('"]');
+                const lastCompleteSummary = closedJson.lastIndexOf('"summary":');
+                
+                if (lastCompleteArray > 0 || lastCompleteSummary > 0) {
+                    const cutPoint = Math.max(lastCompleteArray + 2, lastCompleteSummary > 0 ? closedJson.indexOf('\n', lastCompleteSummary) : 0);
+                    if (cutPoint > 0) {
+                        closedJson = closedJson.substring(0, cutPoint);
+                        // Close any open arrays
+                        const openBrackets = (closedJson.match(/\[/g) || []).length;
+                        const closeBrackets = (closedJson.match(/\]/g) || []).length;
+                        for (let i = 0; i < openBrackets - closeBrackets; i++) {
+                            closedJson += '\n  ]';
+                        }
+                        closedJson += '\n}';
+                        console.warn('  ✅ Recovered truncated JSON by closing incomplete structures');
+                        jsonText = closedJson;
+                        recovered = true;
+                    }
+                }
+                
+                if (!recovered) {
+                    console.error('  ❌ Cannot recover JSON - will retry with smaller chunk');
+                    // Save last 200 chars for debugging
+                    console.error(`  📝 JSON ended with: ...${jsonText.slice(-100)}`);
+                    throw new Error('JSON response truncated and unrecoverable');
+                }
+            }
+            
+            const concepts = JSON.parse(jsonText);
+            
+            // Debug: Show what fields were actually returned
+            const returnedFields = Object.keys(concepts);
+            console.log(`  🔍 Returned fields: ${returnedFields.join(', ')}`);
+            
+            // Ensure all fields exist and fix structure if needed
+            if (!concepts.primary_concepts) {
+                console.warn('  ⚠️  Missing primary_concepts, using empty array');
+                concepts.primary_concepts = [];
+            }
+            if (!concepts.categories) {
+                console.warn('  ⚠️  Missing categories, using default');
+                concepts.categories = ['General'];
+            }
+            if (!concepts.related_concepts) {
+                concepts.related_concepts = [];
+            }
+            if (!concepts.summary) {
+                concepts.summary = 'No summary available.';
+            }
+            
+            console.log(`  ✅ Parsed: ${concepts.primary_concepts.length} concepts, ${concepts.categories.length} categories`);
             
             return concepts as ConceptMetadata;
         } catch (error) {
             console.error('Concept extraction error:', error);
+            if (error instanceof Error && error.message.includes('Unterminated string')) {
+                console.error('  💡 Tip: JSON response was truncated. Try increasing max_tokens or reducing document size.');
+            }
             // Return empty structure as fallback
             return {
                 primary_concepts: [],
-                technical_terms: [],
                 categories: ['General'],
                 related_concepts: [],
                 summary: 'Concept extraction failed for this document.'
@@ -92,55 +345,126 @@ Return ONLY the JSON object, no markdown formatting or explanation.`;
     }
     
     private sampleContent(docs: Document[]): string {
-        // Take more content from beginning, middle, and end for exhaustive coverage
+        // Process ENTIRE document - no sampling
+        // Models have large context windows and can handle full books
         const allContent = docs.map(d => d.pageContent).join('\n\n');
-        const totalLength = allContent.length;
         
-        if (totalLength <= 10000) {
-            // Small/medium document, use all of it
-            return allContent;
-        }
+        console.log(`  📄 Processing full document: ${allContent.length.toLocaleString()} characters (~${Math.round(allContent.length / 4)} tokens)`);
+        console.log(`  ✅ Full document content prepared (no sampling)`);
         
-        // Large document: sample more extensively - beginning (4000), middle (3000), end (2000)
-        const beginning = allContent.slice(0, 4000);
-        const middleStart = Math.floor(totalLength / 2) - 1500;
-        const middle = allContent.slice(middleStart, middleStart + 3000);
-        const end = allContent.slice(-2000);
-        
-        return `${beginning}\n\n[... middle section ...]\n\n${middle}\n\n[... end section ...]\n\n${end}`;
+        return allContent;
     }
     
-    private async callOpenRouter(prompt: string): Promise<string> {
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${this.openRouterApiKey}`,
-                'Content-Type': 'application/json',
-                'HTTP-Referer': 'https://github.com/m2ux/lance-mcp',
-                'X-Title': 'LanceDB MCP Concept Extraction'
-            },
-            body: JSON.stringify({
-                model: 'anthropic/claude-sonnet-4.5',  // Latest Sonnet (Sep 2025) - best for comprehensive concept extraction
-                messages: [{
-                    role: 'user',
-                    content: prompt
-                }],
-                temperature: 0.2,  // Very low temperature for thorough, systematic extraction
-                max_tokens: 4000  // Increased for exhaustive concept extraction (120-200+ concepts)
-            })
-        });
+    private async callOpenRouter(prompt: string, maxTokens: number, retryCount = 0): Promise<string> {
+        const maxRetries = 3;
         
-        if (!response.ok) {
-            throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+        // Rate limit requests to avoid API throttling
+        await this.rateLimitDelay();
+        
+        try {
+            const requestBody = {
+                model: 'google/gemini-2.5-flash',  // 1M context, excellent at structured output, $0.30/M in, $2.50/M out
+                messages: [
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ],
+                temperature: 0.3,  // Higher temp for more creative/comprehensive extraction
+                max_tokens: maxTokens  // Dynamically calculated based on input size
+            };
+            
+            console.log(`  🔧 Request details: model=${requestBody.model}, max_tokens=${requestBody.max_tokens}`);
+            console.log(`  🔧 Prompt length: ${prompt.length.toLocaleString()} chars`);
+            
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${this.openRouterApiKey}`,
+                    'Content-Type': 'application/json',
+                    'HTTP-Referer': 'https://github.com/m2ux/lance-mcp',
+                    'X-Title': 'LanceDB MCP Concept Extraction'
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`  ❌ OpenRouter API error: ${response.status} ${response.statusText}`);
+                console.error(`  Response: ${errorText.substring(0, 500)}`);
+                
+                // Handle rate limiting specifically
+                if (response.status === 429) {
+                    console.warn(`  🚦 Rate limited! Waiting 10 seconds before retry...`);
+                    if (retryCount < maxRetries) {
+                        await new Promise(resolve => setTimeout(resolve, 10000));
+                        return this.callOpenRouter(prompt, retryCount + 1);
+                    }
+                }
+                
+                throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+            }
+            
+            // Try to parse response, handle large responses carefully
+            let data;
+            try {
+                const responseText = await response.text();
+                console.log(`  📦 Response size: ${responseText.length.toLocaleString()} chars`);
+                
+                // Check for empty response
+                const trimmedResponse = responseText.trim();
+                if (trimmedResponse.length === 0) {
+                    console.error(`  ❌ Response is empty or only whitespace!`);
+                    throw new Error('API returned empty response');
+                }
+                
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error(`  ❌ Failed to parse API response JSON`);
+                if (retryCount < maxRetries) {
+                    const waitTime = 5000 * (retryCount + 1); // 5s, 10s, 15s
+                    console.warn(`  🔄 Retrying (${retryCount + 1}/${maxRetries}) after ${waitTime/1000}s...`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                    return this.callOpenRouter(prompt, retryCount + 1);
+                }
+                throw parseError;
+            }
+            
+            if (!data.choices || data.choices.length === 0) {
+                console.error('  ❌ No choices in API response:', JSON.stringify(data).substring(0, 500));
+                throw new Error('No response from OpenRouter API');
+            }
+            
+            // Debug: Check finish_reason and response content
+            const finishReason = data.choices[0].finish_reason;
+            const content = data.choices[0].message.content;
+            const usage = data.usage;
+            
+            console.log(`  📊 Response stats: ${content.length} chars, finish_reason: ${finishReason}`);
+            if (usage) {
+                console.log(`  📊 Token usage: ${usage.prompt_tokens} in, ${usage.completion_tokens} out`);
+            }
+            
+            if (finishReason === 'length') {
+                console.warn(`  ⚠️  Response stopped due to max_tokens limit!`);
+                console.warn(`  💡 Even with max_tokens=1M, model stopped at ${content.length} chars (~${Math.round(content.length/4)} tokens)`);
+            } else if (finishReason === 'content_filter') {
+                console.error(`  ❌ Response blocked by content filter!`);
+            } else if (finishReason !== 'stop') {
+                console.warn(`  ⚠️  Unexpected finish_reason: ${finishReason}`);
+            }
+            
+            // Check if content is mostly whitespace
+            if (content.trim().length < 100) {
+                console.error(`  ❌ Content is empty or mostly whitespace!`);
+                throw new Error('API returned empty or whitespace-only content');
+            }
+            
+            return content;
+        } catch (error) {
+            console.error('  ❌ OpenRouter API call failed:', error);
+            throw error;
         }
-        
-        const data = await response.json();
-        
-        if (!data.choices || data.choices.length === 0) {
-            throw new Error('No response from OpenRouter API');
-        }
-        
-        return data.choices[0].message.content;
     }
 }
 
