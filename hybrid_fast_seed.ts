@@ -459,7 +459,7 @@ async function generateContentOverview(rawDocs: Document[]): Promise<string> {
     
     try {
         const summary = await callOpenRouterChat(combinedText);
-        console.log(`✅ Summary generated successfully`);
+        console.log(`✅ Content overview generated`);
         return summary;
     } catch (error) {
         console.warn(`⚠️ OpenRouter summarization failed: ${error.message}`);
@@ -753,9 +753,9 @@ async function processDocuments(rawDocs: Document[]) {
         const sourceBasename = path.basename(source);
         
         if (isOcrProcessed) {
-            console.log(`🤖 Generating summary + concepts for: ${sourceBasename} (OCR processed)`);
+            console.log(`🤖 Extracting concepts for: ${sourceBasename} (OCR processed)`);
         } else {
-            console.log(`🤖 Generating summary + concepts for: ${sourceBasename}`);
+            console.log(`🤖 Extracting concepts for: ${sourceBasename}`);
         }
         
         const contentOverview = await generateContentOverview(docs);
@@ -771,8 +771,7 @@ async function processDocuments(rawDocs: Document[]) {
             concepts = {
                 primary_concepts: [],
                 categories: ['General'],
-                related_concepts: [],
-                summary: contentOverview
+                related_concepts: []
             };
             console.log(`⚠️  Continuing with empty concepts for this document`);
         }
