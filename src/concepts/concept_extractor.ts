@@ -16,7 +16,6 @@ export class ConceptExtractor {
         const timeSinceLastRequest = now - this.lastRequestTime;
         if (timeSinceLastRequest < this.minRequestInterval) {
             const delayNeeded = this.minRequestInterval - timeSinceLastRequest;
-            console.log(`  ⏱️  Rate limiting: waiting ${Math.round(delayNeeded/1000)}s before next request...`);
             await new Promise(resolve => setTimeout(resolve, delayNeeded));
         }
         this.lastRequestTime = Date.now();
@@ -35,14 +34,13 @@ export class ConceptExtractor {
                 const data = await response.json();
                 const { limit_remaining, usage_daily, is_free_tier } = data.data;
                 
-                console.log(`  💳 Rate limit status:`);
+                console.log(`💳 API Status:`);
                 if (limit_remaining !== null) {
-                    console.log(`     Credits remaining: ${limit_remaining}`);
+                    console.log(`   Credits: ${limit_remaining}`);
                 } else {
-                    console.log(`     Credits: Unlimited`);
+                    console.log(`   Credits: Unlimited`);
                 }
-                console.log(`     Usage today: ${usage_daily || 0}`);
-                console.log(`     Free tier: ${is_free_tier ? 'Yes' : 'No'}`);
+                console.log(`   Usage today: $${usage_daily || 0}`);
                 
                 if (limit_remaining !== null && limit_remaining < 1) {
                     console.warn(`  ⚠️  WARNING: Low/no credits remaining!`);
@@ -50,7 +48,6 @@ export class ConceptExtractor {
             }
         } catch (error) {
             // Don't fail extraction if rate limit check fails
-            console.warn(`  ⚠️  Could not check rate limits: ${error}`);
         }
     }
     
@@ -118,12 +115,6 @@ Use lowercase. Output only JSON.`;
         try {
             const response = await this.callOpenRouter(prompt, maxTokens);
             
-            // Save debug file
-            const timestamp = Date.now();
-            const debugFile = `debug_chunk_${timestamp}.txt`;
-            await import('fs').then(fs => {
-                fs.promises.writeFile(debugFile, response, 'utf-8').catch(() => {});
-            });
             
             // Parse response
             let jsonText = response.trim();
@@ -200,15 +191,6 @@ Output complete JSON with ALL fields fully populated:`;
         try {
             const response = await this.callOpenRouter(prompt, dynamicMaxTokens);
             
-            // Save raw response to file for debugging
-            const timestamp = Date.now();
-            const debugFile = `debug_response_${timestamp}.txt`;
-            await import('fs').then(fs => {
-                fs.promises.writeFile(debugFile, response, 'utf-8').catch(err => 
-                    console.warn(`  ⚠️  Could not save debug file: ${err.message}`)
-                );
-            });
-            console.log(`  💾 Saved raw response to: ${debugFile}`);
             
             // Try to parse JSON, handling markdown code blocks
             let jsonText = response.trim();
@@ -227,8 +209,7 @@ Output complete JSON with ALL fields fully populated:`;
             
             // Validate JSON ends properly (light check only)
             if (!jsonText.endsWith('}') && !jsonText.endsWith('"}')) {
-                console.warn('  ⚠️  JSON response appears truncated, attempting recovery...');
-                console.warn(`  📝 Last 200 chars: "${jsonText.slice(-200).replace(/\n/g, '\\n')}"`);
+                console.warn('  ⚠️  Attempting to recover truncated JSON...');
                 
                 // Find the last complete array or string field
                 let recovered = false;
@@ -260,50 +241,34 @@ Output complete JSON with ALL fields fully populated:`;
                             closedJson += '\n  ]';
                         }
                         closedJson += '\n}';
-                        console.warn('  ✅ Recovered truncated JSON by closing incomplete structures');
                         jsonText = closedJson;
                         recovered = true;
                     }
                 }
                 
                 if (!recovered) {
-                    console.error('  ❌ Cannot recover JSON - will retry with smaller chunk');
-                    // Save last 200 chars for debugging
-                    console.error(`  📝 JSON ended with: ...${jsonText.slice(-100)}`);
                     throw new Error('JSON response truncated and unrecoverable');
                 }
             }
             
             const concepts = JSON.parse(jsonText);
             
-            // Debug: Show what fields were actually returned
-            const returnedFields = Object.keys(concepts);
-            console.log(`  🔍 Returned fields: ${returnedFields.join(', ')}`);
             
-            // Ensure all fields exist and fix structure if needed
+            // Ensure all fields exist
             if (!concepts.primary_concepts) {
-                console.warn('  ⚠️  Missing primary_concepts, using empty array');
                 concepts.primary_concepts = [];
             }
             if (!concepts.categories) {
-                console.warn('  ⚠️  Missing categories, using default');
                 concepts.categories = ['General'];
             }
             if (!concepts.related_concepts) {
                 concepts.related_concepts = [];
             }
-            if (!concepts.summary) {
-                concepts.summary = 'No summary available.';
-            }
             
-            console.log(`  ✅ Parsed: ${concepts.primary_concepts.length} concepts, ${concepts.categories.length} categories`);
             
             return concepts as ConceptMetadata;
         } catch (error) {
             console.error('Concept extraction error:', error);
-            if (error instanceof Error && error.message.includes('Unterminated string')) {
-                console.error('  💡 Tip: JSON response was truncated. Try increasing max_tokens or reducing document size.');
-            }
             // Return empty structure as fallback
             return {
                 primary_concepts: [],
@@ -318,8 +283,6 @@ Output complete JSON with ALL fields fully populated:`;
         // Models have large context windows and can handle full books
         const allContent = docs.map(d => d.pageContent).join('\n\n');
         
-        console.log(`  📄 Processing full document: ${allContent.length.toLocaleString()} characters (~${Math.round(allContent.length / 4)} tokens)`);
-        console.log(`  ✅ Full document content prepared (no sampling)`);
         
             return allContent;
         }
@@ -343,8 +306,6 @@ Output complete JSON with ALL fields fully populated:`;
                 max_tokens: maxTokens  // Dynamically calculated based on input size
             };
             
-            console.log(`  🔧 Request details: model=${requestBody.model}, max_tokens=${requestBody.max_tokens}`);
-            console.log(`  🔧 Prompt length: ${prompt.length.toLocaleString()} chars`);
             
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
@@ -378,7 +339,6 @@ Output complete JSON with ALL fields fully populated:`;
             let data;
             try {
                 const responseText = await response.text();
-                console.log(`  📦 Response size: ${responseText.length.toLocaleString()} chars`);
                 
                 // Check for empty response
                 const trimmedResponse = responseText.trim();
@@ -404,28 +364,11 @@ Output complete JSON with ALL fields fully populated:`;
             throw new Error('No response from OpenRouter API');
         }
         
-            // Debug: Check finish_reason and response content
-            const finishReason = data.choices[0].finish_reason;
             const content = data.choices[0].message.content;
-            const usage = data.usage;
-            
-            console.log(`  📊 Response stats: ${content.length} chars, finish_reason: ${finishReason}`);
-            if (usage) {
-                console.log(`  📊 Token usage: ${usage.prompt_tokens} in, ${usage.completion_tokens} out`);
-            }
-            
-            if (finishReason === 'length') {
-                console.warn(`  ⚠️  Response stopped due to max_tokens limit!`);
-                console.warn(`  💡 Even with max_tokens=1M, model stopped at ${content.length} chars (~${Math.round(content.length/4)} tokens)`);
-            } else if (finishReason === 'content_filter') {
-                console.error(`  ❌ Response blocked by content filter!`);
-            } else if (finishReason !== 'stop') {
-                console.warn(`  ⚠️  Unexpected finish_reason: ${finishReason}`);
-            }
             
             // Check if content is mostly whitespace
             if (content.trim().length < 100) {
-                console.error(`  ❌ Content is empty or mostly whitespace!`);
+                console.error(`  ❌ Empty response from API`);
                 throw new Error('API returned empty or whitespace-only content');
             }
             
