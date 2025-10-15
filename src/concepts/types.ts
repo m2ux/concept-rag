@@ -1,8 +1,12 @@
 // Shared types for conceptual search system
 
+// Type of concept for differentiated search behavior
+export type ConceptType = 'thematic' | 'terminology';
+
 // Concept extracted from corpus
 export interface ConceptRecord {
     concept: string;                    // "concurrent programming"
+    concept_type: ConceptType;          // thematic (abstract) or terminology (specific)
     category: string;                   // "Software Engineering"
     sources: string[];                  // Documents containing this
     related_concepts: string[];         // Related terms from corpus
@@ -11,13 +15,13 @@ export interface ConceptRecord {
     narrower_terms?: string[];          // From WordNet (hyponyms)
     embeddings: number[];              // Vector representation
     weight: number;                     // Importance (document count)
+    chunk_count?: number;               // Number of chunks containing this concept
     enrichment_source: 'corpus' | 'wordnet' | 'hybrid';
 }
 
 // Concept metadata stored in catalog
 export interface ConceptMetadata {
-    primary_concepts: string[];         // 3-5 main topics
-    technical_terms: string[];          // 5-10 key terms
+    primary_concepts: string[];         // All important concepts, methods, ideas
     categories: string[];               // 2-3 domains
     related_concepts: string[];         // 3-5 related topics
     summary: string;                    // Brief description
@@ -63,6 +67,16 @@ export interface ExpandedQuery {
     wordnet_terms: string[];           // From WordNet
     all_terms: string[];               // Combined
     weights: Map<string, number>;      // Term importance weights
+}
+
+// Chunk with concept metadata attached
+export interface ChunkWithConcepts {
+    text: string;
+    source: string;
+    concepts: string[];                 // Matched concepts for this chunk
+    concept_categories: string[];       // Related categories
+    concept_density: number;            // Conceptual richness score
+    metadata?: any;                     // Original metadata
 }
 
 

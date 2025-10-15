@@ -68,29 +68,39 @@ export class QueryExpander {
             const queryVector = this.createSimpleEmbedding(terms.join(' '));
             const results = await this.conceptTable
                 .vectorSearch(queryVector)
-                .limit(10)
+                .limit(15)  // Increased to get more candidates
                 .toArray();
             
             for (const result of results) {
                 const concept = result.concept.toLowerCase();
+                const conceptType = result.concept_type;  // 'thematic' or 'terminology'
                 const weight = 1 - (result._distance || 0);
                 
-                // Only add if weight is significant
-                if (weight > 0.3 && !expanded.has(concept)) {
-                    expanded.set(concept, weight * 0.8);
-                }
-                
-                // Add related concepts with lower weight
-                try {
-                    const relatedConcepts = JSON.parse(result.related_concepts || '[]');
-                    for (const related of relatedConcepts.slice(0, 3)) {  // Top 3 related
-                        const relatedLower = related.toLowerCase();
-                        if (!expanded.has(relatedLower) && weight > 0.4) {
-                            expanded.set(relatedLower, weight * 0.5);
-                        }
+                // Apply type-specific expansion strategy
+                if (conceptType === 'thematic') {
+                    // Thematic concepts: Aggressive expansion
+                    if (weight > 0.3 && !expanded.has(concept)) {
+                        expanded.set(concept, weight * 0.85);  // Higher weight for thematic
                     }
-                } catch (e) {
-                    // Skip if parsing fails
+                    
+                    // Add related concepts for thematic (they're abstract and benefit from expansion)
+                    try {
+                        const relatedConcepts = JSON.parse(result.related_concepts || '[]');
+                        for (const related of relatedConcepts.slice(0, 4)) {  // Top 4 related
+                            const relatedLower = related.toLowerCase();
+                            if (!expanded.has(relatedLower) && weight > 0.4) {
+                                expanded.set(relatedLower, weight * 0.6);  // Boost related
+                            }
+                        }
+                    } catch (e) {
+                        // Skip if parsing fails
+                    }
+                } else if (conceptType === 'terminology') {
+                    // Terminology: Conservative expansion (only high-confidence matches)
+                    if (weight > 0.6 && !expanded.has(concept)) {  // Higher threshold
+                        expanded.set(concept, weight * 0.7);  // Lower weight boost
+                    }
+                    // Do NOT expand related concepts for terminology (preserve precision)
                 }
             }
         } catch (e: any) {

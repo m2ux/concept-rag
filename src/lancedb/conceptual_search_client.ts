@@ -152,10 +152,9 @@ export class ConceptualSearchClient {
             const metadata = result.concepts;
             if (!metadata) return 0;
             
-            const docConcepts = [
-                ...(metadata.primary_concepts || []),
-                ...(metadata.technical_terms || [])
-            ].map((c: string) => c.toLowerCase());
+            // Get all concepts
+            const allConcepts = (metadata.primary_concepts || [])
+                .map((c: string) => c.toLowerCase());
             
             let matches = 0;
             let weightedScore = 0;
@@ -163,8 +162,8 @@ export class ConceptualSearchClient {
             for (const queryConcept of expanded.all_terms) {
                 const queryWeight = expanded.weights.get(queryConcept) || 0.5;
                 
-                for (const docConcept of docConcepts) {
-                    // Fuzzy matching: partial matches count
+                // Fuzzy matching for all concepts
+                for (const docConcept of allConcepts) {
                     if (docConcept.includes(queryConcept) || queryConcept.includes(docConcept)) {
                         matches++;
                         weightedScore += queryWeight;
@@ -201,15 +200,13 @@ export class ConceptualSearchClient {
             const metadata = result.concepts;
             if (!metadata) return [];
             
-            const docConcepts = [
-                ...(metadata.primary_concepts || []),
-                ...(metadata.technical_terms || [])
-            ];
+            // Get all concepts
+            const allConcepts = metadata.primary_concepts || [];
             
             const matched: string[] = [];
             
             for (const queryConcept of expanded.all_terms) {
-                for (const docConcept of docConcepts) {
+                for (const docConcept of allConcepts) {
                     if (docConcept.toLowerCase().includes(queryConcept) || 
                         queryConcept.includes(docConcept.toLowerCase())) {
                         matched.push(docConcept);

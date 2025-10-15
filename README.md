@@ -219,8 +219,8 @@ npx tsx hybrid_fast_seed.ts \
 **What's created:**
 
 - **Catalog table**: Document summaries with embedded concepts
-- **Chunks table**: Detailed text segments for deep search
-- **Concepts table**: Extracted concepts with co-occurrence relationships
+- **Chunks table**: Detailed text segments with concept metadata (hybrid approach)
+- **Concepts table**: Extracted concepts with chunk statistics and co-occurrence relationships
 
 **Features:**
 
@@ -282,7 +282,7 @@ npx tsx hybrid_fast_seed.ts --dbpath ~/.concept_rag --filesdir ~/Documents/pdfs 
 
 ## 📝 Available Tools
 
-The server provides **3 conceptual search tools**:
+The server provides **5 conceptual search tools**:
 
 ### 🗂️ `catalog_search`
 
@@ -304,6 +304,38 @@ Search across ALL documents for detailed information
 
 - Returns: Top 10 most relevant chunks from entire corpus
 - Full conceptual expansion and multi-signal ranking
+
+### 🎯 `concept_search`
+
+Find all chunks that reference a specific concept
+
+- Search by exact concept name (e.g., "suspicion creation", "military strategy")
+- Returns: All chunks containing the concept, sorted by relevance
+- Shows concept metadata, related concepts, and distribution across documents
+- Requires: Database seeded with hybrid approach (see [HYBRID_APPROACH.md](HYBRID_APPROACH.md))
+
+**Example**: `"Find all chunks about leadership principles"`
+
+### 📤 `extract_concepts` (NEW)
+
+Extract all concepts from a specific document in the database
+
+- **Parameters:**
+  - `document_query`: Search for document by name or topic (e.g., "Sun Tzu Art of War")
+  - `format`: Output format - `json` or `markdown` (default: json)
+  - `include_summary`: Include document summary and categories (default: true)
+- **Returns:** Complete concept list with primary concepts, technical terms, related concepts
+- **Use cases:**
+  - Generate concept maps for documents
+  - Export concepts for external analysis
+  - Review extraction quality
+
+**Example**: `"Extract all concepts from Sun Tzu's Art of War as markdown"`
+
+**Command-line alternative:**
+```bash
+npx tsx scripts/extract_concepts.ts "Sun Tzu" markdown
+```
 
 ## 🏗️ Architecture
 
