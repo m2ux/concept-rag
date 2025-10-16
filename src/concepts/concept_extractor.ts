@@ -110,6 +110,18 @@ Return JSON:
   "related_concepts": ["20-40 related topics"]
 }
 
+EXCLUDE:
+❌ Temporal descriptions (e.g., "periods of heavy recruitment")
+❌ Specific action phrases (e.g., "balancing cohesion with innovation")
+❌ Suppositions (e.g., "attraction for collaborators")
+❌ Generic single words (e.g., "power", "riches", "time", "people")
+❌ Names, dates, metadata
+
+INCLUDE:
+✅ Domain terms (e.g., "speciation", "exaptive bootstrapping")
+✅ Theories, methodologies, processes, phenomena
+✅ Multi-word concepts
+
 Use lowercase. Output only JSON.`;
         
         try {
@@ -118,10 +130,15 @@ Use lowercase. Output only JSON.`;
             
             // Parse response
             let jsonText = response.trim();
+            
+            // Remove markdown code blocks if present
             if (jsonText.includes('```')) {
                 const jsonMatch = jsonText.match(/```json?\s*([\s\S]*?)\s*```/);
                 if (jsonMatch) {
                     jsonText = jsonMatch[1].trim();
+                } else {
+                    // Fallback: remove all ``` markers
+                    jsonText = jsonText.replace(/```json?\s*/g, '').replace(/```\s*/g, '').trim();
                 }
             }
             
@@ -166,12 +183,12 @@ Use lowercase. Output only JSON.`;
     // Single-pass extraction for regular documents
     private async extractConceptsSinglePass(contentSample: string): Promise<ConceptMetadata> {
         // Calculate appropriate max_tokens based on input size
-        // Gemini 2.5 Flash has 1M context total (input + output must fit)
+        // GPT-5 Mini has 400k context total (input + output must fit)
         const estimatedInputTokens = Math.ceil(contentSample.length / 4) + 2000; // ~4 chars per token + prompt overhead
-        const contextLimit = 1048576; // 1M tokens total
+        const contextLimit = 400000; // 400k tokens total
         const dynamicMaxTokens = Math.min(
             contextLimit - estimatedInputTokens - 10000, // Reserve buffer
-            65536  // Gemini's actual max output tokens (~65.5k)
+            16000  // Conservative output limit
         );
         
         const prompt = `Extract ALL significant concepts from this document as JSON.
@@ -183,10 +200,22 @@ Return JSON with these 3 fields:
 2. categories: Array of 3-7 strings (broad domain names)
 3. related_concepts: Array of 20-40 strings (related research topics)
 
-Example concepts: "strategic thinking", "complexity theory", "agent-based modeling", "urban scaling"
-Use lowercase. Exclude metadata (page numbers, ISBNs, dates).
+IMPORTANT - Extract ONLY reusable concepts, theories, and domain knowledge. DO NOT extract:
+❌ Temporal/situational descriptions (e.g., "periods of heavy recruitment", "times of crisis", "early adoption phase")
+❌ Overly specific action phrases (e.g., "balancing broad cohesion with innovation", "managing diverse stakeholders")
+❌ Suppositions or observations (e.g., "attraction for potential collaborators", "tendency toward cooperation")
+❌ Generic common single words (e.g., "power", "riches", "time", "space", "people", "work", "money")
+❌ Names of people, organizations, places, publications
+❌ Dates, page numbers, metadata
 
-Output complete JSON with ALL fields fully populated:`;
+✅ DO extract:
+- Core theories (e.g., "complexity theory", "game theory", "field theory")
+- Methodologies (e.g., "agent-based modeling", "regression analysis", "ethnography")
+- Domain-specific technical terms (e.g., "speciation", "exaptive bootstrapping", "allometric scaling")
+- Multi-word conceptual phrases (e.g., "strategic thinking", "social change", "network formation")
+- Processes and phenomena (e.g., "urban scaling", "emergence", "path dependence")
+
+Use lowercase. Output complete JSON with ALL fields fully populated:`;
         
         try {
             const response = await this.callOpenRouter(prompt, dynamicMaxTokens);
@@ -295,7 +324,7 @@ Output complete JSON with ALL fields fully populated:`;
         
         try {
             const requestBody = {
-                model: 'google/gemini-2.5-flash',  // 1M context, excellent at structured output, $0.30/M in, $2.50/M out
+                model: 'openai/gpt-5-mini',  // 400k context, excellent instruction-following, $0.25/M in, $2/M out
                 messages: [
                     {
                         role: 'user',

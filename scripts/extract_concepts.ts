@@ -3,13 +3,26 @@ import { createSimpleEmbedding } from "../dist/lancedb/hybrid_search_client.js";
 import * as fs from "fs";
 
 /**
- * Generic concept extraction script
+ * Concept extraction script - extracts and formats concepts from indexed documents
+ * 
+ * This script queries the LanceDB catalog for documents and extracts their structured concepts.
+ * Concepts are extracted using the ConceptExtractor during document indexing.
+ * 
  * Usage: npx tsx scripts/extract_concepts.ts <document_query> [output_format]
+ * 
+ * Output formats:
+ *   - markdown (default): Human-readable markdown with tables
+ *   - json: Structured JSON for programmatic use
  * 
  * Examples:
  *   npx tsx scripts/extract_concepts.ts "Sun Tzu Art of War"
  *   npx tsx scripts/extract_concepts.ts "healthcare system" markdown
  *   npx tsx scripts/extract_concepts.ts "Christopher Alexander" json
+ * 
+ * Schema:
+ *   - primary_concepts: Main concepts, methods, and ideas
+ *   - related_concepts: Related topics and themes
+ *   - categories: 2-3 domain categories
  */
 
 const DB_PATH = process.env.CONCEPT_RAG_DB || process.env.HOME + "/.concept_rag";
@@ -40,10 +53,32 @@ async function extractAndFormatConcepts(documentQuery: string, outputFormat: str
         console.log(`  ${idx + 1}. ${filename} (distance: ${distance})`);
     });
     
-    // Use the best match
-    const doc = results[0];
+    // Smart selection: prioritize exact title matches over vector similarity
+    let doc = results[0];
+    
+    // Check if any result has the search query in its filename (case-insensitive)
+    const queryLower = documentQuery.toLowerCase();
+    const queryWords = queryLower.split(/\s+/).filter(w => w.length > 2); // Only words > 2 chars
+    
+    // Look for a document that contains most of the query words in its filename
+    for (const result of results) {
+        const filename = result.source.toLowerCase();
+        const matchCount = queryWords.filter(word => filename.includes(word)).length;
+        
+        // If this document matches more than 50% of query words, prefer it
+        if (matchCount > queryWords.length * 0.5) {
+            doc = result;
+            console.log(`\n🎯 Found exact title match (rank ${results.indexOf(result) + 1}): ${result.source.split('/').pop()}`);
+            break;
+        }
+    }
+    
     const filename = doc.source.split('/').pop();
-    console.log(`\n✅ Selected: ${filename}\n`);
+    if (doc === results[0]) {
+        console.log(`\n✅ Selected: ${filename}\n`);
+    } else {
+        console.log(`✅ Using this document\n`);
+    }
     
     if (!doc.concepts) {
         console.error("❌ No concepts found for this document");
@@ -62,8 +97,9 @@ async function extractAndFormatConcepts(documentQuery: string, outputFormat: str
         (concepts.related_concepts?.length || 0);
     
     console.log(`📊 Concept Statistics:`);
-    console.log(`   - Concepts: ${concepts.primary_concepts?.length || 0}`);
-    console.log(`   - Related: ${concepts.related_concepts?.length || 0}`);
+    console.log(`   - Primary Concepts: ${concepts.primary_concepts?.length || 0}`);
+    console.log(`   - Related Concepts: ${concepts.related_concepts?.length || 0}`);
+    console.log(`   - Categories: ${concepts.categories?.length || 0}`);
     console.log(`   - Total: ${totalConcepts}\n`);
     
     // Generate output filename
@@ -83,7 +119,8 @@ async function extractAndFormatConcepts(documentQuery: string, outputFormat: str
             total_concepts: totalConcepts,
             primary_concepts: concepts.primary_concepts || [],
             related_concepts: concepts.related_concepts || [],
-            categories: concepts.categories || []
+            categories: concepts.categories || [],
+            summary: doc.text_preview || doc.summary || ''
         };
         
         fs.writeFileSync(outputPath, JSON.stringify(jsonOutput, null, 2));
@@ -93,7 +130,6 @@ async function extractAndFormatConcepts(documentQuery: string, outputFormat: str
         markdown += `**Document:** ${filename}\n\n`;
         markdown += `**Full Path:** ${doc.source}\n\n`;
         markdown += `**Total Concepts:** ${totalConcepts}\n\n`;
-        markdown += `**Extracted:** ${new Date().toISOString()}\n\n`;
         markdown += `---\n\n`;
         
         // Primary concepts
@@ -125,6 +161,12 @@ async function extractAndFormatConcepts(documentQuery: string, outputFormat: str
                 markdown += `- ${category}\n`;
             });
             markdown += `\n`;
+        }
+        
+        // Summary (if available)
+        if (doc.text_preview || doc.summary) {
+            markdown += `## Summary\n\n`;
+            markdown += `${doc.text_preview || doc.summary}\n\n`;
         }
         
         fs.writeFileSync(outputPath, markdown);
