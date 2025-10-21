@@ -2,8 +2,6 @@
 
 **Document:** (ebook - PDF) Sun Tzu's Art Of War.pdf
 
-**Full Path:** /home/mike/Documents/ebooks/Philosophy/(ebook - PDF) Sun Tzu's Art Of War.pdf
-
 **Total Concepts:** 209
 
 ---
