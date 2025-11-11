@@ -99,7 +99,10 @@ export class ConceptExtractor {
         const contextLimit = 1048576;
         const maxTokens = Math.min(contextLimit - estimatedTokens - 10000, 65536);
         
-        const prompt = `Extract concepts from this text as JSON:
+        const prompt = `FORMAL DEFINITION:
+A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.
+
+Extract concepts from this text as JSON:
 
 ${chunk}
 
@@ -122,13 +125,12 @@ INCLUDE:
 ✅ Theories, methodologies, processes, phenomena
 ✅ Multi-word concepts
 
-Use lowercase. Output only JSON.`;
+Use lowercase. Output only valid JSON with proper escaping of quotes.`;
         
         try {
             const response = await this.callOpenRouter(prompt, maxTokens);
             
-            
-            // Parse response
+            // Parse response with better error recovery
             let jsonText = response.trim();
             
             // Remove markdown code blocks if present
@@ -142,12 +144,22 @@ Use lowercase. Output only JSON.`;
                 }
             }
             
+            // Try to fix common JSON issues before parsing
+            jsonText = this.sanitizeJSON(jsonText);
+            
             const concepts = JSON.parse(jsonText);
             
+            // Ensure arrays and filter out non-strings
             return {
-                primary_concepts: concepts.primary_concepts || [],
-                categories: concepts.categories || [],
-                related_concepts: concepts.related_concepts || []
+                primary_concepts: Array.isArray(concepts.primary_concepts) 
+                    ? concepts.primary_concepts.filter(c => typeof c === 'string' && c.trim()) 
+                    : [],
+                categories: Array.isArray(concepts.categories) 
+                    ? concepts.categories.filter(c => typeof c === 'string' && c.trim()) 
+                    : [],
+                related_concepts: Array.isArray(concepts.related_concepts) 
+                    ? concepts.related_concepts.filter(c => typeof c === 'string' && c.trim()) 
+                    : []
             };
         } catch (error) {
             console.warn(`  ⚠️  Chunk extraction failed: ${error.message}`);
@@ -159,6 +171,28 @@ Use lowercase. Output only JSON.`;
         }
     }
     
+    // Sanitize JSON to fix common issues
+    private sanitizeJSON(jsonText: string): string {
+        // Handle truncated JSON
+        if (!jsonText.endsWith('}')) {
+            // Try to find the last complete array
+            const lastCompleteArray = jsonText.lastIndexOf('"]');
+            if (lastCompleteArray > 0) {
+                jsonText = jsonText.substring(0, lastCompleteArray + 2);
+                
+                // Close any open arrays
+                const openBrackets = (jsonText.match(/\[/g) || []).length;
+                const closeBrackets = (jsonText.match(/\]/g) || []).length;
+                for (let i = 0; i < openBrackets - closeBrackets; i++) {
+                    jsonText += ']';
+                }
+                jsonText += '\n}';
+            }
+        }
+        
+        return jsonText;
+    }
+    
     // Merge multiple concept extractions into one
     private mergeConceptExtractions(extractions: ConceptMetadata[]): ConceptMetadata {
         const mergedConcepts = new Set<string>();
@@ -166,9 +200,22 @@ Use lowercase. Output only JSON.`;
         const mergedRelated = new Set<string>();
         
         for (const extraction of extractions) {
-            extraction.primary_concepts.forEach(c => mergedConcepts.add(c.toLowerCase()));
-            extraction.categories.forEach(c => mergedCategories.add(c));
-            extraction.related_concepts.forEach(c => mergedRelated.add(c.toLowerCase()));
+            // Type guard to ensure we only process strings
+            extraction.primary_concepts.forEach(c => {
+                if (typeof c === 'string' && c.trim()) {
+                    mergedConcepts.add(c.toLowerCase());
+                }
+            });
+            extraction.categories.forEach(c => {
+                if (typeof c === 'string' && c.trim()) {
+                    mergedCategories.add(c);
+                }
+            });
+            extraction.related_concepts.forEach(c => {
+                if (typeof c === 'string' && c.trim()) {
+                    mergedRelated.add(c.toLowerCase());
+                }
+            });
         }
         
         console.log(`  ✅ Merged: ${mergedConcepts.size} unique concepts from ${extractions.length} chunks`);
@@ -191,7 +238,10 @@ Use lowercase. Output only JSON.`;
             16000  // Conservative output limit
         );
         
-        const prompt = `Extract ALL significant concepts from this document as JSON.
+        const prompt = `FORMAL DEFINITION:
+A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.
+
+Extract ALL significant concepts from this document as JSON.
 
 ${contentSample}
 

@@ -31,11 +31,11 @@ export class ConceptualSearchClient {
         const expanded = await this.queryExpander.expandQuery(queryText);
         
         if (debug) {
-            console.log('\n🔍 Query Expansion:');
-            console.log('  Original:', expanded.original_terms.join(', '));
-            console.log('  + Corpus:', expanded.corpus_terms.slice(0, 5).join(', '));
-            console.log('  + WordNet:', expanded.wordnet_terms.slice(0, 5).join(', '));
-            console.log('  Total terms:', expanded.all_terms.length);
+            console.error('\n🔍 Query Expansion:');
+            console.error('  Original:', expanded.original_terms.join(', '));
+            console.error('  + Corpus:', expanded.corpus_terms.slice(0, 5).join(', '));
+            console.error('  + WordNet:', expanded.wordnet_terms.slice(0, 5).join(', '));
+            console.error('  Total terms:', expanded.all_terms.length);
         }
         
         // Step 2: Vector search with original query
@@ -221,20 +221,20 @@ export class ConceptualSearchClient {
     }
     
     private printDebugScores(results: ConceptualSearchResult[]) {
-        console.log('\n📊 Top Results with Scores:\n');
+        console.error('\n📊 Top Results with Scores:\n');
         results.forEach((result, idx) => {
             const filename = result.source.split('/').pop() || result.source;
-            console.log(`${idx + 1}. ${filename}`);
-            console.log(`   Vector: ${result._vector_score.toFixed(3)}`);
-            console.log(`   BM25: ${result._bm25_score.toFixed(3)}`);
-            console.log(`   Title: ${result._title_score.toFixed(3)}`);
-            console.log(`   Concept: ${result._concept_score.toFixed(3)}`);
-            console.log(`   WordNet: ${result._wordnet_score.toFixed(3)}`);
-            console.log(`   ➜ Hybrid: ${result._hybrid_score.toFixed(3)}`);
+            console.error(`${idx + 1}. ${filename}`);
+            console.error(`   Vector: ${result._vector_score.toFixed(3)}`);
+            console.error(`   BM25: ${result._bm25_score.toFixed(3)}`);
+            console.error(`   Title: ${result._title_score.toFixed(3)}`);
+            console.error(`   Concept: ${result._concept_score.toFixed(3)}`);
+            console.error(`   WordNet: ${result._wordnet_score.toFixed(3)}`);
+            console.error(`   ➜ Hybrid: ${result._hybrid_score.toFixed(3)}`);
             if (result.matched_concepts && result.matched_concepts.length > 0) {
-                console.log(`   Matched: ${result.matched_concepts.slice(0, 3).join(', ')}`);
+                console.error(`   Matched: ${result.matched_concepts.slice(0, 3).join(', ')}`);
             }
-            console.log();
+            console.error();
         });
     }
 }

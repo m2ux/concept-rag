@@ -72,7 +72,7 @@ export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
 
       // Query chunks that contain this concept
       // Get all chunks and filter in memory (since we need to check JSON arrays)
-      console.log(`🔍 Searching for concept: "${conceptLower}"`);
+      console.error(`🔍 Searching for concept: "${conceptLower}"`);
       
       const allChunks = await chunksTable
         .query()
