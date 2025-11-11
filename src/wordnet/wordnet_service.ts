@@ -23,9 +23,9 @@ export class WordNetService {
             const entries = JSON.parse(data);
             this.cache = new Map(entries);
             this.cacheLoaded = true;
-            console.log(`📚 Loaded ${this.cache.size} WordNet entries from cache`);
+            console.error(`📚 Loaded ${this.cache.size} WordNet entries from cache`);
         } catch (e) {
-            console.log('📚 No WordNet cache found, starting fresh');
+            console.error('📚 No WordNet cache found, starting fresh');
             this.cacheLoaded = true;
         }
     }
@@ -35,7 +35,7 @@ export class WordNetService {
         try {
             const entries = Array.from(this.cache.entries());
             await fs.writeFile(this.cacheFile, JSON.stringify(entries, null, 2));
-            console.log(`💾 Saved ${entries.length} WordNet entries to cache`);
+            console.error(`💾 Saved ${entries.length} WordNet entries to cache`);
         } catch (error: any) {
             console.error(`Failed to save WordNet cache: ${error.message}`);
         }

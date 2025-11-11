@@ -56,7 +56,7 @@ export class DocumentConceptsExtractTool extends BaseTool<DocumentConceptsExtrac
       const includeSummary = params.include_summary !== false;
 
       // Use vector search to find document
-      console.log(`🔍 Searching for document: "${params.document_query}"`);
+      console.error(`🔍 Searching for document: "${params.document_query}"`);
       const queryVector = createSimpleEmbedding(params.document_query);
       const results = await catalogTable
         .vectorSearch(queryVector)
