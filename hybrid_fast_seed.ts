@@ -543,12 +543,36 @@ async function checkDocumentCompleteness(
             }
         }
         
-        // Check if chunks exist for this document
+        // Check if chunks exist for this document AND have concept metadata
         if (chunksTable && result.hasRecord) {
             try {
-                const chunksQuery = chunksTable.query().where(`hash="${hash}"`).limit(1);
+                const chunksQuery = chunksTable.query().where(`hash="${hash}"`).limit(10);
                 const chunksResults = await chunksQuery.toArray();
                 result.hasChunks = chunksResults.length > 0;
+                
+                // NEW: Also check if chunks have concept metadata
+                if (result.hasChunks) {
+                    // Sample a few chunks to see if they have concept metadata
+                    let chunksWithConcepts = 0;
+                    for (const chunk of chunksResults) {
+                        try {
+                            const concepts = chunk.concepts ? JSON.parse(chunk.concepts) : [];
+                            if (Array.isArray(concepts) && concepts.length > 0) {
+                                chunksWithConcepts++;
+                            }
+                        } catch (e) {
+                            // Invalid concept data
+                        }
+                    }
+                    
+                    // If less than half of sampled chunks have concepts, mark as incomplete
+                    if (chunksWithConcepts < chunksResults.length / 2) {
+                        result.missingComponents.push('chunk_concepts');
+                        if (process.env.DEBUG_OCR) {
+                            console.log(`🔍 Hash ${hash.slice(0, 8)}... chunks lack concept metadata (${chunksWithConcepts}/${chunksResults.length} enriched)`);
+                        }
+                    }
+                }
                 
                 if (process.env.DEBUG_OCR) {
                     console.log(`🔍 Hash ${hash.slice(0, 8)}... chunks: ${result.hasChunks}`);
@@ -621,14 +645,16 @@ async function deleteIncompleteDocumentData(
         }
         
         // Only delete chunks if chunks are actually missing or corrupted
-        // This preserves expensive chunk data when only summary/concepts need regeneration
-        if (chunksTable && missingComponents.includes('chunks')) {
+        // NEVER delete chunks if only concept metadata is missing - we'll re-enrich them in-place
+        if (chunksTable && missingComponents.includes('chunks') && !missingComponents.includes('chunk_concepts')) {
             try {
                 await chunksTable.delete(`hash="${hash}"`);
                 console.log(`  🗑️  Deleted incomplete chunks for ${path.basename(source)}`);
             } catch (e) {
                 // Might fail if no matching records, that's okay
             }
+        } else if (missingComponents.includes('chunk_concepts')) {
+            console.log(`  🔄 Preserving chunks for ${path.basename(source)} (will re-enrich with concept metadata)`);
         } else if (!missingComponents.includes('chunks')) {
             console.log(`  ✅ Preserving existing chunks for ${path.basename(source)} (${missingComponents.join(', ')} will be regenerated)`);
         }
@@ -724,8 +750,10 @@ async function loadDocumentsWithErrorHandling(
                             missing: completeness.missingComponents
                         });
                         
-                        // Track if this document needs chunking
+                        // Track if this document needs chunking or just chunk enrichment
                         const needsChunks = completeness.missingComponents.includes('chunks');
+                        const needsChunkConcepts = completeness.missingComponents.includes('chunk_concepts');
+                        
                         if (needsChunks) {
                             documentsNeedingChunks.add(pdfFile);
                         }
@@ -742,7 +770,7 @@ async function loadDocumentsWithErrorHandling(
                         
                         // If chunks exist and we only need concepts/summary, skip loading the PDF
                         // We'll regenerate concepts from existing chunks later
-                        if (!needsChunks) {
+                        if (!needsChunks || needsChunkConcepts) {
                             console.log(`  ⏭️  Skipping PDF load (chunks exist, only regenerating ${missingStr})`);
                             
                             // Load content from existing chunks for concept regeneration
@@ -754,7 +782,7 @@ async function loadDocumentsWithErrorHandling(
                                     .toArray();
                                 
                                 if (chunkRecords.length > 0) {
-                                    console.log(`  📦 Loaded ${chunkRecords.length} existing chunks for concept extraction`);
+                                    console.log(`  📦 Loaded ${chunkRecords.length} existing chunks${needsChunkConcepts ? ' for concept enrichment' : ' for concept extraction'}`);
                                     
                                     // Reconstruct documents from chunks
                                     const reconstructedDocs = chunkRecords.map((chunk: any) => 
@@ -763,12 +791,21 @@ async function loadDocumentsWithErrorHandling(
                                             metadata: {
                                                 source: pdfFile,
                                                 hash: hash,
-                                                loc: chunk.loc || { pageNumber: 1 }
+                                                loc: chunk.loc || { pageNumber: 1 },
+                                                // Preserve chunk ID for in-place updates
+                                                chunkId: chunk.id,
+                                                // Mark if needs concept enrichment
+                                                needsConceptEnrichment: needsChunkConcepts
                                             }
                                         })
                                     );
                                     
                                     documents.push(...reconstructedDocs);
+                                    
+                                    // Mark for chunk updates if concept enrichment is needed
+                                    if (needsChunkConcepts) {
+                                        documentsNeedingChunks.add(pdfFile); // Will trigger re-enrichment
+                                    }
                                 } else {
                                     console.warn(`  ⚠️  No chunks found despite chunks not being in missing list!`);
                                     // Fall through to load PDF as fallback
@@ -1242,14 +1279,14 @@ async function rebuildConceptIndexFromExistingData(
     
     // Log concepts with highest chunk counts
     const topConceptsByChunks = conceptRecords
-        .filter(c => c.chunk_count > 0)
-        .sort((a, b) => b.chunk_count - a.chunk_count)
+        .filter(c => (c.chunk_count ?? 0) > 0)
+        .sort((a, b) => (b.chunk_count ?? 0) - (a.chunk_count ?? 0))
         .slice(0, 10);
     
     if (topConceptsByChunks.length > 0) {
         console.log(`\n  🔝 Top 10 concepts by chunk count:`);
         topConceptsByChunks.forEach((c, idx) => {
-            console.log(`    ${idx + 1}. "${c.concept}" - ${c.chunk_count} chunks (${c.category})`);
+            console.log(`    ${idx + 1}. "${c.concept}" - ${c.chunk_count ?? 0} chunks (${c.category})`);
         });
     }
     
@@ -1374,20 +1411,33 @@ async function hybridFastSeed() {
 
     console.log("\n🔧 Creating chunks with fast local embeddings...");
     
-    // Only chunk documents that actually need chunking (preserves existing chunks)
-    const docsToChunk = rawDocs.filter(doc => documentsNeedingChunks.has(doc.metadata.source));
+    // Separate docs that need new chunks vs. existing chunks needing enrichment
+    const docsNeedingNewChunks = rawDocs.filter(doc => 
+        documentsNeedingChunks.has(doc.metadata.source) && !doc.metadata.needsConceptEnrichment
+    );
+    const existingChunksNeedingEnrichment = rawDocs.filter(doc => 
+        doc.metadata.needsConceptEnrichment && doc.metadata.chunkId
+    );
     
-    if (docsToChunk.length < rawDocs.length) {
-        const preserved = rawDocs.length - docsToChunk.length;
-        console.log(`✅ Preserving existing chunks for ${preserved} document(s) with intact chunk data`);
-        console.log(`🔧 Chunking ${docsToChunk.length} document(s) that need new chunks...`);
+    if (existingChunksNeedingEnrichment.length > 0) {
+        console.log(`🔄 Found ${existingChunksNeedingEnrichment.length} existing chunks needing concept enrichment`);
+    }
+    if (docsNeedingNewChunks.length > 0) {
+        console.log(`🔧 Chunking ${docsNeedingNewChunks.length} page(s) into new chunks...`);
     }
     
     const splitter = new RecursiveCharacterTextSplitter({
         chunkSize: 500,
         chunkOverlap: 10,
     });
-    const docs = await splitter.splitDocuments(docsToChunk);
+    
+    // Create new chunks from documents needing chunking
+    const newChunks = docsNeedingNewChunks.length > 0 
+        ? await splitter.splitDocuments(docsNeedingNewChunks)
+        : [];
+    
+    // Combine new chunks with existing chunks needing enrichment
+    const docs = [...newChunks, ...existingChunksNeedingEnrichment];
     
     // ENHANCED: Enrich chunks with concept metadata
     if (catalogRecords.length > 0 && docs.length > 0) {
@@ -1459,9 +1509,60 @@ async function hybridFastSeed() {
         }
     }
     
-    if (docs.length > 0) {
-        console.log(`📊 Processing ${docs.length} chunks...`);
-        await createLanceTableWithSimpleEmbeddings(db, docs, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined);
+    // Separate new chunks from existing chunks that need updates
+    const newChunksToCreate = docs.filter(doc => !doc.metadata.chunkId);
+    const existingChunksToUpdate = docs.filter(doc => doc.metadata.chunkId);
+    
+    if (newChunksToCreate.length > 0) {
+        console.log(`📊 Creating ${newChunksToCreate.length} new chunks...`);
+        await createLanceTableWithSimpleEmbeddings(db, newChunksToCreate, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined);
+    }
+    
+    // Update existing chunks with new concept metadata
+    if (existingChunksToUpdate.length > 0 && chunksTable) {
+        console.log(`🔄 Updating ${existingChunksToUpdate.length} existing chunks with concept metadata...`);
+        
+        // Group updates by batch for efficiency
+        const batchSize = 1000;
+        let updatedCount = 0;
+        
+        for (let i = 0; i < existingChunksToUpdate.length; i += batchSize) {
+            const batch = existingChunksToUpdate.slice(i, i + batchSize);
+            
+            // LanceDB doesn't support batch updates, so we need to delete and recreate
+            // This is more efficient than individual updates for large batches
+            const chunkIds = batch.map(c => c.metadata.chunkId);
+            const chunkData = batch.map((doc, idx) => ({
+                id: chunkIds[idx],
+                text: doc.pageContent,
+                source: doc.metadata.source,
+                hash: doc.metadata.hash,
+                loc: JSON.stringify(doc.metadata.loc || {}),
+                vector: createSimpleEmbedding(doc.pageContent),
+                concepts: JSON.stringify(doc.metadata.concepts || []),
+                concept_categories: JSON.stringify(doc.metadata.concept_categories || []),
+                concept_density: doc.metadata.concept_density || 0
+            }));
+            
+            try {
+                // Delete old records
+                for (const chunkId of chunkIds) {
+                    await chunksTable.delete(`id = "${chunkId}"`);
+                }
+                
+                // Add updated records
+                await chunksTable.add(chunkData);
+                updatedCount += batch.length;
+                
+                if ((i + batchSize) % 5000 === 0 || i + batchSize >= existingChunksToUpdate.length) {
+                    console.log(`  📊 Updated ${Math.min(i + batchSize, existingChunksToUpdate.length)}/${existingChunksToUpdate.length} chunks`);
+                }
+            } catch (error: any) {
+                console.warn(`  ⚠️  Error updating batch ${i / batchSize + 1}: ${error.message}`);
+            }
+        }
+        
+        console.log(`✅ Updated ${updatedCount} existing chunks with concept metadata`);
     }
 
     // ENHANCED: Build concept index with chunk statistics
@@ -1567,14 +1668,14 @@ async function hybridFastSeed() {
         
         // Log concepts with highest chunk counts
         const topConceptsByChunks = conceptRecords
-            .filter(c => c.chunk_count > 0)
-            .sort((a, b) => b.chunk_count - a.chunk_count)
+            .filter(c => (c.chunk_count ?? 0) > 0)
+            .sort((a, b) => (b.chunk_count ?? 0) - (a.chunk_count ?? 0))
             .slice(0, 5);
         
         if (topConceptsByChunks.length > 0) {
             console.log(`  🔝 Top concepts by chunk count:`);
             topConceptsByChunks.forEach(c => {
-                console.log(`    • "${c.concept}" appears in ${c.chunk_count} chunks`);
+                console.log(`    • "${c.concept}" appears in ${c.chunk_count ?? 0} chunks`);
             });
         }
         
@@ -1601,7 +1702,12 @@ async function hybridFastSeed() {
     const dbSize = await getDatabaseSize(databaseDir);
     
     console.log(`\n✅ Created ${catalogRecords.length} catalog records`);
-    console.log(`✅ Created ${docs.length} chunk records`);
+    if (newChunksToCreate.length > 0) {
+        console.log(`✅ Created ${newChunksToCreate.length} new chunk records`);
+    }
+    if (existingChunksToUpdate.length > 0) {
+        console.log(`✅ Updated ${existingChunksToUpdate.length} existing chunk records with concept metadata`);
+    }
     console.log(`💾 Database size: ${dbSize}`);
     console.log("🎉 Seeding completed successfully!");
 }
