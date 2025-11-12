@@ -748,8 +748,8 @@ async function loadDocumentsWithErrorHandling(
                             // Load content from existing chunks for concept regeneration
                             try {
                                 const chunkRecords = await chunksTable!
-                                    .search()
-                                    .where(`hash="${hash}"`)
+                                    .query()
+                                    .where(`hash = "${hash}"`)
                                     .limit(10000) // Get all chunks
                                     .toArray();
                                 
