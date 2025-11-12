@@ -76,6 +76,8 @@ console.warn = (...args: any[]) => {
         message.includes('FormatError') ||
         message.includes('FlateDecode') ||
         message.includes('Empty') && message.includes('stream') ||
+        message.includes('charstring command') ||
+        message.includes('Unknown type') && message.includes('charstring') ||
         message.includes('webpack://') ) {
         return; // Suppress these verbose warnings
     }
@@ -90,6 +92,8 @@ console.error = (...args: any[]) => {
         message.includes('private use area') ||
         message.includes('FlateDecode') ||
         message.includes('Empty') && message.includes('stream') ||
+        message.includes('charstring command') ||
+        message.includes('Unknown type') && message.includes('charstring') ||
         message.includes('Warning:') && message.includes('font')) {
         return; // Suppress these verbose warnings
     }
@@ -104,6 +108,8 @@ console.log = (...args: any[]) => {
         message.includes('font private use area') ||
         message.includes('private use area') ||
         message.includes('FlateDecode') ||
+        message.includes('charstring command') ||
+        message.includes('Unknown type') && message.includes('charstring') ||
         message.includes('Empty') && message.includes('stream'))) {
         return; // Suppress these verbose warnings
     }
@@ -135,11 +141,11 @@ function validateArgs() {
     console.log("DATABASE PATH: ", databaseDir);
     console.log("FILES DIRECTORY: ", filesDir);
     console.log("OVERWRITE FLAG: ", overwrite);
-    console.log("✅ OpenRouter API key configured");
-    console.log("🚀 Hybrid approach: OpenRouter summaries + Fast local embeddings");
+    console.log("✅ LLM API key configured");
+    console.log("🚀 Hybrid approach: LLM summaries + Fast local embeddings");
 }
 
-// Direct OpenRouter API call for summarization
+// LLM API call for summarization
 async function callOpenRouterChat(text: string): Promise<string> {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -162,20 +168,20 @@ async function callOpenRouterChat(text: string): Promise<string> {
 
     if (!response.ok) {
         const errorData = await response.text();
-        throw new Error(`OpenRouter API error: ${response.status} - ${errorData}`);
+        throw new Error(`LLM API error: ${response.status} - ${errorData}`);
     }
 
     const data = await response.json();
     return data.choices[0].message.content.trim();
 }
 
-// Convert PDF file to base64 for OpenRouter OCR processing
+// Convert PDF file to base64 for LLM OCR processing
 function pdfToBase64(filePath: string): string {
     const fileBuffer = fs.readFileSync(filePath);
     return fileBuffer.toString('base64');
 }
 
-// Local Tesseract OCR processing
+// OCR processing (using local Tesseract)
 async function callOpenRouterOCR(pdfPath: string): Promise<{ documents: Document[], ocrStats: { totalPages: number, totalChars: number, success: boolean } }> {
     
     const tempDir = os.tmpdir();
@@ -462,8 +468,115 @@ async function generateContentOverview(rawDocs: Document[]): Promise<string> {
         console.log(`✅ Content overview generated`);
         return summary;
     } catch (error) {
-        console.warn(`⚠️ OpenRouter summarization failed: ${error.message}`);
+        console.warn(`⚠️ LLM summarization failed: ${error.message}`);
         return `Document overview (${rawDocs.length} pages)`;
+    }
+}
+
+// Check data completeness for a document
+interface DataCompletenessCheck {
+    hasRecord: boolean;
+    hasSummary: boolean;
+    hasConcepts: boolean;
+    hasChunks: boolean;
+    isComplete: boolean;
+    missingComponents: string[];
+}
+
+async function checkDocumentCompleteness(
+    catalogTable: lancedb.Table | null,
+    chunksTable: lancedb.Table | null,
+    hash: string,
+    source: string
+): Promise<DataCompletenessCheck> {
+    const result: DataCompletenessCheck = {
+        hasRecord: false,
+        hasSummary: false,
+        hasConcepts: false,
+        hasChunks: false,
+        isComplete: false,
+        missingComponents: []
+    };
+    
+    try {
+        // Check catalog record exists and has valid data
+        if (catalogTable) {
+            const query = catalogTable.query().where(`hash="${hash}"`).limit(1);
+            const results = await query.toArray();
+            
+            if (results.length > 0) {
+                result.hasRecord = true;
+                const record = results[0];
+                
+                // Check if summary is present and not just a fallback
+                const pageContent = record.text || '';
+                const isFallbackSummary = 
+                    pageContent.startsWith('Document overview (') ||
+                    pageContent.trim().length < 10 ||
+                    pageContent.includes('LLM summarization failed');
+                
+                result.hasSummary = !isFallbackSummary;
+                
+                // Check if concepts were successfully extracted
+                if (record.concepts) {
+                    try {
+                        const concepts = typeof record.concepts === 'string' 
+                            ? JSON.parse(record.concepts)
+                            : record.concepts;
+                        result.hasConcepts = 
+                            concepts && 
+                            concepts.primary_concepts && 
+                            concepts.primary_concepts.length > 0;
+                    } catch (e) {
+                        result.hasConcepts = false;
+                    }
+                } else {
+                    result.hasConcepts = false;
+                }
+                
+                // Debug logging
+                if (process.env.DEBUG_OCR) {
+                    console.log(`🔍 Hash ${hash.slice(0, 8)}...: record=${result.hasRecord}, summary=${result.hasSummary}, concepts=${result.hasConcepts}`);
+                }
+            }
+        }
+        
+        // Check if chunks exist for this document
+        if (chunksTable && result.hasRecord) {
+            try {
+                const chunksQuery = chunksTable.query().where(`hash="${hash}"`).limit(1);
+                const chunksResults = await chunksQuery.toArray();
+                result.hasChunks = chunksResults.length > 0;
+                
+                if (process.env.DEBUG_OCR) {
+                    console.log(`🔍 Hash ${hash.slice(0, 8)}... chunks: ${result.hasChunks}`);
+                }
+            } catch (e) {
+                // Chunks table might not exist yet
+                result.hasChunks = false;
+            }
+        }
+        
+        // Determine what's missing
+        if (!result.hasRecord) {
+            result.missingComponents.push('catalog');
+        }
+        if (!result.hasSummary) {
+            result.missingComponents.push('summary');
+        }
+        if (!result.hasConcepts) {
+            result.missingComponents.push('concepts');
+        }
+        if (!result.hasChunks) {
+            result.missingComponents.push('chunks');
+        }
+        
+        result.isComplete = result.hasRecord && result.hasSummary && result.hasConcepts && result.hasChunks;
+        
+        return result;
+    } catch (error: any) {
+        console.warn(`⚠️ Error checking document completeness for hash ${hash.slice(0, 8)}...: ${error.message}`);
+        return result;
     }
 }
 
@@ -483,6 +596,42 @@ async function catalogRecordExists(catalogTable: lancedb.Table, hash: string): P
     } catch (error: any) {
         console.warn(`⚠️ Error checking catalog record for hash ${hash.slice(0, 8)}...: ${error.message}`);
         return false; // If table doesn't exist or query fails, record doesn't exist
+    }
+}
+
+async function deleteIncompleteDocumentData(
+    catalogTable: lancedb.Table | null,
+    chunksTable: lancedb.Table | null,
+    hash: string,
+    source: string,
+    missingComponents: string[]
+): Promise<void> {
+    try {
+        // Only delete catalog if summary or concepts are missing
+        // (We'll regenerate the catalog entry with corrected data)
+        if (catalogTable && (missingComponents.includes('summary') || missingComponents.includes('concepts'))) {
+            try {
+                await catalogTable.delete(`hash="${hash}"`);
+                console.log(`  🗑️  Deleted incomplete catalog entry for ${path.basename(source)}`);
+            } catch (e) {
+                // Might fail if no matching records, that's okay
+            }
+        }
+        
+        // Only delete chunks if chunks are actually missing or corrupted
+        // This preserves expensive chunk data when only summary/concepts need regeneration
+        if (chunksTable && missingComponents.includes('chunks')) {
+            try {
+                await chunksTable.delete(`hash="${hash}"`);
+                console.log(`  🗑️  Deleted incomplete chunks for ${path.basename(source)}`);
+            } catch (e) {
+                // Might fail if no matching records, that's okay
+            }
+        } else if (!missingComponents.includes('chunks')) {
+            console.log(`  ✅ Preserving existing chunks for ${path.basename(source)} (${missingComponents.join(', ')} will be regenerated)`);
+        }
+    } catch (error: any) {
+        console.warn(`⚠️ Error deleting incomplete data for ${path.basename(source)}: ${error.message}`);
     }
 }
 
@@ -510,10 +659,17 @@ async function findPdfFilesRecursively(dir: string): Promise<string[]> {
     return pdfFiles;
 }
 
-async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: lancedb.Table | null, skipExistsCheck: boolean) {
+async function loadDocumentsWithErrorHandling(
+    filesDir: string, 
+    catalogTable: lancedb.Table | null, 
+    chunksTable: lancedb.Table | null,
+    skipExistsCheck: boolean
+) {
     const documents: Document[] = [];
     const failedFiles: string[] = [];
     const skippedFiles: string[] = [];
+    const incompleteFiles: Array<{path: string, missing: string[]}> = [];
+    const documentsNeedingChunks = new Set<string>(); // Track which docs need chunking
     
     try {
         // Check if filesDir is a file or directory
@@ -528,7 +684,7 @@ async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: la
         console.log(`📚 Found ${pdfFiles.length} PDF files`);
         
         if (!skipExistsCheck && catalogTable) {
-            console.log(`🔍 Checking which files are already in database...`);
+            console.log(`🔍 Checking document completeness (summaries, concepts, chunks)...`);
         }
         
         for (const pdfFile of pdfFiles) {
@@ -545,11 +701,86 @@ async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: la
             
             try {
                 if (!skipExistsCheck && catalogTable && hash !== 'unknown') {
-                    const exists = await catalogRecordExists(catalogTable, hash);
-                    if (exists) {
-                        console.log(`⏭️ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)}`);
+                    // NEW: Check completeness instead of just existence
+                    const completeness = await checkDocumentCompleteness(
+                        catalogTable,
+                        chunksTable,
+                        hash,
+                        pdfFile
+                    );
+                    
+                    if (completeness.isComplete) {
+                        console.log(`✅ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (complete)`);
                         skippedFiles.push(relativePath);
                         continue; // Skip loading this file entirely
+                    } else if (completeness.hasRecord) {
+                        // Document exists but is incomplete - needs reprocessing
+                        const missingStr = completeness.missingComponents.join(', ');
+                        console.log(`🔄 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (missing: ${missingStr})`);
+                        incompleteFiles.push({
+                            path: relativePath,
+                            missing: completeness.missingComponents
+                        });
+                        
+                        // Track if this document needs chunking
+                        const needsChunks = completeness.missingComponents.includes('chunks');
+                        if (needsChunks) {
+                            documentsNeedingChunks.add(pdfFile);
+                        }
+                        
+                        // Delete incomplete data before reprocessing
+                        // Only deletes what's actually missing (preserves intact chunks)
+                        await deleteIncompleteDocumentData(
+                            catalogTable, 
+                            chunksTable, 
+                            hash, 
+                            pdfFile, 
+                            completeness.missingComponents
+                        );
+                        
+                        // If chunks exist and we only need concepts/summary, skip loading the PDF
+                        // We'll regenerate concepts from existing chunks later
+                        if (!needsChunks) {
+                            console.log(`  ⏭️  Skipping PDF load (chunks exist, only regenerating ${missingStr})`);
+                            
+                            // Load content from existing chunks for concept regeneration
+                            try {
+                                const chunkRecords = await chunksTable!
+                                    .search()
+                                    .where(`hash="${hash}"`)
+                                    .limit(10000) // Get all chunks
+                                    .toArray();
+                                
+                                if (chunkRecords.length > 0) {
+                                    console.log(`  📦 Loaded ${chunkRecords.length} existing chunks for concept extraction`);
+                                    
+                                    // Reconstruct documents from chunks
+                                    const reconstructedDocs = chunkRecords.map((chunk: any) => 
+                                        new Document({
+                                            pageContent: chunk.text || '',
+                                            metadata: {
+                                                source: pdfFile,
+                                                hash: hash,
+                                                loc: chunk.loc || { pageNumber: 1 }
+                                            }
+                                        })
+                                    );
+                                    
+                                    documents.push(...reconstructedDocs);
+                                } else {
+                                    console.warn(`  ⚠️  No chunks found despite chunks not being in missing list!`);
+                                    // Fall through to load PDF as fallback
+                                }
+                                
+                                continue; // Skip PDF loading
+                            } catch (error: any) {
+                                console.error(`  ❌ Failed to load chunks: ${error.message}`);
+                                console.log(`  ⬇️  Falling back to PDF loading...`);
+                                // Fall through to load PDF as fallback
+                            }
+                        }
+                        
+                        // If we reach here, chunks are needed - continue to load the document
                     }
                 }
                 
@@ -572,6 +803,10 @@ async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: la
                 });
                 
                 documents.push(...docs);
+                
+                // New documents need chunking
+                documentsNeedingChunks.add(pdfFile);
+                
                 console.log(`📥 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${docs.length} pages)`);
             } catch (error: any) {
                 const errorMsg = error?.message || String(error);
@@ -590,6 +825,10 @@ async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: la
                         });
                         
                         documents.push(...ocrResult.documents);
+                        
+                        // OCR documents need chunking
+                        documentsNeedingChunks.add(pdfFile);
+                        
                         const hashDisplay = hash !== 'unknown' ? `[${hash.slice(0, 4)}..${hash.slice(-4)}]` : '[????..????]';
                         const { totalPages, totalChars, success } = ocrResult.ocrStats;
                         
@@ -642,11 +881,18 @@ async function loadDocumentsWithErrorHandling(filesDir: string, catalogTable: la
         
         console.log(`\n📊 Summary: • 📥 Loaded: ${loadedCount} • ⏭️ Skipped: ${skippedFiles.length} • ⚠️ Error: ${failedFiles.length}`);
         
+        if (incompleteFiles.length > 0) {
+            console.log(`🔄 Incomplete documents (will reprocess): ${incompleteFiles.length}`);
+            incompleteFiles.forEach(incomplete => {
+                console.log(`   • ${incomplete.path} (missing: ${incomplete.missing.join(', ')})`);
+            });
+        }
+        
         if (ocrProcessedCount > 0) {
             console.log(`🤖 OCR Summary: • 📄 ${ocrProcessedCount} pages processed via OCR • 📚 Standard PDFs also processed`);
         }
         
-        return documents;
+        return { documents, documentsNeedingChunks };
     } catch (error) {
         console.error('Error reading directory:', error.message);
         throw error;
@@ -690,6 +936,20 @@ async function createLanceTableWithSimpleEmbeddings(
     
     console.log(`✅ Generated ${data.length} embeddings locally (instant)`);
     
+    // Calculate appropriate number of partitions based on dataset size
+    // Rule of thumb: ~100-200 vectors per partition for good cluster quality
+    const calculatePartitions = (dataSize: number): number => {
+        if (dataSize < 100) return 2;
+        if (dataSize < 500) return Math.max(2, Math.floor(dataSize / 100));
+        if (dataSize < 1000) return Math.max(4, Math.floor(dataSize / 150));
+        if (dataSize < 5000) return Math.max(8, Math.floor(dataSize / 300));
+        if (dataSize < 10000) return Math.max(32, Math.floor(dataSize / 300));
+        if (dataSize < 50000) return Math.max(64, Math.floor(dataSize / 400));
+        return 256; // Default for very large datasets (50k+ vectors)
+    };
+    
+    const numPartitions = calculatePartitions(data.length);
+    
     // Handle existing tables
     if (mode === "overwrite") {
         try {
@@ -700,6 +960,14 @@ async function createLanceTableWithSimpleEmbeddings(
         }
         const table = await db.createTable(tableName, data);
         console.log(`✅ Created LanceDB table: ${tableName}`);
+        
+        // Create index with appropriate configuration for dataset size
+        if (data.length >= 100) {
+            await createOptimizedIndex(table, data.length, numPartitions, tableName);
+        } else {
+            console.log(`⏭️  Skipping index creation (${data.length} vectors < 100 minimum)`);
+        }
+        
         return table;
     } else {
         // Check if table already exists
@@ -711,6 +979,14 @@ async function createLanceTableWithSimpleEmbeddings(
                 if (data.length > 0) {
                     await table.add(data);
                     console.log(`✅ Added ${data.length} new records to existing table: ${tableName}`);
+                    
+                    // Get total record count to determine if we should rebuild index
+                    const totalCount = await table.countRows();
+                    const newPartitions = calculatePartitions(totalCount);
+                    
+                    if (totalCount >= 100) {
+                        await createOptimizedIndex(table, totalCount, newPartitions, tableName);
+                    }
                 }
                 return table;
             }
@@ -721,7 +997,41 @@ async function createLanceTableWithSimpleEmbeddings(
         // Create new table
         const table = await db.createTable(tableName, data);
         console.log(`✅ Created LanceDB table: ${tableName}`);
+        
+        // Create index with appropriate configuration for dataset size
+        if (data.length >= 100) {
+            await createOptimizedIndex(table, data.length, numPartitions, tableName);
+        } else {
+            console.log(`⏭️  Skipping index creation (${data.length} vectors < 100 minimum)`);
+        }
+        
         return table;
+    }
+}
+
+async function createOptimizedIndex(
+    table: lancedb.Table,
+    dataSize: number,
+    numPartitions: number,
+    tableName: string
+): Promise<void> {
+    try {
+        console.log(`🔧 Creating optimized index for ${tableName} (${dataSize} vectors, ${numPartitions} partitions)...`);
+        
+        // IVF_PQ requires substantial data for PQ training (256+ samples per subvector)
+        // Only use IVF_PQ for large datasets to avoid KMeans clustering warnings
+        await table.createIndex("vector", {
+            config: lancedb.Index.ivfPq({
+                numPartitions: numPartitions,
+                numSubVectors: 16, // For 384-dim vectors
+            })
+        });
+        
+        console.log(`✅ Index created (IVF_PQ) successfully`);
+    } catch (error: any) {
+        // If index creation fails, log warning but continue (table is still usable without index)
+        console.warn(`⚠️  Index creation failed: ${error.message}`);
+        console.warn(`   Table is still functional, searches will use brute-force (slower but accurate)`);
     }
 }
 
@@ -812,6 +1122,7 @@ async function hybridFastSeed() {
 
     let catalogTable: lancedb.Table | null = null;
     let catalogTableExists = true;
+    let chunksTable: lancedb.Table | null = null;
 
     try {
         catalogTable = await db.openTable(defaults.CATALOG_TABLE_NAME);
@@ -820,12 +1131,20 @@ async function hybridFastSeed() {
         catalogTableExists = false;
     }
 
+    // Try to open chunks table for completeness checking
+    try {
+        chunksTable = await db.openTable(defaults.CHUNKS_TABLE_NAME);
+    } catch (e) {
+        // Chunks table doesn't exist yet, that's okay
+    }
+
     if (overwrite) {
         try {
             await db.dropTable(defaults.CATALOG_TABLE_NAME);
             await db.dropTable(defaults.CHUNKS_TABLE_NAME);
             console.log("🗑️ Dropped existing tables");
             catalogTable = null;
+            chunksTable = null;
             catalogTableExists = false;
         } catch (e) {
             console.log("Tables didn't exist");
@@ -834,7 +1153,7 @@ async function hybridFastSeed() {
 
     // Load files
     console.log("Loading files...");
-    const rawDocs = await loadDocumentsWithErrorHandling(filesDir, catalogTable, overwrite || !catalogTableExists);
+    const { documents: rawDocs, documentsNeedingChunks } = await loadDocumentsWithErrorHandling(filesDir, catalogTable, chunksTable, overwrite || !catalogTableExists);
 
     if (rawDocs.length === 0) {
         console.log("✅ No new documents to process - all files already exist in database.");
@@ -853,7 +1172,7 @@ async function hybridFastSeed() {
         };
     }
 
-    console.log("🚀 Creating catalog with OpenRouter summaries...");
+    console.log("🚀 Creating catalog with LLM summaries...");
     const catalogRecords = await processDocuments(rawDocs);
     
     if (catalogRecords.length > 0) {
@@ -867,11 +1186,21 @@ async function hybridFastSeed() {
     // We'll create chunks first, then build concept index with chunk stats
 
     console.log("\n🔧 Creating chunks with fast local embeddings...");
+    
+    // Only chunk documents that actually need chunking (preserves existing chunks)
+    const docsToChunk = rawDocs.filter(doc => documentsNeedingChunks.has(doc.metadata.source));
+    
+    if (docsToChunk.length < rawDocs.length) {
+        const preserved = rawDocs.length - docsToChunk.length;
+        console.log(`✅ Preserving existing chunks for ${preserved} document(s) with intact chunk data`);
+        console.log(`🔧 Chunking ${docsToChunk.length} document(s) that need new chunks...`);
+    }
+    
     const splitter = new RecursiveCharacterTextSplitter({
         chunkSize: 500,
         chunkOverlap: 10,
     });
-    const docs = await splitter.splitDocuments(rawDocs);
+    const docs = await splitter.splitDocuments(docsToChunk);
     
     // ENHANCED: Enrich chunks with concept metadata
     if (catalogRecords.length > 0 && docs.length > 0) {
@@ -936,10 +1265,59 @@ async function hybridFastSeed() {
     }
 
     // ENHANCED: Build concept index with chunk statistics
+    // When reprocessing documents, we need to rebuild from ALL catalog records, not just new ones
     if (catalogRecords.length > 0) {
         console.log("\n🧠 Building concept index with chunk statistics...");
+        
+        // Load ALL catalog records to build complete concept index
+        let allCatalogRecords = catalogRecords;
+        if (!overwrite && catalogTable) {
+            try {
+                console.log("  📚 Loading existing catalog records for concept index...");
+                const existingRecords = await catalogTable.query().limit(100000).toArray();
+                
+                // Convert existing records to Document format
+                const existingDocs = existingRecords
+                    .filter((r: any) => r.text && r.source && r.concepts)
+                    .map((r: any) => {
+                        let concepts = r.concepts;
+                        if (typeof concepts === 'string') {
+                            try {
+                                concepts = JSON.parse(concepts);
+                            } catch (e) {
+                                concepts = null;
+                            }
+                        }
+                        
+                        return new Document({
+                            pageContent: r.text || '',
+                            metadata: {
+                                source: r.source,
+                                hash: r.hash,
+                                concepts: concepts
+                            }
+                        });
+                    })
+                    .filter((d: Document) => d.metadata.concepts);
+                
+                console.log(`  ✅ Loaded ${existingRecords.length} existing records (${existingDocs.length} with concepts)`);
+                
+                // Merge with new records, removing duplicates by hash
+                const hashSet = new Set(catalogRecords.map(r => r.metadata.hash));
+                const nonDuplicateExisting = existingDocs.filter((d: Document) => !hashSet.has(d.metadata.hash));
+                allCatalogRecords = [...catalogRecords, ...nonDuplicateExisting];
+                
+                console.log(`  📊 Building concept index from ${allCatalogRecords.length} total catalog records`);
+            } catch (e) {
+                console.warn(`  ⚠️  Could not load existing records, building from new records only: ${e.message}`);
+            }
+        }
+        
         const conceptBuilder = new ConceptIndexBuilder();
-        const conceptRecords = await conceptBuilder.buildConceptIndex(catalogRecords, docs);
+        
+        // Build concept index from ALL catalog records (new + existing)
+        // For chunks, we only pass the new chunks since we can't efficiently load all chunks
+        const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogRecords, docs);
         
         console.log(`✅ Built ${conceptRecords.length} unique concept records`);
         
@@ -958,14 +1336,12 @@ async function hybridFastSeed() {
         
         if (conceptRecords.length > 0) {
             try {
-                // Drop existing concepts table if overwrite
-                if (overwrite) {
-                    try {
-                        await db.dropTable('concepts');
-                        console.log("  🗑️  Dropped existing concepts table");
-                    } catch (e) {
-                        // Table didn't exist, that's fine
-                    }
+                // Always drop and recreate concepts table to ensure consistency
+                try {
+                    await db.dropTable('concepts');
+                    console.log("  🗑️  Dropped existing concepts table");
+                } catch (e) {
+                    // Table didn't exist, that's fine
                 }
                 
                 await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts');

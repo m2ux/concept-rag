@@ -1,5 +1,6 @@
 import { Document } from "@langchain/core/documents";
 import { ConceptMetadata } from "./types.js";
+import * as fs from "fs";
 
 export class ConceptExtractor {
     
@@ -125,10 +126,11 @@ INCLUDE:
 ✅ Theories, methodologies, processes, phenomena
 ✅ Multi-word concepts
 
-Use lowercase. Output only valid JSON with proper escaping of quotes.`;
+Use lowercase. Output only valid JSON with proper escaping of quotes. Ensure ALL strings in arrays have escaped quotes.`;
         
+        let response: string | undefined;
         try {
-            const response = await this.callOpenRouter(prompt, maxTokens);
+            response = await this.callOpenRouter(prompt, maxTokens);
             
             // Parse response with better error recovery
             let jsonText = response.trim();
@@ -161,8 +163,20 @@ Use lowercase. Output only valid JSON with proper escaping of quotes.`;
                     ? concepts.related_concepts.filter(c => typeof c === 'string' && c.trim()) 
                     : []
             };
-        } catch (error) {
+        } catch (error: any) {
             console.warn(`  ⚠️  Chunk extraction failed: ${error.message}`);
+            console.warn(`  📄 Saving failed response for debugging...`);
+            
+            // Try to save the failed response for debugging
+            try {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const debugPath = `/tmp/concept_extraction_error_${timestamp}.txt`;
+                fs.writeFileSync(debugPath, `Error: ${error.message}\n\nResponse:\n${response || 'N/A'}`);
+                console.warn(`  💾 Debug info saved to: ${debugPath}`);
+            } catch (saveError) {
+                // Ignore save errors
+            }
+            
             return {
                 primary_concepts: [],
                 categories: [],
@@ -173,9 +187,9 @@ Use lowercase. Output only valid JSON with proper escaping of quotes.`;
     
     // Sanitize JSON to fix common issues
     private sanitizeJSON(jsonText: string): string {
-        // Handle truncated JSON
-        if (!jsonText.endsWith('}')) {
-            // Try to find the last complete array
+        // Step 1: Handle truncated JSON
+        if (!jsonText.endsWith('}') && !jsonText.endsWith('}]')) {
+            // Try to find the last complete array element
             const lastCompleteArray = jsonText.lastIndexOf('"]');
             if (lastCompleteArray > 0) {
                 jsonText = jsonText.substring(0, lastCompleteArray + 2);
@@ -190,7 +204,36 @@ Use lowercase. Output only valid JSON with proper escaping of quotes.`;
             }
         }
         
-        return jsonText;
+        // Step 2: Fix common escaping issues
+        // This is a delicate operation - we need to escape quotes inside array strings
+        // but not the quotes that are part of the JSON structure
+        try {
+            // First attempt: parse as-is
+            JSON.parse(jsonText);
+            return jsonText; // If it parses, return it unchanged
+        } catch (e) {
+            // Try to fix unescaped quotes in array values
+            // This regex attempts to find and fix strings like: "text with "quotes" in it"
+            // We'll replace them with: "text with \"quotes\" in it"
+            
+            // Match strings within arrays: "...", looking for unescaped quotes inside
+            const fixedJson = jsonText.replace(
+                /"([^"]*)"([^,\]\}])/g, 
+                (match, p1, p2) => {
+                    // If the character after the closing quote is not a comma, bracket, or brace,
+                    // it's likely a malformed string
+                    if (p2 && p2.trim() && !p2.match(/^[\s,\]\}]/)) {
+                        return `"${p1}\\"${p2}`;
+                    }
+                    return match;
+                }
+            );
+            
+            // Additional fix: handle trailing commas in arrays
+            const noTrailingCommas = fixedJson.replace(/,(\s*[\]\}])/g, '$1');
+            
+            return noTrailingCommas;
+        }
     }
     
     // Merge multiple concept extractions into one
@@ -399,7 +442,7 @@ Use lowercase. Output complete JSON with ALL fields fully populated:`;
         
         if (!response.ok) {
                 const errorText = await response.text();
-                console.error(`  ❌ OpenRouter API error: ${response.status} ${response.statusText}`);
+                console.error(`  ❌ LLM API error: ${response.status} ${response.statusText}`);
                 console.error(`  Response: ${errorText.substring(0, 500)}`);
                 
                 // Handle rate limiting specifically
@@ -411,7 +454,7 @@ Use lowercase. Output complete JSON with ALL fields fully populated:`;
                     }
                 }
                 
-            throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+            throw new Error(`LLM API error: ${response.status} ${response.statusText}`);
         }
         
             // Try to parse response, handle large responses carefully
@@ -440,7 +483,7 @@ Use lowercase. Output complete JSON with ALL fields fully populated:`;
         
         if (!data.choices || data.choices.length === 0) {
                 console.error('  ❌ No choices in API response:', JSON.stringify(data).substring(0, 500));
-            throw new Error('No response from OpenRouter API');
+            throw new Error('No response from LLM API');
         }
         
             const content = data.choices[0].message.content;
@@ -453,7 +496,7 @@ Use lowercase. Output complete JSON with ALL fields fully populated:`;
             
             return content;
         } catch (error) {
-            console.error('  ❌ OpenRouter API call failed:', error);
+            console.error('  ❌ LLM API call failed:', error);
             throw error;
         }
     }

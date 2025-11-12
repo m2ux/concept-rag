@@ -13,7 +13,65 @@ A powerful MCP server that enables LLMs to interact with documents through conce
 - 🌐 **WordNet Integration**: Synonym expansion and hierarchical concept navigation (161K+ words)
 - ⚡ **Lightning Fast**: Cloud AI + local embeddings, no timeout issues
 - 🛡️ **Robust PDF Handling**: Gracefully handles corrupted files with OCR fallback
-- 📊 **Comprehensive Indexing**: Extracts 100+ concepts per document
+- 📊 **Comprehensive Indexing**: Extracts 80-150+ concepts per document with formal concept definition
+- 📚 **Large Document Support**: Multi-pass extraction for documents >100k tokens
+- 🎯 **Formal Concept Model**: Based on rigorous definition ensuring semantic matching and disambiguation
+
+## 📝 Available Tools
+
+The server provides the following search tools:
+
+### 🗂️ `catalog_search`
+
+Search document summaries to find relevant sources
+
+- Query expansion with corpus concepts + WordNet
+- Returns: Documents with concept matches and scores
+
+### 📄 `chunks_search`
+
+Find specific information within a chosen document
+
+- Requires `source` parameter (document path)
+- Concept-aware search within single document
+
+### 🔍 `broad_chunks_search`
+
+Search across ALL documents for detailed information
+
+- Returns: Top 10 most relevant chunks from entire corpus
+- Full conceptual expansion and multi-signal ranking
+
+### 🎯 `concept_search`
+
+Find all chunks that reference a specific concept
+
+- Search by exact concept name (e.g., "suspicion creation", "military strategy")
+- Returns: All chunks containing the concept, sorted by relevance
+- Shows concept metadata, related concepts, and distribution across documents
+
+**Example**: `"Find all chunks about leadership principles"`
+
+### 📤 `extract_concepts`
+
+Extract all concepts from a specific document in the database
+
+- **Parameters:**
+  - `document_query`: Search for document by name or topic (e.g., "Sun Tzu Art of War")
+  - `format`: Output format - `json` or `markdown` (default: json)
+  - `include_summary`: Include document summary and categories (default: true)
+- **Returns:** Complete concept list with primary concepts, technical terms, related concepts
+- **Use cases:**
+  - Generate concept maps for documents
+  - Export concepts for external analysis
+  - Review extraction quality
+
+**Example**: `"Extract all concepts from Sun Tzu's Art of War as markdown"`
+
+**Command-line alternative:**
+```bash
+npx tsx scripts/extract_concepts.ts "Sun Tzu" markdown
+```
 
 ## 🚀 Quick Start
 
@@ -224,10 +282,11 @@ npx tsx hybrid_fast_seed.ts \
 
 **Features:**
 
-- 🧠 **Comprehensive**: Extracts 100+ concepts per document (Claude Sonnet 4.5)
+- 🧠 **Comprehensive**: Extracts 80-150+ concepts per document (Claude Sonnet 4.5)
+- 📚 **Large document support**: Multi-pass extraction for documents >100k tokens
 - 📝 **Fast summaries**: Grok-4-fast for quick overviews
 - 🌐 **WordNet enriched**: Automatic synonym and hierarchy expansion
-- 🛡️ **Robust**: Auto-skips corrupted PDFs, OCR fallback for scanned docs
+- 🛡️ **Robust**: Auto-skips corrupted PDFs, OCR fallback for scanned docs, improved error handling
 - 💰 **Seeding cost**: ~$4.80 per 100 documents (one-time)
 
 ### 📋 Seeding Options
@@ -280,62 +339,30 @@ npx tsx hybrid_fast_seed.ts --dbpath ~/.concept_rag --filesdir ~/Documents/pdfs 
 → Finds: Technical docs even without exact wording
 ```
 
-## 📝 Available Tools
+## 🧠 Concept Model
 
-The server provides **5 conceptual search tools**:
+This system uses a **formal concept definition** to ensure high-quality semantic search:
 
-### 🗂️ `catalog_search`
+> **A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.**
 
-Search document summaries to find relevant sources
+### What Gets Extracted as Concepts
 
-- Query expansion with corpus concepts + WordNet
-- Returns: Documents with concept matches and scores
+**✅ INCLUDE:**
+- Domain-specific terms (e.g., "speciation", "exaptive bootstrapping", "allometric scaling")
+- Theories and frameworks (e.g., "complexity theory", "game theory")
+- Methodologies and processes (e.g., "agent-based modeling", "regression analysis")
+- Multi-word conceptual phrases (e.g., "strategic thinking", "social change")
+- Phenomena and patterns (e.g., "urban scaling", "emergence")
+- Abstract principles (e.g., "leadership principles", "design patterns")
 
-### 📄 `chunks_search`
+**❌ EXCLUDE:**
+- Temporal descriptions (e.g., "periods of heavy recruitment")
+- Specific action phrases (e.g., "balancing cohesion with innovation")
+- Suppositions (e.g., "attraction for collaborators")
+- Generic single words (e.g., "power", "riches", "time", "people")
+- Proper names, dates, metadata
 
-Find specific information within a chosen document
-
-- Requires `source` parameter (document path)
-- Concept-aware search within single document
-
-### 🔍 `broad_chunks_search`
-
-Search across ALL documents for detailed information
-
-- Returns: Top 10 most relevant chunks from entire corpus
-- Full conceptual expansion and multi-signal ranking
-
-### 🎯 `concept_search`
-
-Find all chunks that reference a specific concept
-
-- Search by exact concept name (e.g., "suspicion creation", "military strategy")
-- Returns: All chunks containing the concept, sorted by relevance
-- Shows concept metadata, related concepts, and distribution across documents
-- Requires: Database seeded with hybrid approach (see [HYBRID_APPROACH.md](HYBRID_APPROACH.md))
-
-**Example**: `"Find all chunks about leadership principles"`
-
-### 📤 `extract_concepts` (NEW)
-
-Extract all concepts from a specific document in the database
-
-- **Parameters:**
-  - `document_query`: Search for document by name or topic (e.g., "Sun Tzu Art of War")
-  - `format`: Output format - `json` or `markdown` (default: json)
-  - `include_summary`: Include document summary and categories (default: true)
-- **Returns:** Complete concept list with primary concepts, technical terms, related concepts
-- **Use cases:**
-  - Generate concept maps for documents
-  - Export concepts for external analysis
-  - Review extraction quality
-
-**Example**: `"Extract all concepts from Sun Tzu's Art of War as markdown"`
-
-**Command-line alternative:**
-```bash
-npx tsx scripts/extract_concepts.ts "Sun Tzu" markdown
-```
+For complete guidelines, see [AGENTS.md](AGENTS.md).
 
 ## 🏗️ Architecture
 
@@ -349,6 +376,7 @@ npx tsx scripts/extract_concepts.ts "Sun Tzu" markdown
  Concept          Summary            Chunks
  Extraction       Generation         Creation
  (Sonnet 4.5)     (Grok-4-fast)     (Local)
+ [Formal Model]   [Fast]            [Hybrid]
      ↓                ↓                ↓
  Concepts          Catalog           Chunks
  Table             Table             Table
@@ -369,19 +397,27 @@ npx tsx scripts/extract_concepts.ts "Sun Tzu" markdown
 
 ```
 hybrid_fast_seed.ts              # Seeding with concept extraction
+AGENTS.md                        # Formal concept definition & guidelines
 src/
 ├── conceptual_index.ts          # MCP server entry point
 ├── concepts/                    # Concept extraction & indexing
-│   ├── concept_extractor.ts    # LLM-based extraction
+│   ├── concept_extractor.ts    # LLM-based extraction (multi-pass)
 │   ├── concept_index.ts         # Index builder
+│   ├── concept_chunk_matcher.ts # Chunk-concept matching
 │   ├── query_expander.ts        # Query expansion
 │   └── types.ts                 # Shared types
 ├── wordnet/                     # WordNet integration
 │   └── wordnet_service.ts       # Python NLTK bridge
 ├── lancedb/                     # Database clients
 │   └── conceptual_search_client.ts  # Search engine
-└── tools/                       # MCP tools
-    └── conceptual_registry.ts   # Tool registry
+├── tools/                       # MCP tools
+│   ├── conceptual_registry.ts  # Tool registry
+│   └── operations/              # Individual tools
+│       ├── concept_search.ts   # Concept tracking
+│       └── document_concepts_extract.ts  # Concept extraction
+└── scripts/                     # CLI utilities
+    ├── extract_concepts.ts     # Extract concepts CLI
+    └── view_document_metadata.ts  # Metadata viewer
 ```
 
 ### Testing
@@ -411,10 +447,7 @@ npx tsx test/conceptual_search_test.ts
 
 - Concept extraction: ~$0.041/doc (Claude Sonnet 4.5)
 - Summarization: ~$0.007/doc (Grok-4-fast)
-- **Total: ~$0.048 per document**
-
-**For 100 documents: ~$4.80**
-**For 1,000 documents: ~$48**
+- **Total: ~\$0.048 per document**
 
 **Runtime search:** No additional API calls to OpenRouter (vector search is local)
 **Note:** When used with AI agents (Cursor, Claude Desktop), the agent incurs costs for processing search results
@@ -423,11 +456,14 @@ npx tsx test/conceptual_search_test.ts
 
 This project is forked from [lance-mcp](https://github.com/adiom-data/lance-mcp) by [adiom-data](https://github.com/adiom-data). The original project provided the foundational MCP server architecture and LanceDB integration. This fork extends the original with:
 
-- Conceptual search using corpus-driven concept extraction
-- WordNet semantic enrichment for synonym expansion
-- Multi-signal hybrid ranking (vector + BM25 + concept matching)
-- Enhanced AI models (Claude Sonnet 4.5 + Grok-4-fast)
-- Incremental seeding capabilities
+- **Formal concept model**: Rigorous definition ensuring semantic matching and disambiguation
+- **Conceptual search**: Corpus-driven concept extraction with 80-150+ concepts per document
+- **WordNet semantic enrichment**: Synonym expansion and hierarchical concept navigation
+- **Multi-signal hybrid ranking**: Vector + BM25 + concept matching + title matching
+- **Enhanced AI models**: Claude Sonnet 4.5 for extraction + Grok-4-fast for summaries
+- **Large document support**: Multi-pass extraction for documents >100k tokens
+- **Incremental seeding**: Fast updates for new/changed documents only
+- **Robust error handling**: Better JSON parsing, debug logging, OCR fallback
 
 We're grateful to the original author for creating and open-sourcing this excellent foundation!
 
