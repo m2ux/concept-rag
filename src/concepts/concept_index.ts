@@ -230,18 +230,39 @@ export class ConceptIndexBuilder {
                 mode: 'overwrite' 
             });
             
-            // Skip index creation for small datasets (< 5000 vectors)
-            // Index overhead isn't worth it, and LanceDB will use linear scan (fast for small tables)
-            if (data.length >= 5000) {
-                console.log(`  ✅ Table created, building vector index...`);
+            // Calculate appropriate number of partitions based on dataset size
+            // Rule of thumb: ~100-200 vectors per partition for good cluster quality
+            const calculatePartitions = (dataSize: number): number => {
+                if (dataSize < 100) return 2;
+                if (dataSize < 500) return Math.max(2, Math.floor(dataSize / 100));
+                if (dataSize < 1000) return Math.max(4, Math.floor(dataSize / 150));
+                if (dataSize < 5000) return Math.max(8, Math.floor(dataSize / 300));
+                if (dataSize < 10000) return Math.max(32, Math.floor(dataSize / 300));
+                if (dataSize < 50000) return Math.max(64, Math.floor(dataSize / 400));
+                return 256; // Default for very large datasets (50k+ vectors)
+            };
+            
+            const numPartitions = calculatePartitions(data.length);
+            
+            // Create optimized index for large datasets only
+            // IVF_PQ requires substantial data for PQ training (256+ samples per subvector)
+            // For smaller/medium datasets, skip indexing - linear scan is fast and avoids warnings
+            if (data.length >= 100000) {
+                console.log(`  🔧 Building optimized index (${data.length} vectors, ${numPartitions} partitions)...`);
                 try {
-                    await table.createIndex('vector');
-                    console.log(`  ✅ Vector index created`);
+                    await table.createIndex("vector", {
+                        config: lancedb.Index.ivfPq({
+                            numPartitions: numPartitions,
+                            numSubVectors: 16, // For 384-dim vectors
+                        })
+                    });
+                    console.log(`  ✅ Vector index created (IVF_PQ) successfully`);
                 } catch (indexError: any) {
-                    console.warn(`  ⚠️  Could not create index: ${indexError.message}`);
+                    console.warn(`  ⚠️  Index creation failed: ${indexError.message}`);
+                    console.warn(`     Table is still functional with brute-force search`);
                 }
             } else {
-                console.log(`  ✅ Table created (${data.length} vectors - using linear scan, no index needed)`);
+                console.log(`  ✅ Table created (${data.length} vectors - using linear scan, fast and no warnings)`);
             }
             
             return table;
