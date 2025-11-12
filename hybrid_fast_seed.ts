@@ -116,20 +116,22 @@ console.log = (...args: any[]) => {
     originalConsoleLog.apply(console, args);
 };
 
-const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: "overwrite"});
+const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: ["overwrite", "rebuild-concepts"]});
 
 const databaseDir = argv["dbpath"] || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag");
 const filesDir = argv["filesdir"];
 const overwrite = argv["overwrite"];
+const rebuildConcepts = argv["rebuild-concepts"];
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
 function validateArgs() {
     if (!filesDir) {
         console.error("Please provide a directory with files (--filesdir) to process");
-        console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [--overwrite]");
+        console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [--overwrite] [--rebuild-concepts]");
         console.error("  --filesdir: Directory containing PDF files to process (required)");
         console.error("  --dbpath: Database path (optional, defaults to ~/.concept_rag)");
         console.error("  --overwrite: Overwrite existing database tables (optional)");
+        console.error("  --rebuild-concepts: Rebuild concept index even if no new documents (optional)");
         process.exit(1);
     }
     
@@ -962,10 +964,11 @@ async function createLanceTableWithSimpleEmbeddings(
         console.log(`✅ Created LanceDB table: ${tableName}`);
         
         // Create index with appropriate configuration for dataset size
-        if (data.length >= 100) {
+        // IVF_PQ requires at least 256 rows for PQ training
+        if (data.length >= 256) {
             await createOptimizedIndex(table, data.length, numPartitions, tableName);
         } else {
-            console.log(`⏭️  Skipping index creation (${data.length} vectors < 100 minimum)`);
+            console.log(`⏭️  Skipping index creation (${data.length} vectors < 256 minimum for IVF_PQ)`);
         }
         
         return table;
@@ -984,7 +987,8 @@ async function createLanceTableWithSimpleEmbeddings(
                     const totalCount = await table.countRows();
                     const newPartitions = calculatePartitions(totalCount);
                     
-                    if (totalCount >= 100) {
+                    // IVF_PQ requires at least 256 rows for PQ training
+                    if (totalCount >= 256) {
                         await createOptimizedIndex(table, totalCount, newPartitions, tableName);
                     }
                 }
@@ -999,10 +1003,11 @@ async function createLanceTableWithSimpleEmbeddings(
         console.log(`✅ Created LanceDB table: ${tableName}`);
         
         // Create index with appropriate configuration for dataset size
-        if (data.length >= 100) {
+        // IVF_PQ requires at least 256 rows for PQ training
+        if (data.length >= 256) {
             await createOptimizedIndex(table, data.length, numPartitions, tableName);
         } else {
-            console.log(`⏭️  Skipping index creation (${data.length} vectors < 100 minimum)`);
+            console.log(`⏭️  Skipping index creation (${data.length} vectors < 256 minimum for IVF_PQ)`);
         }
         
         return table;
@@ -1016,10 +1021,15 @@ async function createOptimizedIndex(
     tableName: string
 ): Promise<void> {
     try {
+        // IVF_PQ requires at least 256 rows for PQ training
+        // This should never be called with < 256, but double-check
+        if (dataSize < 256) {
+            console.log(`⏭️  Skipping index - dataset too small (${dataSize} < 256)`);
+            return;
+        }
+        
         console.log(`🔧 Creating optimized index for ${tableName} (${dataSize} vectors, ${numPartitions} partitions)...`);
         
-        // IVF_PQ requires substantial data for PQ training (256+ samples per subvector)
-        // Only use IVF_PQ for large datasets to avoid KMeans clustering warnings
         await table.createIndex("vector", {
             config: lancedb.Index.ivfPq({
                 numPartitions: numPartitions,
@@ -1115,6 +1125,146 @@ Categories: ${concepts.categories.join(', ')}
     return catalogRecords;
 }
 
+async function getDatabaseSize(dbPath: string): Promise<string> {
+    try {
+        const stats = await fs.promises.stat(dbPath);
+        
+        if (!stats.isDirectory()) {
+            return 'N/A';
+        }
+        
+        // Recursively calculate directory size
+        async function getDirectorySize(dirPath: string): Promise<number> {
+            let totalSize = 0;
+            const items = await fs.promises.readdir(dirPath, { withFileTypes: true });
+            
+            for (const item of items) {
+                const itemPath = path.join(dirPath, item.name);
+                
+                if (item.isDirectory()) {
+                    totalSize += await getDirectorySize(itemPath);
+                } else if (item.isFile()) {
+                    const stats = await fs.promises.stat(itemPath);
+                    totalSize += stats.size;
+                }
+            }
+            
+            return totalSize;
+        }
+        
+        const sizeInBytes = await getDirectorySize(dbPath);
+        
+        // Format size in human-readable format
+        if (sizeInBytes < 1024) {
+            return `${sizeInBytes} B`;
+        } else if (sizeInBytes < 1024 * 1024) {
+            return `${(sizeInBytes / 1024).toFixed(2)} KB`;
+        } else if (sizeInBytes < 1024 * 1024 * 1024) {
+            return `${(sizeInBytes / (1024 * 1024)).toFixed(2)} MB`;
+        } else {
+            return `${(sizeInBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+        }
+    } catch (error) {
+        return 'N/A';
+    }
+}
+
+async function rebuildConceptIndexFromExistingData(
+    db: lancedb.Connection,
+    catalogTable: lancedb.Table,
+    chunksTable: lancedb.Table
+): Promise<void> {
+    console.log("  📚 Loading ALL catalog records...");
+    const catalogRecords = await catalogTable.query().limit(100000).toArray();
+    
+    // Convert to Document format
+    const catalogDocs = catalogRecords
+        .filter((r: any) => r.text && r.source && r.concepts)
+        .map((r: any) => {
+            let concepts = r.concepts;
+            if (typeof concepts === 'string') {
+                try {
+                    concepts = JSON.parse(concepts);
+                } catch (e) {
+                    concepts = null;
+                }
+            }
+            
+            return new Document({
+                pageContent: r.text || '',
+                metadata: {
+                    source: r.source,
+                    hash: r.hash,
+                    concepts: concepts
+                }
+            });
+        })
+        .filter((d: Document) => d.metadata.concepts);
+    
+    console.log(`  ✅ Loaded ${catalogRecords.length} catalog records (${catalogDocs.length} with concepts)`);
+    
+    console.log("  📦 Loading ALL chunks for accurate concept counting...");
+    const allChunkRecords = await chunksTable.query().limit(1000000).toArray();
+    
+    // Convert chunk records to Documents
+    const allChunks = allChunkRecords.map((chunk: any) => {
+        let concepts = [];
+        let categories = [];
+        let density = 0;
+        
+        try {
+            concepts = chunk.concepts ? JSON.parse(chunk.concepts) : [];
+            categories = chunk.concept_categories ? JSON.parse(chunk.concept_categories) : [];
+            density = chunk.concept_density || 0;
+        } catch (e) {
+            // Keep empty defaults
+        }
+        
+        return new Document({
+            pageContent: chunk.text || '',
+            metadata: {
+                source: chunk.source,
+                hash: chunk.hash,
+                concepts: concepts,
+                concept_categories: categories,
+                concept_density: density
+            }
+        });
+    });
+    
+    console.log(`  ✅ Loaded ${allChunks.length} total chunks`);
+    
+    console.log("  🧠 Building concept index from ALL data...");
+    const conceptBuilder = new ConceptIndexBuilder();
+    const conceptRecords = await conceptBuilder.buildConceptIndex(catalogDocs, allChunks);
+    
+    console.log(`  ✅ Built ${conceptRecords.length} unique concept records`);
+    
+    // Log concepts with highest chunk counts
+    const topConceptsByChunks = conceptRecords
+        .filter(c => c.chunk_count > 0)
+        .sort((a, b) => b.chunk_count - a.chunk_count)
+        .slice(0, 10);
+    
+    if (topConceptsByChunks.length > 0) {
+        console.log(`\n  🔝 Top 10 concepts by chunk count:`);
+        topConceptsByChunks.forEach((c, idx) => {
+            console.log(`    ${idx + 1}. "${c.concept}" - ${c.chunk_count} chunks (${c.category})`);
+        });
+    }
+    
+    // Drop and recreate concepts table
+    try {
+        await db.dropTable('concepts');
+        console.log("\n  🗑️  Dropped existing concepts table");
+    } catch (e) {
+        // Table didn't exist, that's fine
+    }
+    
+    await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts');
+    console.log("  ✅ Concept index created successfully");
+}
+
 async function hybridFastSeed() {
     validateArgs();
 
@@ -1157,7 +1307,44 @@ async function hybridFastSeed() {
 
     if (rawDocs.length === 0) {
         console.log("✅ No new documents to process - all files already exist in database.");
+        
+        // Check if we should rebuild the concept index (opt-in via flag)
+        if (rebuildConcepts && catalogTable && chunksTable) {
+            try {
+                console.log("\n🔍 Rebuild concepts flag detected - rebuilding concept index...");
+                
+                // Check if concepts table exists
+                const tableNames = await db.tableNames();
+                const hasConceptsTable = tableNames.includes('concepts');
+                
+                if (!hasConceptsTable) {
+                    console.log("📊 Concept index missing - will rebuild from existing data");
+                } else {
+                    console.log("📊 Rebuilding concept index with latest algorithm...");
+                }
+                
+                // Rebuild concept index from ALL existing catalog records and chunks
+                await rebuildConceptIndexFromExistingData(db, catalogTable, chunksTable);
+                
+                const dbSize = await getDatabaseSize(databaseDir);
+                console.log(`💾 Database size: ${dbSize}`);
+                console.log("🎉 Concept index rebuild completed successfully!");
+                process.exit(0);
+            } catch (error: any) {
+                console.error("⚠️  Error rebuilding concept index:", error.message);
+                console.log("🎉 Seeding completed (concept index rebuild failed)");
+                process.exit(0);
+            }
+        }
+        
+        if (rebuildConcepts) {
+            console.log("\n💡 Note: --rebuild-concepts flag was set but catalog or chunks table missing");
+        }
+        
+        const dbSize = await getDatabaseSize(databaseDir);
+        console.log(`💾 Database size: ${dbSize}`);
         console.log("🎉 Seeding completed successfully (no changes needed)!");
+        console.log("💡 Tip: Use --rebuild-concepts to rebuild the concept index if chunk counts are incorrect");
         process.exit(0);
     }
 
@@ -1220,8 +1407,11 @@ async function hybridFastSeed() {
         // Enrich each chunk with concepts from its source document
         const matcher = new ConceptChunkMatcher();
         let enrichedCount = 0;
+        const totalChunks = docs.length;
+        const progressInterval = Math.max(Math.floor(totalChunks / 20), 100); // Update every 5% or 100 chunks
         
-        for (const chunk of docs) {
+        for (let i = 0; i < docs.length; i++) {
+            const chunk = docs[i];
             const source = chunk.metadata.source;
             const documentConcepts = sourceConceptsMap.get(source);
             
@@ -1240,7 +1430,17 @@ async function hybridFastSeed() {
                     enrichedCount++;
                 }
             }
+            
+            // Progress indicator
+            if ((i + 1) % progressInterval === 0 || i === docs.length - 1) {
+                const progress = ((i + 1) / totalChunks * 100).toFixed(1);
+                const enrichedPercent = enrichedCount > 0 ? ((enrichedCount / (i + 1)) * 100).toFixed(1) : '0.0';
+                process.stdout.write(`\r  📊 Progress: ${i + 1}/${totalChunks} chunks (${progress}%) - ${enrichedCount} enriched (${enrichedPercent}%)     `);
+            }
         }
+        
+        // Clear progress line and print final result
+        process.stdout.write('\r' + ' '.repeat(100) + '\r');
         
         const stats = matcher.getMatchingStats(
             docs.filter(d => d.metadata.concepts).map(d => ({
@@ -1316,8 +1516,52 @@ async function hybridFastSeed() {
         const conceptBuilder = new ConceptIndexBuilder();
         
         // Build concept index from ALL catalog records (new + existing)
-        // For chunks, we only pass the new chunks since we can't efficiently load all chunks
-        const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogRecords, docs);
+        // Load ALL chunks from database to get accurate chunk_count for all concepts
+        let allChunks: Document[] = [];
+        if (chunksTable) {
+            try {
+                console.log("  📦 Loading ALL existing chunks for accurate concept counting...");
+                const allChunkRecords = await chunksTable.query().limit(1000000).toArray();
+                
+                // Convert chunk records to Documents
+                allChunks = allChunkRecords.map((chunk: any) => {
+                    // Parse concepts if present
+                    let concepts = [];
+                    let categories = [];
+                    let density = 0;
+                    
+                    try {
+                        concepts = chunk.concepts ? JSON.parse(chunk.concepts) : [];
+                        categories = chunk.concept_categories ? JSON.parse(chunk.concept_categories) : [];
+                        density = chunk.concept_density || 0;
+                    } catch (e) {
+                        // Keep empty defaults
+                    }
+                    
+                    return new Document({
+                        pageContent: chunk.text || '',
+                        metadata: {
+                            source: chunk.source,
+                            hash: chunk.hash,
+                            concepts: concepts,
+                            concept_categories: categories,
+                            concept_density: density
+                        }
+                    });
+                });
+                
+                console.log(`  ✅ Loaded ${allChunks.length} total chunks for concept counting`);
+            } catch (e: any) {
+                console.warn(`  ⚠️  Could not load existing chunks: ${e.message}`);
+                console.log(`  📊 Building concept index with new chunks only`);
+                allChunks = docs; // Fall back to new chunks only
+            }
+        } else {
+            // No chunks table yet, use new chunks
+            allChunks = docs;
+        }
+        
+        const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogRecords, allChunks);
         
         console.log(`✅ Built ${conceptRecords.length} unique concept records`);
         
@@ -1353,8 +1597,12 @@ async function hybridFastSeed() {
         }
     }
 
+    // Calculate database size
+    const dbSize = await getDatabaseSize(databaseDir);
+    
     console.log(`\n✅ Created ${catalogRecords.length} catalog records`);
     console.log(`✅ Created ${docs.length} chunk records`);
+    console.log(`💾 Database size: ${dbSize}`);
     console.log("🎉 Seeding completed successfully!");
 }
 

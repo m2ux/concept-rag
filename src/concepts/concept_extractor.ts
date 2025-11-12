@@ -97,8 +97,10 @@ export class ConceptExtractor {
     // Extract concepts from a chunk
     private async extractConceptsFromChunk(chunk: string): Promise<ConceptMetadata> {
         const estimatedTokens = Math.ceil(chunk.length / 4) + 1000;
-        const contextLimit = 1048576;
-        const maxTokens = Math.min(contextLimit - estimatedTokens - 10000, 65536);
+        const contextLimit = 400000; // gpt-5-mini has 400k context
+        const safetyBuffer = 10000;
+        const calculatedMaxTokens = contextLimit - estimatedTokens - safetyBuffer;
+        const maxTokens = Math.max(Math.min(calculatedMaxTokens, 65536), 16); // Ensure >= 16
         
         const prompt = `FORMAL DEFINITION:
 A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.
@@ -450,7 +452,7 @@ Use lowercase. Output complete JSON with ALL fields fully populated:`;
                     console.warn(`  🚦 Rate limited! Waiting 10 seconds before retry...`);
                     if (retryCount < maxRetries) {
                         await new Promise(resolve => setTimeout(resolve, 10000));
-                        return this.callOpenRouter(prompt, retryCount + 1);
+                        return this.callOpenRouter(prompt, maxTokens, retryCount + 1);
                     }
                 }
                 
@@ -476,7 +478,7 @@ Use lowercase. Output complete JSON with ALL fields fully populated:`;
                     const waitTime = 5000 * (retryCount + 1); // 5s, 10s, 15s
                     console.warn(`  🔄 Retrying (${retryCount + 1}/${maxRetries}) after ${waitTime/1000}s...`);
                     await new Promise(resolve => setTimeout(resolve, waitTime));
-                    return this.callOpenRouter(prompt, retryCount + 1);
+                    return this.callOpenRouter(prompt, maxTokens, retryCount + 1);
                 }
                 throw parseError;
             }
@@ -489,9 +491,18 @@ Use lowercase. Output complete JSON with ALL fields fully populated:`;
             const content = data.choices[0].message.content;
             
             // Check if content is mostly whitespace
-            if (content.trim().length < 100) {
-                console.error(`  ❌ Empty response from API`);
-                throw new Error('API returned empty or whitespace-only content');
+            if (!content || content.trim().length < 100) {
+                console.error(`  ❌ Empty response from API (length: ${content?.length || 0})`);
+                
+                // Retry with exponential backoff
+                if (retryCount < maxRetries) {
+                    const waitTime = 5000 * (retryCount + 1); // 5s, 10s, 15s
+                    console.warn(`  🔄 Retrying empty response (${retryCount + 1}/${maxRetries}) after ${waitTime/1000}s...`);
+                    await new Promise(resolve => setTimeout(resolve, waitTime));
+                    return this.callOpenRouter(prompt, maxTokens, retryCount + 1);
+                }
+                
+                throw new Error('API returned empty or whitespace-only content after retries');
             }
             
             return content;
