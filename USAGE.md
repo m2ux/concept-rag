@@ -8,6 +8,19 @@
 
 ---
 
+## 🎯 Quick Tool Selection
+
+**For AI Agents:** See [tool-selection-guide.md](tool-selection-guide.md) for comprehensive tool selection decision tree and comparison matrix.
+
+**Quick Decision:**
+1. Looking for documents? → `catalog_search`
+2. Researching a concept? → `concept_search` 
+3. Searching for phrases/questions? → `broad_chunks_search`
+4. Searching within known document? → `chunks_search`
+5. Extracting concept list? → `extract_concepts`
+
+---
+
 ## MCP Tools
 
 Access these tools through the MCP interface (e.g., Claude Desktop, Cursor AI).
@@ -257,13 +270,17 @@ npx tsx scripts/view_document_metadata.ts "Sun Tzu"
 
 ### Tool Selection
 
-| Goal | Best Tool |
-|------|-----------|
-| Find relevant documents | `catalog_search` |
-| Search within known document | `chunks_search` |
-| Research across all documents | `broad_chunks_search` |
-| Track specific concept usage | `concept_search` |
-| Export/analyze concepts | `extract_concepts` |
+| Goal | Best Tool | Query Type |
+|------|-----------|------------|
+| Find relevant documents | `catalog_search` | Titles, authors, topics |
+| **Research a concept** | **`concept_search`** | **Single concept terms (highest precision)** |
+| Search across all documents | `broad_chunks_search` | Phrases, questions, keywords |
+| Search within known document | `chunks_search` | Any query + source path |
+| Export/analyze concepts | `extract_concepts` | Document identifier |
+
+**Important:** For conceptual research (e.g., "innovation", "leadership"), use `concept_search` for 100% precision with semantically-tagged results. Use `broad_chunks_search` for keyword/phrase searches.
+
+See [tool-selection-guide.md](tool-selection-guide.md) for detailed selection criteria.
 
 ### Performance
 

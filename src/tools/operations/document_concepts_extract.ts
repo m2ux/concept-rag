@@ -14,13 +14,31 @@ export interface DocumentConceptsExtractParams extends ToolParams {
  */
 export class DocumentConceptsExtractTool extends BaseTool<DocumentConceptsExtractParams> {
   name = "extract_concepts";
-  description = "Extract all concepts (primary concepts, technical terms, related concepts) from a specific document in the database. Search by document name or topic.";
+  description = `Export the complete list of concepts extracted from a specific document. Returns all primary concepts, technical terms, related concepts, categories, and summary.
+
+USE THIS TOOL WHEN:
+- User explicitly asks to "extract concepts", "list concepts", "show concepts", or "export concepts"
+- Creating a concept map or overview of a document's conceptual content
+- Reviewing the quality of concept extraction for a document
+- Exporting concept data for external analysis or documentation
+- Generating concept inventories or taxonomies
+
+DO NOT USE for:
+- Searching for information (use catalog_search, chunks_search, or broad_chunks_search)
+- Finding where a concept is discussed (use concept_search)
+- General document discovery (use catalog_search)
+
+RETURNS: Complete concept inventory (typically 80-150+ concepts) organized by type: primary_concepts, technical_terms, related_concepts. Also includes categories and document summary if requested.
+
+OUTPUT FORMATS:
+- json: Structured data with arrays of concepts by type
+- markdown: Formatted tables with row numbers, suitable for documentation`;
   inputSchema = {
     type: "object" as const,
     properties: {
       document_query: {
         type: "string",
-        description: "Search query to find the document (e.g., 'Sun Tzu Art of War', 'healthcare system', author name, or document title)",
+        description: "Document title, author name, subject, or keywords to identify the document (uses vector search to find best match)",
       },
       format: {
         type: "string",

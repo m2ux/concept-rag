@@ -13,13 +13,26 @@ export interface ConceptSearchParams extends ToolParams {
  */
 export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
   name = "concept_search";
-  description = "Find all document chunks that reference a specific concept. Returns chunks sorted by relevance, showing where in your library a particular concept is discussed.";
+  description = `Find all chunks tagged with a specific concept from the concept-enriched index. 
+  
+USE THIS TOOL WHEN:
+- Searching for a conceptual topic (e.g., "innovation", "leadership", "strategic thinking")
+- You want semantically-tagged, high-precision results about a concept
+- Tracking where and how a concept is discussed across your library
+- Research queries focused on understanding a specific concept
+
+DO NOT USE for:
+- Keyword searches or exact phrase matching (use broad_chunks_search instead)
+- Finding documents by title (use catalog_search instead)
+- Searching within a known document (use chunks_search instead)
+
+RETURNS: Concept-tagged chunks with concept_density scores, related concepts, and semantic categories. Results are from the concept-enriched index and have been semantically validated during extraction.`;
   inputSchema = {
     type: "object" as const,
     properties: {
       concept: {
         type: "string",
-        description: "The concept to search for (e.g., 'suspicion creation', 'military strategy', 'leadership')",
+        description: "The concept to search for - use conceptual terms not exact phrases (e.g., 'innovation' not 'innovation process', 'leadership' not 'leadership in organizations')",
       },
       limit: {
         type: "number",

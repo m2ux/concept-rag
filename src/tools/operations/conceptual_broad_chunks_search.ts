@@ -9,13 +9,27 @@ export interface ConceptualBroadChunksSearchParams extends ToolParams {
 
 export class ConceptualBroadChunksSearchTool extends BaseTool<ConceptualBroadChunksSearchParams> {
   name = "broad_chunks_search";
-  description = "Search for specific information across ALL documents using conceptual search. Searches detailed chunks with concept and synonym expansion for comprehensive results across your entire corpus.";
+  description = `Search across ALL document chunks using hybrid search (vector similarity + BM25 keyword matching + concept scoring + WordNet expansion).
+
+USE THIS TOOL WHEN:
+- Searching for specific phrases, keywords, or technical terms across all documents
+- Need comprehensive cross-document research on a topic
+- Looking for textual content that may or may not be tagged as a concept
+- Query contains multiple terms or is phrased as a natural language question
+- Want to find content regardless of whether it was identified as a formal concept
+
+DO NOT USE for:
+- Finding documents by title or getting document overviews (use catalog_search instead)
+- Searching within a single known document (use chunks_search instead)
+- Finding semantically-tagged concept discussions (use concept_search for higher precision)
+
+RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, concept, and WordNet scores. May include false positives based on keyword matches.`;
   inputSchema = {
     type: "object" as const,
     properties: {
       text: {
         type: "string",
-        description: "Search query - can use natural language, technical terms, or synonyms",
+        description: "Search query - natural language questions, phrases, keywords, or technical terms. Can be multi-word queries.",
       },
       debug: {
         type: "boolean",

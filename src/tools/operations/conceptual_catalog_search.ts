@@ -9,13 +9,27 @@ export interface ConceptualCatalogSearchParams extends ToolParams {
 
 export class ConceptualCatalogSearchTool extends BaseTool<ConceptualCatalogSearchParams> {
   name = "catalog_search";
-  description = "Search for relevant documents using conceptual search (corpus concepts + WordNet + hybrid signals). Returns documents ranked by semantic relevance, keyword matching, title matching, concept matching, and synonym expansion.";
+  description = `Search document summaries and metadata to discover relevant documents. Uses title matching, concept matching, summary analysis, and semantic similarity.
+
+USE THIS TOOL WHEN:
+- Discovering what documents are available in the library ("What documents do I have?")
+- Finding documents about a general topic or domain
+- Looking for documents by title, author, or subject area
+- Need document-level results rather than specific chunks
+- Starting exploratory research to identify relevant sources
+
+DO NOT USE for:
+- Finding specific information within documents (use broad_chunks_search or chunks_search)
+- Tracking specific concept usage across chunks (use concept_search)
+- Deep content analysis (use broad_chunks_search)
+
+RETURNS: Top 5 documents with text previews, hybrid scores (including strong title matching bonus), matched concepts, and query expansion details.`;
   inputSchema = {
     type: "object" as const,
     properties: {
       text: {
         type: "string",
-        description: "Search query - can use natural language, technical terms, or synonyms",
+        description: "Search query - document titles, author names, subject areas, or general topics. Title matches receive significant ranking boost.",
       },
       debug: {
         type: "boolean",
