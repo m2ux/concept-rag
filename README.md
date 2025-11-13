@@ -2,8 +2,43 @@
 
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-blue.svg)](https://nodejs.org/en/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
 
 A powerful MCP server that enables LLMs to interact with documents through conceptual search. Combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking powered by LanceDB for superior retrieval accuracy.
+
+**🚀 [Quick Start](#-quick-start)** • **📖 [Documentation](#-documentation)** • **💡 [Examples](EXAMPLES.md)** • **❓ [FAQ](FAQ.md)** • **🛠️ [Troubleshooting](TROUBLESHOOTING.md)**
+
+---
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [USAGE.md](USAGE.md) | Tool details and workflow examples |
+| [EXAMPLES.md](EXAMPLES.md) | Real-world usage scenarios |
+| [FAQ.md](FAQ.md) | Frequently asked questions |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Complete troubleshooting guide |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| [SECURITY.md](SECURITY.md) | Security policy |
+| [tool-selection-guide.md](tool-selection-guide.md) | AI agent tool selection guide |
+
+---
+
+## 🎯 At a Glance
+
+| Feature | Detail                                                   |
+|---------|----------------------------------------------------------|
+| **Search Tools** | 5 specialized tools for different search needs           |
+| **Concept Extraction** | 80-150+ concepts per document                            |
+| **Models** | Claude Sonnet 4.5 (extraction) + Grok-4-fast (summaries) |
+| **Semantic Engine** | WordNet integration (161K+ words)                        |
+| **Cost** | ~\$0.048/document (one-time), $\0 for searches           |
+| **Speed** | <1 second per query after initial load                   |
+| **Supported Formats** | PDF (text + OCR for scanned)                             |
+| **MCP Clients** | Claude Desktop, Cursor                                   |
 
 ## ✨ Features
 
@@ -14,6 +49,22 @@ A powerful MCP server that enables LLMs to interact with documents through conce
 - 🛡️ **Robust PDF Handling**: Gracefully handles corrupted files with OCR fallback
 - 📚 **Large Document Support**: Multi-pass extraction for documents >100k tokens
 - 💡 **Intelligent Tool Selection**: Embedded documentation guides AI agents to optimal tool choice
+
+## 🤔 Why Use Concept-RAG?
+
+### Traditional Search Problems
+❌ Keyword-only matching misses semantically related content  
+❌ No understanding of document concepts and themes  
+❌ Poor results for complex queries  
+❌ Manual tagging and categorization required  
+
+### Concept-RAG Solutions
+✅ **Semantic understanding**: Finds content by meaning, not just keywords  
+✅ **Automatic concept extraction**: 80-150+ concepts per document  
+✅ **Multiple search modes**: Right tool for each use case  
+✅ **Hybrid ranking**: Combines vector, keyword, concept, and synonym matching  
+✅ **Zero-cost searches**: Local processing after initial indexing  
+✅ **Privacy-first**: Your searches never leave your machine  
 
 ## 📝 Available Tools
 
@@ -422,6 +473,42 @@ This fork extends the original with:
 - **Robust error handling**: Better JSON parsing, debug logging, OCR fallback
 
 We're grateful to the original author for creating and open-sourcing this excellent foundation!
+
+## 💬 Support & Community
+
+### Getting Help
+
+- **📖 Documentation**: Start with [USAGE.md](USAGE.md) and [FAQ.md](FAQ.md)
+- **🐛 Bug Reports**: [GitHub Issues](https://github.com/m2ux/concept-rag/issues)
+- **💡 Questions & Discussions**: [GitHub Discussions](https://github.com/m2ux/concept-rag/discussions)
+- **🔒 Security Issues**: See [SECURITY.md](SECURITY.md)
+- **🛠️ Troubleshooting**: Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+
+### Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Development setup
+- Code style guidelines
+- Pull request process
+- Areas needing help
+
+### Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for version history and release notes.
+
+## ⭐ Show Your Support
+
+If you find Concept-RAG useful, please:
+- ⭐ Star the repository
+- 🐛 Report bugs and suggest features
+- 📝 Share your use cases
+- 🤝 Contribute improvements
+
+## 📊 Project Status
+
+- ✅ **Stable**: v1.0.0
+- 🔄 **Actively maintained**: Regular updates and bug fixes
+- 📈 **Growing**: New features and improvements planned
 
 ## 📜 License
 
