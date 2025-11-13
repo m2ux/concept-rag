@@ -39,7 +39,7 @@ code prompts/concept-extraction.txt
 After editing, rebuild the project:
 
 ```bash
-cd /home/mike/projects/dev/concept-rag
+cd /path/to/concept-rag
 npm run build
 ```
 
