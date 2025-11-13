@@ -1,6 +1,6 @@
 # Concept Extraction Scripts
 
-This directory contains standalone command-line utilities for working with document concepts in the concept-rag database.
+This directory contains operational utilities for managing document concepts in the concept-rag database.
 
 ## Scripts
 
@@ -34,58 +34,16 @@ npx tsx scripts/extract_concepts.ts "Christopher Alexander" json
 - Shows top matching documents and selects the best match
 - Displays concept statistics before saving
 
-**Output Formats:**
-
-1. **Markdown** (default) - Creates formatted tables with:
-   - Primary Concepts table
-   - Technical Terms table
-   - Related Concepts table
-   - Categories list
-   - Document summary
-
-2. **JSON** - Creates structured JSON with:
-   - Document metadata (path, hash, extraction timestamp)
-   - All concept arrays
-   - Categories and summary
-
 ---
 
-### `view_document_metadata.ts` - View Full Document Metadata
+### `rebuild_indexes.ts` - Rebuild LanceDB Indexes
 
-View complete document metadata including all concepts in JSON format (useful for debugging or exploration).
-
-**Usage:**
-```bash
-npx tsx scripts/view_document_metadata.ts <document_query>
-```
-
-**Examples:**
-```bash
-# View Sun Tzu document metadata
-npx tsx scripts/view_document_metadata.ts "Sun Tzu Art of War"
-
-# View healthcare system document
-npx tsx scripts/view_document_metadata.ts "healthcare"
-```
-
-**Output:**
-- Lists all matching documents
-- Displays concept statistics
-- Shows complete JSON metadata for selected document
-
----
-
-### `rebuild_indexes.ts` - Rebuild LanceDB Indexes with Optimized Parameters
-
-Rebuild vector indexes for existing tables with dataset-size-appropriate partition counts. This eliminates KMeans clustering warnings and optimizes search performance.
+Rebuild vector indexes for existing tables with optimized parameters.
 
 **Usage:**
 ```bash
 npx tsx scripts/rebuild_indexes.ts [--dbpath <path>]
 ```
-
-**Parameters:**
-- `--dbpath` - (Optional) Path to LanceDB database directory (default: `~/.concept_rag`)
 
 **Examples:**
 ```bash
@@ -98,48 +56,74 @@ npx tsx scripts/rebuild_indexes.ts --dbpath /path/to/database
 
 **What it does:**
 - Analyzes each table to determine optimal partition count
-- Skips indexing for very small tables (< 100 vectors) where linear scan is faster
-- Rebuilds indexes with optimized parameters:
-  - Small datasets (100-500 vectors): 2-10 partitions
-  - Medium datasets (500-5000 vectors): 10-25 partitions  
-  - Large datasets (5000+ vectors): 256 partitions
-- Eliminates "KMeans: more than 10% of clusters are empty" warnings
+- Rebuilds indexes with optimized parameters
+- Eliminates clustering warnings
+
+---
+
+### `reenrich_chunks_with_concepts.ts` - Re-tag Chunks
+
+Re-enrich existing chunks with concept tags from catalog entries.
+
+**Usage:**
+```bash
+npx tsx scripts/reenrich_chunks_with_concepts.ts [--batch-size <size>]
+```
 
 **When to use:**
-- After upgrading to a version with optimized indexing
-- If you see KMeans clustering warnings in logs
-- To optimize search performance for small datasets
-- To reduce memory usage
+- After updating concept extraction in catalog
+- To propagate catalog concepts to chunks
 
-**Output:**
-- Shows current row count for each table
-- Indicates whether index is being created or skipped
-- Reports success/failure for each table
+---
+
+### `repair_missing_concepts.ts` - Repair Missing Concepts
+
+Re-extract concepts for documents with missing or incomplete concepts.
+
+**Usage:**
+```bash
+npx tsx scripts/repair_missing_concepts.ts [--min-concepts <count>]
+```
+
+**Parameters:**
+- `--min-concepts` - Minimum concept count threshold (default: 10)
+
+**Examples:**
+```bash
+# Repair documents with fewer than 10 concepts
+npx tsx scripts/repair_missing_concepts.ts
+
+# Repair documents with fewer than 50 concepts
+npx tsx scripts/repair_missing_concepts.ts --min-concepts 50
+```
+
+**What it does:**
+1. Identifies documents with missing/incomplete concepts
+2. Re-extracts concepts using current prompts
+3. Updates catalog entries
+4. Re-enriches affected chunks
+5. Rebuilds concept index
+
+**Requires:** `OPENROUTER_API_KEY` environment variable
 
 ---
 
 ## Environment Variables
 
-You can customize the database location:
-
 ```bash
+# API key for concept extraction
+export OPENROUTER_API_KEY="your-key-here"
+
+# Custom database location (optional)
 export CONCEPT_RAG_DB="/custom/path/to/database"
-npx tsx scripts/extract_concepts.ts "query"
 ```
 
-Default location: `~/.concept_rag`
+Default database location: `~/.concept_rag`
 
 ---
 
 ## Notes
 
-- Scripts use vector search to find documents, so partial matches work well
-- The best matching document is automatically selected
 - All scripts require a built project (`npm run build`)
-- Scripts read from the compiled `dist/` directory
-
-
-
-
-
-
+- Scripts use vector search to find documents
+- Best matching document is automatically selected

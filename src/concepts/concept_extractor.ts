@@ -1,5 +1,6 @@
 import { Document } from "@langchain/core/documents";
 import { ConceptMetadata } from "./types.js";
+import { buildConceptExtractionPrompt } from "../config.js";
 import * as fs from "fs";
 
 export class ConceptExtractor {
@@ -102,33 +103,8 @@ export class ConceptExtractor {
         const calculatedMaxTokens = contextLimit - estimatedTokens - safetyBuffer;
         const maxTokens = Math.max(Math.min(calculatedMaxTokens, 65536), 16); // Ensure >= 16
         
-        const prompt = `FORMAL DEFINITION:
-A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.
-
-Extract concepts from this text as JSON:
-
-${chunk}
-
-Return JSON:
-{
-  "primary_concepts": ["80-150 concepts, methods, ideas"],
-  "categories": ["3-7 domains"],
-  "related_concepts": ["20-40 related topics"]
-}
-
-EXCLUDE:
-❌ Temporal descriptions (e.g., "periods of heavy recruitment")
-❌ Specific action phrases (e.g., "balancing cohesion with innovation")
-❌ Suppositions (e.g., "attraction for collaborators")
-❌ Generic single words (e.g., "power", "riches", "time", "people")
-❌ Names, dates, metadata
-
-INCLUDE:
-✅ Domain terms (e.g., "speciation", "exaptive bootstrapping")
-✅ Theories, methodologies, processes, phenomena
-✅ Multi-word concepts
-
-Use lowercase. Output only valid JSON with proper escaping of quotes. Ensure ALL strings in arrays have escaped quotes.`;
+        // Build prompt from template file
+        const prompt = buildConceptExtractionPrompt(chunk);
         
         let response: string | undefined;
         try {
@@ -283,34 +259,8 @@ Use lowercase. Output only valid JSON with proper escaping of quotes. Ensure ALL
             16000  // Conservative output limit
         );
         
-        const prompt = `FORMAL DEFINITION:
-A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.
-
-Extract ALL significant concepts from this document as JSON.
-
-${contentSample}
-
-Return JSON with these 3 fields:
-1. primary_concepts: Array of 80-150 strings (concepts, methods, ideas, processes from the document)
-2. categories: Array of 3-7 strings (broad domain names)
-3. related_concepts: Array of 20-40 strings (related research topics)
-
-IMPORTANT - Extract ONLY reusable concepts, theories, and domain knowledge. DO NOT extract:
-❌ Temporal/situational descriptions (e.g., "periods of heavy recruitment", "times of crisis", "early adoption phase")
-❌ Overly specific action phrases (e.g., "balancing broad cohesion with innovation", "managing diverse stakeholders")
-❌ Suppositions or observations (e.g., "attraction for potential collaborators", "tendency toward cooperation")
-❌ Generic common single words (e.g., "power", "riches", "time", "space", "people", "work", "money")
-❌ Names of people, organizations, places, publications
-❌ Dates, page numbers, metadata
-
-✅ DO extract:
-- Core theories (e.g., "complexity theory", "game theory", "field theory")
-- Methodologies (e.g., "agent-based modeling", "regression analysis", "ethnography")
-- Domain-specific technical terms (e.g., "speciation", "exaptive bootstrapping", "allometric scaling")
-- Multi-word conceptual phrases (e.g., "strategic thinking", "social change", "network formation")
-- Processes and phenomena (e.g., "urban scaling", "emergence", "path dependence")
-
-Use lowercase. Output complete JSON with ALL fields fully populated:`;
+        // Build prompt from template file
+        const prompt = buildConceptExtractionPrompt(contentSample);
         
         try {
             const response = await this.callOpenRouter(prompt, dynamicMaxTokens);
