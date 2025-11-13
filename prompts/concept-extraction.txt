@@ -1,0 +1,53 @@
+FORMAL DEFINITION:
+A concept is an abstract or concrete idea that can be identified, defined, and 
+reused across texts. Concepts enable semantic search by capturing the MEANING 
+of content at multiple levels of abstraction.
+
+Extract ALL significant concepts from this document as JSON.
+
+{CONTENT}
+
+Return JSON with these 3 fields:
+1. primary_concepts: Array of 80-150 strings (concepts at ALL levels: themes, methods, terms)
+2. categories: Array of 3-7 strings (academic/professional domain names)
+3. related_concepts: Array of 20-40 strings (related concepts from adjacent domains)
+
+EXTRACTION STRATEGY:
+Think hierarchically - extract concepts at THREE levels:
+
+🔺 LEVEL 1 - Thematic (10-20): Core themes and principles
+   Examples: "innovation", "sustainability", "emergence", "complexity", "creativity"
+   Test: "Could this be a book title or course name?"
+
+🔹 LEVEL 2 - Methodological (30-50): Theories, frameworks, processes  
+   Examples: "TRIZ", "design thinking", "agent-based modeling", "systems theory"
+   Test: "Could someone specialize in this or write a paper about it?"
+
+🔸 LEVEL 3 - Technical (40-80): Domain-specific terminology and techniques
+   Examples: "ideality index", "contradiction matrix", "exaptive bootstrapping"
+   Test: "Would this appear in a domain glossary or index?"
+
+IMPORTANT RULES:
+
+✅ DO EXTRACT:
+- All three levels above
+- Both single-word and multi-word concepts
+- Concepts that unify multiple discussions
+- Book/chapter titles if they're conceptual (e.g., "innovation algorithm")
+
+❌ DO NOT EXTRACT:
+- Specific instances (e.g., "the 2015 study", "Company X's approach")  
+- Temporal phrases (e.g., "during the crisis", "in recent years")
+- Pure actions without conceptual content (e.g., "balancing three priorities")
+  → But DO extract the concepts involved (e.g., "balance", "priority management")
+- Names of people, organizations, locations
+- Dates, page numbers, figure references
+
+CATEGORIES:
+Use standard academic/professional domain names:
+- Good: "innovation methodology", "systems engineering", "cognitive psychology"
+- Bad: "innovation", "systems", "psychology" (too broad)
+- Bad: "TRIZ su-field analysis" (too specific)
+
+Use lowercase. Output complete JSON with ALL fields fully populated.
+
