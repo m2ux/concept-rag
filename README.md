@@ -1,4 +1,4 @@
-# 🧠 Concept RAG: Conceptual RAG MCP Server
+# 🧠 Concept RAG: Conceptual RAG Server
 
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-blue.svg)](https://nodejs.org/en/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -7,71 +7,40 @@ A powerful MCP server that enables LLMs to interact with documents through conce
 
 ## ✨ Features
 
-- 🧠 **Conceptual Search**: Corpus concepts + WordNet + hybrid signals for intelligent retrieval
-- 🔍 **Multi-Signal Ranking**: Vector similarity, BM25, title matching, concept matching, synonym expansion
-- 🤖 **LLM-Powered**: Claude Sonnet 4.5 for concept extraction, Grok-4-fast for summaries
-- 🌐 **WordNet Integration**: Synonym expansion and hierarchical concept navigation (161K+ words)
-- ⚡ **Lightning Fast**: Cloud AI + local embeddings, no timeout issues
+- 🧠 **5 Search Tools**: Optimized for different search modalities (concept research, document discovery, comprehensive search, single-document, concept export)
+- 🔍 **Multi-Signal Hybrid Ranking**: Vector similarity + BM25 keyword matching + concept matching + title matching + WordNet expansion
+- 🤖 **LLM-Powered Extraction**: Claude Sonnet 4.5 for concept extraction, Grok-4-fast for summaries
+- 🌐 **WordNet Integration**: Automatic synonym expansion and hierarchical concept navigation (161K+ words)
 - 🛡️ **Robust PDF Handling**: Gracefully handles corrupted files with OCR fallback
-- 📊 **Comprehensive Indexing**: Extracts 80-150+ concepts per document with formal concept definition
 - 📚 **Large Document Support**: Multi-pass extraction for documents >100k tokens
-- 🎯 **Formal Concept Model**: Based on rigorous definition ensuring semantic matching and disambiguation
+- 💡 **Intelligent Tool Selection**: Embedded documentation guides AI agents to optimal tool choice
 
 ## 📝 Available Tools
 
-The server provides the following search tools:
+The server provides five specialized search tools. **For detailed tool selection guidance, see [tool-selection-guide.md](tool-selection-guide.md).**
 
-### 🗂️ `catalog_search`
+### Quick Reference
 
-Search document summaries to find relevant sources
+| Tool | Best For | Use When | Example Query |
+|------|----------|----------|---------------|
+| `catalog_search` | Document discovery | Looking for documents by title, author, topic | `"What documents do I have about strategy?"` |
+| `concept_search` | Concept research (high precision) | Researching a specific concept | `"innovation"` → Returns concept-tagged chunks |
+| `broad_chunks_search` | Comprehensive cross-document search | Searching phrases, keywords, questions | `"How do organizations implement strategic planning?"` |
+| `chunks_search` | Single document search | You know the exact document path | After catalog_search, search within specific document |
+| `extract_concepts` | Concept export | Explicitly extracting/listing concepts | `"Extract concepts from Sun Tzu as markdown"` |
 
-- Query expansion with corpus concepts + WordNet
-- Returns: Documents with concept matches and scores
+**Note:** For `extract_concepts` command-line usage: `npx tsx scripts/extract_concepts.ts "document name" markdown`
 
-### 📄 `chunks_search`
+---
 
-Find specific information within a chosen document
+### 🤖 For AI Agents
 
-- Requires `source` parameter (document path)
-- Concept-aware search within single document
+**Critical:** Each tool has embedded documentation that specifies:
+- When to use vs. not use
+- Query type expectations  
+- Return value characteristics
 
-### 🔍 `broad_chunks_search`
-
-Search across ALL documents for detailed information
-
-- Returns: Top 10 most relevant chunks from entire corpus
-- Full conceptual expansion and multi-signal ranking
-
-### 🎯 `concept_search`
-
-Find all chunks that reference a specific concept
-
-- Search by exact concept name (e.g., "suspicion creation", "military strategy")
-- Returns: All chunks containing the concept, sorted by relevance
-- Shows concept metadata, related concepts, and distribution across documents
-
-**Example**: `"Find all chunks about leadership principles"`
-
-### 📤 `extract_concepts`
-
-Extract all concepts from a specific document in the database
-
-- **Parameters:**
-  - `document_query`: Search for document by name or topic (e.g., "Sun Tzu Art of War")
-  - `format`: Output format - `json` or `markdown` (default: json)
-  - `include_summary`: Include document summary and categories (default: true)
-- **Returns:** Complete concept list with primary concepts, technical terms, related concepts
-- **Use cases:**
-  - Generate concept maps for documents
-  - Export concepts for external analysis
-  - Review extraction quality
-
-**Example**: `"Extract all concepts from Sun Tzu's Art of War as markdown"`
-
-**Command-line alternative:**
-```bash
-npx tsx scripts/extract_concepts.ts "Sun Tzu" markdown
-```
+See [tool-selection-guide.md](tool-selection-guide.md) for the complete decision tree and tool comparison matrix.
 
 ## 🚀 Quick Start
 
@@ -108,7 +77,7 @@ cp .env.example .env
 ```json
 {
   "mcpServers": {
-    "lancedb": {
+    "concept-rag": {
       "command": "node",
       "args": [
         "/path/to/concept-rag/dist/conceptual_index.js",
@@ -119,14 +88,15 @@ cp .env.example .env
 }
 ```
 
-**Claude Desktop**
-**MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
-**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+**Claude Desktop:**
+
+- **MacOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+- **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
-    "lancedb": {
+    "concept-rag": {
       "command": "node",
       "args": [
         "/path/to/concept-rag/dist/conceptual_index.js",
@@ -219,7 +189,7 @@ npx tsx hybrid_fast_seed.ts \
        "concept-rag": {
          "command": "node",
          "args": [
-           "/path/to/your/concept-rag/dist/simple_index.js",
+           "/path/to/your/concept-rag/dist/conceptual_index.js",
            "/home/your-username/.concept_rag"
          ]
        }
@@ -235,28 +205,33 @@ npx tsx hybrid_fast_seed.ts \
    echo ~/.concept_rag  # Database location
    ```
 
-### Step 5: Restart Cursor
+### Step 6: Restart Cursor
 
 ```bash
 # Reload window in Cursor: Cmd/Ctrl + Shift + P → "Reload Window"
 # The conceptual search tools should now be available
 ```
 
-### Step 6: Test Conceptual Search
+### Step 7: Test Conceptual Search
 
 **Try these example queries:**
 
 ```
 1. "What documents do we have?"
-   → Uses: catalog_search with concept expansion
+   → Uses: catalog_search
+   → Returns: Document summaries with titles and previews
 
-2. "Find information about strategic thinking"
-   → Expands to: strategy, tactics, planning, decision making, etc.
-   → Returns: Relevant documents with concept matches
+2. "Find information about innovation"
+   → Uses: concept_search (high precision)
+   → Returns: Concept-tagged chunks with 100% relevance
 
-3. "Search for leadership principles"
-   → Finds: Documents about leadership, management, command, etc.
-   → Shows matched concepts and expanded terms
+3. "How do organizations implement strategic planning?"
+   → Uses: broad_chunks_search
+   → Returns: Cross-document results with hybrid scoring
+
+4. "Extract all concepts from Sun Tzu's Art of War"
+   → Uses: extract_concepts
+   → Returns: Complete concept inventory (80-150+ concepts)
 ```
 
 ## 📚 Data Seeding
@@ -318,27 +293,6 @@ npx tsx hybrid_fast_seed.ts --dbpath ~/.concept_rag --filesdir ~/Documents/pdfs 
 - Add 10 new docs: ~3 minutes + ~$0.48 ✨
 - Add 1 new doc: ~15 seconds + ~$0.05 ✨
 
-## 🎯 Example Queries
-
-**Conceptual search finds documents by meaning, not just keywords:**
-
-```
-"What documents do we have?"
-→ Lists catalog with AI summaries and extracted concepts
-
-"Find information about strategic thinking"
-→ Expands: strategy, tactics, planning, decision making
-→ Finds: All documents with related concepts
-
-"Search for leadership principles"  
-→ Expands: leadership, management, command, authority
-→ Returns: Chunks from ANY document about leadership
-
-"How do threads synchronize?"
-→ Expands: concurrency, mutex, semaphore, locks
-→ Finds: Technical docs even without exact wording
-```
-
 ## 🧠 Concept Model
 
 This system uses a **formal concept definition** to ensure high-quality semantic search:
@@ -359,10 +313,7 @@ This system uses a **formal concept definition** to ensure high-quality semantic
 - Temporal descriptions (e.g., "periods of heavy recruitment")
 - Specific action phrases (e.g., "balancing cohesion with innovation")
 - Suppositions (e.g., "attraction for collaborators")
-- Generic single words (e.g., "power", "riches", "time", "people")
 - Proper names, dates, metadata
-
-For complete guidelines, see [AGENTS.md](AGENTS.md).
 
 ## 🏗️ Architecture
 
@@ -396,28 +347,31 @@ For complete guidelines, see [AGENTS.md](AGENTS.md).
 ### File Structure
 
 ```
-hybrid_fast_seed.ts              # Seeding with concept extraction
-AGENTS.md                        # Formal concept definition & guidelines
+hybrid_fast_seed.ts                              # Seeding with concept extraction
+AGENTS.md                                        # Formal concept definition & guidelines
 src/
-├── conceptual_index.ts          # MCP server entry point
-├── concepts/                    # Concept extraction & indexing
-│   ├── concept_extractor.ts    # LLM-based extraction (multi-pass)
-│   ├── concept_index.ts         # Index builder
-│   ├── concept_chunk_matcher.ts # Chunk-concept matching
-│   ├── query_expander.ts        # Query expansion
-│   └── types.ts                 # Shared types
-├── wordnet/                     # WordNet integration
-│   └── wordnet_service.ts       # Python NLTK bridge
-├── lancedb/                     # Database clients
-│   └── conceptual_search_client.ts  # Search engine
-├── tools/                       # MCP tools
-│   ├── conceptual_registry.ts  # Tool registry
-│   └── operations/              # Individual tools
-│       ├── concept_search.ts   # Concept tracking
-│       └── document_concepts_extract.ts  # Concept extraction
-└── scripts/                     # CLI utilities
-    ├── extract_concepts.ts     # Extract concepts CLI
-    └── view_document_metadata.ts  # Metadata viewer
+├── conceptual_index.ts                          # MCP server entry point
+├── concepts/                                    # Concept extraction & indexing
+│   ├── concept_extractor.ts                     # LLM-based extraction (multi-pass)
+│   ├── concept_index.ts                         # Index builder
+│   ├── concept_chunk_matcher.ts                 # Chunk-concept matching
+│   ├── query_expander.ts                        # Query expansion
+│   └── types.ts                                 # Shared types
+├── wordnet/                                     # WordNet integration
+│   └── wordnet_service.ts                       # Python NLTK bridge
+├── lancedb/                                     # Database clients
+│   └── conceptual_search_client.ts              # Search engine
+├── tools/                                       # MCP tools
+│   ├── conceptual_registry.ts                   # Tool registry
+│   └── operations/                              # Individual tools (5 total)
+│       ├── concept_search.ts                    # Concept tracking (high precision)
+│       ├── conceptual_broad_chunks_search.ts    # Cross-document search
+│       ├── conceptual_catalog_search.ts         # Document discovery
+│       ├── conceptual_chunks_search.ts          # Single document search
+│       └── document_concepts_extract.ts         # Concept export
+└── scripts/                                     # CLI utilities
+    ├── extract_concepts.ts                      # Extract concepts CLI
+    └── view_document_metadata.ts                # Metadata viewer
 ```
 
 ### Testing
@@ -426,11 +380,11 @@ src/
 # Build project
 npm run build
 
-# Test with MCP Inspector
+# Test with MCP Inspector (interactive tool testing)
 npx @modelcontextprotocol/inspector dist/conceptual_index.js ~/.concept_rag
 
-# Run concept extraction tests
-npx tsx test/conceptual_search_test.ts
+# Command-line concept extraction
+npx tsx scripts/extract_concepts.ts "document name" markdown
 ```
 
 ### Contributing
@@ -454,7 +408,9 @@ npx tsx test/conceptual_search_test.ts
 
 ## 🙏 Acknowledgments
 
-This project is forked from [lance-mcp](https://github.com/adiom-data/lance-mcp) by [adiom-data](https://github.com/adiom-data). The original project provided the foundational MCP server architecture and LanceDB integration. This fork extends the original with:
+This project is forked from [lance-mcp](https://github.com/adiom-data/lance-mcp) by [adiom-data](https://github.com/adiom-data). The original project provided the foundational MCP server architecture and LanceDB integration.
+
+This fork extends the original with:
 
 - **Formal concept model**: Rigorous definition ensuring semantic matching and disambiguation
 - **Conceptual search**: Corpus-driven concept extraction with 80-150+ concepts per document
