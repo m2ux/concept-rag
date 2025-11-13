@@ -1,148 +1,147 @@
 # Concepts Extracted from Document
 
-**Document:** (ebook - PDF) Sun Tzu's Art Of War.pdf
+**Document:** Sun Tzu - Art Of War.pdf
 
-**Total Concepts:** 209
+**Total Concepts:** 120
 
 ---
 
-## Primary Concepts (83)
+## Primary Concepts (95)
 
 | # | Concept |
 |---|---------|
-| 1 | military strategy |
-| 2 | tactical planning |
-| 3 | strategic thinking |
-| 4 | leadership principles |
-| 5 | command authority |
-| 6 | discipline enforcement |
-| 7 | organizational hierarchy |
-| 8 | obedience training |
-| 9 | clarity of communication |
-| 10 | responsibility attribution |
-| 11 | executive authority |
-| 12 | sovereign authority limits |
-| 13 | practical demonstration |
-| 14 | theoretical knowledge application |
-| 15 | military drill |
-| 16 | precision execution |
-| 17 | battlefield readiness |
-| 18 | troop management |
-| 19 | personnel deployment |
-| 20 | tactical formations |
-| 21 | intelligence gathering |
-| 22 | espionage operations |
-| 23 | converted spy methodology |
-| 24 | information warfare |
-| 25 | strategic deception |
-| 26 | terrain analysis |
-| 27 | environmental assessment |
-| 28 | positional advantage |
-| 29 | defensive positioning |
-| 30 | offensive provocation |
-| 31 | ambush tactics |
-| 32 | reconnaissance methods |
-| 33 | sign interpretation |
-| 34 | enemy behavior analysis |
-| 35 | natural fortification |
-| 36 | tactical baiting |
-| 37 | movement detection |
-| 38 | concealment strategies |
-| 39 | suspicious activity identification |
-| 40 | terrain obstacles |
-| 41 | geographical disadvantages |
-| 42 | enemy positioning |
-| 43 | camp security |
-| 44 | perimeter defense |
-| 45 | covert surveillance |
-| 46 | traitor detection |
-| 47 | weakness exploitation |
-| 48 | strategic withdrawal |
-| 49 | engagement timing |
-| 50 | force projection |
-| 51 | psychological warfare |
-| 52 | morale management |
-| 53 | historical precedent |
-| 54 | dynastic overthrow |
-| 55 | insider knowledge |
-| 56 | ministerial defection |
-| 57 | loyalty assessment |
-| 58 | wisdom application |
-| 59 | mental caliber requirements |
-| 60 | intelligence utilization |
-| 61 | operational security |
-| 62 | risk management |
-| 63 | strategic failure |
-| 64 | dependency relationships |
-| 65 | capability assessment |
-| 66 | resource allocation |
-| 67 | command effectiveness |
-| 68 | battlefield inspection |
-| 69 | troop evaluation |
-| 70 | combat readiness |
-| 71 | unconditional obedience |
-| 72 | fire and water metaphor |
-| 73 | words versus deeds |
-| 74 | practical competence |
-| 75 | appointment merit |
-| 76 | military achievement |
-| 77 | state conquest |
-| 78 | western expansion |
-| 79 | forest navigation |
-| 80 | passage clearing |
-| 81 | observation posts |
-| 82 | screening tactics |
-| 83 | deceptive maneuvers |
+| 1 | strategic decision-making |
+| 2 | principle of deception |
+| 3 | operational tempo and rapidity |
+| 4 | force preservation and economy of force |
+| 5 | victory through stratagem (achieve objectives without destruction) |
+| 6 | civil-military alignment and moral legitimacy |
+| 7 | costs and economics of war |
+| 8 | command responsibility and autonomy |
+| 9 | morale, esprit de corps and cohesion |
+| 10 | adaptation and flexibility in planning |
+| 11 | planning and forecasting methodology |
+| 12 | risk assessment and contingency planning |
+| 13 | intelligence-driven operations |
+| 14 | operational security and secrecy |
+| 15 | logistics and sustainment |
+| 16 | terrain and environmental exploitation |
+| 17 | psychological operations and provocation |
+| 18 | timing and decision quality |
+| 19 | unity of effort and concentration of force |
+| 20 | organizational discipline and enforcement |
+| 21 | five-parameter operational framework (moral law, heaven, earth, commander, method) |
+| 22 | seven-factor comparative assessment for engagement |
+| 23 | direct and indirect methods of warfare (cheng and ch'i) |
+| 24 | deception cycles (feint, bait, counter-bait) |
+| 25 | surprise and concealment |
+| 26 | scouting, reconnaissance and sign interpretation |
+| 27 | intelligence collection (human sources and agents) |
+| 28 | counterintelligence and spy management |
+| 29 | force disposition and tactical dispositions |
+| 30 | energy and momentum in maneuver |
+| 31 | weak points and strong points analysis |
+| 32 | maneuver warfare and operational art |
+| 33 | combined arms and combined energy |
+| 34 | concentration versus dispersion of forces |
+| 35 | division of forces for maneuver and diversion |
+| 36 | ambush and envelopment tactics |
+| 37 | encirclement and isolation of enemy elements |
+| 38 | synchronization and timing of junctions |
+| 39 | signals and command-and-control (gongs, drums, flags) |
+| 40 | use of terrain categories for operational choices |
+| 41 | the nine operational situations framework |
+| 42 | six terrain/earth principles |
+| 43 | foraging and living off the enemy |
+| 44 | supply-line protection and lines of communication |
+| 45 | baggage management and mobility trade-offs |
+| 46 | forced marches and operational endurance |
+| 47 | siege operations and their costs |
+| 48 | employment of fire as a weapon (forms and timing) |
+| 49 | use of water and environmental interdiction |
+| 50 | reward and punishment systems for discipline |
+| 51 | selection and placement of officers (right man, right place) |
+| 52 | training, drills and habit-formation |
+| 53 | certainty of enforcement (reward/punishment consistency) |
+| 54 | forecasting through systematic calculation |
+| 55 | measurement, estimation, calculation, balancing of chances |
+| 56 | managing ambiguity (concealment beneath disorder) |
+| 57 | simulated weakness and feigned disorder |
+| 58 | masking strength with weakness |
+| 59 | baiting to induce enemy movement |
+| 60 | psychological bait and provocation |
+| 61 | operational deception planning and opsec |
+| 62 | use of local guides and human terrain knowledge |
+| 63 | alliances and alliance-management as operational factors |
+| 64 | civilian economy impact and home-front vulnerability |
+| 65 | mobilization effects on society and labor |
+| 66 | operational art of turning disadvantage into advantage |
+| 67 | art of deviation (misdirection and circuitous routes) |
+| 68 | use of converted agents and double agents |
+| 69 | doomed agents and sacrificial deception |
+| 70 | surviving agents and exfiltration tradecraft |
+| 71 | local source recruitment and liaison |
+| 72 | intelligence reward structures and incentives |
+| 73 | secrecy protocols for sensitive operations |
+| 74 | operational deception of own forces (need-to-know) |
+| 75 | command presence of mind and composure |
+| 76 | study of enemy moods and timing attacks accordingly |
+| 77 | avoidance of frontal assaults when disadvantageous |
+| 78 | interdiction of enemy communications and junctions |
+| 79 | forcing the enemy to disperse (dilution of enemy strength) |
+| 80 | consolidation of gains and post-capture force integration |
+| 81 | use of captured materiel and personnel augmentation |
+| 82 | rules for engaging in protracted vs rapid campaigns |
+| 83 | criteria for when to fight and when not to fight |
+| 84 | principles for handling desperate and hemmed-in situations |
+| 85 | organizational culture in military effectiveness |
+| 86 | leader virtues for command (wisdom, sincerity, benevolence, courage, strictness) |
+| 87 | operational art of timing and seizing psychological moments |
+| 88 | tactical permutations and inexhaustible maneuver combinations |
+| 89 | operational readiness and pre-battle calculations |
+| 90 | synchronizing logistics, intelligence and maneuver |
+| 91 | classification of battlefield signs and indicators |
+| 92 | use of decoys and false displays |
+| 93 | management of prisoners and humane use of conquered foes |
+| 94 | ethical-economic tradeoffs in military campaigning |
+| 95 | continuous adaptation and non-repetitive tactics |
 
-## Related Concepts (34)
+## Related Concepts (25)
 
 | # | Concept |
 |---|---------|
-| 1 | command and control |
-| 2 | organizational behavior |
-| 3 | power dynamics |
-| 4 | authority structures |
-| 5 | training methodologies |
-| 6 | performance management |
-| 7 | accountability systems |
-| 8 | communication effectiveness |
-| 9 | behavioral conditioning |
-| 10 | consequence management |
-| 11 | strategic communication |
-| 12 | competitive intelligence |
-| 13 | counterintelligence |
-| 14 | operational planning |
-| 15 | situational awareness |
-| 16 | environmental factors |
-| 17 | geographical strategy |
-| 18 | force multipliers |
-| 19 | asymmetric warfare |
-| 20 | information superiority |
-| 21 | decision-making processes |
-| 22 | risk assessment |
-| 23 | threat analysis |
-| 24 | defensive tactics |
-| 25 | offensive operations |
-| 26 | deception operations |
-| 27 | historical military analysis |
-| 28 | ancient warfare |
-| 29 | chinese philosophy |
-| 30 | strategic classics |
-| 31 | military history |
-| 32 | leadership development |
-| 33 | executive decision-making |
-| 34 | organizational transformation |
+| 1 | operations research |
+| 2 | game theory and competitive strategy |
+| 3 | asymmetric warfare |
+| 4 | counterinsurgency |
+| 5 | psychology of morale and group behavior |
+| 6 | systems thinking and complexity |
+| 7 | risk management and resilience |
+| 8 | geopolitical risk analysis |
+| 9 | human intelligence (humint) tradecraft |
+| 10 | signal and communications intelligence (sigint) principles |
+| 11 | geospatial analysis and terrain modeling |
+| 12 | supply chain resilience |
+| 13 | crisis management and emergency logistics |
+| 14 | strategic communications and information operations |
+| 15 | organizational culture and change management |
+| 16 | leadership ethics and civil-military relations |
+| 17 | performance measurement and metrics |
+| 18 | remote sensing and battlefield surveillance |
+| 19 | counter-deception and cognitive security |
+| 20 | stochastic modeling of uncertainty |
+| 21 | decision support systems |
+| 22 | strategic logistics planning |
+| 23 | strategic risk and cost-benefit analysis |
+| 24 | behavioral economics in incentive design |
+| 25 | network-centric operations |
 
-## Categories (7)
+## Categories (6)
 
 - military strategy
-- ancient chinese history
-- leadership and management
-- intelligence and espionage
-- tactical warfare
-- organizational discipline
-- terrain and geography
+- intelligence studies
+- logistics and supply chain management
+- decision science
+- security studies
+- organizational leadership
 
-## Summary
-
-This document presents excerpts from Sun Tzu's Art of War, including biographical narrative, tactical principles, and strategic wisdom. It covers military leadership, discipline enforcement, terrain analysis, intelligence operations, and the practical application of strategic theory through historical examples and commentary from various scholars.
