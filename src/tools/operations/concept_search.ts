@@ -71,13 +71,20 @@ export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
       }
 
       // Query chunks that contain this concept
-      // Get all chunks and filter in memory (since we need to check JSON arrays)
+      // Load ALL chunks and filter in memory (concepts stored as JSON, can't use SQL WHERE)
       console.error(`🔍 Searching for concept: "${conceptLower}"`);
       
+      // Get total count and load ALL chunks (LanceDB defaults to 10 if no limit!)
+      const totalCount = await chunksTable.countRows();
+      console.error(`📊 Scanning ${totalCount.toLocaleString()} chunks...`);
+      
+      // Load all chunks - MUST specify limit (toArray() defaults to 10!)
       const allChunks = await chunksTable
         .query()
-        .limit(10000)  // Get a large batch to filter
+        .limit(totalCount)  // CRITICAL: Explicit limit required
         .toArray();
+      
+      console.error(`✅ Loaded ${allChunks.length.toLocaleString()} chunks`);
       
       // Filter chunks that contain this concept
       const matchingChunks = allChunks
