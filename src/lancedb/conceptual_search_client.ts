@@ -1,10 +1,8 @@
 import * as lancedb from "@lancedb/lancedb";
-import * as defaults from '../config.js';
 import { ConceptualSearchResult } from '../concepts/types.js';
 import { QueryExpander } from '../concepts/query_expander.js';
 import { 
     createSimpleEmbedding, 
-    calculateBM25Score, 
     titleMatchScore 
 } from './hybrid_search_client.js';
 
@@ -42,8 +40,8 @@ export let conceptTable: lancedb.Table;
 export class ConceptualSearchClient {
     private queryExpander: QueryExpander;
     
-    constructor(private _conceptTable: lancedb.Table, embeddingService: any) {
-        this.queryExpander = new QueryExpander(_conceptTable, embeddingService);
+    constructor(conceptTable: lancedb.Table, embeddingService: any) {
+        this.queryExpander = new QueryExpander(conceptTable, embeddingService);
     }
     
     async search(

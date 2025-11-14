@@ -2,7 +2,6 @@ import * as lancedb from "@lancedb/lancedb";
 import { CatalogRepository } from '../../../domain/interfaces/repositories/catalog-repository.js';
 import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
-import { parseJsonField } from '../utils/field-parsers.js';
 
 /**
  * LanceDB implementation of CatalogRepository

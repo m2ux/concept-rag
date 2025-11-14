@@ -1,6 +1,5 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ChunkRepository } from "../../domain/interfaces/repositories/chunk-repository.js";
-import { ConceptRepository } from "../../domain/interfaces/repositories/concept-repository.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
   text: string;
@@ -10,8 +9,7 @@ export interface ConceptualChunksSearchParams extends ToolParams {
 
 export class ConceptualChunksSearchTool extends BaseTool<ConceptualChunksSearchParams> {
   constructor(
-    private chunkRepo: ChunkRepository,
-    private conceptRepo: ConceptRepository
+    private chunkRepo: ChunkRepository
   ) {
     super();
   }

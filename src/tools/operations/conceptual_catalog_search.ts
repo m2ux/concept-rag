@@ -1,7 +1,5 @@
-import { ConceptualSearchClient } from "../../lancedb/conceptual_search_client.js";
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { CatalogRepository } from "../../domain/interfaces/repositories/catalog-repository.js";
-import { ConceptRepository } from "../../domain/interfaces/repositories/concept-repository.js";
 
 export interface ConceptualCatalogSearchParams extends ToolParams {
   text: string;
@@ -10,8 +8,7 @@ export interface ConceptualCatalogSearchParams extends ToolParams {
 
 export class ConceptualCatalogSearchTool extends BaseTool<ConceptualCatalogSearchParams> {
   constructor(
-    private catalogRepo: CatalogRepository,
-    private conceptRepo: ConceptRepository
+    private catalogRepo: CatalogRepository
   ) {
     super();
   }

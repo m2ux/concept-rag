@@ -70,8 +70,9 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       
       // Apply source filter if provided
       if (params.source_filter) {
+        const sourceFilter = params.source_filter.toLowerCase();
         matchingChunks = matchingChunks.filter(chunk => 
-          chunk.source.toLowerCase().includes(params.source_filter.toLowerCase())
+          chunk.source.toLowerCase().includes(sourceFilter)
         );
       }
       

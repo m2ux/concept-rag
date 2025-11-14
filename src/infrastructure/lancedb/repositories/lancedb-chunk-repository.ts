@@ -123,21 +123,5 @@ export class LanceDBChunkRepository implements ChunkRepository {
       conceptDensity: row.concept_density || 0
     };
   }
-  
-  private mapRowToSearchResult(row: any): SearchResult {
-    const chunk = this.mapRowToChunk(row);
-    const vectorScore = 1 - (row._distance || 0);
-    
-    return {
-      ...chunk,
-      distance: row._distance || 0,
-      vectorScore: vectorScore,
-      bm25Score: 0,  // Will be computed in full search implementation
-      titleScore: 0,
-      conceptScore: 0,
-      wordnetScore: 0,
-      hybridScore: vectorScore
-    };
-  }
 }
 
