@@ -1,6 +1,7 @@
 import * as lancedb from "@lancedb/lancedb";
 import { ConceptRepository } from '../../../domain/interfaces/repositories/concept-repository.js';
 import { Concept } from '../../../domain/models/index.js';
+import { parseJsonField, escapeSqlString } from '../utils/field-parsers.js';
 
 /**
  * LanceDB implementation of ConceptRepository
@@ -13,7 +14,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
     
     try {
       // Escape single quotes to prevent SQL injection
-      const escaped = conceptLower.replace(/'/g, "''");
+      const escaped = escapeSqlString(conceptLower);
       
       // Use SQL-like query for exact match with escaped input
       const results = await this.conceptsTable
@@ -65,29 +66,16 @@ export class LanceDBConceptRepository implements ConceptRepository {
       concept: row.concept || '',
       conceptType: row.concept_type || 'thematic',
       category: row.category || '',
-      sources: this.parseJsonField(row.sources),
-      relatedConcepts: this.parseJsonField(row.related_concepts),
-      synonyms: this.parseJsonField(row.synonyms),
-      broaderTerms: this.parseJsonField(row.broader_terms),
-      narrowerTerms: this.parseJsonField(row.narrower_terms),
+      sources: parseJsonField(row.sources),
+      relatedConcepts: parseJsonField(row.related_concepts),
+      synonyms: parseJsonField(row.synonyms),
+      broaderTerms: parseJsonField(row.broader_terms),
+      narrowerTerms: parseJsonField(row.narrower_terms),
       embeddings: row.embeddings || [],
       weight: row.weight || 0,
       chunkCount: row.chunk_count || 0,
       enrichmentSource: row.enrichment_source || 'corpus'
     };
-  }
-  
-  private parseJsonField(field: any): string[] {
-    if (!field) return [];
-    if (Array.isArray(field)) return field;
-    if (typeof field === 'string') {
-      try {
-        return JSON.parse(field);
-      } catch {
-        return [];
-      }
-    }
-    return [];
   }
 }
 
