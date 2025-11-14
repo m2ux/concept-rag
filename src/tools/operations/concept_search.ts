@@ -114,12 +114,10 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
             return false;
           }
           
-          // Check if concept matches (case-insensitive, fuzzy)
+          // Check if concept matches (exact match only, case-insensitive)
+          // This prevents "type" from matching "typescript" or vice versa
           return chunkConcepts.some((c: string) => {
-            const cLower = c.toLowerCase();
-            return cLower === conceptLower || 
-                   cLower.includes(conceptLower) || 
-                   conceptLower.includes(cLower);
+            return c.toLowerCase() === conceptLower;
           });
         })
         .filter((chunk: any) => {
@@ -161,8 +159,7 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
           concepts_in_chunk: concepts,
           categories: categories,
           relevance: concepts.filter((c: string) => 
-            c.toLowerCase() === conceptLower || 
-            c.toLowerCase().includes(conceptLower)
+            c.toLowerCase() === conceptLower
           ).length
         };
       });
