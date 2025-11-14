@@ -1,6 +1,5 @@
-import { chunksTable, conceptTable } from "../../lancedb/conceptual_search_client.js";
-import { ConceptualSearchClient } from "../../lancedb/conceptual_search_client.js";
 import { BaseTool, ToolParams } from "../base/tool.js";
+import { ChunkRepository } from "../../domain/interfaces/repositories/chunk-repository.js";
 
 export interface ConceptualBroadChunksSearchParams extends ToolParams {
   text: string;
@@ -8,6 +7,12 @@ export interface ConceptualBroadChunksSearchParams extends ToolParams {
 }
 
 export class ConceptualBroadChunksSearchTool extends BaseTool<ConceptualBroadChunksSearchParams> {
+  constructor(
+    private chunkRepo: ChunkRepository
+  ) {
+    super();
+  }
+  
   name = "broad_chunks_search";
   description = `Search across ALL document chunks using hybrid search (vector similarity + BM25 keyword matching + concept scoring + WordNet expansion).
 
@@ -40,50 +45,29 @@ RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, concept,
     required: ["text"],
   };
 
-  private searchClient?: ConceptualSearchClient;
-
   async execute(params: ConceptualBroadChunksSearchParams) {
     try {
-      // Check if concept table is available
-      if (!conceptTable) {
-        // Fall back to basic search
-        const { searchTable } = await import("../../lancedb/simple_client.js");
-        const results = await searchTable(chunksTable, params.text, 10);
-        
-        return {
-          content: [
-            { type: "text" as const, text: JSON.stringify(results, null, 2) },
-          ],
-          isError: false,
-        };
-      }
-
-      // Initialize search client if needed
-      if (!this.searchClient) {
-        this.searchClient = new ConceptualSearchClient(conceptTable);
-      }
-
-      // Search with conceptual expansion across all chunks
-      const results = await this.searchClient.search(
-        chunksTable,
-        params.text,
-        10,  // Return top 10 chunks across all documents
-        params.debug || false
-      );
+      // Use repository for broad search across all chunks
+      // Note: Full hybrid search (ConceptualSearchClient) will be integrated in Phase 3
+      const results = await this.chunkRepo.search({
+        text: params.text,
+        limit: 10,
+        debug: params.debug || false
+      });
       
       // Format results
       const formattedResults = results.map(r => ({
         text: r.text,
         source: r.source,
         scores: {
-          hybrid: r._hybrid_score.toFixed(3),
-          vector: r._vector_score.toFixed(3),
-          bm25: r._bm25_score.toFixed(3),
-          concept: r._concept_score.toFixed(3),
-          wordnet: r._wordnet_score.toFixed(3)
+          hybrid: r.hybridScore.toFixed(3),
+          vector: r.vectorScore.toFixed(3),
+          bm25: r.bm25Score.toFixed(3),
+          concept: r.conceptScore.toFixed(3),
+          wordnet: r.wordnetScore.toFixed(3)
         },
-        matched_concepts: r.matched_concepts,
-        expanded_terms: r.expanded_terms
+        matched_concepts: r.matchedConcepts,
+        expanded_terms: r.expandedTerms
       }));
       
       return {

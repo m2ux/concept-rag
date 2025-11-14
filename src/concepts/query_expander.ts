@@ -1,14 +1,17 @@
 import * as lancedb from "@lancedb/lancedb";
 import { ExpandedQuery } from './types.js';
 import { WordNetService } from '../wordnet/wordnet_service.js';
+import { EmbeddingService } from '../domain/interfaces/services/embedding-service.js';
 
 export class QueryExpander {
     private wordnet: WordNetService;
     private conceptTable: lancedb.Table;
+    private embeddingService: EmbeddingService;
     
-    constructor(conceptTable: lancedb.Table) {
+    constructor(conceptTable: lancedb.Table, embeddingService: EmbeddingService) {
         this.wordnet = new WordNetService();
         this.conceptTable = conceptTable;
+        this.embeddingService = embeddingService;
     }
     
     async expandQuery(queryText: string): Promise<ExpandedQuery> {
@@ -65,7 +68,7 @@ export class QueryExpander {
         
         // Search concept index for matching concepts
         try {
-            const queryVector = this.createSimpleEmbedding(terms.join(' '));
+            const queryVector = this.embeddingService.generateEmbedding(terms.join(' '));
             const results = await this.conceptTable
                 .vectorSearch(queryVector)
                 .limit(15)  // Increased to get more candidates
@@ -108,41 +111,6 @@ export class QueryExpander {
         }
         
         return expanded;
-    }
-    
-    // Simple embedding function (same as in hybrid_search_client.ts)
-    private createSimpleEmbedding(text: string): number[] {
-        const embedding = new Array(384).fill(0);
-        const words = text.toLowerCase().split(/\s+/);
-        const chars = text.toLowerCase();
-        
-        for (let i = 0; i < Math.min(words.length, 100); i++) {
-            const word = words[i];
-            const hash = this.simpleHash(word);
-            embedding[hash % 384] += 1;
-        }
-        
-        for (let i = 0; i < Math.min(chars.length, 1000); i++) {
-            const charCode = chars.charCodeAt(i);
-            embedding[charCode % 384] += 0.1;
-        }
-        
-        embedding[0] = text.length / 1000;
-        embedding[1] = words.length / 100;
-        embedding[2] = (text.match(/\./g) || []).length / 10;
-        
-        const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-        return embedding.map(val => norm > 0 ? val / norm : 0);
-    }
-    
-    private simpleHash(str: string): number {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            const char = str.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-        return Math.abs(hash);
     }
 }
 
