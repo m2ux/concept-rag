@@ -12,11 +12,13 @@ export class LanceDBConceptRepository implements ConceptRepository {
     const conceptLower = conceptName.toLowerCase().trim();
     
     try {
-      // Use SQL-like query for exact match
-      // Note: String interpolation will be fixed in security task
+      // Escape single quotes to prevent SQL injection
+      const escaped = conceptLower.replace(/'/g, "''");
+      
+      // Use SQL-like query for exact match with escaped input
       const results = await this.conceptsTable
         .query()
-        .where(`concept = '${conceptLower}'`)
+        .where(`concept = '${escaped}'`)
         .limit(1)
         .toArray();
       
