@@ -1,67 +1,56 @@
 import * as lancedb from "@lancedb/lancedb";
 import { CatalogRepository } from '../../../domain/interfaces/repositories/catalog-repository.js';
 import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
-import { EmbeddingService } from '../../../domain/interfaces/services/embedding-service.js';
+import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { parseJsonField } from '../utils/field-parsers.js';
 
 /**
  * LanceDB implementation of CatalogRepository
+ * 
+ * Uses HybridSearchService for multi-signal ranking:
+ * - Vector similarity (semantic understanding)
+ * - BM25 (keyword matching)
+ * - Title matching (document relevance)
+ * - Concept alignment
+ * - WordNet expansion
  */
 export class LanceDBCatalogRepository implements CatalogRepository {
   constructor(
     private catalogTable: lancedb.Table,
-    private embeddingService: EmbeddingService
+    private hybridSearchService: HybridSearchService
   ) {}
   
   async search(query: SearchQuery): Promise<SearchResult[]> {
-    // Basic vector search - full hybrid search will be in ConceptualSearchClient refactor
-    const queryEmbedding = this.embeddingService.generateEmbedding(query.text);
+    // Use hybrid search for comprehensive multi-signal ranking
     const limit = query.limit || 5;
+    const debug = query.debug || false;
     
-    const results = await this.catalogTable
-      .vectorSearch(queryEmbedding)
-      .limit(limit)
-      .toArray();
-    
-    return results.map((row: any) => this.mapRowToSearchResult(row));
+    return await this.hybridSearchService.search(
+      this.catalogTable,
+      query.text,
+      limit,
+      debug
+    );
   }
   
   async findBySource(source: string): Promise<SearchResult | null> {
-    // Use source path as embedding query
-    const sourceEmbedding = this.embeddingService.generateEmbedding(source);
+    // Use hybrid search with source as query (benefits from title matching)
+    const results = await this.hybridSearchService.search(
+      this.catalogTable,
+      source,
+      10,
+      false
+    );
     
-    const results = await this.catalogTable
-      .vectorSearch(sourceEmbedding)
-      .limit(10)
-      .toArray();
-    
-    // Find best match by source path
-    for (const row of results) {
-      if (row.source && row.source.toLowerCase() === source.toLowerCase()) {
-        return this.mapRowToSearchResult(row);
+    // Find exact source match
+    for (const result of results) {
+      if (result.source.toLowerCase() === source.toLowerCase()) {
+        return result;
       }
     }
     
-    return null;
-  }
-  
-  private mapRowToSearchResult(row: any): SearchResult {
-    const vectorScore = 1 - (row._distance || 0);
-    
-    return {
-      id: row.id || '',
-      text: row.text || '',
-      source: row.source || '',
-      hash: row.hash || '',
-      concepts: parseJsonField(row.concepts),
-      distance: row._distance || 0,
-      vectorScore: vectorScore,
-      bm25Score: 0,
-      titleScore: 0,
-      conceptScore: 0,
-      wordnetScore: 0,
-      hybridScore: vectorScore
-    };
+    // If no exact match, return best match if it's close
+    return results.length > 0 ? results[0] : null;
   }
 }
 
