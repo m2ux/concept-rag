@@ -18,7 +18,11 @@
     "build": "tsc && shx chmod +x dist/*.js",
     "prepare": "npm run build",
     "watch": "tsc --watch",
-    "seed": "tsx hybrid_fast_seed.ts"
+    "seed": "tsx hybrid_fast_seed.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "mcp",
@@ -38,10 +42,13 @@
     "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
+    "@types/minimist": "^1.2.5",
     "@types/node": "^22.10.7",
+    "@vitest/ui": "^4.0.9",
     "shx": "^0.3.4",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^4.0.9"
   },
   "overrides": {
     "@langchain/community": {
