@@ -1,5 +1,4 @@
 import * as lancedb from "@lancedb/lancedb";
-import * as defaults from '../config.js'
 
 export let client: lancedb.Connection;
 export let chunksTable: lancedb.Table;

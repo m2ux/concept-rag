@@ -5,8 +5,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { tools } from "./tools/conceptual_registry.js";
-import { connectToLanceDB, closeLanceDB } from "./lancedb/conceptual_search_client.js";
+import { ApplicationContainer } from "./application/container.js";
 import * as defaults from './config.js';
 
 async function main() {
@@ -28,12 +27,13 @@ async function main() {
     }
   );
 
-  // Initialize database connection
-  await connectToLanceDB(databaseUrl, defaults.CHUNKS_TABLE_NAME, defaults.CATALOG_TABLE_NAME);
+  // Initialize application container (composition root)
+  const container = new ApplicationContainer();
+  await container.initialize(databaseUrl);
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
-    tools: tools.map((tool) => ({
+    tools: container.getAllTools().map((tool) => ({
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema,
@@ -42,25 +42,20 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const tool = tools.find((t) => t.name === request.params.name);
-
-    if (!tool) {
-      throw new Error(`Unknown tool: ${request.params.name}`);
-    }
-
+    const tool = container.getTool(request.params.name);
     return tool.execute(request.params.arguments as any || {});
   });
 
   // Handle cleanup on exit
   process.on('SIGINT', async () => {
     console.error('\n🛑 Shutting down...');
-    await closeLanceDB();
+    await container.close();
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
     console.error('\n🛑 Shutting down...');
-    await closeLanceDB();
+    await container.close();
     process.exit(0);
   });
 

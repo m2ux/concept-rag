@@ -56,11 +56,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return result;
   } catch (error) {
     console.error("Operation failed:", error);
+    const message = error instanceof Error ? error.message : String(error);
     return {
         content: [
           {
             type: "text",
-            text: error.message,
+            text: message,
           },
         ],
         isError: true,
