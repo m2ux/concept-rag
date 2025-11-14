@@ -80,6 +80,10 @@ export class FakeChunkRepository implements ChunkRepository {
     };
   }
   
+  async countChunks(): Promise<number> {
+    return Promise.resolve(this.chunks.size);
+  }
+  
   // Test helpers
   addChunk(chunk: Chunk): void {
     this.chunks.set(chunk.id, chunk);
@@ -129,6 +133,18 @@ export class FakeConceptRepository implements ConceptRepository {
     }
     
     return related;
+  }
+  
+  async searchConcepts(queryText: string, limit: number): Promise<Concept[]> {
+    const queryLower = queryText.toLowerCase();
+    const results = Array.from(this.concepts.values())
+      .filter(concept => 
+        concept.concept.toLowerCase().includes(queryLower) ||
+        concept.synonyms?.some(s => s.toLowerCase().includes(queryLower))
+      )
+      .slice(0, limit);
+    
+    return Promise.resolve(results);
   }
   
   // Test helpers
