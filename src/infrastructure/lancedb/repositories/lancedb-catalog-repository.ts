@@ -2,6 +2,7 @@ import * as lancedb from "@lancedb/lancedb";
 import { CatalogRepository } from '../../../domain/interfaces/repositories/catalog-repository.js';
 import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { EmbeddingService } from '../../../domain/interfaces/services/embedding-service.js';
+import { parseJsonField } from '../utils/field-parsers.js';
 
 /**
  * LanceDB implementation of CatalogRepository
@@ -52,7 +53,7 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       text: row.text || '',
       source: row.source || '',
       hash: row.hash || '',
-      concepts: this.parseJsonField(row.concepts),
+      concepts: parseJsonField(row.concepts),
       distance: row._distance || 0,
       vectorScore: vectorScore,
       bm25Score: 0,
@@ -61,19 +62,6 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       wordnetScore: 0,
       hybridScore: vectorScore
     };
-  }
-  
-  private parseJsonField(field: any): string[] {
-    if (!field) return [];
-    if (Array.isArray(field)) return field;
-    if (typeof field === 'string') {
-      try {
-        return JSON.parse(field);
-      } catch {
-        return [];
-      }
-    }
-    return [];
   }
 }
 

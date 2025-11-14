@@ -3,6 +3,7 @@ import { ChunkRepository } from '../../../domain/interfaces/repositories/chunk-r
 import { ConceptRepository } from '../../../domain/interfaces/repositories/concept-repository.js';
 import { EmbeddingService } from '../../../domain/interfaces/services/embedding-service.js';
 import { Chunk, SearchQuery, SearchResult } from '../../../domain/models/index.js';
+import { parseJsonField } from '../utils/field-parsers.js';
 
 /**
  * LanceDB implementation of ChunkRepository
@@ -114,8 +115,8 @@ export class LanceDBChunkRepository implements ChunkRepository {
       text: row.text || '',
       source: row.source || '',
       hash: row.hash || '',
-      concepts: this.parseJsonField(row.concepts),
-      conceptCategories: this.parseJsonField(row.concept_categories),
+      concepts: parseJsonField(row.concepts),
+      conceptCategories: parseJsonField(row.concept_categories),
       conceptDensity: row.concept_density || 0
     };
   }
@@ -134,19 +135,6 @@ export class LanceDBChunkRepository implements ChunkRepository {
       wordnetScore: 0,
       hybridScore: vectorScore
     };
-  }
-  
-  private parseJsonField(field: any): string[] {
-    if (!field) return [];
-    if (Array.isArray(field)) return field;
-    if (typeof field === 'string') {
-      try {
-        return JSON.parse(field);
-      } catch {
-        return [];
-      }
-    }
-    return [];
   }
 }
 
