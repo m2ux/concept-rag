@@ -37,22 +37,6 @@ A powerful MCP server that enables LLMs to interact with documents through conce
 - 📚 **Large Document Support**: Multi-pass extraction for documents >100k tokens
 - 💡 **Intelligent Tool Selection**: Embedded documentation guides AI agents to optimal tool choice
 
-## 🤔 Why Use Concept-RAG?
-
-### Traditional Search Problems
-❌ Keyword-only matching misses semantically related content  
-❌ No understanding of document concepts and themes  
-❌ Poor results for complex queries  
-❌ Manual tagging and categorization required  
-
-### Concept-RAG Solutions
-✅ **Semantic understanding**: Finds content by meaning, not just keywords  
-✅ **Automatic concept extraction**: 80-150+ concepts per document  
-✅ **Multiple search modes**: Right tool for each use case  
-✅ **Hybrid ranking**: Combines vector, keyword, concept, and synonym matching  
-✅ **Zero-cost searches**: Local processing after initial indexing  
-✅ **Privacy-first**: Your searches never leave your machine  
-
 ## 📝 Available Tools
 
 The server provides five specialized search tools. **For detailed tool selection guidance, see [tool-selection-guide.md](tool-selection-guide.md).**
