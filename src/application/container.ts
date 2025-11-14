@@ -4,6 +4,7 @@ import { LanceDBChunkRepository } from '../infrastructure/lancedb/repositories/l
 import { LanceDBConceptRepository } from '../infrastructure/lancedb/repositories/lancedb-concept-repository.js';
 import { LanceDBCatalogRepository } from '../infrastructure/lancedb/repositories/lancedb-catalog-repository.js';
 import { ConceptSearchTool } from '../tools/operations/concept_search.js';
+import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_catalog_search.js';
 import { BaseTool } from '../tools/base/tool.js';
 import * as defaults from '../config.js';
 
@@ -55,9 +56,9 @@ export class ApplicationContainer {
     
     // 5. Create tools with injected dependencies
     this.tools.set('concept_search', new ConceptSearchTool(chunkRepo, conceptRepo));
+    this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogRepo, conceptRepo));
     
     // TODO: Other tools will be added as they're migrated
-    // this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogRepo, conceptRepo));
     // this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkRepo, conceptRepo));
     // etc.
     

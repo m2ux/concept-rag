@@ -1,6 +1,7 @@
-import { catalogTable, conceptTable } from "../../lancedb/conceptual_search_client.js";
 import { ConceptualSearchClient } from "../../lancedb/conceptual_search_client.js";
 import { BaseTool, ToolParams } from "../base/tool.js";
+import { CatalogRepository } from "../../domain/interfaces/repositories/catalog-repository.js";
+import { ConceptRepository } from "../../domain/interfaces/repositories/concept-repository.js";
 
 export interface ConceptualCatalogSearchParams extends ToolParams {
   text: string;
@@ -8,6 +9,13 @@ export interface ConceptualCatalogSearchParams extends ToolParams {
 }
 
 export class ConceptualCatalogSearchTool extends BaseTool<ConceptualCatalogSearchParams> {
+  constructor(
+    private catalogRepo: CatalogRepository,
+    private conceptRepo: ConceptRepository
+  ) {
+    super();
+  }
+  
   name = "catalog_search";
   description = `Search document summaries and metadata to discover relevant documents. Uses title matching, concept matching, summary analysis, and semantic similarity.
 
@@ -40,51 +48,30 @@ RETURNS: Top 5 documents with text previews, hybrid scores (including strong tit
     required: ["text"],
   };
 
-  private searchClient?: ConceptualSearchClient;
-
   async execute(params: ConceptualCatalogSearchParams) {
     try {
-      // Check if concept table is available
-      if (!conceptTable) {
-        return {
-          content: [{
-            type: "text" as const,
-            text: JSON.stringify({
-              error: "Conceptual search not available",
-              message: "Concepts table not found. Please re-run seeding with concept extraction enabled.",
-              fallback: "Use basic catalog_search instead"
-            }, null, 2)
-          }],
-          isError: true
-        };
-      }
-
-      // Initialize search client if needed
-      if (!this.searchClient) {
-        this.searchClient = new ConceptualSearchClient(conceptTable);
-      }
-
-      const results = await this.searchClient.search(
-        catalogTable,
-        params.text,
-        5,
-        params.debug || false
-      );
+      // Use repository for catalog search
+      // Note: Full hybrid search (ConceptualSearchClient) will be integrated in Phase 3
+      const results = await this.catalogRepo.search({
+        text: params.text,
+        limit: 5,
+        debug: params.debug || false
+      });
       
       // Format results for better readability
       const formattedResults = results.map(r => ({
         source: r.source,
         text_preview: r.text.slice(0, 200) + '...',
         scores: {
-          hybrid: r._hybrid_score.toFixed(3),
-          vector: r._vector_score.toFixed(3),
-          bm25: r._bm25_score.toFixed(3),
-          title: r._title_score.toFixed(3),
-          concept: r._concept_score.toFixed(3),
-          wordnet: r._wordnet_score.toFixed(3)
+          hybrid: r.hybridScore.toFixed(3),
+          vector: r.vectorScore.toFixed(3),
+          bm25: r.bm25Score.toFixed(3),
+          title: r.titleScore.toFixed(3),
+          concept: r.conceptScore.toFixed(3),
+          wordnet: r.wordnetScore.toFixed(3)
         },
-        matched_concepts: r.matched_concepts,
-        expanded_terms: r.expanded_terms
+        matched_concepts: r.matchedConcepts,
+        expanded_terms: r.expandedTerms
       }));
       
       return {
