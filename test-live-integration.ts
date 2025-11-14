@@ -73,7 +73,8 @@ async function runLiveTests() {
         console.log(`✅ PASS: Found ${results.length} documents`);
         if (results.length > 0) {
           console.log(`   Sample source: ${results[0].source}`);
-          console.log(`   Hybrid score: ${results[0].hybridScore || results[0]._hybrid_score}`);
+          const hybridScore = results[0].scores?.hybrid || results[0].hybridScore || results[0]._hybrid_score;
+          console.log(`   Hybrid score: ${hybridScore}`);
         }
         passedTests++;
       } else {

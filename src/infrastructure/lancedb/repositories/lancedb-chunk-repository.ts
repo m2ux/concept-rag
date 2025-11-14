@@ -2,6 +2,7 @@ import * as lancedb from "@lancedb/lancedb";
 import { ChunkRepository } from '../../../domain/interfaces/repositories/chunk-repository.js';
 import { ConceptRepository } from '../../../domain/interfaces/repositories/concept-repository.js';
 import { EmbeddingService } from '../../../domain/interfaces/services/embedding-service.js';
+import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { Chunk, SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { parseJsonField } from '../utils/field-parsers.js';
 
@@ -10,12 +11,15 @@ import { parseJsonField } from '../utils/field-parsers.js';
  * 
  * Uses vector search for efficient querying - does NOT load all data.
  * Performance: O(log n) vector search vs O(n) full scan.
+ * 
+ * Search operations use HybridSearchService for multi-signal ranking.
  */
 export class LanceDBChunkRepository implements ChunkRepository {
   constructor(
     private chunksTable: lancedb.Table,
     private conceptRepo: ConceptRepository,
-    private embeddingService: EmbeddingService
+    private embeddingService: EmbeddingService,
+    private hybridSearchService: HybridSearchService
   ) {}
   
   /**
@@ -77,17 +81,16 @@ export class LanceDBChunkRepository implements ChunkRepository {
   }
   
   async search(query: SearchQuery): Promise<SearchResult[]> {
-    // This will be enhanced when ConceptualSearchClient is refactored
-    // For now, basic vector search
-    const queryEmbedding = this.embeddingService.generateEmbedding(query.text);
+    // Use hybrid search for multi-signal ranking
     const limit = query.limit || 10;
+    const debug = query.debug || false;
     
-    const results = await this.chunksTable
-      .vectorSearch(queryEmbedding)
-      .limit(limit)
-      .toArray();
-    
-    return results.map((row: any) => this.mapRowToSearchResult(row));
+    return await this.hybridSearchService.search(
+      this.chunksTable,
+      query.text,
+      limit,
+      debug
+    );
   }
   
   async countChunks(): Promise<number> {

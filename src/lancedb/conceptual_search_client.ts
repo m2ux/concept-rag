@@ -8,11 +8,37 @@ import {
     titleMatchScore 
 } from './hybrid_search_client.js';
 
+/**
+ * @deprecated This class is deprecated and kept only for backwards compatibility.
+ * 
+ * **Use instead**:
+ * - `ConceptualHybridSearchService` (src/infrastructure/search/conceptual-hybrid-search-service.ts)
+ * - Repositories with injected HybridSearchService (src/infrastructure/lancedb/repositories/)
+ * 
+ * **Why deprecated**:
+ * This class represents the old architecture with:
+ * - Direct coupling to LanceDB tables
+ * - Mixed concerns (search logic + table management)
+ * - Not testable in isolation
+ * 
+ * The new architecture:
+ * - Separates concerns (HybridSearchService for scoring, Repositories for data access)
+ * - Follows Dependency Inversion Principle
+ * - Fully testable with mock dependencies
+ * - Integrated via ApplicationContainer
+ * 
+ * **Migration**: This class will be removed in a future version once all direct
+ * usages are eliminated.
+ */
 export let client: lancedb.Connection;
 export let chunksTable: lancedb.Table;
 export let catalogTable: lancedb.Table;
 export let conceptTable: lancedb.Table;
 
+/**
+ * @deprecated Use ConceptualHybridSearchService instead.
+ * See deprecation notice above for migration guidance.
+ */
 export class ConceptualSearchClient {
     private queryExpander: QueryExpander;
     

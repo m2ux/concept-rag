@@ -1,8 +1,10 @@
 import { LanceDBConnection } from '../infrastructure/lancedb/database-connection.js';
 import { SimpleEmbeddingService } from '../infrastructure/embeddings/simple-embedding-service.js';
+import { ConceptualHybridSearchService } from '../infrastructure/search/conceptual-hybrid-search-service.js';
 import { LanceDBChunkRepository } from '../infrastructure/lancedb/repositories/lancedb-chunk-repository.js';
 import { LanceDBConceptRepository } from '../infrastructure/lancedb/repositories/lancedb-concept-repository.js';
 import { LanceDBCatalogRepository } from '../infrastructure/lancedb/repositories/lancedb-catalog-repository.js';
+import { QueryExpander } from '../concepts/query_expander.js';
 import { ConceptSearchTool } from '../tools/operations/concept_search.js';
 import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_catalog_search.js';
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
@@ -51,11 +53,13 @@ export class ApplicationContainer {
     
     // 3. Create services
     const embeddingService = new SimpleEmbeddingService();
+    const queryExpander = new QueryExpander(conceptsTable, embeddingService);
+    const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
     
-    // 4. Create repositories
+    // 4. Create repositories (now with hybrid search service)
     const conceptRepo = new LanceDBConceptRepository(conceptsTable);
-    const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService);
-    const catalogRepo = new LanceDBCatalogRepository(catalogTable, embeddingService);
+    const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService);
+    const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     
     // 5. Create tools with injected dependencies
     this.tools.set('concept_search', new ConceptSearchTool(chunkRepo, conceptRepo));
