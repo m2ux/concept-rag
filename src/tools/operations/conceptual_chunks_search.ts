@@ -1,6 +1,6 @@
-import { chunksTable, conceptTable } from "../../lancedb/conceptual_search_client.js";
-import { ConceptualSearchClient } from "../../lancedb/conceptual_search_client.js";
 import { BaseTool, ToolParams } from "../base/tool.js";
+import { ChunkRepository } from "../../domain/interfaces/repositories/chunk-repository.js";
+import { ConceptRepository } from "../../domain/interfaces/repositories/concept-repository.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
   text: string;
@@ -9,6 +9,13 @@ export interface ConceptualChunksSearchParams extends ToolParams {
 }
 
 export class ConceptualChunksSearchTool extends BaseTool<ConceptualChunksSearchParams> {
+  constructor(
+    private chunkRepo: ChunkRepository,
+    private conceptRepo: ConceptRepository
+  ) {
+    super();
+  }
+  
   name = "chunks_search";
   description = `Search for specific information within a single known document. Uses hybrid search with concept and synonym expansion, filtered to one source.
 
@@ -47,53 +54,19 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
     required: ["text", "source"],
   };
 
-  private searchClient?: ConceptualSearchClient;
-
   async execute(params: ConceptualChunksSearchParams) {
     try {
-      // Check if concept table is available
-      if (!conceptTable) {
-        // Fall back to basic search
-        const { searchTable } = await import("../../lancedb/simple_client.js");
-        const results = await searchTable(chunksTable, params.text, 5);
-        
-        // Filter by source
-        const filtered = results.filter((r: any) => r.source === params.source);
-        
-        return {
-          content: [
-            { type: "text" as const, text: JSON.stringify(filtered, null, 2) },
-          ],
-          isError: false,
-        };
-      }
-
-      // Initialize search client if needed
-      if (!this.searchClient) {
-        this.searchClient = new ConceptualSearchClient(conceptTable);
-      }
-
-      // Search with conceptual expansion
-      const allResults = await this.searchClient.search(
-        chunksTable,
-        params.text,
-        20,  // Get more results before filtering
-        params.debug || false
-      );
-      
-      // Filter by source
-      const filtered = allResults.filter(r => r.source === params.source).slice(0, 5);
+      // Use repository to find chunks from specific source
+      // Note: Full hybrid search with concept expansion will be added in Phase 3
+      const results = await this.chunkRepo.findBySource(params.source, 5);
       
       // Format results
-      const formattedResults = filtered.map(r => ({
+      const formattedResults = results.map(r => ({
         text: r.text,
         source: r.source,
-        scores: {
-          hybrid: r._hybrid_score.toFixed(3),
-          concept: r._concept_score.toFixed(3),
-          wordnet: r._wordnet_score.toFixed(3)
-        },
-        matched_concepts: r.matched_concepts
+        concept_density: r.conceptDensity,
+        concepts: r.concepts || [],
+        categories: r.conceptCategories || []
       }));
       
       return {
