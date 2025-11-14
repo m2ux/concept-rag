@@ -40,7 +40,7 @@ export class FakeChunkRepository implements ChunkRepository {
   async findByConceptName(conceptName: string, limit: number): Promise<Chunk[]> {
     const conceptLower = conceptName.toLowerCase();
     const results = Array.from(this.chunks.values())
-      .filter(chunk => chunk.concepts?.some(c => c.toLowerCase() === conceptLower))
+      .filter(chunk => chunk.concepts?.some((c: string) => c.toLowerCase() === conceptLower))
       .slice(0, limit);
     return Promise.resolve(results);
   }

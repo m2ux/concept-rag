@@ -86,52 +86,6 @@ export class ConceptChunkMatcher {
     }
     
     /**
-     * Check if a technical term appears in text using strict matching
-     * Requires exact or near-exact matches for terminology
-     */
-    private technicalTermMatchesText(
-        term: string,
-        text: string
-    ): boolean {
-        const termLower = term.toLowerCase().trim();
-        
-        // Direct exact match (strict)
-        if (text.includes(termLower)) {
-            return true;
-        }
-        
-        // For multi-word terms, require ALL words present and in sequence (or close)
-        const termWords = termLower.split(/\s+/);
-        if (termWords.length > 1) {
-            // Check if all words appear in order (with some flexibility)
-            const textWords = text.split(/\s+/);
-            let lastIndex = -1;
-            let matches = 0;
-            
-            for (const termWord of termWords) {
-                const foundIndex = textWords.findIndex((tw, idx) => 
-                    idx > lastIndex && tw.includes(termWord) && termWord.length > 2
-                );
-                if (foundIndex > -1) {
-                    lastIndex = foundIndex;
-                    matches++;
-                }
-            }
-            
-            // All words must be found in sequence
-            return matches === termWords.length;
-        }
-        
-        // For single-word terms, require word boundary match (no partial)
-        if (termWords.length === 1 && termWords[0].length > 2) {
-            const wordBoundaryRegex = new RegExp(`\\b${this.escapeRegex(termWords[0])}\\b`, 'i');
-            return wordBoundaryRegex.test(text);
-        }
-        
-        return false;
-    }
-    
-    /**
      * Check if a concept appears in text using fuzzy matching
      * Handles multi-word concepts and partial matches (for thematic concepts)
      */

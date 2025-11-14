@@ -1,6 +1,5 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { CatalogRepository } from "../../domain/interfaces/repositories/catalog-repository.js";
-import { EmbeddingService } from "../../domain/interfaces/services/embedding-service.js";
 
 export interface DocumentConceptsExtractParams extends ToolParams {
   document_query: string;
@@ -14,8 +13,7 @@ export interface DocumentConceptsExtractParams extends ToolParams {
  */
 export class DocumentConceptsExtractTool extends BaseTool<DocumentConceptsExtractParams> {
   constructor(
-    private catalogRepo: CatalogRepository,
-    private embeddingService: EmbeddingService
+    private catalogRepo: CatalogRepository
   ) {
     super();
   }

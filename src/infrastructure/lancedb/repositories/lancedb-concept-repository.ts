@@ -50,7 +50,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
       .map((row: any) => this.mapRowToConcept(row));
   }
   
-  async searchConcepts(queryText: string, limit: number): Promise<Concept[]> {
+  async searchConcepts(_queryText: string, limit: number): Promise<Concept[]> {
     // This requires embedding service - will be enhanced when QueryExpander is refactored
     // For now, simple query
     const results = await this.conceptsTable

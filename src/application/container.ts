@@ -63,10 +63,10 @@ export class ApplicationContainer {
     
     // 5. Create tools with injected dependencies
     this.tools.set('concept_search', new ConceptSearchTool(chunkRepo, conceptRepo));
-    this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogRepo, conceptRepo));
-    this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkRepo, conceptRepo));
-    this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkRepo, conceptRepo));
-    this.tools.set('extract_concepts', new DocumentConceptsExtractTool(catalogRepo, embeddingService));
+    this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogRepo));
+    this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkRepo));
+    this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkRepo));
+    this.tools.set('extract_concepts', new DocumentConceptsExtractTool(catalogRepo));
     
     console.error(`✅ Container initialized with ${this.tools.size} tool(s)`);
   }

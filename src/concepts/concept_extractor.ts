@@ -34,7 +34,7 @@ export class ConceptExtractor {
             
             if (response.ok) {
                 const data = await response.json();
-                const { limit_remaining, usage_daily, is_free_tier } = data.data;
+                const { limit_remaining, usage_daily } = data.data;
                 
                 console.log(`💳 API Status:`);
                 if (limit_remaining !== null) {
@@ -132,13 +132,13 @@ export class ConceptExtractor {
             // Ensure arrays and filter out non-strings
             return {
                 primary_concepts: Array.isArray(concepts.primary_concepts) 
-                    ? concepts.primary_concepts.filter(c => typeof c === 'string' && c.trim()) 
+                    ? concepts.primary_concepts.filter((c: any) => typeof c === 'string' && c.trim()) 
                     : [],
                 categories: Array.isArray(concepts.categories) 
-                    ? concepts.categories.filter(c => typeof c === 'string' && c.trim()) 
+                    ? concepts.categories.filter((c: any) => typeof c === 'string' && c.trim()) 
                     : [],
                 related_concepts: Array.isArray(concepts.related_concepts) 
-                    ? concepts.related_concepts.filter(c => typeof c === 'string' && c.trim()) 
+                    ? concepts.related_concepts.filter((c: any) => typeof c === 'string' && c.trim()) 
                     : []
             };
         } catch (error: any) {
@@ -292,7 +292,6 @@ export class ConceptExtractor {
                 // Try to close incomplete array item
                 const lastQuote = jsonText.lastIndexOf('"');
                 const lastComma = jsonText.lastIndexOf(',');
-                const lastBracket = jsonText.lastIndexOf('[');
                 const lastArrayClose = jsonText.lastIndexOf(']');
                 
                 if (lastQuote > lastArrayClose && lastQuote > lastComma) {
