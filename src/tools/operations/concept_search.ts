@@ -1,5 +1,6 @@
-import { chunksTable, conceptTable } from "../../lancedb/conceptual_search_client.js";
 import { BaseTool, ToolParams } from "../base/tool.js";
+import { ChunkRepository } from "../../domain/interfaces/repositories/chunk-repository.js";
+import { ConceptRepository } from "../../domain/interfaces/repositories/concept-repository.js";
 
 export interface ConceptSearchParams extends ToolParams {
   concept: string;
@@ -9,9 +10,16 @@ export interface ConceptSearchParams extends ToolParams {
 
 /**
  * Search for all chunks that reference a specific concept
- * Uses the hybrid approach with concept metadata stored in chunks
+ * Uses efficient vector search via repository pattern
  */
 export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
+  constructor(
+    private chunkRepo: ChunkRepository,
+    private conceptRepo: ConceptRepository
+  ) {
+    super();
+  }
+  
   name = "concept_search";
   description = `Find all chunks tagged with a specific concept from the concept-enriched index. 
   
@@ -52,113 +60,38 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       const limit = params.limit || 10;
       const conceptLower = params.concept.toLowerCase().trim();
       
-      if (!chunksTable) {
-        return {
-          content: [{
-            type: "text" as const,
-            text: JSON.stringify({
-              error: "Chunks table not available",
-              message: "Database not properly initialized"
-            }, null, 2)
-          }],
-          isError: true
-        };
-      }
-
-      // Get concept info from concepts table if available
-      let conceptInfo: any = null;
-      if (conceptTable) {
-        try {
-          const conceptResults = await conceptTable
-            .query()
-            .where(`concept = '${conceptLower}'`)
-            .limit(1)
-            .toArray();
-          
-          if (conceptResults.length > 0) {
-            conceptInfo = conceptResults[0];
-          }
-        } catch (e) {
-          // Concept table query failed, continue without it
-        }
-      }
-
-      // Query chunks that contain this concept
-      // Load ALL chunks and filter in memory (concepts stored as JSON, can't use SQL WHERE)
+      // Get concept metadata using repository
+      const conceptInfo = await this.conceptRepo.findByName(conceptLower);
+      
+      // Find chunks using efficient repository method (vector search)
       console.error(`🔍 Searching for concept: "${conceptLower}"`);
       
-      // Get total count and load ALL chunks (LanceDB defaults to 10 if no limit!)
-      const totalCount = await chunksTable.countRows();
-      console.error(`📊 Scanning ${totalCount.toLocaleString()} chunks...`);
+      let matchingChunks = await this.chunkRepo.findByConceptName(conceptLower, limit * 2);
       
-      // Load all chunks - MUST specify limit (toArray() defaults to 10!)
-      const allChunks = await chunksTable
-        .query()
-        .limit(totalCount)  // CRITICAL: Explicit limit required
-        .toArray();
+      // Apply source filter if provided
+      if (params.source_filter) {
+        matchingChunks = matchingChunks.filter(chunk => 
+          chunk.source.toLowerCase().includes(params.source_filter.toLowerCase())
+        );
+      }
       
-      console.error(`✅ Loaded ${allChunks.length.toLocaleString()} chunks`);
+      // Sort by concept density
+      matchingChunks.sort((a, b) => (b.conceptDensity || 0) - (a.conceptDensity || 0));
       
-      // Filter chunks that contain this concept
-      const matchingChunks = allChunks
-        .filter((chunk: any) => {
-          if (!chunk.concepts) return false;
-          
-          // Parse concepts array (stored as JSON string)
-          let chunkConcepts: string[] = [];
-          try {
-            chunkConcepts = typeof chunk.concepts === 'string' 
-              ? JSON.parse(chunk.concepts)
-              : chunk.concepts;
-          } catch (e) {
-            return false;
-          }
-          
-          // Check if concept matches (exact match only, case-insensitive)
-          // This prevents "type" from matching "typescript" or vice versa
-          return chunkConcepts.some((c: string) => {
-            return c.toLowerCase() === conceptLower;
-          });
-        })
-        .filter((chunk: any) => {
-          // Apply source filter if provided
-          if (params.source_filter) {
-            return chunk.source && chunk.source.toLowerCase().includes(params.source_filter.toLowerCase());
-          }
-          return true;
-        })
-        .sort((a: any, b: any) => {
-          // Sort by concept_density (higher is better)
-          const densityA = a.concept_density || 0;
-          const densityB = b.concept_density || 0;
-          return densityB - densityA;
-        })
-        .slice(0, limit);
+      // Limit results
+      matchingChunks = matchingChunks.slice(0, limit);
+      
+      console.error(`✅ Found ${matchingChunks.length} matching chunks`);
       
       // Format results
-      const results = matchingChunks.map((chunk: any) => {
-        // Parse concepts and categories
-        let concepts: string[] = [];
-        let categories: string[] = [];
-        
-        try {
-          concepts = typeof chunk.concepts === 'string' 
-            ? JSON.parse(chunk.concepts)
-            : chunk.concepts || [];
-          categories = typeof chunk.concept_categories === 'string'
-            ? JSON.parse(chunk.concept_categories)
-            : chunk.concept_categories || [];
-        } catch (e) {
-          // Keep empty arrays
-        }
-        
+      const results = matchingChunks.map((chunk) => {
         return {
           text: chunk.text,
           source: chunk.source,
-          concept_density: (chunk.concept_density || 0).toFixed(3),
-          concepts_in_chunk: concepts,
-          categories: categories,
-          relevance: concepts.filter((c: string) => 
+          concept_density: (chunk.conceptDensity || 0).toFixed(3),
+          concepts_in_chunk: chunk.concepts || [],
+          categories: chunk.conceptCategories || [],
+          relevance: (chunk.concepts || []).filter((c: string) => 
             c.toLowerCase() === conceptLower
           ).length
         };
@@ -176,20 +109,13 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
         response.concept_metadata = {
           category: conceptInfo.category,
           weight: conceptInfo.weight,
-          chunk_count: conceptInfo.chunk_count,
-          sources_count: conceptInfo.sources ? JSON.parse(conceptInfo.sources).length : 0
+          chunk_count: conceptInfo.chunkCount,
+          sources_count: conceptInfo.sources.length
         };
         
         // Add related concepts if available
-        if (conceptInfo.related_concepts) {
-          try {
-            const related = JSON.parse(conceptInfo.related_concepts);
-            if (related.length > 0) {
-              response.related_concepts = related.slice(0, 10);
-            }
-          } catch (e) {
-            // Skip related concepts
-          }
+        if (conceptInfo.relatedConcepts && conceptInfo.relatedConcepts.length > 0) {
+          response.related_concepts = conceptInfo.relatedConcepts.slice(0, 10);
         }
       }
       
