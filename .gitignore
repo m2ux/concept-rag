@@ -310,3 +310,4 @@ cython_debug/
 .ai/
 
 *.code-workspace
+.archive
