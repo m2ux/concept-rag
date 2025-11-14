@@ -27,19 +27,6 @@ A powerful MCP server that enables LLMs to interact with documents through conce
 
 ---
 
-## 🎯 At a Glance
-
-| Feature | Detail                                                   |
-|---------|----------------------------------------------------------|
-| **Search Tools** | 5 specialized tools for different search needs           |
-| **Concept Extraction** | 80-150+ concepts per document                            |
-| **Models** | Claude Sonnet 4.5 (extraction) + Grok-4-fast (summaries) |
-| **Semantic Engine** | WordNet integration (161K+ words)                        |
-| **Cost** | ~\$0.048/document (one-time), $\0 for searches           |
-| **Speed** | <1 second per query after initial load                   |
-| **Supported Formats** | PDF (text + OCR for scanned)                             |
-| **MCP Clients** | Claude Desktop, Cursor                                   |
-
 ## ✨ Features
 
 - 🧠 **5 Search Tools**: Optimized for different search modalities (concept research, document discovery, comprehensive search, single-document, concept export)
