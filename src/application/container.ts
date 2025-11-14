@@ -7,6 +7,7 @@ import { ConceptSearchTool } from '../tools/operations/concept_search.js';
 import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_catalog_search.js';
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
 import { ConceptualBroadChunksSearchTool } from '../tools/operations/conceptual_broad_chunks_search.js';
+import { DocumentConceptsExtractTool } from '../tools/operations/document_concepts_extract.js';
 import { BaseTool } from '../tools/base/tool.js';
 import * as defaults from '../config.js';
 
@@ -61,9 +62,7 @@ export class ApplicationContainer {
     this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogRepo, conceptRepo));
     this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkRepo, conceptRepo));
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkRepo, conceptRepo));
-    
-    // TODO: Last tool to migrate
-    // this.tools.set('extract_concepts', new DocumentConceptsExtractTool(...));
+    this.tools.set('extract_concepts', new DocumentConceptsExtractTool(catalogRepo, embeddingService));
     
     console.error(`✅ Container initialized with ${this.tools.size} tool(s)`);
   }

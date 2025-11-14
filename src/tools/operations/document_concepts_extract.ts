@@ -1,6 +1,6 @@
-import { catalogTable } from "../../lancedb/conceptual_search_client.js";
-import { createSimpleEmbedding } from "../../lancedb/hybrid_search_client.js";
 import { BaseTool, ToolParams } from "../base/tool.js";
+import { CatalogRepository } from "../../domain/interfaces/repositories/catalog-repository.js";
+import { EmbeddingService } from "../../domain/interfaces/services/embedding-service.js";
 
 export interface DocumentConceptsExtractParams extends ToolParams {
   document_query: string;
@@ -13,6 +13,13 @@ export interface DocumentConceptsExtractParams extends ToolParams {
  * Uses vector search to find the document, then returns its concept metadata
  */
 export class DocumentConceptsExtractTool extends BaseTool<DocumentConceptsExtractParams> {
+  constructor(
+    private catalogRepo: CatalogRepository,
+    private embeddingService: EmbeddingService
+  ) {
+    super();
+  }
+  
   name = "extract_concepts";
   description = `Export the complete list of concepts extracted from a specific document. Returns all primary concepts, technical terms, related concepts, categories, and summary.
 
@@ -57,29 +64,15 @@ OUTPUT FORMATS:
 
   async execute(params: DocumentConceptsExtractParams) {
     try {
-      if (!catalogTable) {
-        return {
-          content: [{
-            type: "text" as const,
-            text: JSON.stringify({
-              error: "Catalog table not available",
-              message: "Database not properly initialized"
-            }, null, 2)
-          }],
-          isError: true
-        };
-      }
-
       const format = params.format || "json";
       const includeSummary = params.include_summary !== false;
 
-      // Use vector search to find document
+      // Use repository to find document
       console.error(`🔍 Searching for document: "${params.document_query}"`);
-      const queryVector = createSimpleEmbedding(params.document_query);
-      const results = await catalogTable
-        .vectorSearch(queryVector)
-        .limit(10)
-        .toArray();
+      const results = await this.catalogRepo.search({
+        text: params.document_query,
+        limit: 10
+      });
 
       if (results.length === 0) {
         return {
