@@ -16,8 +16,8 @@ export let conceptTable: lancedb.Table;
 export class ConceptualSearchClient {
     private queryExpander: QueryExpander;
     
-    constructor(private _conceptTable: lancedb.Table) {
-        this.queryExpander = new QueryExpander(_conceptTable);
+    constructor(private _conceptTable: lancedb.Table, embeddingService: any) {
+        this.queryExpander = new QueryExpander(_conceptTable, embeddingService);
     }
     
     async search(
