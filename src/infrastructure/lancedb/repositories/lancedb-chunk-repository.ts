@@ -43,6 +43,12 @@ export class LanceDBChunkRepository implements ChunkRepository {
       return [];
     }
     
+    // Validate embeddings before vector search
+    if (!conceptRecord.embeddings || conceptRecord.embeddings.length === 0) {
+      console.error(`❌ ERROR: Concept "${concept}" has no embeddings! Cannot perform vector search.`);
+      return [];
+    }
+    
     // Use concept's embedding for vector search (efficient!)
     const candidates = await this.chunksTable
       .vectorSearch(conceptRecord.embeddings)
@@ -50,7 +56,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
       .toArray();
     
     // Filter to chunks that actually contain the concept
-    const matches: Chunk[] = [];
+    const matches: Chunk[]= [];
     for (const row of candidates) {
       const chunk = this.mapRowToChunk(row);
       

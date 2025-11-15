@@ -71,7 +71,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
       synonyms: parseJsonField(row.synonyms),
       broaderTerms: parseJsonField(row.broader_terms),
       narrowerTerms: parseJsonField(row.narrower_terms),
-      embeddings: row.embeddings || [],
+      embeddings: row.vector || row.embeddings || [],  // Check 'vector' first (LanceDB column name), then fall back to 'embeddings'
       weight: row.weight || 0,
       chunkCount: row.chunk_count || 0,
       enrichmentSource: row.enrichment_source || 'corpus'
