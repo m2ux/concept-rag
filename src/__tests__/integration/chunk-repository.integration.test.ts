@@ -123,7 +123,10 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       // Verify chunk has embeddings (optional field)
       const chunkWithEmbeddings = chunks.find(c => c.embeddings);
       if (chunkWithEmbeddings) {
-        expect(chunkWithEmbeddings.embeddings).toBeInstanceOf(Array);
+        // Embeddings can be Array or Arrow Vector (both valid)
+        const isArray = Array.isArray(chunkWithEmbeddings.embeddings);
+        const isArrowVector = typeof chunkWithEmbeddings.embeddings === 'object' && 'length' in chunkWithEmbeddings.embeddings!;
+        expect(isArray || isArrowVector).toBe(true);
         expect(chunkWithEmbeddings.embeddings!.length).toBe(384); // Expected dimension
       }
     });
@@ -239,30 +242,40 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
   
   describe('field mapping validation', () => {
     it('should correctly map all chunk fields from LanceDB', async () => {
-      const chunks = await chunkRepo.findBySource('/docs/principles/solid.pdf', 1);
+      // ARRANGE: Query for specific chunk
+      const sourcePath = '/docs/principles/solid.pdf';
       
+      // ACT: Retrieve chunk
+      const chunks = await chunkRepo.findBySource(sourcePath, 1);
+      
+      // ASSERT: Verify all field mappings from LanceDB to domain model
       expect(chunks.length).toBe(1);
       const chunk = chunks[0];
       
-      // Verify all expected fields are mapped
+      // String fields
       expect(chunk.text).toBeDefined();
       expect(typeof chunk.text).toBe('string');
       
       expect(chunk.source).toBeDefined();
       expect(typeof chunk.source).toBe('string');
       
+      // Array fields (JSON deserialized)
       expect(chunk.concepts).toBeDefined();
       expect(Array.isArray(chunk.concepts)).toBe(true);
       
       expect(chunk.conceptCategories).toBeDefined();
       expect(Array.isArray(chunk.conceptCategories)).toBe(true);
       
+      // Number fields
       expect(chunk.conceptDensity).toBeDefined();
       expect(typeof chunk.conceptDensity).toBe('number');
       
-      // embeddings is optional, but if present should be array
+      // embeddings is optional, but if present should be array of correct dimension
       if (chunk.embeddings) {
-        expect(Array.isArray(chunk.embeddings)).toBe(true);
+        // Embeddings can be Array or Arrow Vector (both valid)
+        const isArray = Array.isArray(chunk.embeddings);
+        const isArrowVector = typeof chunk.embeddings === 'object' && 'length' in chunk.embeddings;
+        expect(isArray || isArrowVector).toBe(true);
         expect(chunk.embeddings.length).toBe(384);
       }
     });
