@@ -14,6 +14,10 @@ import * as defaults from './src/config.js';
 import { ConceptExtractor } from './src/concepts/concept_extractor.js';
 import { ConceptIndexBuilder } from './src/concepts/concept_index.js';
 import { ConceptChunkMatcher } from './src/concepts/concept_chunk_matcher.js';
+import { DocumentLoaderFactory } from './src/infrastructure/document-loaders/document-loader-factory.js';
+import { PDFDocumentLoader } from './src/infrastructure/document-loaders/pdf-loader.js';
+import { EPUBDocumentLoader } from './src/infrastructure/document-loaders/epub-loader.js';
+
 
 // ASCII progress bar utility with gradual progress for both stages
 function drawProgressBar(stage: 'converting' | 'processing', current: number, total: number, width: number = 40): string {
@@ -663,8 +667,11 @@ async function deleteIncompleteDocumentData(
     }
 }
 
-async function findPdfFilesRecursively(dir: string): Promise<string[]> {
-    const pdfFiles: string[] = [];
+async function findDocumentFilesRecursively(
+    dir: string,
+    extensions: string[] = ['.pdf', '.epub', '.mobi']
+): Promise<string[]> {
+    const documentFiles: string[] = [];
     
     try {
         const entries = await fs.promises.readdir(dir, { withFileTypes: true });
@@ -674,17 +681,20 @@ async function findPdfFilesRecursively(dir: string): Promise<string[]> {
             
             if (entry.isDirectory()) {
                 // Recursively search subdirectories
-                const subDirPdfs = await findPdfFilesRecursively(fullPath);
-                pdfFiles.push(...subDirPdfs);
-            } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.pdf')) {
-                pdfFiles.push(fullPath);
+                const subDirDocs = await findDocumentFilesRecursively(fullPath, extensions);
+                documentFiles.push(...subDirDocs);
+            } else if (entry.isFile()) {
+                const fileExt = path.extname(entry.name).toLowerCase();
+                if (extensions.includes(fileExt)) {
+                    documentFiles.push(fullPath);
+                }
             }
         }
-    } catch (error) {
+    } catch (error: any) {
         console.warn(`⚠️ Error scanning directory ${dir}: ${error.message}`);
     }
     
-    return pdfFiles;
+    return documentFiles;
 }
 
 async function loadDocumentsWithErrorHandling(
@@ -699,6 +709,11 @@ async function loadDocumentsWithErrorHandling(
     const incompleteFiles: Array<{path: string, missing: string[]}> = [];
     const documentsNeedingChunks = new Set<string>(); // Track which docs need chunking
     
+    // Initialize document loader factory
+    const loaderFactory = new DocumentLoaderFactory();
+    loaderFactory.registerLoader(new PDFDocumentLoader());
+    loaderFactory.registerLoader(new EPUBDocumentLoader());
+    
     try {
         // Check if filesDir is a file or directory
         const stats = await fs.promises.stat(filesDir);
@@ -706,22 +721,23 @@ async function loadDocumentsWithErrorHandling(
             throw new Error(`Path is not a directory: ${filesDir}. Please provide a directory path, not a file path.`);
         }
         
-        console.log(`🔍 Recursively scanning ${filesDir} for PDF files...`);
-        const pdfFiles = await findPdfFilesRecursively(filesDir);
+        const supportedExtensions = loaderFactory.getSupportedExtensions();
+        console.log(`🔍 Recursively scanning ${filesDir} for document files (${supportedExtensions.join(', ')})...`);
+        const documentFiles = await findDocumentFilesRecursively(filesDir, supportedExtensions);
         
-        console.log(`📚 Found ${pdfFiles.length} PDF files`);
+        console.log(`📚 Found ${documentFiles.length} document files`);
         
         if (!skipExistsCheck && catalogTable) {
             console.log(`🔍 Checking document completeness (summaries, concepts, chunks)...`);
         }
         
-        for (const pdfFile of pdfFiles) {
-            const relativePath = path.relative(filesDir, pdfFile);
+        for (const docFile of documentFiles) {
+            const relativePath = path.relative(filesDir, docFile);
             
             // Calculate hash first (available for all cases)
             let hash = 'unknown';
             try {
-                const fileContent = await fs.promises.readFile(pdfFile);
+                const fileContent = await fs.promises.readFile(docFile);
                 hash = crypto.createHash('sha256').update(fileContent).digest('hex');
             } catch (hashError) {
                 // If we can't read the file for hashing, we'll use 'unknown'
@@ -734,7 +750,7 @@ async function loadDocumentsWithErrorHandling(
                         catalogTable,
                         chunksTable,
                         hash,
-                        pdfFile
+                        docFile
                     );
                     
                     if (completeness.isComplete) {
@@ -755,7 +771,7 @@ async function loadDocumentsWithErrorHandling(
                         const needsChunkConcepts = completeness.missingComponents.includes('chunk_concepts');
                         
                         if (needsChunks) {
-                            documentsNeedingChunks.add(pdfFile);
+                            documentsNeedingChunks.add(docFile);
                         }
                         
                         // Delete incomplete data before reprocessing
@@ -764,14 +780,14 @@ async function loadDocumentsWithErrorHandling(
                             catalogTable, 
                             chunksTable, 
                             hash, 
-                            pdfFile, 
+                            docFile, 
                             completeness.missingComponents
                         );
                         
-                        // If chunks exist and we only need concepts/summary, skip loading the PDF
+                        // If chunks exist and we only need concepts/summary, skip loading the document
                         // We'll regenerate concepts from existing chunks later
                         if (!needsChunks || needsChunkConcepts) {
-                            console.log(`  ⏭️  Skipping PDF load (chunks exist, only regenerating ${missingStr})`);
+                            console.log(`  ⏭️  Skipping document load (chunks exist, only regenerating ${missingStr})`);
                             
                             // Load content from existing chunks for concept regeneration
                             try {
@@ -789,7 +805,7 @@ async function loadDocumentsWithErrorHandling(
                                         new Document({
                                             pageContent: chunk.text || '',
                                             metadata: {
-                                                source: pdfFile,
+                                                source: docFile,
                                                 hash: hash,
                                                 loc: chunk.loc || { pageNumber: 1 },
                                                 // Preserve chunk ID for in-place updates
@@ -804,18 +820,18 @@ async function loadDocumentsWithErrorHandling(
                                     
                                     // Mark for chunk updates if concept enrichment is needed
                                     if (needsChunkConcepts) {
-                                        documentsNeedingChunks.add(pdfFile); // Will trigger re-enrichment
+                                        documentsNeedingChunks.add(docFile); // Will trigger re-enrichment
                                     }
                                 } else {
                                     console.warn(`  ⚠️  No chunks found despite chunks not being in missing list!`);
-                                    // Fall through to load PDF as fallback
+                                    // Fall through to load document as fallback
                                 }
                                 
-                                continue; // Skip PDF loading
+                                continue; // Skip document loading
                             } catch (error: any) {
                                 console.error(`  ❌ Failed to load chunks: ${error.message}`);
-                                console.log(`  ⬇️  Falling back to PDF loading...`);
-                                // Fall through to load PDF as fallback
+                                console.log(`  ⬇️  Falling back to document loading...`);
+                                // Fall through to load document as fallback
                             }
                         }
                         
@@ -823,17 +839,24 @@ async function loadDocumentsWithErrorHandling(
                     }
                 }
                 
-                const loader = new PDFLoader(pdfFile);
+                // Get appropriate loader for this file type
+                const loader = loaderFactory.getLoader(docFile);
+                if (!loader) {
+                    throw new Error(`No loader found for file type: ${path.extname(docFile)}`);
+                }
                 
+                // Load document with timeout
+                // Note: Timeout only applies to PDF loading; EPUB/MOBI typically faster
+                const isPdf = docFile.toLowerCase().endsWith('.pdf');
                 const docs = await Promise.race([
-                    loader.load(),
+                    loader.load(docFile),
                     new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('PDF loading timeout')), 30000)
+                        setTimeout(() => reject(new Error('Document loading timeout')), 30000)
                     )
                 ]) as Document[];
                 
                 if (docs.length === 0) {
-                    throw new Error('PDF contains no pages');
+                    throw new Error('Document contains no content');
                 }
                 
                 // Add hash to all document pages for tracking
@@ -844,45 +867,58 @@ async function loadDocumentsWithErrorHandling(
                 documents.push(...docs);
                 
                 // New documents need chunking
-                documentsNeedingChunks.add(pdfFile);
+                documentsNeedingChunks.add(docFile);
                 
-                console.log(`📥 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${docs.length} pages)`);
+                // Format output based on document type
+                const fileExt = path.extname(docFile).toLowerCase();
+                let contentInfo = '';
+                if (fileExt === '.pdf') {
+                    contentInfo = `${docs.length} pages`;
+                } else if (fileExt === '.epub') {
+                    contentInfo = `${Math.round(docs[0].pageContent.length / 1000)}k chars`;
+                } else {
+                    contentInfo = `${docs.length} docs`;
+                }
+                console.log(`📥 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
             } catch (error: any) {
                 const errorMsg = error?.message || String(error);
+                const fileExt = path.extname(docFile).toLowerCase();
                 
-                // Try OCR fallback for scanned PDFs that failed normal processing
+                // Try OCR fallback ONLY for PDFs that failed normal processing
                 let ocrAttempted = false;
                 let ocrSuccessful = false;
-                try {
-                    console.log(`🔍 OCR processing: ${truncateFilePath(relativePath)}`);
-                    const ocrResult = await callOpenRouterOCR(pdfFile);
-                    
-                    if (ocrResult && ocrResult.documents && ocrResult.documents.length > 0) {
-                        // Add hash to OCR'd document metadata for proper tracking
-                        ocrResult.documents.forEach(doc => {
-                            doc.metadata.hash = hash;
-                        });
+                if (fileExt === '.pdf') {
+                    try {
+                        console.log(`🔍 OCR processing: ${truncateFilePath(relativePath)}`);
+                        const ocrResult = await callOpenRouterOCR(docFile);
                         
-                        documents.push(...ocrResult.documents);
-                        
-                        // OCR documents need chunking
-                        documentsNeedingChunks.add(pdfFile);
-                        
-                        const hashDisplay = hash !== 'unknown' ? `[${hash.slice(0, 4)}..${hash.slice(-4)}]` : '[????..????]';
-                        const { totalPages, totalChars, success } = ocrResult.ocrStats;
-                        
-                        if (success) {
-                            console.log(`✅ ${hashDisplay} ${truncateFilePath(relativePath)} (${totalPages} pages, ${totalChars} chars, OCR)`);
-                            ocrSuccessful = true;
-                        } else {
-                            console.log(`⚠️ ${hashDisplay} ${truncateFilePath(relativePath)} (OCR: low quality text extracted)`);
+                        if (ocrResult && ocrResult.documents && ocrResult.documents.length > 0) {
+                            // Add hash to OCR'd document metadata for proper tracking
+                            ocrResult.documents.forEach(doc => {
+                                doc.metadata.hash = hash;
+                            });
+                            
+                            documents.push(...ocrResult.documents);
+                            
+                            // OCR documents need chunking
+                            documentsNeedingChunks.add(docFile);
+                            
+                            const hashDisplay = hash !== 'unknown' ? `[${hash.slice(0, 4)}..${hash.slice(-4)}]` : '[????..????]';
+                            const { totalPages, totalChars, success } = ocrResult.ocrStats;
+                            
+                            if (success) {
+                                console.log(`✅ ${hashDisplay} ${truncateFilePath(relativePath)} (${totalPages} pages, ${totalChars} chars, OCR)`);
+                                ocrSuccessful = true;
+                            } else {
+                                console.log(`⚠️ ${hashDisplay} ${truncateFilePath(relativePath)} (OCR: low quality text extracted)`);
+                            }
+                            ocrAttempted = true;
                         }
+                    } catch (ocrError: any) {
+                        const hashDisplay = hash !== 'unknown' ? `[${hash.slice(0, 4)}..${hash.slice(-4)}]` : '[????..????]';
+                        console.log(`❌ ${hashDisplay} ${truncateFilePath(relativePath)} (OCR failed: ${ocrError.message})`);
                         ocrAttempted = true;
                     }
-                } catch (ocrError: any) {
-                    const hashDisplay = hash !== 'unknown' ? `[${hash.slice(0, 4)}..${hash.slice(-4)}]` : '[????..????]';
-                    console.log(`❌ ${hashDisplay} ${truncateFilePath(relativePath)} (OCR failed: ${ocrError.message})`);
-                    ocrAttempted = true;
                 }
                 
                 // If OCR wasn't successful, handle as error
@@ -914,7 +950,7 @@ async function loadDocumentsWithErrorHandling(
             }
         }
         
-        const loadedCount = pdfFiles.length - failedFiles.length - skippedFiles.length;
+        const loadedCount = documentFiles.length - failedFiles.length - skippedFiles.length;
         const ocrProcessedCount = documents.filter(doc => doc.metadata.ocr_processed).length;
         const standardProcessedCount = loadedCount - (ocrProcessedCount > 0 ? 1 : 0); // Approximate count of files processed via standard PDF loading
         
