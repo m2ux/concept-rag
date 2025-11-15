@@ -7,6 +7,7 @@ import { Chunk, SearchQuery, SearchResult } from '../../../domain/models/index.j
 import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } from '../../../domain/exceptions.js';
 import { parseJsonField } from '../utils/field-parsers.js';
 import { validateChunkRow, detectVectorField } from '../utils/schema-validators.js';
+import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
 
 /**
  * LanceDB implementation of ChunkRepository
@@ -112,8 +113,11 @@ export class LanceDBChunkRepository implements ChunkRepository {
     const limit = query.limit || 10;
     const debug = query.debug || false;
     
+    // Wrap table in adapter to prevent infrastructure leakage
+    const collection = new SearchableCollectionAdapter(this.chunksTable, 'chunks');
+    
     return await this.hybridSearchService.search(
-      this.chunksTable,
+      collection,
       query.text,
       limit,
       debug

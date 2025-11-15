@@ -1,5 +1,30 @@
-import * as lancedb from "@lancedb/lancedb";
 import { SearchResult } from '../../models/search-result.js';
+
+/**
+ * Abstraction for a searchable collection with vector capabilities.
+ * 
+ * This interface decouples the domain layer from LanceDB specifics.
+ * Implementations wrap a LanceDB table but expose only the operations
+ * needed by the domain layer.
+ * 
+ * **Design**: This is an example of the Adapter pattern, wrapping
+ * infrastructure concerns (LanceDB) to make them domain-friendly.
+ */
+export interface SearchableCollection {
+  /**
+   * Perform vector search on the collection.
+   * 
+   * @param queryVector - The embedding vector to search with
+   * @param limit - Maximum number of results
+   * @returns Promise of search results with similarity scores
+   */
+  vectorSearch(queryVector: number[], limit: number): Promise<any[]>;
+  
+  /**
+   * Get the name/identifier of this collection (for logging/debugging).
+   */
+  getName(): string;
+}
 
 /**
  * Service interface for performing hybrid multi-signal search.
@@ -37,7 +62,7 @@ import { SearchResult } from '../../models/search-result.js';
  * 
  * // Search chunks table
  * const results = await service.search(
- *   chunksTable,
+ *   chunksCollection,
  *   'dependency injection patterns',
  *   10,
  *   true // enable debug logging
@@ -56,11 +81,11 @@ import { SearchResult } from '../../models/search-result.js';
  */
 export interface HybridSearchService {
   /**
-   * Perform hybrid search on a LanceDB table using multi-signal ranking.
+   * Perform hybrid search on a searchable collection using multi-signal ranking.
    * 
    * This is the core search operation that powers all search modalities.
-   * It can be used with any LanceDB table (chunks, catalog) as long as
-   * the table has the required fields (embeddings, text, source, concepts).
+   * It can be used with any searchable collection (chunks, catalog) as long as
+   * the collection has the required fields (embeddings, text, source, concepts).
    * 
    * **Algorithm**:
    * 1. **Query Expansion**: Expand query with related terms and WordNet synonyms
@@ -74,22 +99,22 @@ export interface HybridSearchService {
    * - Score breakdown for each result
    * - Matched concepts
    * 
-   * @param table - The LanceDB table to search (chunks or catalog table)
+   * @param collection - The searchable collection to query (chunks or catalog)
    * @param queryText - Natural language query or keywords (e.g., 'microservice patterns')
    * @param limit - Maximum number of results to return (typically 5-20, default: 5)
    * @param debug - Enable debug logging to stderr for query expansion and score breakdown
    * @returns Promise resolving to array of search results ranked by hybrid score (highest first)
-   * @throws {Error} If table access fails
+   * @throws {Error} If collection access fails
    * @throws {Error} If query expansion fails
    * 
    * @example
    * ```typescript
    * // Basic search
-   * const results = await hybridSearch.search(chunksTable, 'REST API design', 10);
+   * const results = await hybridSearch.search(chunksCollection, 'REST API design', 10);
    * 
    * // With debug logging
    * const results = await hybridSearch.search(
-   *   catalogTable,
+   *   catalogCollection,
    *   'distributed systems patterns',
    *   5,
    *   true // shows query expansion and score breakdown
@@ -105,7 +130,7 @@ export interface HybridSearchService {
    * ```
    */
   search(
-    table: lancedb.Table,
+    collection: SearchableCollection,
     queryText: string,
     limit: number,
     debug?: boolean
