@@ -34,7 +34,6 @@
 import { ChunkRepository } from '../interfaces/repositories/chunk-repository.js';
 import { ConceptRepository } from '../interfaces/repositories/concept-repository.js';
 import { Chunk, Concept } from '../models/index.js';
-import { ConceptNotFoundError } from '../exceptions.js';
 
 /**
  * Parameters for concept search operations.
