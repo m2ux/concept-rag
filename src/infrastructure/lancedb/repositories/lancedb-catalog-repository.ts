@@ -2,6 +2,7 @@ import * as lancedb from "@lancedb/lancedb";
 import { CatalogRepository } from '../../../domain/interfaces/repositories/catalog-repository.js';
 import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
+import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
 
 /**
  * LanceDB implementation of CatalogRepository
@@ -24,8 +25,11 @@ export class LanceDBCatalogRepository implements CatalogRepository {
     const limit = query.limit || 5;
     const debug = query.debug || false;
     
+    // Wrap table in adapter to prevent infrastructure leakage
+    const collection = new SearchableCollectionAdapter(this.catalogTable, 'catalog');
+    
     return await this.hybridSearchService.search(
-      this.catalogTable,
+      collection,
       query.text,
       limit,
       debug
@@ -34,8 +38,10 @@ export class LanceDBCatalogRepository implements CatalogRepository {
   
   async findBySource(source: string): Promise<SearchResult | null> {
     // Use hybrid search with source as query (benefits from title matching)
+    const collection = new SearchableCollectionAdapter(this.catalogTable, 'catalog');
+    
     const results = await this.hybridSearchService.search(
-      this.catalogTable,
+      collection,
       source,
       10,
       false
