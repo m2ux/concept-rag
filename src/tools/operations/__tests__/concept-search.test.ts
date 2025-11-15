@@ -11,6 +11,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ConceptSearchTool } from '../concept_search.js';
+import { ConceptSearchService } from '../../../domain/services/index.js';
 import {
   FakeChunkRepository,
   FakeConceptRepository,
@@ -21,13 +22,15 @@ import {
 describe('ConceptSearchTool', () => {
   let chunkRepo: FakeChunkRepository;
   let conceptRepo: FakeConceptRepository;
+  let service: ConceptSearchService;
   let tool: ConceptSearchTool;
   
   beforeEach(() => {
-    // SETUP - Fresh repositories for each test (test isolation)
+    // SETUP - Fresh repositories and service for each test (test isolation)
     chunkRepo = new FakeChunkRepository();
     conceptRepo = new FakeConceptRepository();
-    tool = new ConceptSearchTool(chunkRepo, conceptRepo);
+    service = new ConceptSearchService(chunkRepo, conceptRepo);
+    tool = new ConceptSearchTool(service);
   });
   
   describe('execute', () => {
