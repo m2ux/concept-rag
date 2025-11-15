@@ -1,5 +1,10 @@
 import { LanceDBConnection } from '../infrastructure/lancedb/database-connection.js';
-import { SimpleEmbeddingService } from '../infrastructure/embeddings/simple-embedding-service.js';
+import { 
+  SimpleEmbeddingService,
+  OpenAIEmbeddingService,
+  OpenRouterEmbeddingService,
+  HuggingFaceEmbeddingService
+} from '../infrastructure/embeddings/index.js';
 import { ConceptualHybridSearchService } from '../infrastructure/search/conceptual-hybrid-search-service.js';
 import { LanceDBChunkRepository } from '../infrastructure/lancedb/repositories/lancedb-chunk-repository.js';
 import { LanceDBConceptRepository } from '../infrastructure/lancedb/repositories/lancedb-concept-repository.js';
@@ -11,7 +16,9 @@ import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunk
 import { ConceptualBroadChunksSearchTool } from '../tools/operations/conceptual_broad_chunks_search.js';
 import { DocumentConceptsExtractTool } from '../tools/operations/document_concepts_extract.js';
 import { BaseTool } from '../tools/base/tool.js';
+import { EmbeddingService } from '../domain/interfaces/services/embedding-service.js';
 import * as defaults from '../config.js';
+import { embeddingConfig } from '../config.js';
 
 /**
  * Application Container - Composition Root for Dependency Injection.
@@ -61,6 +68,77 @@ export class ApplicationContainer {
   private tools = new Map<string, BaseTool>();
   
   /**
+   * Create an embedding service based on configuration.
+   * 
+   * Factory method that instantiates the correct embedding service implementation
+   * based on the `EMBEDDING_PROVIDER` environment variable.
+   * 
+   * **Supported Providers**:
+   * - `simple`: Hash-based embeddings (default, no API key required)
+   * - `openai`: OpenAI embeddings API (requires OPENAI_API_KEY)
+   * - `openrouter`: OpenRouter embeddings API (requires OPENROUTER_API_KEY)
+   * - `huggingface`: HuggingFace embeddings API or local (requires HUGGINGFACE_API_KEY or HUGGINGFACE_USE_LOCAL=true)
+   * 
+   * **Configuration**:
+   * Set via environment variables (see `embeddingConfig` in config.ts)
+   * 
+   * @returns Configured EmbeddingService instance
+   * @throws {Error} If required API keys are missing for selected provider
+   * 
+   * @example
+   * ```typescript
+   * // Uses configuration from environment variables
+   * const service = this.createEmbeddingService();
+   * ```
+   */
+  private createEmbeddingService(): EmbeddingService {
+    const config = embeddingConfig;
+    
+    console.error(`🔌 Embedding Provider: ${config.provider}`);
+    
+    switch (config.provider) {
+      case 'openai':
+        if (!config.openai.apiKey) {
+          throw new Error(
+            'OpenAI embedding provider selected but OPENAI_API_KEY environment variable is not set. ' +
+            'Either set OPENAI_API_KEY or change EMBEDDING_PROVIDER to "simple".'
+          );
+        }
+        console.error(`   Model: ${config.openai.model}`);
+        return new OpenAIEmbeddingService(config.openai);
+        
+      case 'openrouter':
+        if (!config.openrouter.apiKey) {
+          throw new Error(
+            'OpenRouter embedding provider selected but OPENROUTER_API_KEY environment variable is not set. ' +
+            'Either set OPENROUTER_API_KEY or change EMBEDDING_PROVIDER to "simple".'
+          );
+        }
+        console.error(`   Model: ${config.openrouter.model}`);
+        return new OpenRouterEmbeddingService(config.openrouter);
+        
+      case 'huggingface':
+        if (!config.huggingface.useLocal && !config.huggingface.apiKey) {
+          throw new Error(
+            'HuggingFace embedding provider selected but neither HUGGINGFACE_API_KEY is set nor HUGGINGFACE_USE_LOCAL=true. ' +
+            'Either set HUGGINGFACE_API_KEY, set HUGGINGFACE_USE_LOCAL=true, or change EMBEDDING_PROVIDER to "simple".'
+          );
+        }
+        console.error(`   Model: ${config.huggingface.model}`);
+        console.error(`   Mode: ${config.huggingface.useLocal ? 'Local' : 'API'}`);
+        return new HuggingFaceEmbeddingService(config.huggingface);
+        
+      case 'simple':
+      default:
+        if (config.provider !== 'simple') {
+          console.error(`⚠️  Unknown embedding provider "${config.provider}", falling back to "simple"`);
+        }
+        console.error('⚠️  Using SimpleEmbeddingService (development/testing only - not production-grade)');
+        return new SimpleEmbeddingService();
+    }
+  }
+  
+  /**
    * Initialize the application container and wire all dependencies.
    * 
    * This method implements the Composition Root pattern by:
@@ -107,7 +185,7 @@ export class ApplicationContainer {
     const conceptsTable = await this.dbConnection.openTable(defaults.CONCEPTS_TABLE_NAME);
     
     // 3. Create services
-    const embeddingService = new SimpleEmbeddingService();
+    const embeddingService = this.createEmbeddingService();
     const queryExpander = new QueryExpander(conceptsTable, embeddingService);
     const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
     
