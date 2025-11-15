@@ -14,8 +14,7 @@
 This PR implements **all 6 recommendations** from the comprehensive architecture review, improving the project rating from **8.5/10 to 9.5/10**. Additionally, it implements test improvements based on best practices review from knowledge base sources.
 
 **Key Achievements**:
-- ✅ Implemented all 3 Quick Win improvements (4 hours)
-- ✅ Implemented all 3 Medium-term improvements (15 hours)
+- ✅ Implemented all 6 architecture recommendations
 - ✅ Added 25+ edge case tests
 - ✅ Achieved 100% test pass rate (82/82 tests)
 - ✅ Zero breaking changes, zero database migrations
@@ -24,9 +23,8 @@ This PR implements **all 6 recommendations** from the comprehensive architecture
 
 ## 🎯 What's Changed
 
-### 1. ✅ **Quick Wins** (Priority 1 - 4 hours)
+### 1. Document Field Mappings
 
-#### 2.1 Document Field Mappings
 **Added**: `docs/architecture/database-schema.md` (500+ lines)
 
 Comprehensive documentation of LanceDB → Domain model field mappings:
@@ -43,7 +41,8 @@ Comprehensive documentation of LanceDB → Domain model field mappings:
 
 ---
 
-#### 1.2 Add Schema Validation
+### 2. Add Schema Validation
+
 **Added**: `src/infrastructure/lancedb/utils/schema-validators.ts` (320 lines)
 
 Comprehensive validation functions:
@@ -69,7 +68,8 @@ validateEmbeddings(row, field, name)  // Validates vector dimensions
 
 ---
 
-#### 1.3 Define Domain Exception Types
+### 3. Define Domain Exception Types
+
 **Added**: `src/domain/exceptions.ts` (120 lines)
 
 7 custom domain exception types:
@@ -90,9 +90,7 @@ SearchError                // Search operation errors
 
 ---
 
-### 2. 🏗️ **Medium-Term Improvements** (Priority 2 - 15 hours)
-
-#### 2.1 Extract Business Logic to Domain Services (4 hours)
+### 4. Extract Business Logic to Domain Services
 
 **Problem**: Business logic was embedded in MCP tool classes, making it hard to test and reuse.
 
@@ -123,7 +121,7 @@ Database → Tables → Repositories → Domain Services → MCP Tools
 
 ---
 
-#### 2.2 Fix Leaky Abstraction in HybridSearchService (3 hours)
+### 5. Fix Leaky Abstraction in HybridSearchService
 
 **Problem**: `HybridSearchService` interface depended on `lancedb.Table`, leaking infrastructure details into domain layer.
 
@@ -155,9 +153,9 @@ Database → Tables → Repositories → Domain Services → MCP Tools
 
 ---
 
-#### 2.3 Integration Tests for Repository Implementations (8 hours)
+### 6. Integration Tests for Repository Implementations
 
-**Problem**: No integration tests meant field mapping bugs like the `concept_search` issue went undetected.
+**Problem**: No integration tests meant field mapping bugs could go undetected.
 
 **Solution**: Comprehensive integration test suite with real LanceDB instances.
 
@@ -175,7 +173,7 @@ Database → Tables → Repositories → Domain Services → MCP Tools
   - Performance characteristics
 
 - `src/__tests__/integration/concept-repository.integration.test.ts` (270 lines, 22 tests)
-  - **Critical**: Vector/embeddings field mapping verification
+  - Vector/embeddings field mapping verification
   - Concept lookup by name
   - Case sensitivity handling
   - JSON field parsing
@@ -201,11 +199,9 @@ Database → Tables → Repositories → Domain Services → MCP Tools
 
 ---
 
-### 3. 🧪 **Test Implementation Improvements** (from Best Practices Review)
+### 7. Edge Case Testing
 
-#### 3.1 Edge Case Testing (20+ new tests)
-
-**Added comprehensive edge case tests**:
+**Added 20+ comprehensive edge case tests**:
 
 **Chunk Repository**:
 - Empty query strings
@@ -229,7 +225,7 @@ Database → Tables → Repositories → Domain Services → MCP Tools
 
 ---
 
-#### 3.2 Integration Test Data Builders
+### 8. Integration Test Data Builders
 
 **Created**: `src/__tests__/test-helpers/integration-test-data.ts` (270 lines)
 
@@ -257,7 +253,7 @@ createStandardTestCatalogEntries() // 5 entries
 
 ---
 
-#### 3.3 Explicit AAA Comments in Integration Tests
+### 9. Explicit AAA Comments in Integration Tests
 
 **Added ARRANGE-ACT-ASSERT comments to all integration tests** (82 tests total)
 
@@ -291,7 +287,7 @@ it('should find chunks by concept name', async () => {
 
 ---
 
-#### 3.4 Test Fixes for 100% Pass Rate
+### 10. Test Fixes for 100% Pass Rate
 
 **Fixed 4 test expectation issues**:
 
@@ -573,7 +569,7 @@ All changes are:
 
 ## 🏆 Achievements
 
-This PR represents **19 hours of focused architectural improvements** that bring the project to **near-perfect** quality:
+This PR brings the project to **near-perfect** quality:
 
 - ✅ Implemented 100% of review recommendations (6/6)
 - 📈 Improved architecture rating by 1.0 full point
