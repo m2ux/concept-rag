@@ -39,29 +39,29 @@ export class LanceDBChunkRepository implements ChunkRepository {
     const conceptLower = concept.toLowerCase().trim();
     
     try {
-      // Get concept record to use its embedding for vector search
-      const conceptRecord = await this.conceptRepo.findByName(conceptLower);
-      
-      if (!conceptRecord) {
+    // Get concept record to use its embedding for vector search
+    const conceptRecord = await this.conceptRepo.findByName(conceptLower);
+    
+    if (!conceptRecord) {
         // Not an error - concept just doesn't exist
-        console.error(`⚠️  Concept "${concept}" not found in concept table`);
-        return [];
-      }
+      console.error(`⚠️  Concept "${concept}" not found in concept table`);
+      return [];
+    }
       
       // Validate embeddings before vector search
       if (!conceptRecord.embeddings || conceptRecord.embeddings.length === 0) {
         throw new InvalidEmbeddingsError(concept, conceptRecord.embeddings?.length || 0);
       }
-      
-      // Use concept's embedding for vector search (efficient!)
-      const candidates = await this.chunksTable
-        .vectorSearch(conceptRecord.embeddings)
-        .limit(limit * 3)  // Get extra candidates for filtering
-        .toArray();
-      
-      // Filter to chunks that actually contain the concept
-      const matches: Chunk[] = [];
-      for (const row of candidates) {
+    
+    // Use concept's embedding for vector search (efficient!)
+    const candidates = await this.chunksTable
+      .vectorSearch(conceptRecord.embeddings)
+      .limit(limit * 3)  // Get extra candidates for filtering
+      .toArray();
+    
+    // Filter to chunks that actually contain the concept
+    const matches: Chunk[] = [];
+    for (const row of candidates) {
         // Validate chunk schema before mapping
         try {
           validateChunkRow(row);
@@ -70,16 +70,16 @@ export class LanceDBChunkRepository implements ChunkRepository {
           continue;  // Skip invalid chunks
         }
         
-        const chunk = this.mapRowToChunk(row);
-        
-        // Check if concept is in chunk's concept list
-        if (this.chunkContainsConcept(chunk, conceptLower)) {
-          matches.push(chunk);
-          if (matches.length >= limit) break;
-        }
-      }
+      const chunk = this.mapRowToChunk(row);
       
-      return matches;
+      // Check if concept is in chunk's concept list
+      if (this.chunkContainsConcept(chunk, conceptLower)) {
+        matches.push(chunk);
+        if (matches.length >= limit) break;
+      }
+    }
+    
+    return matches;
     } catch (error) {
       // Wrap in domain exception if not already
       if (error instanceof InvalidEmbeddingsError || error instanceof ConceptNotFoundError) {
