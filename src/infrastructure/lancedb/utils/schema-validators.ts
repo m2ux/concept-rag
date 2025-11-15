@@ -58,11 +58,14 @@ export function validateEmbeddings(
     );
   }
   
-  // Check is array
-  if (!Array.isArray(vector)) {
+  // Check is array (or Arrow Vector object)
+  const isArrowVector = typeof vector === 'object' && 'length' in vector && typeof vector.length === 'number';
+  const isArray = Array.isArray(vector);
+  
+  if (!isArray && !isArrowVector) {
     throw new SchemaValidationError(
       vectorFieldName,
-      'array',
+      'array or Vector',
       typeof vector,
       { entityName, rowId: row.id }
     );
@@ -77,9 +80,8 @@ export function validateEmbeddings(
     );
   }
   
-  // Check for invalid numbers (NaN, Infinity)
-  const hasInvalidNumbers = vector.some(v => !Number.isFinite(v));
-  if (hasInvalidNumbers) {
+  // Check for invalid numbers (NaN, Infinity) - only for plain arrays
+  if (isArray && vector.some(v => !Number.isFinite(v))) {
     throw new SchemaValidationError(
       vectorFieldName,
       'valid numbers',
@@ -278,8 +280,8 @@ export function validateChunkRow(row: any): void {
  * @throws {InvalidEmbeddingsError} If embeddings are invalid
  */
 export function validateConceptRow(row: any): void {
-  // Validate required fields
-  validateRequiredFields(row, ['concept', 'concept_type', 'category'], 'concept');
+  // Validate required fields (concept_type is optional for backward compatibility)
+  validateRequiredFields(row, ['concept', 'category'], 'concept');
   
   // Validate vector field
   const vectorField = detectVectorField(row);
