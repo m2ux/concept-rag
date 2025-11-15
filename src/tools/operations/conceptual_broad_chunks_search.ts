@@ -1,14 +1,18 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
-import { ChunkRepository } from "../../domain/interfaces/repositories/chunk-repository.js";
+import { ChunkSearchService } from "../../domain/services/index.js";
 
 export interface ConceptualBroadChunksSearchParams extends ToolParams {
   text: string;
   debug?: boolean;
 }
 
+/**
+ * MCP tool for broad chunk search across all documents.
+ * Thin adapter that delegates to ChunkSearchService.
+ */
 export class ConceptualBroadChunksSearchTool extends BaseTool<ConceptualBroadChunksSearchParams> {
   constructor(
-    private chunkRepo: ChunkRepository
+    private chunkSearchService: ChunkSearchService
   ) {
     super();
   }
@@ -47,15 +51,14 @@ RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, concept,
 
   async execute(params: ConceptualBroadChunksSearchParams) {
     try {
-      // Use repository for broad search across all chunks
-      // Note: Full hybrid search (ConceptualSearchClient) will be integrated in Phase 3
-      const results = await this.chunkRepo.search({
+      // Delegate to service
+      const results = await this.chunkSearchService.searchBroad({
         text: params.text,
         limit: 10,
         debug: params.debug || false
       });
       
-      // Format results
+      // Format results for MCP response
       const formattedResults = results.map(r => ({
         text: r.text,
         source: r.source,

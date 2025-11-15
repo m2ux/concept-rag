@@ -1,5 +1,5 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
-import { ChunkRepository } from "../../domain/interfaces/repositories/chunk-repository.js";
+import { ChunkSearchService } from "../../domain/services/index.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
   text: string;
@@ -7,9 +7,13 @@ export interface ConceptualChunksSearchParams extends ToolParams {
   debug?: boolean;
 }
 
+/**
+ * MCP tool for searching within a specific document.
+ * Thin adapter that delegates to ChunkSearchService.
+ */
 export class ConceptualChunksSearchTool extends BaseTool<ConceptualChunksSearchParams> {
   constructor(
-    private chunkRepo: ChunkRepository
+    private chunkSearchService: ChunkSearchService
   ) {
     super();
   }
@@ -54,11 +58,15 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
 
   async execute(params: ConceptualChunksSearchParams) {
     try {
-      // Use repository to find chunks from specific source
-      // Note: Full hybrid search with concept expansion will be added in Phase 3
-      const results = await this.chunkRepo.findBySource(params.source, 5);
+      // Delegate to service
+      const results = await this.chunkSearchService.searchInSource({
+        text: params.text,
+        source: params.source,
+        limit: 5,
+        debug: params.debug || false
+      });
       
-      // Format results
+      // Format results for MCP response
       const formattedResults = results.map(r => ({
         text: r.text,
         source: r.source,

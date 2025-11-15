@@ -1,14 +1,18 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
-import { CatalogRepository } from "../../domain/interfaces/repositories/catalog-repository.js";
+import { CatalogSearchService } from "../../domain/services/index.js";
 
 export interface ConceptualCatalogSearchParams extends ToolParams {
   text: string;
   debug?: boolean;
 }
 
+/**
+ * MCP tool for catalog search.
+ * Thin adapter that delegates to CatalogSearchService.
+ */
 export class ConceptualCatalogSearchTool extends BaseTool<ConceptualCatalogSearchParams> {
   constructor(
-    private catalogRepo: CatalogRepository
+    private catalogSearchService: CatalogSearchService
   ) {
     super();
   }
@@ -47,15 +51,14 @@ RETURNS: Top 5 documents with text previews, hybrid scores (including strong tit
 
   async execute(params: ConceptualCatalogSearchParams) {
     try {
-      // Use repository for catalog search
-      // Note: Full hybrid search (ConceptualSearchClient) will be integrated in Phase 3
-      const results = await this.catalogRepo.search({
+      // Delegate to service
+      const results = await this.catalogSearchService.searchCatalog({
         text: params.text,
         limit: 5,
         debug: params.debug || false
       });
       
-      // Format results for better readability
+      // Format results for MCP response
       const formattedResults = results.map(r => ({
         source: r.source,
         text_preview: r.text.slice(0, 200) + '...',

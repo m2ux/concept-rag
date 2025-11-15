@@ -1,6 +1,5 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
-import { ChunkRepository } from "../../domain/interfaces/repositories/chunk-repository.js";
-import { ConceptRepository } from "../../domain/interfaces/repositories/concept-repository.js";
+import { ConceptSearchService } from "../../domain/services/index.js";
 
 export interface ConceptSearchParams extends ToolParams {
   concept: string;
@@ -9,13 +8,18 @@ export interface ConceptSearchParams extends ToolParams {
 }
 
 /**
- * Search for all chunks that reference a specific concept
- * Uses efficient vector search via repository pattern
+ * MCP tool for concept search.
+ * 
+ * This is a thin adapter that:
+ * - Validates MCP parameters
+ * - Delegates to ConceptSearchService for business logic
+ * - Formats results as MCP response
+ * 
+ * Business logic is in ConceptSearchService for testability and reusability.
  */
 export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
   constructor(
-    private chunkRepo: ChunkRepository,
-    private conceptRepo: ConceptRepository
+    private conceptSearchService: ConceptSearchService
   ) {
     super();
   }
@@ -58,65 +62,60 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
   async execute(params: ConceptSearchParams) {
     try {
       const limit = params.limit || 10;
-      const conceptLower = params.concept.toLowerCase().trim();
       
-      // Get concept metadata using repository
-      const conceptInfo = await this.conceptRepo.findByName(conceptLower);
+      console.error(`🔍 Searching for concept: "${params.concept}"`);
       
-      // Find chunks using efficient repository method (vector search)
-      console.error(`🔍 Searching for concept: "${conceptLower}"`);
+      // Delegate to service for business logic
+      const result = await this.conceptSearchService.searchConcept({
+        concept: params.concept,
+        limit: limit,
+        sourceFilter: params.source_filter,
+        sortBy: 'density'
+      });
       
-      let matchingChunks = await this.chunkRepo.findByConceptName(conceptLower, limit * 2);
+      console.error(`✅ Found ${result.chunks.length} matching chunks`);
       
-      // Apply source filter if provided
-      if (params.source_filter) {
-        const sourceFilter = params.source_filter.toLowerCase();
-        matchingChunks = matchingChunks.filter(chunk => 
-          chunk.source.toLowerCase().includes(sourceFilter)
-        );
-      }
-      
-      // Sort by concept density
-      matchingChunks.sort((a, b) => (b.conceptDensity || 0) - (a.conceptDensity || 0));
-      
-      // Limit results
-      matchingChunks = matchingChunks.slice(0, limit);
-      
-      console.error(`✅ Found ${matchingChunks.length} matching chunks`);
-      
-      // Format results
-      const results = matchingChunks.map((chunk) => {
-        return {
+      // Format as MCP response (pure presentation logic)
+      return this.formatMCPResponse(result);
+    } catch (error) {
+      return this.handleError(error);
+    }
+  }
+  
+  /**
+   * Format service result as MCP response.
+   * Pure presentation logic - converts domain model to MCP JSON format.
+   */
+  private formatMCPResponse(result: any) {
+    // Format chunk results
+    const formattedChunks = result.chunks.map((chunk: any) => ({
           text: chunk.text,
           source: chunk.source,
           concept_density: (chunk.conceptDensity || 0).toFixed(3),
           concepts_in_chunk: chunk.concepts || [],
           categories: chunk.conceptCategories || [],
-          relevance: (chunk.concepts || []).filter((c: string) => 
-            c.toLowerCase() === conceptLower
-          ).length
-        };
-      });
+      relevance: this.conceptSearchService.calculateRelevance(chunk, result.concept)
+    }));
       
-      // Build response with concept info
+    // Build response object
       const response: any = {
-        concept: params.concept,
-        total_chunks_found: matchingChunks.length,
-        results: results
+      concept: result.concept,
+      total_chunks_found: result.totalFound,
+      results: formattedChunks
       };
       
       // Add concept metadata if available
-      if (conceptInfo) {
+    if (result.conceptMetadata) {
         response.concept_metadata = {
-          category: conceptInfo.category,
-          weight: conceptInfo.weight,
-          chunk_count: conceptInfo.chunkCount,
-          sources_count: conceptInfo.sources.length
+        category: result.conceptMetadata.category,
+        weight: result.conceptMetadata.weight,
+        chunk_count: result.conceptMetadata.chunkCount,
+        sources_count: result.conceptMetadata.sources.length
         };
         
-        // Add related concepts if available
-        if (conceptInfo.relatedConcepts && conceptInfo.relatedConcepts.length > 0) {
-          response.related_concepts = conceptInfo.relatedConcepts.slice(0, 10);
+      // Add related concepts
+      if (result.relatedConcepts.length > 0) {
+        response.related_concepts = result.relatedConcepts;
         }
       }
       
@@ -126,9 +125,6 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
         ],
         isError: false,
       };
-    } catch (error) {
-      return this.handleError(error);
-    }
   }
 }
 
