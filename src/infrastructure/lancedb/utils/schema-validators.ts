@@ -243,8 +243,8 @@ export function detectVectorField(row: any): 'vector' | 'embeddings' | null {
  * ```
  */
 export function validateChunkRow(row: any): void {
-  // Validate required fields
-  validateRequiredFields(row, ['id', 'text', 'source', 'hash'], 'chunk');
+  // Validate required fields (id and hash are optional as they may be auto-generated)
+  validateRequiredFields(row, ['text', 'source'], 'chunk');
   
   // Validate vector field
   const vectorField = detectVectorField(row);
