@@ -4,7 +4,9 @@ import { ConceptRepository } from '../../../domain/interfaces/repositories/conce
 import { EmbeddingService } from '../../../domain/interfaces/services/embedding-service.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { Chunk, SearchQuery, SearchResult } from '../../../domain/models/index.js';
+import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } from '../../../domain/exceptions.js';
 import { parseJsonField } from '../utils/field-parsers.js';
+import { validateChunkRow, detectVectorField } from '../utils/schema-validators.js';
 
 /**
  * LanceDB implementation of ChunkRepository
@@ -35,39 +37,58 @@ export class LanceDBChunkRepository implements ChunkRepository {
   async findByConceptName(concept: string, limit: number): Promise<Chunk[]> {
     const conceptLower = concept.toLowerCase().trim();
     
-    // Get concept record to use its embedding for vector search
-    const conceptRecord = await this.conceptRepo.findByName(conceptLower);
-    
-    if (!conceptRecord) {
-      console.error(`⚠️  Concept "${concept}" not found in concept table`);
-      return [];
-    }
-    
-    // Validate embeddings before vector search
-    if (!conceptRecord.embeddings || conceptRecord.embeddings.length === 0) {
-      console.error(`❌ ERROR: Concept "${concept}" has no embeddings! Cannot perform vector search.`);
-      return [];
-    }
-    
-    // Use concept's embedding for vector search (efficient!)
-    const candidates = await this.chunksTable
-      .vectorSearch(conceptRecord.embeddings)
-      .limit(limit * 3)  // Get extra candidates for filtering
-      .toArray();
-    
-    // Filter to chunks that actually contain the concept
-    const matches: Chunk[]= [];
-    for (const row of candidates) {
-      const chunk = this.mapRowToChunk(row);
+    try {
+      // Get concept record to use its embedding for vector search
+      const conceptRecord = await this.conceptRepo.findByName(conceptLower);
       
-      // Check if concept is in chunk's concept list
-      if (this.chunkContainsConcept(chunk, conceptLower)) {
-        matches.push(chunk);
-        if (matches.length >= limit) break;
+      if (!conceptRecord) {
+        // Not an error - concept just doesn't exist
+        console.error(`⚠️  Concept "${concept}" not found in concept table`);
+        return [];
       }
+      
+      // Validate embeddings before vector search
+      if (!conceptRecord.embeddings || conceptRecord.embeddings.length === 0) {
+        throw new InvalidEmbeddingsError(concept, conceptRecord.embeddings?.length || 0);
+      }
+      
+      // Use concept's embedding for vector search (efficient!)
+      const candidates = await this.chunksTable
+        .vectorSearch(conceptRecord.embeddings)
+        .limit(limit * 3)  // Get extra candidates for filtering
+        .toArray();
+      
+      // Filter to chunks that actually contain the concept
+      const matches: Chunk[] = [];
+      for (const row of candidates) {
+        // Validate chunk schema before mapping
+        try {
+          validateChunkRow(row);
+        } catch (validationError) {
+          console.error(`⚠️  Schema validation failed for chunk:`, validationError);
+          continue;  // Skip invalid chunks
+        }
+        
+        const chunk = this.mapRowToChunk(row);
+        
+        // Check if concept is in chunk's concept list
+        if (this.chunkContainsConcept(chunk, conceptLower)) {
+          matches.push(chunk);
+          if (matches.length >= limit) break;
+        }
+      }
+      
+      return matches;
+    } catch (error) {
+      // Wrap in domain exception if not already
+      if (error instanceof InvalidEmbeddingsError || error instanceof ConceptNotFoundError) {
+        throw error;
+      }
+      throw new DatabaseOperationError(
+        `Failed to find chunks for concept "${concept}"`,
+        error as Error
+      );
     }
-    
-    return matches;
   }
   
   async findBySource(source: string, limit: number): Promise<Chunk[]> {
@@ -119,6 +140,10 @@ export class LanceDBChunkRepository implements ChunkRepository {
   }
   
   private mapRowToChunk(row: any): Chunk {
+    // Detect which field contains the vector (handles 'vector' vs 'embeddings' naming)
+    const vectorField = detectVectorField(row);
+    const embeddings = vectorField ? row[vectorField] : undefined;
+    
     return {
       id: row.id || '',
       text: row.text || '',
@@ -126,7 +151,8 @@ export class LanceDBChunkRepository implements ChunkRepository {
       hash: row.hash || '',
       concepts: parseJsonField(row.concepts),
       conceptCategories: parseJsonField(row.concept_categories),
-      conceptDensity: row.concept_density || 0
+      conceptDensity: row.concept_density || 0,
+      embeddings  // May be undefined if no vector field found
     };
   }
 }
