@@ -1,5 +1,4 @@
-import * as lancedb from "@lancedb/lancedb";
-import { HybridSearchService } from '../../domain/interfaces/services/hybrid-search-service.js';
+import { HybridSearchService, SearchableCollection } from '../../domain/interfaces/services/hybrid-search-service.js';
 import { EmbeddingService } from '../../domain/interfaces/services/embedding-service.js';
 import { SearchResult } from '../../domain/models/search-result.js';
 import { QueryExpander } from '../../concepts/query_expander.js';
@@ -34,7 +33,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
   ) {}
 
   async search(
-    table: lancedb.Table,
+    collection: SearchableCollection,
     queryText: string,
     limit: number = 5,
     debug: boolean = false
@@ -48,10 +47,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     
     // Step 2: Generate query embedding and perform vector search
     const queryVector = this.embeddingService.generateEmbedding(queryText);
-    const vectorResults = await table
-      .vectorSearch(queryVector)
-      .limit(limit * 3)  // Get 3x results for reranking
-      .toArray();
+    const vectorResults = await collection.vectorSearch(queryVector, limit * 3);  // Get 3x results for reranking
     
     // Step 3: Score each result with all ranking signals
     const scoredResults = vectorResults.map((row: any) => {
