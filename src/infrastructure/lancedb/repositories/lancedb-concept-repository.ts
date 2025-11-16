@@ -1,7 +1,9 @@
 import * as lancedb from "@lancedb/lancedb";
 import { ConceptRepository } from '../../../domain/interfaces/repositories/concept-repository.js';
 import { Concept } from '../../../domain/models/index.js';
+import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } from '../../../domain/exceptions.js';
 import { parseJsonField, escapeSqlString } from '../utils/field-parsers.js';
+import { validateConceptRow, detectVectorField } from '../utils/schema-validators.js';
 
 /**
  * LanceDB implementation of ConceptRepository
@@ -23,12 +25,31 @@ export class LanceDBConceptRepository implements ConceptRepository {
         .limit(1)
         .toArray();
       
-      if (results.length === 0) return null;
+      if (results.length === 0) {
+        return null;  // Concept not found (not an error, just return null)
+      }
       
-      return this.mapRowToConcept(results[0]);
+      const row = results[0];
+      
+      // Validate schema before mapping
+      try {
+        validateConceptRow(row);
+      } catch (validationError) {
+        // Schema validation failed - this indicates database integrity issue
+        console.error(`⚠️  Schema validation failed for concept "${conceptName}":`, validationError);
+        throw validationError;  // Re-throw to caller
+      }
+      
+      return this.mapRowToConcept(row);
     } catch (error) {
-      console.error(`Error finding concept "${conceptName}":`, error);
-      return null;
+      // Wrap database errors in domain exception
+      if (error instanceof ConceptNotFoundError || error instanceof InvalidEmbeddingsError) {
+        throw error;  // Already a domain exception
+      }
+      throw new DatabaseOperationError(
+        `Failed to find concept "${conceptName}"`,
+        error as Error
+      );
     }
   }
   
@@ -62,6 +83,10 @@ export class LanceDBConceptRepository implements ConceptRepository {
   }
   
   private mapRowToConcept(row: any): Concept {
+    // Detect which field contains the vector (handles 'vector' vs 'embeddings' naming)
+    const vectorField = detectVectorField(row);
+    const embeddings = vectorField ? row[vectorField] : [];
+    
     return {
       concept: row.concept || '',
       conceptType: row.concept_type || 'thematic',
@@ -71,7 +96,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
       synonyms: parseJsonField(row.synonyms),
       broaderTerms: parseJsonField(row.broader_terms),
       narrowerTerms: parseJsonField(row.narrower_terms),
-      embeddings: row.embeddings || [],
+      embeddings,  // Now uses detected vector field
       weight: row.weight || 0,
       chunkCount: row.chunk_count || 0,
       enrichmentSource: row.enrichment_source || 'corpus'
