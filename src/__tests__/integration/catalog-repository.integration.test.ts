@@ -84,7 +84,7 @@ describe('LanceDBCatalogRepository - Integration Tests', () => {
       
       expect(results.length).toBeGreaterThan(0);
       
-      // The document about SOLID should rank highly
+      // SOLID principles document should rank highly due to title matching
       const solidDoc = results.find(r => r.source.includes('solid'));
       expect(solidDoc).toBeDefined();
       expect(solidDoc!.titleScore).toBeGreaterThan(0);

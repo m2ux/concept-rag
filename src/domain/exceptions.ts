@@ -92,7 +92,7 @@ export class ConceptNotFoundError extends DomainException {
     context?: Record<string, any>
   ) {
     super(
-      `Concept "${conceptName}" not found in knowledge base`,
+      `Concept "${conceptName}" not found`,
       { ...context, conceptName }
     );
   }
@@ -155,7 +155,7 @@ export class SourceNotFoundError extends DomainException {
     context?: Record<string, any>
   ) {
     super(
-      `Source document "${sourcePath}" not found in knowledge base`,
+      `Source document "${sourcePath}" not found`,
       { ...context, sourcePath }
     );
   }
