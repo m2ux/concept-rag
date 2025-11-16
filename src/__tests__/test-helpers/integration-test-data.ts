@@ -26,6 +26,7 @@ export interface IntegrationChunkData {
   concept_density: number;
   chunk_index: number;
   hash?: string; // Optional
+  [key: string]: unknown; // Index signature for LanceDB compatibility
 }
 
 /**
@@ -41,6 +42,7 @@ export interface IntegrationConceptData {
   sources: string; // JSON stringified
   related_concepts: string; // JSON stringified
   concept_type?: string; // Optional for backward compatibility
+  [key: string]: unknown; // Index signature for LanceDB compatibility
 }
 
 /**
@@ -53,6 +55,7 @@ export interface IntegrationCatalogData {
   vector: number[];
   concepts: string; // JSON stringified
   concept_categories: string; // JSON stringified
+  [key: string]: unknown; // Index signature for LanceDB compatibility
 }
 
 /**

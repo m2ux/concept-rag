@@ -196,6 +196,72 @@ npx tsx hybrid_fast_seed.ts \
 - ⚡ Creates fast local embeddings (384-dimensional)
 - 💾 Stores in 3 LanceDB tables: catalog, chunks, concepts
 
+### 🎯 Embedding Providers (Optional)
+
+Concept-RAG supports multiple embedding providers for semantic search. By default, it uses a simple hash-based embedding service suitable for development. For production use, configure one of the following providers:
+
+#### Simple (Default - Development)
+
+Hash-based embeddings, no API required. Suitable for development and testing.
+
+```bash
+# Default - no configuration needed
+EMBEDDING_PROVIDER=simple
+```
+
+#### OpenAI
+
+Production-grade embeddings with OpenAI API.
+
+```bash
+EMBEDDING_PROVIDER=openai
+OPENAI_API_KEY=sk-...
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small  # Optional, default: text-embedding-3-small
+OPENAI_BASE_URL=https://api.openai.com/v1     # Optional, for custom endpoints
+```
+
+**Cost**: ~$0.02 per 1M tokens  
+**Quality**: Excellent semantic understanding  
+**Dimensions**: 1536 (projected to 384)
+
+#### OpenRouter
+
+Access multiple embedding models via OpenRouter's unified API.
+
+```bash
+EMBEDDING_PROVIDER=openrouter
+OPENROUTER_API_KEY=sk-or-...
+OPENROUTER_EMBEDDING_MODEL=openai/text-embedding-3-small  # Optional
+OPENROUTER_EMBEDDING_BASE_URL=https://openrouter.ai/api/v1  # Optional
+```
+
+**Cost**: Variable by model  
+**Quality**: High (depends on selected model)  
+**Benefits**: Multi-model access, usage tracking
+
+#### HuggingFace
+
+Local or API-based embeddings with HuggingFace models.
+
+```bash
+# API Mode (requires API key)
+EMBEDDING_PROVIDER=huggingface
+HUGGINGFACE_API_KEY=hf_...
+HUGGINGFACE_MODEL=sentence-transformers/all-MiniLM-L6-v2  # Optional
+
+# Local Mode (privacy-first, no API key needed)
+EMBEDDING_PROVIDER=huggingface
+HUGGINGFACE_USE_LOCAL=true
+HUGGINGFACE_MODEL=Xenova/all-MiniLM-L6-v2  # Optional
+```
+
+**Cost**: Free (local) or HuggingFace API pricing  
+**Quality**: Excellent for most use cases  
+**Dimensions**: 384 (native for all-MiniLM-L6-v2)  
+**Privacy**: Local mode runs entirely offline
+
+**Note**: To use a different embedding provider, add the environment variables to your `.env` file before running the seeding process. The embedding provider affects how semantic similarity is calculated during search.
+
 ### Step 5: Configure Cursor
 
 1. **Open Cursor settings** and navigate to MCP configuration

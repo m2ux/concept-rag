@@ -1,319 +1,279 @@
 # Security Policy
 
-## Supported Versions
-
-We actively support the following versions of Concept-RAG with security updates:
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
-| < 1.0   | :x:                |
-
 ## Reporting a Vulnerability
 
-We take security vulnerabilities seriously. If you discover a security issue, please follow responsible disclosure practices.
+If you discover a security vulnerability in Concept-RAG, please report it by:
 
-### How to Report
+1. **Email**: Send details to the maintainers (check package.json for contact)
+2. **Private Security Advisory**: Use GitHub's private security advisory feature
+3. **Do NOT** create a public GitHub issue for security vulnerabilities
 
-**DO NOT** open a public GitHub issue for security vulnerabilities.
+We will acknowledge receipt within 48 hours and provide a detailed response within 5 business days.
 
-Instead, please report security issues privately:
+---
 
-1. **Email**: Send details to the project maintainer via GitHub
-2. **Include**:
-   - Description of the vulnerability
-   - Steps to reproduce
-   - Potential impact
-   - Suggested fix (if you have one)
-   - Your contact information for follow-up
+## API Key & Secret Management
 
-### What to Expect
+### Overview
 
-- **Acknowledgment**: Within 24 hours
-- **Initial assessment**: Within 48 hours
-- **Status update**: Within 1 week
-- **Fix timeline**: Depends on severity
-  - Critical: Within 1-3 days
-  - High: Within 1-2 weeks
-  - Medium: Within 1 month
-  - Low: Next regular release
+Concept-RAG uses API keys for:
+- **OpenRouter**: Concept extraction and summarization (required)
+- **OpenAI**: Optional embedding service
+- **HuggingFace**: Optional embedding service (API or local)
 
-### Disclosure Policy
+**Critical**: API keys are sensitive credentials that must never be committed to version control.
 
-- We'll work with you to understand the vulnerability
-- We'll develop and test a fix
-- We'll prepare a security advisory
-- We'll release a patched version
-- We'll publicly disclose after the fix is released
-- We'll credit you in the security advisory (unless you prefer anonymity)
+### Best Practices
 
-## Security Considerations
+#### ✅ DO:
 
-### API Keys
+1. **Use Environment Variables**
+   - Store API keys in `.env` file (already in `.gitignore`)
+   - Use separate keys for development and production
+   - Never hardcode keys in source code
 
-**Critical**: Never commit API keys to the repository!
+2. **Secure Storage**
+   - Keep `.env` file locally only
+   - Use secret management systems in production (AWS Secrets Manager, Vault, etc.)
+   - Set restrictive file permissions: `chmod 600 .env`
+
+3. **Key Hygiene**
+   - Rotate API keys every 90 days minimum
+   - Use read-only or restricted keys when possible
+   - Set spending limits on provider accounts
+   - Enable 2FA on all provider accounts
+
+4. **Monitoring**
+   - Monitor API usage for unexpected spikes
+   - Set up billing alerts
+   - Review access logs regularly
+   - Track key usage by environment (dev/staging/prod)
+
+5. **Team Collaboration**
+   - Share `.env.example` (template only, no real keys)
+   - Use secret sharing tools (1Password, Bitwarden) for team keys
+   - Document which keys are needed in README
+
+#### ❌ DON'T:
+
+1. **Never Commit Secrets**
+   - Don't add `.env` to git (already in `.gitignore`)
+   - Don't commit API keys in code or config files
+   - Don't include keys in screenshots or documentation
+   - Don't paste keys in chat, email, or issues
+
+2. **Avoid Exposure**
+   - Don't share keys in public channels
+   - Don't use production keys in development
+   - Don't log API keys (even in debug mode)
+   - Don't include keys in error messages
+
+3. **Don't Use Weak Keys**
+   - Don't use root/admin API keys
+   - Don't reuse keys across projects
+   - Don't use default or example keys
+
+### Git Protection
+
+The repository includes protection against accidental key commits:
+
+1. **`.gitignore`**
+   - `.env` files are excluded (lines 78-85, 266-267)
+   - Pattern matches all `.env` variants except `.env.example`
+
+2. **Verification**
+   ```bash
+   # Check if .env is properly ignored
+   git check-ignore -v .env
+   # Should output: .gitignore:266:.env	.env
+   
+   # Verify .env is not tracked
+   git status .env
+   # Should output: "On branch X... no changes added..."
+   ```
+
+3. **Additional Tools** (recommended)
+   - Install `git-secrets`: Prevents committing secrets
+   - Use pre-commit hooks to scan for API key patterns
+   - Enable GitHub secret scanning (automatic for public repos)
+
+### Setup Checklist
+
+When setting up Concept-RAG:
+
+- [ ] Copy `.env.example` to `.env`
+- [ ] Add your actual API keys to `.env`
+- [ ] Verify `.env` is in `.gitignore`
+- [ ] Check `.env` file permissions: `chmod 600 .env`
+- [ ] Confirm `.env` is not tracked: `git status .env`
+- [ ] Set spending limits on API provider accounts
+- [ ] Enable 2FA on OpenRouter/OpenAI/HuggingFace accounts
+- [ ] Document which keys are needed for your team
+
+### Key Compromise Response
+
+If you suspect an API key has been compromised:
+
+1. **Immediate Action**
+   - Revoke the compromised key immediately
+   - Generate a new key
+   - Update `.env` with new key
+   - Restart services using the new key
+
+2. **Assessment**
+   - Check API usage logs for unauthorized activity
+   - Review billing for unexpected charges
+   - Determine scope of exposure (time, access level)
+
+3. **Prevention**
+   - Audit how the key was exposed
+   - Update processes to prevent recurrence
+   - Consider rotating all keys as precaution
+   - Review access control and monitoring
+
+### Environment-Specific Keys
+
+Use different API keys for each environment:
 
 ```bash
-# ✅ Good: Use environment variables
-export OPENROUTER_API_KEY="your-key-here"
+# Development (.env.development)
+OPENROUTER_API_KEY=sk-or-v1-dev-...
+OPENAI_API_KEY=sk-proj-dev-...
 
-# ✅ Good: Use .env file (gitignored)
-echo "OPENROUTER_API_KEY=your-key" > .env
+# Staging (.env.staging)
+OPENROUTER_API_KEY=sk-or-v1-staging-...
+OPENAI_API_KEY=sk-proj-staging-...
 
-# ❌ Bad: Hardcode in source
-const apiKey = "sk-or-v1-abc123..."; // NEVER DO THIS
+# Production (.env.production)
+OPENROUTER_API_KEY=sk-or-v1-prod-...
+OPENAI_API_KEY=sk-proj-prod-...
 ```
 
-### Document Privacy
-
-**Your documents stay local**:
-- PDFs are processed locally on your machine
-- Concept extraction sends document **content** to OpenRouter (Claude/Grok)
-- Vector embeddings are generated locally
-- The database stays on your machine (`~/.concept_rag`)
-
-**What gets sent to OpenRouter**:
-- Document text for concept extraction (Claude Sonnet 4.5)
-- Document text for summary generation (Grok-4-fast)
-
-**What stays local**:
-- Your PDF files
-- Vector embeddings
-- Search queries
-- Database
-
-### API Key Security
-
-**OpenRouter API Key**:
-- Stored in `.env` file (gitignored)
-- Never logged or displayed
-- Only used for API calls to OpenRouter
-- Can be rotated at https://openrouter.ai/keys
-
-**Best practices**:
+Load environment-specific files:
 ```bash
-# Set restrictive permissions on .env
-chmod 600 .env
+# Load development keys
+cp .env.development .env
 
-# Never share .env in screenshots or logs
-# Always use .env.example for documentation
+# Load production keys (in CI/CD)
+cp .env.production .env
 ```
 
-### Database Security
+### Provider-Specific Security
 
-**Database location**: `~/.concept_rag` (or custom path)
+#### OpenRouter
+- Create restricted keys with rate limits
+- Set monthly spending caps
+- Monitor usage at: https://openrouter.ai/activity
+- Docs: https://openrouter.ai/docs/security
 
-**Security measures**:
-- Uses local filesystem permissions
-- No network access required for search
-- No external database connections
-- LanceDB stores data in Apache Arrow format
+#### OpenAI
+- Use project-scoped keys (not user keys)
+- Set usage limits in dashboard
+- Monitor usage at: https://platform.openai.com/usage
+- Docs: https://platform.openai.com/docs/guides/production-best-practices/api-keys
 
-**Recommendations**:
-```bash
-# Set restrictive permissions
-chmod 700 ~/.concept_rag
+#### HuggingFace
+- Use read-only tokens for inference
+- Consider local mode for sensitive data
+- Monitor usage at: https://huggingface.co/settings/tokens
+- Docs: https://huggingface.co/docs/hub/security-tokens
 
-# Use encrypted filesystem for sensitive documents
-# Consider full-disk encryption
-```
+### Additional Resources
 
-### MCP Integration Security
+- [OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)
+- [GitHub Secret Scanning](https://docs.github.com/en/code-security/secret-scanning/about-secret-scanning)
+- [git-secrets](https://github.com/awslabs/git-secrets)
+- [12-Factor App: Config](https://12factor.net/config)
 
-**Claude Desktop / Cursor**:
-- MCP server runs as local Node.js process
-- Communicates via stdio (no network exposure)
-- Uses system user permissions
-- Can read files from specified database path
+---
 
-**Configuration file locations**:
-- **Cursor**: `~/.cursor/mcp.json`
-- **Claude Desktop (macOS)**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Claude Desktop (Windows)**: `%APPDATA%/Claude/claude_desktop_config.json`
+## Dependency Security
 
-**Configuration security**:
-```json
-{
-  "mcpServers": {
-    "concept-rag": {
-      "command": "node",
-      "args": [
-        "/absolute/path/to/concept-rag/dist/conceptual_index.js",
-        "/home/username/.concept_rag"
-      ]
-    }
-  }
-}
-```
+### Keeping Dependencies Updated
 
-- Use absolute paths only
-- Don't expose sensitive directories
-- MCP server has read access to database path
-- Verify paths before configuration
-
-### Dependency Security
-
-**Regular audits**:
 ```bash
 # Check for vulnerabilities
 npm audit
 
-# Fix automatically when possible
+# Update dependencies
+npm update
+
+# Fix vulnerabilities automatically
 npm audit fix
-
-# Review all dependencies
-npm ls
 ```
 
-**Dependencies**:
-- We use minimal, well-maintained dependencies
-- LanceDB for vector storage (local)
-- Langchain for embeddings (local models)
-- MCP SDK from Anthropic
-- pdf-parse for PDF processing
+### Dependency Policy
 
-**Update policy**:
-- Security patches: Applied immediately
-- Minor updates: Reviewed and tested monthly
-- Major updates: Reviewed carefully for breaking changes
+- Review dependencies before adding
+- Prefer well-maintained packages
+- Keep dependencies up to date
+- Monitor security advisories
+- Use `npm audit` in CI/CD
 
-### Network Security
+### Known Issues
 
-**Outbound connections**:
-- **OpenRouter API** (openrouter.ai): For concept extraction and summaries
-- **Hugging Face** (huggingface.co): For downloading embedding models (first run only)
-
-**No inbound connections**: The MCP server doesn't listen on any network ports
-
-**Firewall recommendations**:
-```bash
-# Allow outbound HTTPS to OpenRouter
-# Allow outbound HTTPS to Hugging Face (initial setup)
-# No inbound rules needed
-```
-
-### Data Retention
-
-**What we store**:
-- Document text (in LanceDB)
-- Extracted concepts
-- Generated summaries
-- Vector embeddings
-- File paths and metadata
-
-**What we don't store**:
-- API keys (only in .env)
-- User credentials
-- Network logs
-- API request history
-
-**Deleting data**:
-```bash
-# Remove entire database
-rm -rf ~/.concept_rag
-
-# Remove specific document (requires manual database editing)
-# Better: Re-seed without that document
-```
-
-### Code Execution
-
-**Python subprocess**:
-- WordNet service spawns Python subprocess
-- Uses NLTK for synonym expansion
-- No arbitrary code execution
-- Fixed Python script (`src/wordnet/wordnet_service.ts`)
-
-**Safety measures**:
-- Input sanitization for Python calls
-- No user-provided Python code execution
-- Subprocess timeout protection
-
-### Best Practices for Users
-
-1. **API Keys**:
-   - Rotate regularly
-   - Use environment variables
-   - Never share or commit
-
-2. **Sensitive Documents**:
-   - Be aware: Document content is sent to OpenRouter
-   - Use local-only LLMs if documents are highly sensitive
-   - Review OpenRouter privacy policy
-
-3. **Database**:
-   - Use encrypted filesystem
-   - Regular backups
-   - Secure permissions
-
-4. **MCP Configuration**:
-   - Verify file paths
-   - Use absolute paths
-   - Don't expose sensitive directories
-
-5. **Updates**:
-   - Keep Node.js updated
-   - Run `npm audit` regularly
-   - Update dependencies monthly
-
-## Known Limitations
-
-1. **Document privacy**: Content sent to OpenRouter for extraction
-   - Mitigation: Use local LLMs or don't process sensitive docs
-
-2. **API key storage**: Stored in plaintext `.env` file
-   - Mitigation: Use OS keychain or secret management tools
-
-3. **No authentication**: MCP server has full access to database path
-   - Mitigation: Use system user permissions and file permissions
-
-4. **PDF parsing**: Uses pdf-parse which may have vulnerabilities
-   - Mitigation: Only process trusted PDFs, keep dependencies updated
-
-## Security Checklist
-
-Before deploying or using Concept-RAG:
-
-- [ ] API key stored securely in `.env`
-- [ ] `.env` file has restrictive permissions (600)
-- [ ] `.gitignore` properly configured
-- [ ] Database directory has appropriate permissions
-- [ ] Dependencies audited (`npm audit`)
-- [ ] Node.js is up to date
-- [ ] Python NLTK is from trusted source
-- [ ] MCP configuration uses absolute paths
-- [ ] Understand data flow to OpenRouter
-- [ ] Regular backup strategy for database
-- [ ] Only processing trusted PDF files
-
-## Security Resources
-
-- **npm security advisories**: https://www.npmjs.com/advisories
-- **Node.js security**: https://nodejs.org/en/security/
-- **OpenRouter privacy**: https://openrouter.ai/privacy
-- **MCP security**: https://modelcontextprotocol.io/docs/security
-
-## Contact
-
-For security-related questions (not vulnerabilities):
-- Open a GitHub Discussion
-- Tag with "security" label
-
-For security vulnerabilities:
-- Follow private disclosure process above
-- Do not open public issues
-
-## Acknowledgments
-
-We appreciate security researchers who responsibly disclose vulnerabilities. All reporters will be credited in security advisories unless they prefer anonymity.
-
-## Version History
-
-| Date | Version | Security Updates |
-|------|---------|------------------|
-| 2025-11-13 | 1.0.0 | Initial release with security policy |
+Check `npm audit` output and review:
+- [GitHub Security Advisories](https://github.com/advisories)
+- [npm Security Advisories](https://www.npmjs.com/advisories)
 
 ---
 
-**Remember**: Security is a shared responsibility. Report vulnerabilities responsibly, follow best practices, and keep your system updated.
+## Data Security
 
+### Document Privacy
+
+When using cloud embedding providers (OpenAI, OpenRouter):
+- Document content is sent to external APIs
+- Data is processed in accordance with provider privacy policies
+- Consider local HuggingFace mode for sensitive documents
+- Review provider data retention policies
+
+### Local-First Option
+
+For maximum privacy:
+```bash
+# Use HuggingFace local mode (no external API calls)
+EMBEDDING_PROVIDER=huggingface
+HUGGINGFACE_USE_LOCAL=true
+HUGGINGFACE_MODEL=Xenova/all-MiniLM-L6-v2
+```
+
+Note: Requires installing `@xenova/transformers` package.
+
+### Database Security
+
+- LanceDB files are stored locally (`~/.concept_rag` by default)
+- Set appropriate file permissions on database directory
+- Consider encryption at rest for sensitive documents
+- Include database backups in your security plan
+
+---
+
+## Deployment Security
+
+### Production Checklist
+
+- [ ] Use production-grade embedding provider
+- [ ] Rotate API keys to production values
+- [ ] Set restrictive file permissions
+- [ ] Enable HTTPS/TLS for network communication
+- [ ] Configure firewall rules
+- [ ] Set up monitoring and alerting
+- [ ] Implement rate limiting
+- [ ] Review and test backup procedures
+- [ ] Document incident response procedures
+
+### Container Security
+
+If deploying with Docker:
+- Don't include `.env` in image
+- Use secrets management (Docker secrets, Kubernetes secrets)
+- Run as non-root user
+- Scan images for vulnerabilities
+- Keep base images updated
+
+---
+
+## Responsible Disclosure
+
+We are committed to working with security researchers and the community to improve Concept-RAG's security. Thank you for helping keep our users safe!
