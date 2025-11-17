@@ -13,10 +13,12 @@ import { Chunk, SearchQuery, SearchResult } from '../../models/index.js';
  * - NEVER load all chunks into memory
  * - Target: O(log n) for searches, not O(n)
  * 
- * **Design Pattern**: Repository Pattern (Domain-Driven Design)
+ * **Design Pattern**: Repository Pattern
  * - Abstracts data access behind domain interface
  * - Enables testability via test doubles
  * - Follows Dependency Inversion Principle
+ * 
+ * See REFERENCES.md for pattern sources and further reading.
  * 
  * @example
  * ```typescript

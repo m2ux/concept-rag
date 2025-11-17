@@ -10,6 +10,8 @@
  * - Specific exceptions for different error types
  * - Enables precise error handling and logging
  * 
+ * See REFERENCES.md for pattern sources and further reading.
+ * 
  * @example
  * ```typescript
  * try {
