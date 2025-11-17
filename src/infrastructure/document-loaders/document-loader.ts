@@ -7,7 +7,7 @@ import { Document } from "@langchain/core/documents";
  * content from various file formats (PDF, EPUB, MOBI, etc.) and convert them into
  * LangChain Document objects for further processing.
  * 
- * **Design Pattern**: Strategy Pattern
+ * **Design Pattern**: Strategy
  * - Each document format implements this interface with its specific parsing logic
  * - Loaders are interchangeable based on file type
  * - DocumentLoaderFactory selects the appropriate loader at runtime

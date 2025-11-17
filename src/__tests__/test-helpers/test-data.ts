@@ -1,11 +1,12 @@
 /**
  * Test Data Builders
  * 
- * Helper functions to create test data following the "Test Data Builder" pattern
- * from Domain-Driven Design (Evans) and Test-Driven Development (Beck).
+ * Helper functions to create test data following the Test Data Builder pattern.
  * 
  * These builders provide sensible defaults while allowing easy customization
  * through partial overrides.
+ * 
+ * See REFERENCES.md for pattern sources and further reading.
  */
 
 import { Chunk, Concept, SearchResult } from '../../domain/models/index.js';
