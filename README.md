@@ -16,7 +16,6 @@ A powerful RAG MCP server that enables LLMs to interact with documents through c
 
 ## ✨ Key Features
 
-- 🔄 **Recursive Self-Improvement** - Built using its own concept search to discover design patterns from indexed technical books
 - 🧠 **5 Specialized Search Tools** - Optimized for different search modalities (concept research, document discovery, comprehensive search, single-document, concept export)
 - 🔍 **Multi-Signal Hybrid Ranking** - Vector similarity + BM25 keyword + concept matching + title matching + WordNet expansion
 - 🤖 **LLM-Powered Extraction** - Claude Sonnet 4.5 extracts 80-150+ concepts per document with formal semantic model
@@ -25,6 +24,7 @@ A powerful RAG MCP server that enables LLMs to interact with documents through c
 - 📚 **Large Document Support** - Multi-pass extraction for documents >100k tokens
 - ⚡ **Incremental Seeding** - Smart detection skips already-processed files for fast updates
 - 💡 **Intelligent Tool Selection** - Embedded documentation guides AI agents to optimal tool choice
+- 🔄 **Recursive Self-Improvement** - Built using its own concept search to discover design patterns from indexed technical books
 
 ## 📝 Available Tools
 
