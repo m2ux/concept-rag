@@ -9,7 +9,7 @@ import { IDocumentLoader } from './document-loader.js';
  * interface, maintaining backward compatibility while enabling the new
  * document loader abstraction.
  * 
- * **Design Pattern**: Adapter Pattern
+ * **Design Pattern**: Adapter
  * - Wraps existing PDFLoader without modifying it
  * - Provides consistent interface with other document loaders
  * - Preserves all existing PDF processing functionality

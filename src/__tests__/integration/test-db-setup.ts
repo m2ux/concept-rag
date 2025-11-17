@@ -4,10 +4,12 @@
  * Provides utilities for creating and tearing down test databases for integration tests.
  * Uses a temporary directory for each test suite to ensure isolation.
  * 
- * **Design**: Test Fixture pattern (Martin Fowler, xUnit Test Patterns)
+ * **Design**: Test Fixture pattern
  * - Setup creates fresh test database
  * - Teardown cleans up resources
  * - Each test suite gets isolated environment
+ * 
+ * See REFERENCES.md for pattern sources and further reading.
  */
 
 import * as fs from 'fs';

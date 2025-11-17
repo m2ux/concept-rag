@@ -5,7 +5,7 @@
  * operations into domain layer abstractions. It prevents infrastructure
  * details from leaking into the domain layer.
  * 
- * **Design Pattern**: Adapter (Hexagonal Architecture / Ports & Adapters)
+ * **Design Pattern**: Adapter
  * - Port: `SearchableCollection` interface (domain layer)
  * - Adapter: This class (infrastructure layer)
  * - Adaptee: `lancedb.Table` (external dependency)

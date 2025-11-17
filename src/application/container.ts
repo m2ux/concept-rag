@@ -23,16 +23,10 @@ import * as defaults from '../config.js';
  * - **Managing lifecycle** (initialization, cleanup)
  * - **Providing access** to configured tools
  * 
- * **Design Pattern**: Composition Root (DDD / Clean Architecture)
+ * **Design Pattern**: Composition Root
  * - Single place where object graph is constructed
  * - Dependencies flow inward (Domain ← Infrastructure)
  * - Enables testing via dependency substitution
- * 
- * **Replaces Anti-Patterns**:
- * - ❌ Global mutable state (`export let client`)
- * - ❌ Eager instantiation at module load
- * - ❌ Implicit dependencies via imports
- * - ✅ Explicit dependency injection
  * 
  * **Lifecycle**:
  * 1. `new ApplicationContainer()` - Create instance
@@ -54,8 +48,7 @@ import * as defaults from '../config.js';
  * await container.close();
  * ```
  * 
- * @see "Code That Fits in Your Head" (Mark Seemann) - Composition Root pattern
- * @see "Introduction to Software Design and Architecture With TypeScript" (Khalil Stemmler) - DI patterns
+ * See REFERENCES.md for pattern sources and further reading.
  */
 export class ApplicationContainer {
   private dbConnection!: LanceDBConnection;
