@@ -5,7 +5,7 @@
  * including filtering, sorting, and result formatting. It keeps the tool
  * layer thin and focused on MCP protocol adaptation.
  * 
- * **Design Pattern**: Domain Service (DDD)
+ * **Design Pattern**: Domain Service
  * - Orchestrates operations across repositories
  * - Contains business rules (filtering, sorting)
  * - Returns domain models, not protocol-specific formats
