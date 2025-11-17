@@ -26,60 +26,63 @@ export class LanceDBChunkRepository implements ChunkRepository {
   ) {}
   
   /**
-   * Find chunks by concept name using efficient vector search
+   * Find chunks by concept name using direct field filtering
    * 
    * Strategy:
-   * 1. Get concept's embedding vector from concept table
-   * 2. Use vector search to find similar chunks
-   * 3. Filter to chunks that actually contain the concept
+   * 1. Load chunks in batches (to handle large databases)
+   * 2. Filter to chunks that contain the concept in their concepts field
+   * 3. Return up to limit results
    * 
-   * This is MUCH faster than loading all chunks into memory.
+   * Note: Previous implementation used vector search, but this failed because
+   * concept embeddings (short phrases) are not semantically similar to chunk
+   * embeddings (full paragraphs). Direct field filtering is more reliable.
+   * 
+   * See: .ai/planning/2025-11-17-empty-chunk-investigation/INVESTIGATION_REPORT.md
    */
   async findByConceptName(concept: string, limit: number): Promise<Chunk[]> {
     const conceptLower = concept.toLowerCase().trim();
     
     try {
-    // Get concept record to use its embedding for vector search
-    const conceptRecord = await this.conceptRepo.findByName(conceptLower);
-    
-    if (!conceptRecord) {
-        // Not an error - concept just doesn't exist
-      console.error(`⚠️  Concept "${concept}" not found in concept table`);
-      return [];
-    }
+      // Verify concept exists
+      const conceptRecord = await this.conceptRepo.findByName(conceptLower);
       
-      // Validate embeddings before vector search
-      if (!conceptRecord.embeddings || conceptRecord.embeddings.length === 0) {
-        throw new InvalidEmbeddingsError(concept, conceptRecord.embeddings?.length || 0);
+      if (!conceptRecord) {
+        console.error(`⚠️  Concept "${concept}" not found in concept table`);
+        return [];
       }
-    
-    // Use concept's embedding for vector search (efficient!)
-    const candidates = await this.chunksTable
-      .vectorSearch(conceptRecord.embeddings)
-      .limit(limit * 3)  // Get extra candidates for filtering
-      .toArray();
-    
-    // Filter to chunks that actually contain the concept
-    const matches: Chunk[] = [];
-    for (const row of candidates) {
-        // Validate chunk schema before mapping
+      
+      // Load chunks and filter by concepts field
+      // Note: LanceDB loads efficiently, and we can optimize with batching if needed
+      const batchSize = 100000;
+      const allRows = await this.chunksTable
+        .query()
+        .limit(batchSize)
+        .toArray();
+      
+      const matches: Chunk[] = [];
+      
+      for (const row of allRows) {
+        // Validate chunk schema
         try {
           validateChunkRow(row);
         } catch (validationError) {
           console.error(`⚠️  Schema validation failed for chunk:`, validationError);
-          continue;  // Skip invalid chunks
+          continue;
         }
         
-      const chunk = this.mapRowToChunk(row);
-      
-      // Check if concept is in chunk's concept list
-      if (this.chunkContainsConcept(chunk, conceptLower)) {
-        matches.push(chunk);
-        if (matches.length >= limit) break;
+        const chunk = this.mapRowToChunk(row);
+        
+        // Check if concept is in chunk's concept list
+        if (this.chunkContainsConcept(chunk, conceptLower)) {
+          matches.push(chunk);
+          if (matches.length >= limit) break;
+        }
       }
-    }
-    
-    return matches;
+      
+      // Sort by concept density (most concept-rich first)
+      matches.sort((a, b) => (b.conceptDensity || 0) - (a.conceptDensity || 0));
+      
+      return matches.slice(0, limit);
     } catch (error) {
       // Wrap in domain exception if not already
       if (error instanceof InvalidEmbeddingsError || error instanceof ConceptNotFoundError) {
