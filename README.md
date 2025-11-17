@@ -8,8 +8,6 @@
 
 A powerful RAG MCP server that enables LLMs to interact with documents through conceptual search. Combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking powered by LanceDB for superior retrieval accuracy.
 
-**🔄 Recursive Self-Improvement**: This system was used to improve itself—concept search tools queried a knowledge base of software design books to discover and apply architectural patterns during development. See [REFERENCES.md](REFERENCES.md) for details.
-
 ---
 
 **🚀 [Quick Start](#-quick-start)** • **⚙️ [Setup Guide](SETUP.md)** • **📖 [Usage](USAGE.md)** • **💡 [Examples](EXAMPLES.md)** • **❓ [FAQ](FAQ.md)** • **🛠️ [Troubleshooting](TROUBLESHOOTING.md)**
