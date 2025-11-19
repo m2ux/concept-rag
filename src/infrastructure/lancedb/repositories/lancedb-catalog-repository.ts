@@ -3,6 +3,7 @@ import { CatalogRepository } from '../../../domain/interfaces/repositories/catal
 import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
+import { ConceptIdCache } from '../../cache/concept-id-cache.js';
 
 /**
  * LanceDB implementation of CatalogRepository
@@ -17,7 +18,9 @@ import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js
 export class LanceDBCatalogRepository implements CatalogRepository {
   constructor(
     private catalogTable: lancedb.Table,
-    private hybridSearchService: HybridSearchService
+    private hybridSearchService: HybridSearchService,
+    // @ts-expect-error - Reserved for future use: concept resolution in catalog entries
+    private conceptIdCache: ConceptIdCache
   ) {}
   
   async search(query: SearchQuery): Promise<SearchResult[]> {

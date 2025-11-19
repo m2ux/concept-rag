@@ -117,8 +117,8 @@ export class ApplicationContainer {
     const cacheStats = this.conceptIdCache.getStats();
     console.error(`✅ ConceptIdCache initialized: ${cacheStats.conceptCount} concepts, ~${Math.round(cacheStats.memorySizeEstimate / 1024)}KB`);
     
-    const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService);
-    const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
+    const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, this.conceptIdCache);
+    const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService, this.conceptIdCache);
     
     // 5. Create domain services (with repositories)
     const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);
