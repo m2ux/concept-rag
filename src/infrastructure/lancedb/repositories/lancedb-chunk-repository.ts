@@ -8,6 +8,7 @@ import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } 
 import { parseJsonField } from '../utils/field-parsers.js';
 import { validateChunkRow, detectVectorField } from '../utils/schema-validators.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
+import { ConceptIdCache } from '../../cache/concept-id-cache.js';
 
 /**
  * LanceDB implementation of ChunkRepository
@@ -22,7 +23,8 @@ export class LanceDBChunkRepository implements ChunkRepository {
     private chunksTable: lancedb.Table,
     private conceptRepo: ConceptRepository,
     private embeddingService: EmbeddingService,
-    private hybridSearchService: HybridSearchService
+    private hybridSearchService: HybridSearchService,
+    private conceptIdCache: ConceptIdCache
   ) {}
   
   /**
@@ -151,12 +153,29 @@ export class LanceDBChunkRepository implements ChunkRepository {
     const vectorField = detectVectorField(row);
     const embeddings = vectorField ? row[vectorField] : undefined;
     
+    // Resolve concepts: prefer new format (concept_ids) over old format (concepts)
+    let concepts: string[] = [];
+    if (row.concept_ids) {
+      // NEW FORMAT: Use concept IDs and resolve to names via cache
+      try {
+        const conceptIds = parseJsonField(row.concept_ids);
+        concepts = this.conceptIdCache.getNames(conceptIds);
+      } catch (error) {
+        console.warn('[ChunkRepository] Failed to parse concept_ids, falling back to concepts:', error);
+        // Fallback to old format
+        concepts = parseJsonField(row.concepts);
+      }
+    } else {
+      // OLD FORMAT: Use concept names directly
+      concepts = parseJsonField(row.concepts);
+    }
+    
     return {
       id: row.id || '',
       text: row.text || '',
       source: row.source || '',
       hash: row.hash || '',
-      concepts: parseJsonField(row.concepts),
+      concepts,
       conceptCategories: parseJsonField(row.concept_categories),
       conceptDensity: row.concept_density || 0,
       embeddings  // May be undefined if no vector field found

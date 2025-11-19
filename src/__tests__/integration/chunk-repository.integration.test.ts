@@ -41,11 +41,17 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
     const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
     const conceptRepo = new LanceDBConceptRepository(conceptsTable);
     
+    // Initialize ConceptIdCache for integer ID resolution
+    const { ConceptIdCache } = await import('../../infrastructure/cache/concept-id-cache.js');
+    const conceptIdCache = ConceptIdCache.getInstance();
+    await conceptIdCache.initialize(conceptRepo);
+    
     chunkRepo = new LanceDBChunkRepository(
       chunksTable,
       conceptRepo,
       embeddingService,
-      hybridSearchService
+      hybridSearchService,
+      conceptIdCache
     );
   }, 30000); // Increased timeout for database setup
   
