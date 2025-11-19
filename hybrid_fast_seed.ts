@@ -1326,6 +1326,17 @@ async function rebuildConceptIndexFromExistingData(
         });
     }
     
+    // Build source → catalog ID mapping for integer ID optimization
+    console.log("\n  🔗 Building source-to-catalog-ID mapping...");
+    const catalogRows = await catalogTable.query().toArray();
+    const sourceToIdMap = new Map<string, string>();
+    for (const row of catalogRows) {
+        if (row.source && row.id) {
+            sourceToIdMap.set(row.source, row.id);
+        }
+    }
+    console.log(`  ✅ Mapped ${sourceToIdMap.size} sources to catalog IDs`);
+    
     // Drop and recreate concepts table
     try {
         await db.dropTable('concepts');
@@ -1334,8 +1345,8 @@ async function rebuildConceptIndexFromExistingData(
         // Table didn't exist, that's fine
     }
     
-    await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts');
-    console.log("  ✅ Concept index created successfully");
+    await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToIdMap);
+    console.log("  ✅ Concept index created successfully (with catalog_ids optimization)");
 }
 
 async function hybridFastSeed() {
@@ -1441,6 +1452,18 @@ async function hybridFastSeed() {
     }
 
     console.log(`Number of new catalog records: ${catalogRecords.length}`);
+    
+    // Build source → catalog ID mapping for integer ID optimization
+    console.log("\n🔗 Building source-to-catalog-ID mapping for optimization...");
+    const catalogTable = await db.openTable(defaults.CATALOG_TABLE_NAME);
+    const catalogRows = await catalogTable.query().toArray();
+    const sourceToIdMap = new Map<string, string>();
+    for (const row of catalogRows) {
+        if (row.source && row.id) {
+            sourceToIdMap.set(row.source, row.id);
+        }
+    }
+    console.log(`✅ Mapped ${sourceToIdMap.size} sources to catalog IDs`);
     
     // Build and store concept index (moved to after chunk creation for chunk_count)
     // We'll create chunks first, then build concept index with chunk stats
@@ -1725,8 +1748,8 @@ async function hybridFastSeed() {
                     // Table didn't exist, that's fine
                 }
                 
-                await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts');
-                console.log("✅ Concept index created successfully");
+                await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToIdMap);
+                console.log("✅ Concept index created successfully (with catalog_ids optimization)");
             } catch (error: any) {
                 console.error("⚠️  Error creating concept table:", error.message);
                 console.log("  Continuing with seeding...");
