@@ -21,11 +21,19 @@ export interface IntegrationChunkData {
   text: string;
   source: string;
   vector: number[];
-  concepts: string; // JSON stringified
+  
+  /** @deprecated Use concept_ids instead. Will be removed in v2.0.0 */
+  concepts: string; // JSON stringified array of concept names
+  
+  /** Concept references using integer IDs (JSON stringified array of IDs) */
+  concept_ids?: string; // Optional during migration
+  
   concept_categories: string; // JSON stringified
   concept_density: number;
   chunk_index: number;
   hash?: string; // Optional
+  
+  [key: string]: unknown; // Index signature for LanceDB compatibility
 }
 
 /**
@@ -38,9 +46,17 @@ export interface IntegrationConceptData {
   category: string;
   weight: number;
   chunk_count: number;
-  sources: string; // JSON stringified
+  
+  /** @deprecated Use catalog_ids instead. Will be removed in v2.0.0 */
+  sources: string; // JSON stringified array of source paths
+  
+  /** Document references using catalog entry IDs (JSON stringified array of IDs) */
+  catalog_ids?: string; // Optional during migration
+  
   related_concepts: string; // JSON stringified
   concept_type?: string; // Optional for backward compatibility
+  
+  [key: string]: unknown; // Index signature for LanceDB compatibility
 }
 
 /**
@@ -51,8 +67,16 @@ export interface IntegrationCatalogData {
   text: string;
   source: string;
   vector: number[];
-  concepts: string; // JSON stringified
+  
+  /** @deprecated Use concept_ids instead. Will be removed in v2.0.0 */
+  concepts: string; // JSON stringified array of concept names
+  
+  /** Concept references using integer IDs (JSON stringified array of IDs) */
+  concept_ids?: string; // Optional during migration
+  
   concept_categories: string; // JSON stringified
+  
+  [key: string]: unknown; // Index signature for LanceDB compatibility
 }
 
 /**
