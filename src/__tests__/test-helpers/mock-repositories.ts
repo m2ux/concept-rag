@@ -147,6 +147,10 @@ export class FakeConceptRepository implements ConceptRepository {
     return Promise.resolve(results);
   }
   
+  async findAll(): Promise<Concept[]> {
+    return Promise.resolve(Array.from(this.concepts.values()));
+  }
+  
   // Test helpers
   addConcept(concept: Concept): void {
     this.concepts.set(concept.concept.toLowerCase(), concept);
