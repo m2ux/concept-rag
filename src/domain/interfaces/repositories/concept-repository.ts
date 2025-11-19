@@ -120,5 +120,35 @@ export interface ConceptRepository {
    * ```
    */
   searchConcepts(queryText: string, limit: number): Promise<Concept[]>;
+  
+  /**
+   * Load all concepts from the database.
+   * 
+   * Used for initializing caches or building complete concept maps.
+   * This operation loads the entire concepts table into memory.
+   * 
+   * **Performance**: O(n) full table scan
+   * **Use With Caution**: Can be memory-intensive for large concept sets (>100K concepts)
+   * 
+   * **Use Cases**:
+   * - Initializing ConceptIdCache for ID↔name resolution
+   * - Building knowledge graphs
+   * - Export/backup operations
+   * - Analytics and statistics
+   * 
+   * @returns Promise resolving to array of all concepts
+   * @throws {Error} If database query fails
+   * 
+   * @example
+   * ```typescript
+   * const allConcepts = await conceptRepo.findAll();
+   * console.log(`Total concepts: ${allConcepts.length}`);
+   * 
+   * // Initialize cache
+   * const cache = ConceptIdCache.getInstance();
+   * await cache.initialize({ findAll: () => conceptRepo.findAll() });
+   * ```
+   */
+  findAll(): Promise<Concept[]>;
 }
 

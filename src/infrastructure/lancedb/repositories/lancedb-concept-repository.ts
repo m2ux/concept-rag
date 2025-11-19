@@ -82,6 +82,38 @@ export class LanceDBConceptRepository implements ConceptRepository {
     return results.map((row: any) => this.mapRowToConcept(row));
   }
   
+  /**
+   * Load all concepts from the database.
+   * Used for initializing ConceptIdCache and analytics.
+   * 
+   * **Note**: This includes database IDs in the returned concepts (as extended property).
+   * The Concept domain model doesn't have an id field, but we attach it for cache initialization.
+   */
+  async findAll(): Promise<Concept[]> {
+    try {
+      // Load all concepts from database
+      const results = await this.conceptsTable
+        .query()
+        .toArray();
+      
+      // Map to Concept domain models and attach IDs
+      return results.map((row: any) => {
+        const concept = this.mapRowToConcept(row);
+        // Attach ID as extended property for cache initialization
+        (concept as any).id = row.id;
+        return concept;
+      });
+    } catch (error) {
+      console.error('[ConceptRepository] Error in findAll:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new DatabaseOperationError(
+        `Failed to load all concepts from database: ${errorMessage}`,
+        error instanceof Error ? error : new Error(String(error)),
+        { operation: 'find_all_concepts' }
+      );
+    }
+  }
+  
   private mapRowToConcept(row: any): Concept {
     // Detect which field contains the vector (handles 'vector' vs 'embeddings' naming)
     const vectorField = detectVectorField(row);
