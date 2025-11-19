@@ -204,24 +204,36 @@ export class ConceptIndexBuilder {
     async createConceptTable(
         db: lancedb.Connection,
         concepts: ConceptRecord[],
-        tableName: string = 'concepts'
+        tableName: string = 'concepts',
+        sourceToIdMap?: Map<string, string>  // Optional: source path → catalog ID mapping
     ): Promise<lancedb.Table> {
         
-        const data = concepts.map((concept, idx) => ({
-            id: idx.toString(),
-            concept: concept.concept,
-            concept_type: concept.concept_type,  // Include type for filtering
-            category: concept.category,
-            sources: JSON.stringify(concept.sources),
-            related_concepts: JSON.stringify(concept.related_concepts),
-            synonyms: JSON.stringify(concept.synonyms || []),
-            broader_terms: JSON.stringify(concept.broader_terms || []),
-            narrower_terms: JSON.stringify(concept.narrower_terms || []),
-            weight: concept.weight,
-            chunk_count: concept.chunk_count,  // ENHANCED: Include chunk count
-            enrichment_source: concept.enrichment_source,
-            vector: concept.embeddings
-        }));
+        const data = concepts.map((concept, idx) => {
+            // Build catalog_ids from sources if mapping is provided
+            let catalogIds: string[] = [];
+            if (sourceToIdMap) {
+                catalogIds = concept.sources
+                    .map(source => sourceToIdMap.get(source))
+                    .filter((id): id is string => id !== undefined);
+            }
+            
+            return {
+                id: idx.toString(),
+                concept: concept.concept,
+                concept_type: concept.concept_type,  // Include type for filtering
+                category: concept.category,
+                sources: JSON.stringify(concept.sources),  // OLD: backward compatibility
+                catalog_ids: sourceToIdMap ? JSON.stringify(catalogIds) : undefined,  // NEW: catalog IDs
+                related_concepts: JSON.stringify(concept.related_concepts),
+                synonyms: JSON.stringify(concept.synonyms || []),
+                broader_terms: JSON.stringify(concept.broader_terms || []),
+                narrower_terms: JSON.stringify(concept.narrower_terms || []),
+                weight: concept.weight,
+                chunk_count: concept.chunk_count,  // ENHANCED: Include chunk count
+                enrichment_source: concept.enrichment_source,
+                vector: concept.embeddings
+            };
+        });
         
         console.log(`📊 Creating concept table '${tableName}' with ${data.length} concepts...`);
         
