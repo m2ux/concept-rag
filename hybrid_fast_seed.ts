@@ -1750,6 +1750,19 @@ async function hybridFastSeed() {
                 
                 await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToIdMap);
                 console.log("✅ Concept index created successfully (with catalog_ids optimization)");
+                
+                // Initialize ConceptIdCache for concept_ids optimization
+                console.log("\n🔧 Initializing ConceptIdCache for fast ID resolution...");
+                const { ConceptIdCache } = await import('./src/infrastructure/cache/concept-id-cache.js');
+                const { LanceDBConceptRepository } = await import('./src/infrastructure/lancedb/repositories/lancedb-concept-repository.js');
+                const conceptsTable = await db.openTable('concepts');
+                const conceptRepo = new LanceDBConceptRepository(conceptsTable);
+                const conceptIdCache = ConceptIdCache.getInstance();
+                conceptIdCache.clear();  // Clear any existing cache from previous runs
+                await conceptIdCache.initialize(conceptRepo);
+                const cacheStats = conceptIdCache.getStats();
+                console.log(`✅ ConceptIdCache initialized: ${cacheStats.conceptCount} concepts, ~${Math.round(cacheStats.memorySizeEstimate / 1024)}KB`);
+                
             } catch (error: any) {
                 console.error("⚠️  Error creating concept table:", error.message);
                 console.log("  Continuing with seeding...");
