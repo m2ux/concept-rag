@@ -12,6 +12,7 @@ import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunk
 import { ConceptualBroadChunksSearchTool } from '../tools/operations/conceptual_broad_chunks_search.js';
 import { DocumentConceptsExtractTool } from '../tools/operations/document_concepts_extract.js';
 import { BaseTool } from '../tools/base/tool.js';
+import { ConceptIdCache } from '../infrastructure/cache/concept-id-cache.js';
 import * as defaults from '../config.js';
 
 /**
@@ -52,6 +53,7 @@ import * as defaults from '../config.js';
  */
 export class ApplicationContainer {
   private dbConnection!: LanceDBConnection;
+  private conceptIdCache?: ConceptIdCache;
   private tools = new Map<string, BaseTool>();
   
   /**
@@ -108,6 +110,13 @@ export class ApplicationContainer {
     
     // 4. Create repositories (with infrastructure services)
     const conceptRepo = new LanceDBConceptRepository(conceptsTable);
+    
+    // 4a. Initialize ConceptIdCache for fast ID↔name resolution
+    this.conceptIdCache = ConceptIdCache.getInstance();
+    await this.conceptIdCache.initialize(conceptRepo);
+    const cacheStats = this.conceptIdCache.getStats();
+    console.error(`✅ ConceptIdCache initialized: ${cacheStats.conceptCount} concepts, ~${Math.round(cacheStats.memorySizeEstimate / 1024)}KB`);
+    
     const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService);
     const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     
@@ -221,6 +230,9 @@ export class ApplicationContainer {
   async close(): Promise<void> {
     await this.dbConnection.close();
     this.tools.clear();
+    if (this.conceptIdCache) {
+      this.conceptIdCache.clear();
+    }
     console.error('🛑 Container shutdown complete');
   }
 }
