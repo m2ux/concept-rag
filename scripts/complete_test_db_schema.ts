@@ -14,10 +14,23 @@ import { hashToId } from '../src/infrastructure/utils/hash';
 import * as path from 'path';
 
 async function completeSchema() {
-    console.log('\n🔧 COMPLETING TEST DATABASE SCHEMA');
+    console.log('\n🔧 COMPLETING DATABASE SCHEMA');
     console.log('='.repeat(80));
     
-    const dbPath = `${process.env.HOME}/.concept_rag_test`;
+    // Parse command line arguments
+    const args = process.argv.slice(2);
+    let dbPath = `${process.env.HOME}/.concept_rag_test`;
+    
+    for (let i = 0; i < args.length; i++) {
+        if (args[i] === '--db-path' && i + 1 < args.length) {
+            dbPath = args[i + 1];
+            i++;
+        }
+    }
+    
+    console.log(`Database: ${dbPath}`);
+    console.log('='.repeat(80));
+    
     const db = await connect(dbPath);
     
     // ========== STEP 1: Update Concepts Table ==========
