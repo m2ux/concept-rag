@@ -30,6 +30,14 @@ import { Concept } from '../../models/index.js';
  */
 export interface ConceptRepository {
   /**
+   * Find a concept by hash-based integer ID.
+   * 
+   * @param id - Hash-based concept ID
+   * @returns Promise resolving to the concept if found, null if not found
+   */
+  findById(id: number): Promise<Concept | null>;
+  
+  /**
    * Find a concept by exact name match (case-insensitive).
    * 
    * Looks up a concept in the concept table using an exact name match.
@@ -120,5 +128,35 @@ export interface ConceptRepository {
    * ```
    */
   searchConcepts(queryText: string, limit: number): Promise<Concept[]>;
+  
+  /**
+   * Load all concepts from the database.
+   * 
+   * Used for initializing caches or building complete concept maps.
+   * This operation loads the entire concepts table into memory.
+   * 
+   * **Performance**: O(n) full table scan
+   * **Use With Caution**: Can be memory-intensive for large concept sets (>100K concepts)
+   * 
+   * **Use Cases**:
+   * - Initializing ConceptIdCache for ID↔name resolution
+   * - Building knowledge graphs
+   * - Export/backup operations
+   * - Analytics and statistics
+   * 
+   * @returns Promise resolving to array of all concepts
+   * @throws {Error} If database query fails
+   * 
+   * @example
+   * ```typescript
+   * const allConcepts = await conceptRepo.findAll();
+   * console.log(`Total concepts: ${allConcepts.length}`);
+   * 
+   * // Initialize cache
+   * const cache = ConceptIdCache.getInstance();
+   * await cache.initialize({ findAll: () => conceptRepo.findAll() });
+   * ```
+   */
+  findAll(): Promise<Concept[]>;
 }
 

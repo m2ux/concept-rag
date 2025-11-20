@@ -318,11 +318,17 @@ describe('Concept Search Regression Tests', () => {
     const queryExpander = new QueryExpander(conceptsTable, embeddingService);
     const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
     
+    // Initialize ConceptIdCache for integer ID resolution
+    const { ConceptIdCache } = await import('../../infrastructure/cache/concept-id-cache.js');
+    const conceptIdCache = ConceptIdCache.getInstance();
+    await conceptIdCache.initialize(conceptRepo);
+    
     chunkRepo = new LanceDBChunkRepository(
       chunksTable,
       conceptRepo,
       embeddingService,
-      hybridSearchService
+      hybridSearchService,
+      conceptIdCache
     );
   }, 30000);
   

@@ -11,7 +11,14 @@ import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_cata
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
 import { ConceptualBroadChunksSearchTool } from '../tools/operations/conceptual_broad_chunks_search.js';
 import { DocumentConceptsExtractTool } from '../tools/operations/document_concepts_extract.js';
+import { CategorySearchTool } from '../tools/operations/category-search-tool.js';
+import { ListCategoriesTool } from '../tools/operations/list-categories-tool.js';
+import { ListConceptsInCategoryTool } from '../tools/operations/list-concepts-in-category-tool.js';
 import { BaseTool } from '../tools/base/tool.js';
+import { ConceptIdCache } from '../infrastructure/cache/concept-id-cache.js';
+import { CategoryIdCache } from '../infrastructure/cache/category-id-cache.js';
+import { LanceDBCategoryRepository } from '../infrastructure/lancedb/repositories/lancedb-category-repository.js';
+import type { CategoryRepository } from '../domain/interfaces/category-repository.js';
 import * as defaults from '../config.js';
 
 /**
@@ -52,6 +59,9 @@ import * as defaults from '../config.js';
  */
 export class ApplicationContainer {
   private dbConnection!: LanceDBConnection;
+  private conceptIdCache?: ConceptIdCache;
+  private categoryIdCache?: CategoryIdCache;
+  private categoryRepo?: CategoryRepository;
   private tools = new Map<string, BaseTool>();
   
   /**
@@ -101,6 +111,15 @@ export class ApplicationContainer {
     const catalogTable = await this.dbConnection.openTable(defaults.CATALOG_TABLE_NAME);
     const conceptsTable = await this.dbConnection.openTable(defaults.CONCEPTS_TABLE_NAME);
     
+    // 2a. Open categories table if it exists (optional for backward compatibility)
+    let categoriesTable = null;
+    try {
+      categoriesTable = await this.dbConnection.openTable(defaults.CATEGORIES_TABLE_NAME);
+      console.error('✅ Categories table found');
+    } catch (err) {
+      console.error('⚠️  Categories table not found (skipping category features)');
+    }
+    
     // 3. Create infrastructure services
     const embeddingService = new SimpleEmbeddingService();
     const queryExpander = new QueryExpander(conceptsTable, embeddingService);
@@ -108,7 +127,23 @@ export class ApplicationContainer {
     
     // 4. Create repositories (with infrastructure services)
     const conceptRepo = new LanceDBConceptRepository(conceptsTable);
-    const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService);
+    
+    // 4a. Initialize ConceptIdCache for fast ID↔name resolution
+    this.conceptIdCache = ConceptIdCache.getInstance();
+    await this.conceptIdCache.initialize(conceptRepo);
+    const cacheStats = this.conceptIdCache.getStats();
+    console.error(`✅ ConceptIdCache initialized: ${cacheStats.conceptCount} concepts, ~${Math.round(cacheStats.memorySizeEstimate / 1024)}KB`);
+    
+    // 4b. Initialize CategoryIdCache if categories table exists
+    if (categoriesTable) {
+      this.categoryRepo = new LanceDBCategoryRepository(categoriesTable);
+      this.categoryIdCache = CategoryIdCache.getInstance();
+      await this.categoryIdCache.initialize(this.categoryRepo);
+      const catStats = this.categoryIdCache.getStats();
+      console.error(`✅ CategoryIdCache initialized: ${catStats.categoryCount} categories, ~${Math.round(catStats.memorySizeEstimate / 1024)}KB`);
+    }
+    
+    const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, this.conceptIdCache);
     const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     
     // 5. Create domain services (with repositories)
@@ -122,6 +157,14 @@ export class ApplicationContainer {
     this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService));
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));
     this.tools.set('extract_concepts', new DocumentConceptsExtractTool(catalogRepo));
+    
+    // 6a. Register category tools if categories table exists
+    if (categoriesTable && this.categoryIdCache) {
+      this.tools.set('category_search', new CategorySearchTool(this.categoryIdCache, catalogRepo));
+      this.tools.set('list_categories', new ListCategoriesTool(this.categoryIdCache));
+      this.tools.set('list_concepts_in_category', new ListConceptsInCategoryTool(this.categoryIdCache, catalogRepo, conceptRepo));
+      console.error(`✅ Category tools registered (3 tools)`);
+    }
     
     console.error(`✅ Container initialized with ${this.tools.size} tool(s)`);
   }
@@ -165,7 +208,7 @@ export class ApplicationContainer {
    * - Debugging/inspection
    * - Dynamic tool iteration
    * 
-   * @returns Array of all tool instances (currently 5 tools)
+   * @returns Array of all tool instances (5 base tools + 3 category tools if categories table exists)
    * 
    * @example
    * ```typescript
@@ -221,7 +264,27 @@ export class ApplicationContainer {
   async close(): Promise<void> {
     await this.dbConnection.close();
     this.tools.clear();
+    if (this.conceptIdCache) {
+      this.conceptIdCache.clear();
+    }
+    if (this.categoryIdCache) {
+      this.categoryIdCache.clear();
+    }
     console.error('🛑 Container shutdown complete');
+  }
+  
+  /**
+   * Get CategoryRepository (if categories table exists)
+   */
+  getCategoryRepository(): CategoryRepository | undefined {
+    return this.categoryRepo;
+  }
+  
+  /**
+   * Get CategoryIdCache (if initialized)
+   */
+  getCategoryIdCache(): CategoryIdCache | undefined {
+    return this.categoryIdCache;
   }
 }
 
