@@ -10,6 +10,11 @@ START: User asks a question
 ├─ Are they asking "what documents do I have?" or looking for documents by title/author?
 │  └─ YES → Use `catalog_search`
 │
+├─ Are they asking to browse BY CATEGORY or filter by domain?
+│  ├─ "What categories?" → Use `list_categories`
+│  ├─ "Documents in [category]" → Use `category_search`
+│  └─ "Concepts in [category]" → Use `list_concepts_in_category`
+│
 ├─ Are they explicitly asking to "extract", "list", "show", or "export" ALL concepts from a document?
 │  └─ YES → Use `extract_concepts`
 │
@@ -35,6 +40,9 @@ START: User asks a question
 | **catalog_search** | Document summaries | Hybrid + titles | ⭐⭐⭐⭐ High | Document discovery | Titles, topics, authors |
 | **chunks_search** | Single document | Hybrid + filter | ⭐⭐⭐⭐ High | Focused document search | Any, within known doc |
 | **extract_concepts** | Document metadata | Concept catalog | N/A | Concept export | Document identifier |
+| **category_search** 🆕 | Documents in category | Category filter | ⭐⭐⭐⭐⭐ High | Domain-specific browsing | Category name/ID |
+| **list_categories** 🆕 | All categories | Category table | N/A | Category discovery | Optional search filter |
+| **list_concepts_in_category** 🆕 | Category's concepts | Dynamic aggregation | ⭐⭐⭐⭐ High | Domain concept analysis | Category name/ID |
 
 ## Detailed Tool Selection Criteria
 
@@ -229,6 +237,135 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 
 ---
 
+### 6. `category_search` - Browse Documents by Category 🆕
+
+**When to Use:**
+- ✅ Browse documents in a specific domain or subject area
+- ✅ Filter documents by semantic category
+- ✅ Explore what documents exist in a category
+- ✅ Category-based discovery and navigation
+
+**When NOT to Use:**
+- ❌ Don't know what categories exist (use list_categories first)
+- ❌ Need content search, not document listing (use broad_chunks_search)
+- ❌ Looking for a concept, not a category (use concept_search)
+
+**Query Examples:**
+```
+✅ "Show me documents in software engineering"
+✅ "What do I have about distributed systems?"
+✅ "Browse documents in the healthcare category"
+❌ "Find information about API design" (use concept_search - this is a concept, not category)
+```
+
+**What It Returns:**
+- Documents tagged with the specified category
+- Document previews (200 characters)
+- Primary concepts for each document
+- Category metadata (description, hierarchy, statistics)
+- Related categories
+
+**Technical Details:**
+- Direct query on `catalog.category_ids` field (hash-based integers)
+- Fast filtering (integer comparison, not string matching)
+- Categories stored on documents (no derivation needed)
+- Can optionally include child categories in hierarchy
+
+**Parameters:**
+- `category`: Category name, ID, or alias
+- `includeChildren`: Include child categories (default: false)
+- `limit`: Max documents to return (default: 10)
+
+---
+
+### 7. `list_categories` - Browse All Categories 🆕
+
+**When to Use:**
+- ✅ "What categories do I have?"
+- ✅ Explore available subject areas in your library
+- ✅ Get category statistics and metadata
+- ✅ Category discovery before using category_search
+
+**When NOT to Use:**
+- ❌ Looking for specific documents (use catalog_search or category_search)
+- ❌ Searching content (use search tools)
+- ❌ Already know the category (use category_search directly)
+
+**Query Examples:**
+```
+✅ "What categories are in my library?"
+✅ "List all subject areas"
+✅ "Show categories related to software"
+✅ "What domains are covered?"
+❌ "Find documents about software" (use catalog_search or category_search)
+```
+
+**What It Returns:**
+- All categories with metadata
+- Document/chunk/concept counts per category
+- Category descriptions and aliases
+- Hierarchy information (parent/children)
+- Related categories
+- Sorted by popularity or name
+
+**Technical Details:**
+- Queries categories table (small, <200 entries typically)
+- CategoryIdCache provides O(1) metadata access
+- Statistics precomputed during ingestion
+- Very fast (< 1ms cached, < 10ms uncached)
+
+**Parameters:**
+- `sortBy`: 'name', 'popularity', or 'documentCount' (default: 'popularity')
+- `limit`: Max categories to return (default: 50)
+- `search`: Optional filter by category name/description
+
+---
+
+### 8. `list_concepts_in_category` - Domain Concept Analysis 🆕
+
+**When to Use:**
+- ✅ "What concepts appear in [category] documents?"
+- ✅ Analyze conceptual landscape of a domain
+- ✅ Find key concepts for a subject area
+- ✅ Cross-domain concept discovery
+
+**When NOT to Use:**
+- ❌ Need to search for content (use concept_search or broad_chunks_search)
+- ❌ Want documents in a category (use category_search)
+- ❌ Looking for a specific concept (use concept_search)
+
+**Query Examples:**
+```
+✅ "What concepts appear in software engineering documents?"
+✅ "List key concepts for distributed systems"
+✅ "Show me concepts in the healthcare category"
+❌ "Find information about API design" (use concept_search - searching, not listing)
+```
+
+**What It Returns:**
+- Unique concepts appearing in category's documents
+- Concept types (thematic vs terminology)
+- Document counts per concept
+- Sorted by frequency or alphabetically
+- Note: Concepts are category-agnostic (cross-domain)
+
+**Technical Details:**
+- Query-time computation through catalog (no redundant storage)
+- Aggregates concept_ids from documents in category
+- Performance: ~30-130ms for typical libraries
+- Dynamic and always up-to-date
+- Shows which concepts happen to appear in a category's documents
+
+**Design Note:**
+Concepts are category-agnostic (cross-domain entities). This tool shows which concepts appear in a category's documents, not which concepts "belong" to the category. A concept like "optimization" may appear in software, healthcare, and business documents.
+
+**Parameters:**
+- `category`: Category name, ID, or alias
+- `sortBy`: 'name' or 'documentCount' (default: 'documentCount')
+- `limit`: Max concepts to return (default: 50)
+
+---
+
 ## Decision Logic Examples
 
 ### Example 1: User asks "Find information about innovation"
@@ -309,6 +446,54 @@ extract_concepts(document_query="Art of War", format="markdown")
 ```
 
 **Result:** Complete list of 100+ concepts organized by type
+
+---
+
+### Example 6: User asks "What categories do I have?"
+
+**Analysis:**
+- Asking about categories, not documents or content
+- Discovery/browsing query
+- Wants to know what domains are covered
+
+**Decision:** Use `list_categories`
+```
+list_categories(sortBy="popularity", limit=20)
+```
+
+**Result:** Top 20 categories with statistics (document counts, chunk counts)
+
+---
+
+### Example 7: User asks "Show me documents about software engineering"
+
+**Analysis:**
+- Looking for documents (not content chunks)
+- "software engineering" is likely a category
+- Domain-based filtering
+
+**Decision:** Use `category_search` (if it's a category) or `catalog_search` (general fallback)
+```
+category_search(category="software engineering", limit=10)
+```
+
+**Result:** All documents tagged with "software engineering" category
+
+---
+
+### Example 8: User asks "What concepts are discussed in distributed systems documents?"
+
+**Analysis:**
+- Asking for concepts, not content
+- Scoped to a category ("distributed systems")
+- Domain concept analysis
+
+**Decision:** Use `list_concepts_in_category`
+```
+list_concepts_in_category(category="distributed systems", sortBy="documentCount", limit=20)
+```
+
+**Result:** Top 20 concepts appearing in distributed systems documents (e.g., "consistency", "partitioning", "replication")
 
 ---
 
@@ -410,6 +595,9 @@ extract_concepts(document_query="Art of War", format="markdown")
 | **catalog_search** | 5 documents | Fast | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
 | **chunks_search** | 5 chunks | Fast | ⭐⭐⭐⭐ | ⭐⭐⭐ |
 | **extract_concepts** | 80-150 concepts | Instant | N/A | N/A |
+| **category_search** 🆕 | 1-50 documents | Very Fast | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **list_categories** 🆕 | 10-50 categories | Instant | N/A | N/A |
+| **list_concepts_in_category** 🆕 | 10-200 concepts | Fast | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
 
 † concept_search loads all chunks into memory for filtering - may be slower on large corpora
 
@@ -474,8 +662,11 @@ Use these test cases to validate tool selection:
 | User Query | Correct Tool | Reasoning |
 |------------|--------------|-----------|
 | "What documents do I have?" | catalog_search | Asking for documents |
+| "What categories do I have?" | list_categories | Asking for categories |
 | "innovation" | concept_search | Single concept term |
 | "Find all mentions of leadership" | concept_search | Concept tracking |
+| "Show me software engineering documents" | category_search | Category-based filtering |
+| "What concepts are in distributed systems?" | list_concepts_in_category | Concepts within category |
 | "How do teams collaborate?" | broad_chunks_search | Natural language question |
 | "strategic planning frameworks" | broad_chunks_search | Multi-word phrase |
 | "Search Sun Tzu for deception" | chunks_search | Known document |
@@ -483,6 +674,7 @@ Use these test cases to validate tool selection:
 | "documents about healthcare" | catalog_search | Document discovery |
 | "organizational learning" | concept_search | Conceptual term |
 | "What is the process for user authentication?" | broad_chunks_search | Specific technical question |
+| "Browse real-time systems category" | category_search | Explicit category browsing |
 
 ---
 
@@ -490,6 +682,8 @@ Use these test cases to validate tool selection:
 
 - **2025-11-13**: Initial version based on empirical comparison analysis
 - **Motivation**: Resolved 0% overlap between concept_search and broad_chunks_search results for "innovation" query
+- **2025-11-20**: Added category search tools (category_search, list_categories, list_concepts_in_category)
+- **Purpose**: Enable domain-based browsing and category-scoped concept discovery
 
 ---
 
