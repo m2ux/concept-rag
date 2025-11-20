@@ -55,6 +55,7 @@ export class CategoryIdCache {
     console.log('🔄 Initializing CategoryIdCache...');
     
     const categories = await categoryRepo.findAll();
+    console.log(`  📊 Loading ${categories.length} categories into cache...`);
     
     // Clear existing data
     this.idToName.clear();
