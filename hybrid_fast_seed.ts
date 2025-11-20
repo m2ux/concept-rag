@@ -1007,9 +1007,44 @@ async function createLanceTableWithSimpleEmbeddings(
             vector: createSimpleEmbedding(doc.pageContent)
         };
         
+        // Add reserved bibliographic fields (for future use)
+        if (tableName === 'catalog') {
+            baseData.origin_hash = null;
+            baseData.author = null;
+            baseData.year = null;
+            baseData.publisher = null;
+            baseData.isbn = null;
+            
+            // Extract filename tags (metadata after '--' delimiter)
+            const filename = doc.metadata.source.split('/').pop() || '';
+            const filenameParts = filename.replace(/\.(pdf|epub)$/i, '').split('--').map((p: string) => p.trim());
+            const filenameTags = filenameParts.length > 1 ? filenameParts.slice(1) : [];
+            baseData.filename_tags = JSON.stringify(filenameTags);
+        }
+        
         // Add concept metadata if present
         if (doc.metadata.concepts) {
             baseData.concepts = JSON.stringify(doc.metadata.concepts);
+            
+            // Extract concept names and generate hash-based concept IDs
+            let conceptNames: string[] = [];
+            
+            // Handle two formats:
+            // 1. Catalog: concepts is object with primary_concepts array
+            // 2. Chunks: concepts is simple array of concept names
+            if (typeof doc.metadata.concepts === 'object') {
+                if (doc.metadata.concepts.primary_concepts) {
+                    conceptNames = doc.metadata.concepts.primary_concepts;
+                }
+            } else if (Array.isArray(doc.metadata.concepts)) {
+                conceptNames = doc.metadata.concepts;
+            }
+            
+            if (conceptNames.length > 0) {
+                // Generate hash-based concept IDs
+                const conceptIds = conceptNames.map((name: string) => hashToId(name));
+                baseData.concept_ids = JSON.stringify(conceptIds);
+            }
             
             // Extract categories from concepts structure for catalog/chunks
             let categories: string[] = [];
@@ -1022,7 +1057,7 @@ async function createLanceTableWithSimpleEmbeddings(
             if (categories.length > 0) {
                 baseData.concept_categories = JSON.stringify(categories);
                 
-                // NEW: Add hash-based category IDs
+                // Generate hash-based category IDs
                 const categoryIds = categories.map((cat: string) => 
                     categoryIdMap.get(cat) || hashToId(cat)
                 );
@@ -1777,7 +1812,13 @@ async function hybridFastSeed() {
                     concept_density: doc.metadata.concept_density || 0
                 };
                 
-                // NEW: Add hash-based category IDs
+                // Add hash-based concept IDs (chunks have concepts as simple array)
+                if (doc.metadata.concepts && Array.isArray(doc.metadata.concepts) && doc.metadata.concepts.length > 0) {
+                    const conceptIds = doc.metadata.concepts.map((name: string) => hashToId(name));
+                    data.concept_ids = JSON.stringify(conceptIds);
+                }
+                
+                // Add hash-based category IDs
                 if (doc.metadata.concept_categories && doc.metadata.concept_categories.length > 0) {
                     const categoryIds = doc.metadata.concept_categories.map((cat: string) => 
                         batchCategoryIdMap.get(cat) || hashToId(cat)
