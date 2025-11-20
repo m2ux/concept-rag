@@ -57,5 +57,111 @@ export class LanceDBCatalogRepository implements CatalogRepository {
     // If no exact match, return best match if it's close
     return results.length > 0 ? results[0] : null;
   }
+  
+  async findByCategory(categoryId: number): Promise<SearchResult[]> {
+    // Query all catalog entries and filter by category_ids
+    const allDocs = await this.catalogTable.query().toArray();
+    
+    const matches = allDocs.filter((doc: any) => {
+      if (!doc.category_ids) return false;
+      
+      try {
+        const categoryIds: number[] = JSON.parse(doc.category_ids);
+        return categoryIds.includes(categoryId);
+      } catch {
+        return false;
+      }
+    });
+    
+    // Convert to SearchResult format (simplified - no scoring for direct category match)
+    return matches.map((doc: any) => ({
+      id: doc.id,
+      text: doc.text,
+      source: doc.source,
+      hash: doc.hash,
+      concepts: this.parseConceptsField(doc),
+      embeddings: doc.vector || [],
+      distance: 0, // Not a vector search
+      hybridScore: 1.0, // Direct match, no ranking needed
+      vectorScore: 0,
+      bm25Score: 0,
+      titleScore: 1.0, // Direct category match
+      conceptScore: 0,
+      wordnetScore: 0
+    }));
+  }
+  
+  async getConceptsInCategory(categoryId: number): Promise<number[]> {
+    // Step 1: Find all documents in this category
+    const docs = await this.findByCategory(categoryId);
+    
+    // Step 2: Aggregate unique concepts from these documents
+    const uniqueConceptIds = new Set<number>();
+    const uniqueConceptNames = new Set<string>();
+    
+    for (const doc of docs) {
+      // Fetch full document data to access concept fields
+      const docData = await this.catalogTable.query()
+        .where(`id = '${doc.id}'`)
+        .limit(1)
+        .toArray();
+      
+      if (docData.length === 0) continue;
+      const row = docData[0];
+      
+      // NEW FORMAT: concept_ids field (hash-based integer IDs)
+      if (row.concept_ids) {
+        try {
+          const conceptIds: number[] = JSON.parse(row.concept_ids);
+          conceptIds.forEach(id => uniqueConceptIds.add(id));
+        } catch {
+          // Skip malformed data
+        }
+      }
+      // OLD FORMAT: concepts field with primary_concepts array (concept names)
+      else if (row.concepts) {
+        try {
+          const concepts = JSON.parse(row.concepts);
+          const conceptNames = concepts.primary_concepts || [];
+          
+          // Convert concept names to hash-based IDs
+          conceptNames.forEach((name: string) => {
+            const conceptId = this.hashConceptName(name);
+            uniqueConceptIds.add(conceptId);
+            uniqueConceptNames.add(name);
+          });
+        } catch {
+          // Skip malformed data
+        }
+      }
+    }
+    
+    return Array.from(uniqueConceptIds);
+  }
+  
+  /**
+   * Generate hash ID for concept name (fallback when ConceptIdCache not available)
+   */
+  private hashConceptName(name: string): number {
+    // Simple FNV-1a hash (same algorithm as in hash utility)
+    let hash = 2166136261;
+    for (let i = 0; i < name.length; i++) {
+      hash ^= name.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+  
+  private parseConceptsField(doc: any): any {
+    // Helper to parse the concepts field (handles both old and new formats)
+    if (doc.concepts) {
+      try {
+        return JSON.parse(doc.concepts);
+      } catch {
+        return { primary_concepts: [], technical_terms: [], categories: [] };
+      }
+    }
+    return { primary_concepts: [], technical_terms: [], categories: [] };
+  }
 }
 

@@ -11,6 +11,39 @@ import { validateConceptRow, detectVectorField } from '../utils/schema-validator
 export class LanceDBConceptRepository implements ConceptRepository {
   constructor(private conceptsTable: lancedb.Table) {}
   
+  async findById(id: number): Promise<Concept | null> {
+    try {
+      const results = await this.conceptsTable
+        .query()
+        .where(`id = ${id}`)
+        .limit(1)
+        .toArray();
+      
+      if (results.length === 0) {
+        return null;
+      }
+      
+      const row = results[0];
+      
+      try {
+        validateConceptRow(row);
+      } catch (validationError) {
+        console.error(`⚠️  Schema validation failed for concept ID ${id}:`, validationError);
+        throw validationError;
+      }
+      
+      return this.mapRowToConcept(row);
+    } catch (error) {
+      if (error instanceof ConceptNotFoundError || error instanceof InvalidEmbeddingsError) {
+        throw error;
+      }
+      throw new DatabaseOperationError(
+        `Failed to find concept by ID ${id}`,
+        error as Error
+      );
+    }
+  }
+  
   async findByName(conceptName: string): Promise<Concept | null> {
     const conceptLower = conceptName.toLowerCase().trim();
     
@@ -80,6 +113,38 @@ export class LanceDBConceptRepository implements ConceptRepository {
       .toArray();
     
     return results.map((row: any) => this.mapRowToConcept(row));
+  }
+  
+  /**
+   * Load all concepts from the database.
+   * Used for initializing ConceptIdCache and analytics.
+   * 
+   * **Note**: This includes database IDs in the returned concepts (as extended property).
+   * The Concept domain model doesn't have an id field, but we attach it for cache initialization.
+   */
+  async findAll(): Promise<Concept[]> {
+    try {
+      // Load all concepts from database
+      const results = await this.conceptsTable
+        .query()
+        .toArray();
+      
+      // Map to Concept domain models and attach IDs
+      return results.map((row: any) => {
+        const concept = this.mapRowToConcept(row);
+        // Attach ID as extended property for cache initialization
+        (concept as any).id = row.id;
+        return concept;
+      });
+    } catch (error) {
+      console.error('[ConceptRepository] Error in findAll:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new DatabaseOperationError(
+        `Failed to load all concepts from database: ${errorMessage}`,
+        error instanceof Error ? error : new Error(String(error)),
+        { operation: 'find_all_concepts' }
+      );
+    }
   }
   
   private mapRowToConcept(row: any): Concept {
