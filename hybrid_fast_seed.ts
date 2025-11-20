@@ -1608,7 +1608,7 @@ async function hybridFastSeed() {
     
     // Build source → catalog ID mapping for integer ID optimization
     console.log("\n🔗 Building source-to-catalog-ID mapping for optimization...");
-    const catalogTable = await db.openTable(defaults.CATALOG_TABLE_NAME);
+    catalogTable = await db.openTable(defaults.CATALOG_TABLE_NAME);
     const catalogRows = await catalogTable.query().toArray();
     const sourceToIdMap = new Map<string, string>();
     for (const row of catalogRows) {
