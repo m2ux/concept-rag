@@ -1007,18 +1007,27 @@ async function createLanceTableWithSimpleEmbeddings(
             vector: createSimpleEmbedding(doc.pageContent)
         };
         
-        // Add concept metadata if present (for chunks)
+        // Add concept metadata if present
         if (doc.metadata.concepts) {
             baseData.concepts = JSON.stringify(doc.metadata.concepts);
-        }
-        if (doc.metadata.concept_categories) {
-            baseData.concept_categories = JSON.stringify(doc.metadata.concept_categories);
             
-            // NEW: Add hash-based category IDs
-            const categoryIds = doc.metadata.concept_categories.map((cat: string) => 
-                categoryIdMap.get(cat) || hashToId(cat)
-            );
-            baseData.category_ids = JSON.stringify(categoryIds);
+            // Extract categories from concepts structure for catalog/chunks
+            let categories: string[] = [];
+            if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.categories) {
+                categories = doc.metadata.concepts.categories;
+            } else if (doc.metadata.concept_categories) {
+                categories = doc.metadata.concept_categories;
+            }
+            
+            if (categories.length > 0) {
+                baseData.concept_categories = JSON.stringify(categories);
+                
+                // NEW: Add hash-based category IDs
+                const categoryIds = categories.map((cat: string) => 
+                    categoryIdMap.get(cat) || hashToId(cat)
+                );
+                baseData.category_ids = JSON.stringify(categoryIds);
+            }
         }
         if (doc.metadata.concept_density !== undefined) {
             baseData.concept_density = doc.metadata.concept_density;
@@ -1277,7 +1286,17 @@ async function createCategoriesTable(
     }>();
     
     for (const doc of catalogDocs) {
-        const categories = doc.metadata.concept_categories || [];
+        // Categories can be in two places:
+        // 1. doc.metadata.concepts.categories (structured format from LLM extraction)
+        // 2. doc.metadata.concept_categories (flat array format)
+        let categories: string[] = [];
+        
+        if (doc.metadata.concepts && typeof doc.metadata.concepts === 'object') {
+            categories = doc.metadata.concepts.categories || [];
+        } else if (doc.metadata.concept_categories) {
+            categories = doc.metadata.concept_categories;
+        }
+        
         for (const cat of categories) {
             categorySet.add(cat);
             if (!categoryStats.has(cat)) {
