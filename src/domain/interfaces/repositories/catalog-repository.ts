@@ -108,5 +108,56 @@ export interface CatalogRepository {
    * ```
    */
   findBySource(sourcePath: string): Promise<SearchResult | null>;
+  
+  /**
+   * Find all documents in a specific category.
+   * 
+   * Queries documents by category_ids field (hash-based integer IDs).
+   * Categories are stored directly on documents, enabling fast filtering.
+   * 
+   * **Use Cases**:
+   * - Browse documents by category
+   * - Category-specific search
+   * - Aggregate concepts in a category
+   * 
+   * @param categoryId - Hash-based category ID
+   * @returns Promise resolving to array of documents in this category
+   * @throws {Error} If database query fails
+   * 
+   * @example
+   * ```typescript
+   * const categoryId = categoryCache.getId("software engineering");
+   * const docs = await catalogRepo.findByCategory(categoryId);
+   * console.log(`Found ${docs.length} documents in category`);
+   * ```
+   */
+  findByCategory(categoryId: number): Promise<SearchResult[]>;
+  
+  /**
+   * Get unique concepts that appear in documents of a category.
+   * 
+   * Dynamically queries documents in a category and aggregates their concepts.
+   * Uses query-time computation (no redundant storage) for accuracy and simplicity.
+   * 
+   * **Performance**: ~30-130ms for typical libraries (acceptable for occasional queries)
+   * 
+   * **Design**: Concepts are category-agnostic (cross-domain). This method finds
+   * which concepts happen to appear in documents of a specific category.
+   * 
+   * @param categoryId - Hash-based category ID
+   * @returns Promise resolving to array of unique concept IDs
+   * @throws {Error} If database query fails
+   * 
+   * @example
+   * ```typescript
+   * const categoryId = categoryCache.getId("software engineering");
+   * const conceptIds = await catalogRepo.getConceptsInCategory(categoryId);
+   * console.log(`${conceptIds.length} unique concepts in this category`);
+   * 
+   * // Fetch concept details
+   * const concepts = await conceptRepo.findByIds(conceptIds.slice(0, 50));
+   * ```
+   */
+  getConceptsInCategory(categoryId: number): Promise<number[]>;
 }
 
