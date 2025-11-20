@@ -1410,11 +1410,11 @@ async function createCategoriesTable(
     // Create vector index if we have enough categories
     if (categoryRecords.length >= 256) {
         console.log("  🔧 Creating vector index for categories...");
-        await table.createIndex({
-            column: 'vector',
-            type: 'ivf_pq',
-            num_partitions: Math.max(2, Math.ceil(categoryRecords.length / 100)),
-            num_sub_vectors: 8
+        await table.createIndex("vector", {
+            config: lancedb.Index.ivfPq({
+                numPartitions: Math.max(2, Math.ceil(categoryRecords.length / 100)),
+                numSubVectors: 8
+            })
         });
         console.log("  ✅ Vector index created");
     } else {
