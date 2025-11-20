@@ -81,8 +81,9 @@ async function testCategoryTools() {
     console.log('\n3️⃣  TEST: category_search');
     console.log('-'.repeat(80));
     
-    // Get a test category
-    const testCategory = 'innovation methodology';
+    // Get a test category from the actual database
+    const allCategories = categoryCache.exportAll();
+    const testCategory = allCategories.length > 0 ? allCategories[0].category : 'software architecture';
     console.log(`  🔍 Searching for category: "${testCategory}"`);
     
     try {

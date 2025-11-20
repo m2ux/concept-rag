@@ -1379,9 +1379,9 @@ async function createCategoriesTable(
             id: categoryId,
             category: category,
             description: description,
-            parent_category_id: null, // Can be enhanced with hierarchy logic later
-            aliases: JSON.stringify([]), // Can be enhanced with alias logic later
-            related_categories: JSON.stringify([]), // Can be enhanced with co-occurrence analysis later
+            parent_category_id: 0, // Use 0 as null placeholder (LanceDB can't infer type from all nulls)
+            aliases: JSON.stringify([]),
+            related_categories: JSON.stringify([]),
             document_count: stats.documentCount,
             chunk_count: 0, // Will be updated when chunks are processed
             concept_count: 0, // Will be updated when concepts are processed

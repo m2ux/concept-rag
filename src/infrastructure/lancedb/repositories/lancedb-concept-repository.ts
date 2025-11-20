@@ -11,6 +11,39 @@ import { validateConceptRow, detectVectorField } from '../utils/schema-validator
 export class LanceDBConceptRepository implements ConceptRepository {
   constructor(private conceptsTable: lancedb.Table) {}
   
+  async findById(id: number): Promise<Concept | null> {
+    try {
+      const results = await this.conceptsTable
+        .query()
+        .where(`id = ${id}`)
+        .limit(1)
+        .toArray();
+      
+      if (results.length === 0) {
+        return null;
+      }
+      
+      const row = results[0];
+      
+      try {
+        validateConceptRow(row);
+      } catch (validationError) {
+        console.error(`⚠️  Schema validation failed for concept ID ${id}:`, validationError);
+        throw validationError;
+      }
+      
+      return this.mapRowToConcept(row);
+    } catch (error) {
+      if (error instanceof ConceptNotFoundError || error instanceof InvalidEmbeddingsError) {
+        throw error;
+      }
+      throw new DatabaseOperationError(
+        `Failed to find concept by ID ${id}`,
+        error as Error
+      );
+    }
+  }
+  
   async findByName(conceptName: string): Promise<Concept | null> {
     const conceptLower = conceptName.toLowerCase().trim();
     

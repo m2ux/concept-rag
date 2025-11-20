@@ -78,12 +78,11 @@ export async function listConceptsInCategory(
   const limit = params.limit || 50;
   const conceptsToFetch = conceptIds.slice(0, Math.min(conceptIds.length, 200)); // Fetch up to 200 for sorting
   
-  // Note: ConceptRepository doesn't have findByIds yet, so we'll fetch individually
-  // This is acceptable for now since it's an occasional query
+  // Fetch concepts by hash-based integer ID
   const concepts = [];
   for (const conceptId of conceptsToFetch) {
     try {
-      const concept = await conceptRepo.findByName(String(conceptId)); // Temporary workaround
+      const concept = await conceptRepo.findById(conceptId);
       if (concept) {
         concepts.push({
           id: conceptId,
