@@ -3,7 +3,6 @@ import { CatalogRepository } from '../../../domain/interfaces/repositories/catal
 import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
-import { ConceptIdCache } from '../../cache/concept-id-cache.js';
 
 /**
  * LanceDB implementation of CatalogRepository
@@ -18,9 +17,7 @@ import { ConceptIdCache } from '../../cache/concept-id-cache.js';
 export class LanceDBCatalogRepository implements CatalogRepository {
   constructor(
     private catalogTable: lancedb.Table,
-    private hybridSearchService: HybridSearchService,
-    // @ts-expect-error - Reserved for future use: concept resolution in catalog entries
-    private conceptIdCache: ConceptIdCache
+    private hybridSearchService: HybridSearchService
   ) {}
   
   async search(query: SearchQuery): Promise<SearchResult[]> {
@@ -99,26 +96,60 @@ export class LanceDBCatalogRepository implements CatalogRepository {
     const docs = await this.findByCategory(categoryId);
     
     // Step 2: Aggregate unique concepts from these documents
-    const uniqueConcepts = new Set<number>();
+    const uniqueConceptIds = new Set<number>();
+    const uniqueConceptNames = new Set<string>();
     
     for (const doc of docs) {
-      // Parse concept_ids field (new format with hash-based IDs)
+      // Fetch full document data to access concept fields
       const docData = await this.catalogTable.query()
         .where(`id = '${doc.id}'`)
         .limit(1)
         .toArray();
       
-      if (docData.length > 0 && docData[0].concept_ids) {
+      if (docData.length === 0) continue;
+      const row = docData[0];
+      
+      // NEW FORMAT: concept_ids field (hash-based integer IDs)
+      if (row.concept_ids) {
         try {
-          const conceptIds: number[] = JSON.parse(docData[0].concept_ids);
-          conceptIds.forEach(id => uniqueConcepts.add(id));
+          const conceptIds: number[] = JSON.parse(row.concept_ids);
+          conceptIds.forEach(id => uniqueConceptIds.add(id));
+        } catch {
+          // Skip malformed data
+        }
+      }
+      // OLD FORMAT: concepts field with primary_concepts array (concept names)
+      else if (row.concepts) {
+        try {
+          const concepts = JSON.parse(row.concepts);
+          const conceptNames = concepts.primary_concepts || [];
+          
+          // Convert concept names to hash-based IDs
+          conceptNames.forEach((name: string) => {
+            const conceptId = this.hashConceptName(name);
+            uniqueConceptIds.add(conceptId);
+            uniqueConceptNames.add(name);
+          });
         } catch {
           // Skip malformed data
         }
       }
     }
     
-    return Array.from(uniqueConcepts);
+    return Array.from(uniqueConceptIds);
+  }
+  
+  /**
+   * Generate hash ID for concept name (fallback when ConceptIdCache not available)
+   */
+  private hashConceptName(name: string): number {
+    // Simple FNV-1a hash (same algorithm as in hash utility)
+    let hash = 2166136261;
+    for (let i = 0; i < name.length; i++) {
+      hash ^= name.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
   }
   
   private parseConceptsField(doc: any): any {

@@ -141,7 +141,7 @@ export class ApplicationContainer {
     }
     
     const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, this.conceptIdCache);
-    const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService, this.conceptIdCache);
+    const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     
     // 5. Create domain services (with repositories)
     const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);

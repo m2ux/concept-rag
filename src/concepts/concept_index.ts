@@ -2,6 +2,7 @@ import * as lancedb from "@lancedb/lancedb";
 import { Document } from "@langchain/core/documents";
 import { ConceptRecord, ConceptMetadata } from "./types.js";
 import { createSimpleEmbedding } from "../lancedb/hybrid_search_client.js";
+import { hashToId } from "../infrastructure/utils/hash.js";
 
 export class ConceptIndexBuilder {
     
@@ -205,25 +206,24 @@ export class ConceptIndexBuilder {
         db: lancedb.Connection,
         concepts: ConceptRecord[],
         tableName: string = 'concepts',
-        sourceToIdMap?: Map<string, string>  // Optional: source path → catalog ID mapping
+        _sourceToIdMap?: Map<string, string>  // Deprecated: no longer used with hash-based IDs
     ): Promise<lancedb.Table> {
         
-        const data = concepts.map((concept, idx) => {
-            // Build catalog_ids from sources if mapping is provided
-            let catalogIds: string[] = [];
-            if (sourceToIdMap) {
-                catalogIds = concept.sources
-                    .map(source => sourceToIdMap.get(source))
-                    .filter((id): id is string => id !== undefined);
-            }
+        const data = concepts.map((concept) => {
+            // Generate hash-based integer ID from concept name (stable across rebuilds)
+            const conceptId = hashToId(concept.concept);
+            
+            // Build catalog_ids as hash-based integers from source paths (stable across rebuilds)
+            // Hash the source path itself for stability, not the sequential catalog ID
+            const catalogIds: number[] = concept.sources.map(source => hashToId(source));
             
             return {
-                id: idx.toString(),
+                id: conceptId,  // Hash-based integer ID (stable)
                 concept: concept.concept,
                 concept_type: concept.concept_type,  // Include type for filtering
-                category: concept.category,
+                category: concept.category,  // OLD: backward compatibility (kept but not used)
                 sources: JSON.stringify(concept.sources),  // OLD: backward compatibility
-                catalog_ids: sourceToIdMap ? JSON.stringify(catalogIds) : undefined,  // NEW: catalog IDs
+                catalog_ids: JSON.stringify(catalogIds),  // NEW: hash-based integer catalog IDs
                 related_concepts: JSON.stringify(concept.related_concepts),
                 synonyms: JSON.stringify(concept.synonyms || []),
                 broader_terms: JSON.stringify(concept.broader_terms || []),

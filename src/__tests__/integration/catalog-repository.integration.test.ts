@@ -33,14 +33,7 @@ describe('LanceDBCatalogRepository - Integration Tests', () => {
     const queryExpander = new QueryExpander(conceptsTable, embeddingService);
     const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
     
-    // Initialize ConceptIdCache for integer ID resolution
-    const { ConceptIdCache } = await import('../../infrastructure/cache/concept-id-cache.js');
-    const { LanceDBConceptRepository } = await import('../../infrastructure/lancedb/repositories/lancedb-concept-repository.js');
-    const conceptRepo = new LanceDBConceptRepository(conceptsTable);
-    const conceptIdCache = ConceptIdCache.getInstance();
-    await conceptIdCache.initialize(conceptRepo);
-    
-    catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService, conceptIdCache);
+    catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
   }, 30000);
   
   afterAll(async () => {
