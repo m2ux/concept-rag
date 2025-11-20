@@ -1323,10 +1323,6 @@ async function createCategoriesTable(
     const existingIds = new Set<number>();
     const categoryRecords = [];
     
-    // Dynamic import for embedder
-    const { pipeline } = await import('@xenova/transformers');
-    const embedPipeline = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
-    
     console.log("  🔄 Generating category records with embeddings...");
     
     for (const category of sortedCategories) {
@@ -1337,13 +1333,9 @@ async function createCategoriesTable(
         // Generate simple description
         const description = `Concepts and practices related to ${category}`;
         
-        // Generate embedding
+        // Generate embedding using simple embedding function (same as used for catalog/chunks)
         const embeddingText = `${category}: ${description}`;
-        const output = await embedPipeline(embeddingText, {
-            pooling: 'mean',
-            normalize: true
-        });
-        const vector = Array.from(output.data as Float32Array);
+        const vector = createSimpleEmbedding(embeddingText);
         
         const stats = categoryStats.get(category)!;
         
