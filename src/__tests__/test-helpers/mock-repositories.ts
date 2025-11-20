@@ -197,6 +197,18 @@ export class FakeCatalogRepository implements CatalogRepository {
     return Promise.resolve(results[0] || null);
   }
   
+  async findByCategory(_categoryId: number): Promise<SearchResult[]> {
+    // Simple mock: return all documents for testing
+    // In real tests, you'd filter by category_ids
+    return Promise.resolve(Array.from(this.documents.values()));
+  }
+  
+  async getConceptsInCategory(_categoryId: number): Promise<number[]> {
+    // Simple mock: return empty array for testing
+    // In real tests, you'd aggregate concepts from documents
+    return Promise.resolve([]);
+  }
+  
   // Test helpers
   addDocument(doc: SearchResult): void {
     this.documents.set(doc.id, doc);

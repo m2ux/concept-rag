@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 export const CATALOG_TABLE_NAME = "catalog";
 export const CHUNKS_TABLE_NAME = "chunks";
 export const CONCEPTS_TABLE_NAME = "concepts";
+export const CATEGORIES_TABLE_NAME = "categories";
 export const DATABASE_URL = "~/.concept_rag";
 
 // LLM API configuration (OpenRouter-compatible)
