@@ -140,6 +140,172 @@ Extract complete concept list from any document.
 
 ---
 
+### 6. `category_search` - Browse Documents by Category 🆕
+
+Find all documents tagged with a specific category.
+
+**When to use:**
+- Browse documents by domain or subject area
+- Filter your library by category
+- Explore what documents exist in a category
+- Category-based navigation
+
+**Parameters:**
+- `category`: Category name, ID, or alias (e.g., "software engineering", "distributed systems")
+- `includeChildren`: Include child categories in hierarchy (default: false)
+- `limit`: Maximum documents to return (default: 10)
+
+**Example prompts:**
+```
+- "Show me documents in software engineering"
+- "What do I have about distributed systems?"
+- "Browse documents in the healthcare category"
+- "Find all real-time systems documents"
+```
+
+**Response includes:**
+```json
+{
+  "category": {
+    "id": 3612017291,
+    "name": "software engineering",
+    "description": "...",
+    "hierarchy": ["engineering", "software engineering"],
+    "relatedCategories": ["distributed systems", "software architecture"]
+  },
+  "statistics": {
+    "totalDocuments": 5,
+    "totalChunks": 4074,
+    "totalConcepts": 1245
+  },
+  "documents": [
+    {
+      "source": "/path/to/document.pdf",
+      "preview": "This book covers...",
+      "primaryConcepts": ["API design", "microservices", ...]
+    }
+  ]
+}
+```
+
+---
+
+### 7. `list_categories` - Browse All Categories 🆕
+
+List all available categories with statistics and metadata.
+
+**When to use:**
+- "What categories do I have?"
+- Discover what subject areas are in your library
+- Browse available domains before filtering
+- Get category statistics
+
+**Parameters:**
+- `sortBy`: Sort order - 'name', 'popularity', or 'documentCount' (default: 'popularity')
+- `limit`: Maximum categories to return (default: 50)
+- `search`: Optional filter by category name/description
+
+**Example prompts:**
+```
+- "What categories are in my library?"
+- "List all subject areas"
+- "Show me categories related to software"
+- "What domains do my documents cover?"
+```
+
+**Response includes:**
+```json
+{
+  "summary": {
+    "totalCategories": 46,
+    "categoriesReturned": 10,
+    "rootCategories": 8,
+    "totalDocuments": 165
+  },
+  "categories": [
+    {
+      "id": 3612017291,
+      "name": "software engineering",
+      "description": "...",
+      "aliases": ["software design", "system engineering"],
+      "parent": "engineering",
+      "hierarchy": ["engineering", "software engineering"],
+      "statistics": {
+        "documents": 5,
+        "chunks": 4074,
+        "concepts": 1245
+      },
+      "relatedCategories": ["distributed systems", "software architecture"]
+    }
+  ]
+}
+```
+
+---
+
+### 8. `list_concepts_in_category` - Domain Concept Analysis 🆕
+
+Find all unique concepts that appear in documents of a specific category.
+
+**When to use:**
+- Analyze the conceptual landscape of a domain
+- Find key concepts for a subject area
+- Understand what topics are covered in a category
+- Cross-domain concept discovery
+
+**Parameters:**
+- `category`: Category name, ID, or alias
+- `sortBy`: 'name' or 'documentCount' (default: 'documentCount')
+- `limit`: Maximum concepts to return (default: 50)
+
+**Example prompts:**
+```
+- "What concepts appear in software engineering documents?"
+- "List key concepts for distributed systems"
+- "Show me concepts in the healthcare category"
+- "What topics are covered in real-time systems?"
+```
+
+**Response includes:**
+```json
+{
+  "category": {
+    "id": 2409825216,
+    "name": "distributed systems",
+    "description": "...",
+    "hierarchy": ["software engineering", "distributed systems"]
+  },
+  "statistics": {
+    "totalDocuments": 3,
+    "totalChunks": 4561,
+    "totalUniqueConcepts": 387,
+    "conceptsReturned": 20
+  },
+  "concepts": [
+    {
+      "id": 2837461923,
+      "name": "consistency",
+      "type": "thematic",
+      "documentCount": 3,
+      "weight": 0.92
+    },
+    {
+      "id": 3948572014,
+      "name": "partitioning",
+      "type": "thematic",
+      "documentCount": 2,
+      "weight": 0.85
+    }
+  ],
+  "note": "Concepts are category-agnostic and appear across multiple categories"
+}
+```
+
+**Important Note:**
+Concepts are category-agnostic (cross-domain entities). This tool shows which concepts *happen to appear* in a category's documents, not which concepts "belong" to the category. A concept like "optimization" may appear in software, healthcare, and business documents.
+
+---
+
 ## Command-Line Scripts
 
 For bulk operations or automation, use the CLI scripts in the `scripts/` directory.
@@ -232,6 +398,40 @@ npx tsx scripts/view_document_metadata.ts "Sun Tzu"
    - Extract concepts from multiple documents
    - Compare concept lists
    - Identify overlaps and differences
+
+---
+
+### Workflow 3: Category-Based Discovery 🆕
+
+1. **Discover categories:**
+   ```
+   "What categories do I have?"
+   ```
+   Uses: `list_categories` → Shows all 46 categories
+
+2. **Browse category:**
+   ```
+   "Show me documents in software engineering"
+   ```
+   Uses: `category_search` → Returns 5 documents
+
+3. **Analyze concepts:**
+   ```
+   "What concepts are discussed in software engineering documents?"
+   ```
+   Uses: `list_concepts_in_category` → Returns 200+ concepts
+
+4. **Deep dive on concept:**
+   ```
+   "Find information about API design"
+   ```
+   Uses: `concept_search` → Returns concept-tagged chunks
+
+**Benefits:**
+- Systematic domain exploration
+- Understand conceptual landscape by category
+- Navigate from broad (categories) to specific (concepts)
+- Efficient library organization
 
 ---
 

@@ -16,19 +16,21 @@ A powerful RAG MCP server that enables LLMs to interact with documents through c
 
 ## ✨ Key Features
 
-- 🧠 **5 Specialized Search Tools** - Optimized for different search modalities (concept research, document discovery, comprehensive search, single-document, concept export)
+- 🧠 **8 Specialized Search Tools** - Optimized for different search modalities (concept research, document discovery, comprehensive search, single-document, concept export, category browsing)
+- 🏷️ **Category Search** 🆕 - Browse documents by domain with 46 auto-extracted categories, hash-based stable IDs, and hierarchical organization
 - 🔍 **Multi-Signal Hybrid Ranking** - Vector similarity + BM25 keyword + concept matching + title matching + WordNet expansion
 - 🤖 **LLM-Powered Extraction** - Claude Sonnet 4.5 extracts 80-150+ concepts per document with formal semantic model
 - 🌐 **WordNet Integration** - Automatic synonym expansion and hierarchical navigation (161K+ words)
 - 🛡️ **Robust PDF Handling** - Gracefully handles corrupted files with OCR fallback for scanned documents
 - 📚 **Large Document Support** - Multi-pass extraction for documents >100k tokens
 - ⚡ **Incremental Seeding** - Smart detection skips already-processed files for fast updates
+- 💾 **Efficient Storage** - Hash-based IDs reduce storage by 54% with perfect stability across rebuilds
 - 💡 **Intelligent Tool Selection** - Embedded documentation guides AI agents to optimal tool choice
 - 🔄 **Recursive Self-Improvement** - Built using its own concept search to discover design patterns from indexed technical books
 
 ## 📝 Available Tools
 
-The server provides five specialized search tools. **For AI agents:** See [tool-selection-guide.md](tool-selection-guide.md) for the complete decision tree.
+The server provides eight specialized search tools. **For AI agents:** See [tool-selection-guide.md](tool-selection-guide.md) for the complete decision tree.
 
 | Tool | Best For | Use When | Example Query |
 |------|----------|----------|---------------|
@@ -37,6 +39,9 @@ The server provides five specialized search tools. **For AI agents:** See [tool-
 | `broad_chunks_search` | Comprehensive cross-document search | Searching phrases, keywords, questions | `"How do organizations implement strategic planning?"` |
 | `chunks_search` | Single document search | You know the exact document path | After catalog_search, search within specific document |
 | `extract_concepts` | Concept export | Explicitly extracting/listing concepts | `"Extract concepts from Sun Tzu as markdown"` |
+| `category_search` 🆕 | Domain browsing | Browse documents by category | `"Show me software engineering documents"` |
+| `list_categories` 🆕 | Category discovery | Explore available domains | `"What categories do I have?"` |
+| `list_concepts_in_category` 🆕 | Domain concept analysis | Find concepts in a category | `"What concepts are in distributed systems?"` |
 
 ## 🚀 Quick Start
 
