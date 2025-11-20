@@ -27,8 +27,12 @@ export class LanceDBCategoryRepository implements CategoryRepository {
   constructor(private table: Table) {}
 
   async findAll(): Promise<Category[]> {
+    // LanceDB query() has a default limit of 10 rows (safety feature)
+    // Categories table is small (<200 typically, <1000 max realistic)
+    // Using explicit high limit to ensure all categories are loaded for cache initialization
     const rows = await this.table
       .query()
+      .limit(10000) // 10x safety margin over max expected categories
       .toArray();
     return rows.map((row: any) => this.mapRowToCategory(row));
   }
