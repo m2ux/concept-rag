@@ -17,6 +17,7 @@ import { ConceptChunkMatcher } from './src/concepts/concept_chunk_matcher.js';
 import { DocumentLoaderFactory } from './src/infrastructure/document-loaders/document-loader-factory.js';
 import { PDFDocumentLoader } from './src/infrastructure/document-loaders/pdf-loader.js';
 import { EPUBDocumentLoader } from './src/infrastructure/document-loaders/epub-loader.js';
+import { hashToId, generateStableId } from './src/infrastructure/utils/hash.js';
 
 
 // ASCII progress bar utility with gradual progress for both stages
@@ -983,6 +984,17 @@ async function createLanceTableWithSimpleEmbeddings(
     
     console.log(`🔄 Creating simple embeddings for ${documents.length} documents...`);
     
+    // Build category ID map for hash-based IDs
+    const allCategories = new Set<string>();
+    for (const doc of documents) {
+        if (doc.metadata.concept_categories) {
+            for (const cat of doc.metadata.concept_categories) {
+                allCategories.add(cat);
+            }
+        }
+    }
+    const categoryIdMap = buildCategoryIdMap(allCategories);
+    
     // Generate fast local embeddings
     // Enhanced: Include concept metadata if present
     const data = documents.map((doc, i) => {
@@ -1001,6 +1013,12 @@ async function createLanceTableWithSimpleEmbeddings(
         }
         if (doc.metadata.concept_categories) {
             baseData.concept_categories = JSON.stringify(doc.metadata.concept_categories);
+            
+            // NEW: Add hash-based category IDs
+            const categoryIds = doc.metadata.concept_categories.map((cat: string) => 
+                categoryIdMap.get(cat) || hashToId(cat)
+            );
+            baseData.category_ids = JSON.stringify(categoryIds);
         }
         if (doc.metadata.concept_density !== undefined) {
             baseData.concept_density = doc.metadata.concept_density;
@@ -1242,6 +1260,138 @@ async function getDatabaseSize(dbPath: string): Promise<string> {
     }
 }
 
+/**
+ * Extract unique categories and create categories table with hash-based IDs
+ */
+async function createCategoriesTable(
+    db: lancedb.Connection,
+    catalogDocs: Document[]
+): Promise<void> {
+    console.log("\n📊 Creating categories table...");
+    
+    // Extract unique categories from all documents
+    const categorySet = new Set<string>();
+    const categoryStats = new Map<string, {
+        documentCount: number;
+        sources: Set<string>;
+    }>();
+    
+    for (const doc of catalogDocs) {
+        const categories = doc.metadata.concept_categories || [];
+        for (const cat of categories) {
+            categorySet.add(cat);
+            if (!categoryStats.has(cat)) {
+                categoryStats.set(cat, {
+                    documentCount: 0,
+                    sources: new Set()
+                });
+            }
+            const stats = categoryStats.get(cat)!;
+            stats.documentCount++;
+            stats.sources.add(doc.metadata.source);
+        }
+    }
+    
+    if (categorySet.size === 0) {
+        console.log("  ⚠️  No categories found, skipping categories table creation");
+        return;
+    }
+    
+    console.log(`  ✅ Found ${categorySet.size} unique categories`);
+    
+    // Generate stable hash-based IDs
+    const sortedCategories = Array.from(categorySet).sort();
+    const existingIds = new Set<number>();
+    const categoryRecords = [];
+    
+    // Dynamic import for embedder
+    const { pipeline } = await import('@xenova/transformers');
+    const embedPipeline = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    
+    console.log("  🔄 Generating category records with embeddings...");
+    
+    for (const category of sortedCategories) {
+        // Generate stable hash-based ID
+        const categoryId = generateStableId(category, existingIds);
+        existingIds.add(categoryId);
+        
+        // Generate simple description
+        const description = `Concepts and practices related to ${category}`;
+        
+        // Generate embedding
+        const embeddingText = `${category}: ${description}`;
+        const output = await embedPipeline(embeddingText, {
+            pooling: 'mean',
+            normalize: true
+        });
+        const vector = Array.from(output.data as Float32Array);
+        
+        const stats = categoryStats.get(category)!;
+        
+        categoryRecords.push({
+            id: categoryId,
+            category: category,
+            description: description,
+            parent_category_id: null, // Can be enhanced with hierarchy logic later
+            aliases: JSON.stringify([]), // Can be enhanced with alias logic later
+            related_categories: JSON.stringify([]), // Can be enhanced with co-occurrence analysis later
+            document_count: stats.documentCount,
+            chunk_count: 0, // Will be updated when chunks are processed
+            concept_count: 0, // Will be updated when concepts are processed
+            vector: vector
+        });
+        
+        if (categoryRecords.length % 10 === 0) {
+            console.log(`    Processed ${categoryRecords.length}/${sortedCategories.length} categories...`);
+        }
+    }
+    
+    console.log(`  ✅ Generated ${categoryRecords.length} category records`);
+    
+    // Drop existing categories table if it exists
+    try {
+        await db.dropTable('categories');
+        console.log("  🗑️  Dropped existing categories table");
+    } catch (e) {
+        // Table didn't exist, that's fine
+    }
+    
+    // Create categories table
+    const table = await db.createTable('categories', categoryRecords, { mode: 'overwrite' });
+    console.log("  ✅ Categories table created successfully");
+    
+    // Create vector index if we have enough categories
+    if (categoryRecords.length >= 256) {
+        console.log("  🔧 Creating vector index for categories...");
+        await table.createIndex({
+            column: 'vector',
+            type: 'ivf_pq',
+            num_partitions: Math.max(2, Math.ceil(categoryRecords.length / 100)),
+            num_sub_vectors: 8
+        });
+        console.log("  ✅ Vector index created");
+    } else {
+        console.log(`  ⚠️  Skipping vector index (only ${categoryRecords.length} categories, need 256+ for IVF_PQ)`);
+    }
+}
+
+/**
+ * Build category ID map for converting category names to hash-based IDs
+ */
+function buildCategoryIdMap(categories: Set<string>): Map<string, number> {
+    const categoryIdMap = new Map<string, number>();
+    const existingIds = new Set<number>();
+    
+    const sortedCategories = Array.from(categories).sort();
+    for (const category of sortedCategories) {
+        const categoryId = generateStableId(category, existingIds);
+        existingIds.add(categoryId);
+        categoryIdMap.set(category, categoryId);
+    }
+    
+    return categoryIdMap;
+}
+
 async function rebuildConceptIndexFromExistingData(
     db: lancedb.Connection,
     catalogTable: lancedb.Table,
@@ -1347,6 +1497,9 @@ async function rebuildConceptIndexFromExistingData(
     
     await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToIdMap);
     console.log("  ✅ Concept index created successfully (with catalog_ids optimization)");
+    
+    // Create categories table with hash-based IDs
+    await createCategoriesTable(db, catalogDocs);
 }
 
 async function hybridFastSeed() {
@@ -1591,17 +1744,38 @@ async function hybridFastSeed() {
             // LanceDB doesn't support batch updates, so we need to delete and recreate
             // This is more efficient than individual updates for large batches
             const chunkIds = batch.map(c => c.metadata.chunkId);
-            const chunkData = batch.map((doc, idx) => ({
-                id: chunkIds[idx],
-                text: doc.pageContent,
-                source: doc.metadata.source,
-                hash: doc.metadata.hash,
-                loc: JSON.stringify(doc.metadata.loc || {}),
-                vector: createSimpleEmbedding(doc.pageContent),
-                concepts: JSON.stringify(doc.metadata.concepts || []),
-                concept_categories: JSON.stringify(doc.metadata.concept_categories || []),
-                concept_density: doc.metadata.concept_density || 0
-            }));
+            // Build category ID map for this batch
+            const batchCategories = new Set<string>();
+            batch.forEach(doc => {
+                if (doc.metadata.concept_categories) {
+                    doc.metadata.concept_categories.forEach((cat: string) => batchCategories.add(cat));
+                }
+            });
+            const batchCategoryIdMap = buildCategoryIdMap(batchCategories);
+            
+            const chunkData = batch.map((doc, idx) => {
+                const data: any = {
+                    id: chunkIds[idx],
+                    text: doc.pageContent,
+                    source: doc.metadata.source,
+                    hash: doc.metadata.hash,
+                    loc: JSON.stringify(doc.metadata.loc || {}),
+                    vector: createSimpleEmbedding(doc.pageContent),
+                    concepts: JSON.stringify(doc.metadata.concepts || []),
+                    concept_categories: JSON.stringify(doc.metadata.concept_categories || []),
+                    concept_density: doc.metadata.concept_density || 0
+                };
+                
+                // NEW: Add hash-based category IDs
+                if (doc.metadata.concept_categories && doc.metadata.concept_categories.length > 0) {
+                    const categoryIds = doc.metadata.concept_categories.map((cat: string) => 
+                        batchCategoryIdMap.get(cat) || hashToId(cat)
+                    );
+                    data.category_ids = JSON.stringify(categoryIds);
+                }
+                
+                return data;
+            });
             
             try {
                 // Delete old records
@@ -1750,6 +1924,9 @@ async function hybridFastSeed() {
                 
                 await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToIdMap);
                 console.log("✅ Concept index created successfully (with catalog_ids optimization)");
+                
+                // Create categories table with hash-based IDs
+                await createCategoriesTable(db, allCatalogRecords);
                 
                 // Initialize ConceptIdCache for concept_ids optimization
                 console.log("\n🔧 Initializing ConceptIdCache for fast ID resolution...");
