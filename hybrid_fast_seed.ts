@@ -1008,12 +1008,13 @@ async function createLanceTableWithSimpleEmbeddings(
         };
         
         // Add reserved bibliographic fields (for future use)
+        // Use empty string instead of null (LanceDB can't infer type from all nulls)
         if (tableName === 'catalog') {
-            baseData.origin_hash = null;
-            baseData.author = null;
-            baseData.year = null;
-            baseData.publisher = null;
-            baseData.isbn = null;
+            baseData.origin_hash = '';
+            baseData.author = '';
+            baseData.year = '';
+            baseData.publisher = '';
+            baseData.isbn = '';
             
             // Extract filename tags (metadata after '--' delimiter)
             const filename = doc.metadata.source.split('/').pop() || '';
