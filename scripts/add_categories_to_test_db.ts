@@ -67,7 +67,9 @@ async function addCategoriesToTestDatabase() {
     // Step 1: Extract categories from catalog
     console.log('\n1️⃣  Extracting categories from catalog...');
     const catalogTable = await db.openTable('catalog');
-    const catalogRows = await catalogTable.query().toArray();
+    const totalCatalog = await catalogTable.countRows();
+    console.log(`  📊 Total catalog entries: ${totalCatalog}`);
+    const catalogRows = await catalogTable.query().limit(Math.max(totalCatalog, 10000)).toArray();
     
     const categorySet = new Set<string>();
     const categoryStats = new Map<string, {
@@ -182,7 +184,14 @@ async function addCategoriesToTestDatabase() {
     // Step 5: Update chunks with category_ids (inherited from parent catalog)
     console.log('\n5️⃣  Updating chunks with category_ids...');
     const chunksTable = await db.openTable('chunks');
-    const chunkRows = await chunksTable.query().limit(100000).toArray();
+    const totalChunks = await chunksTable.countRows();
+    console.log(`  📊 Total chunks in table: ${totalChunks}`);
+    
+    if (totalChunks > 100000) {
+        console.log(`  ⚠️  Large table (${totalChunks} chunks) - this may take a minute...`);
+    }
+    
+    const chunkRows = await chunksTable.query().limit(Math.max(totalChunks, 100000)).toArray();
     
     // Build source -> categories map from catalog
     const sourceCategoriesMap = new Map<string, { categories: string[], categoryIds: number[] }>();

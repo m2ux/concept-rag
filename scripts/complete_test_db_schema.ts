@@ -36,7 +36,9 @@ async function completeSchema() {
     // ========== STEP 1: Update Concepts Table ==========
     console.log('\n1️⃣  Updating concepts table with hash-based IDs...');
     const conceptsTable = await db.openTable('concepts');
-    const conceptRows = await conceptsTable.query().limit(100000).toArray();
+    const totalConcepts = await conceptsTable.countRows();
+    console.log(`  📊 Total concepts in table: ${totalConcepts}`);
+    const conceptRows = await conceptsTable.query().limit(Math.max(totalConcepts, 100000)).toArray();
     
     console.log(`  📊 Processing ${conceptRows.length} concepts...`);
     
@@ -80,7 +82,9 @@ async function completeSchema() {
     // ========== STEP 2: Update Catalog Table ==========
     console.log('\n2️⃣  Updating catalog with concept_ids and reserved fields...');
     const catalogTable = await db.openTable('catalog');
-    const catalogRows = await catalogTable.query().limit(10000).toArray();
+    const totalCatalog = await catalogTable.countRows();
+    console.log(`  📊 Total catalog entries: ${totalCatalog}`);
+    const catalogRows = await catalogTable.query().limit(Math.max(totalCatalog, 10000)).toArray();
     
     console.log(`  📊 Processing ${catalogRows.length} catalog entries...`);
     
@@ -129,7 +133,16 @@ async function completeSchema() {
     // ========== STEP 3: Update Chunks Table ==========
     console.log('\n3️⃣  Updating chunks with concept_ids...');
     const chunksTable = await db.openTable('chunks');
-    const chunkRows = await chunksTable.query().limit(100000).toArray();
+    const totalChunks = await chunksTable.countRows();
+    console.log(`  📊 Total chunks in table: ${totalChunks}`);
+    
+    // For large chunk tables, process in batches to avoid memory issues
+    if (totalChunks > 100000) {
+        console.log(`  ⚠️  Large table detected (${totalChunks} chunks)`);
+        console.log(`  🔄 Processing in batches of 100,000...`);
+    }
+    
+    const chunkRows = await chunksTable.query().limit(Math.max(totalChunks, 100000)).toArray();
     
     console.log(`  📊 Processing ${chunkRows.length} chunks...`);
     
