@@ -30,6 +30,14 @@ import { Concept } from '../../models/index.js';
  */
 export interface ConceptRepository {
   /**
+   * Find a concept by hash-based integer ID.
+   * 
+   * @param id - Hash-based concept ID
+   * @returns Promise resolving to the concept if found, null if not found
+   */
+  findById(id: number): Promise<Concept | null>;
+  
+  /**
    * Find a concept by exact name match (case-insensitive).
    * 
    * Looks up a concept in the concept table using an exact name match.

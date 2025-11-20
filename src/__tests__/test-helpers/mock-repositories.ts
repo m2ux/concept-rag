@@ -105,11 +105,21 @@ export class FakeChunkRepository implements ChunkRepository {
  */
 export class FakeConceptRepository implements ConceptRepository {
   private concepts: Map<string, Concept> = new Map();
+  private conceptsById: Map<number, Concept> = new Map();
   
   constructor(initialConcepts: Concept[] = []) {
-    initialConcepts.forEach(concept => 
-      this.concepts.set(concept.concept.toLowerCase(), concept)
-    );
+    initialConcepts.forEach(concept => {
+      this.concepts.set(concept.concept.toLowerCase(), concept);
+      // Assuming concepts have an id property (will need to add if not)
+      if ('id' in concept) {
+        this.conceptsById.set((concept as any).id, concept);
+      }
+    });
+  }
+  
+  async findById(id: number): Promise<Concept | null> {
+    const concept = this.conceptsById.get(id);
+    return Promise.resolve(concept || null);
   }
   
   async findByName(name: string): Promise<Concept | null> {
