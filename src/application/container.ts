@@ -11,6 +11,9 @@ import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_cata
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
 import { ConceptualBroadChunksSearchTool } from '../tools/operations/conceptual_broad_chunks_search.js';
 import { DocumentConceptsExtractTool } from '../tools/operations/document_concepts_extract.js';
+import { CategorySearchTool } from '../tools/operations/category-search-tool.js';
+import { ListCategoriesTool } from '../tools/operations/list-categories-tool.js';
+import { ListConceptsInCategoryTool } from '../tools/operations/list-concepts-in-category-tool.js';
 import { BaseTool } from '../tools/base/tool.js';
 import { ConceptIdCache } from '../infrastructure/cache/concept-id-cache.js';
 import { CategoryIdCache } from '../infrastructure/cache/category-id-cache.js';
@@ -155,6 +158,14 @@ export class ApplicationContainer {
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));
     this.tools.set('extract_concepts', new DocumentConceptsExtractTool(catalogRepo));
     
+    // 6a. Register category tools if categories table exists
+    if (categoriesTable && this.categoryIdCache) {
+      this.tools.set('category_search', new CategorySearchTool(this.categoryIdCache, catalogRepo));
+      this.tools.set('list_categories', new ListCategoriesTool(this.categoryIdCache));
+      this.tools.set('list_concepts_in_category', new ListConceptsInCategoryTool(this.categoryIdCache, catalogRepo, conceptRepo));
+      console.error(`✅ Category tools registered (3 tools)`);
+    }
+    
     console.error(`✅ Container initialized with ${this.tools.size} tool(s)`);
   }
   
@@ -197,7 +208,7 @@ export class ApplicationContainer {
    * - Debugging/inspection
    * - Dynamic tool iteration
    * 
-   * @returns Array of all tool instances (currently 5 tools)
+   * @returns Array of all tool instances (5 base tools + 3 category tools if categories table exists)
    * 
    * @example
    * ```typescript
