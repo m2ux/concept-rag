@@ -197,9 +197,21 @@ Table            Table            Table
                    │
      ┌─────────────┼─────────────┐
      │             │             │
-  Corpus       WordNet        Hybrid
+         Corpus       WordNet        Hybrid
   Concepts     Synonyms       Scoring
 ```
+
+## 🎨 Design
+
+This project follows well-documented architectural principles and design decisions. For comprehensive design documentation, see:
+
+### Architecture Decision Records (ADRs)
+
+All major technical decisions are documented in **[Architecture Decision Records](docs/architecture/README.md)**.
+
+### Concept Lexicon
+
+The **[Concept Lexicon](docs/concept-lexicon.md)** catalogs concepts from the local knowledge base that are directly applicable to this project, organized by functional area: This lexicon serves as a reference for understanding the conceptual foundations that inform the project's design decisions.
 
 ## 💰 Cost Breakdown
 
