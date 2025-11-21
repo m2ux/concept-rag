@@ -565,19 +565,62 @@ The project benefits from:
 ---
 
 ## Document Sources
-- **TypeScript & JavaScript**: Introduction to Software Design and Architecture With TypeScript, Programming TypeScript, Effective TypeScript, Essential TypeScript 5
-- **Software Architecture**: Fundamentals of Software Architecture, Software Architecture for Developers, Head First Software Architecture
-- **Design Philosophy**: A Philosophy of Software Design (John Ousterhout)
-- **RAG & Vector Databases**: Utilizing Vector Databases to Enhance RAG Models
-- **Microservices**: Microservices: Flexible Software Architecture
-- **Interface Design**: Interface Oriented Design
-- **Distributed Systems**: Understanding Distributed Systems, Distributed Systems for Practitioners
-- **Database Design**: Database Design for Mere Mortals
-- Software engineering and design pattern books
-- Distributed systems and database textbooks
-- Embedded systems and real-time programming
-- Testing and verification methodologies
-- System design and architecture references
+
+This lexicon was compiled from the following knowledge base documents:
+
+### TypeScript & JavaScript
+- **Programming TypeScript: Making Your JavaScript Applications Scale** by Boris Cherny (O'Reilly Media, 2019)
+- **Effective TypeScript: 62 Specific Ways to Improve Your TypeScript** by Dan Vanderkam (O'Reilly Media, 2019)
+- **Essential TypeScript 5, Third Edition** by Adam Freeman (Manning Publications, 2023)
+- **Introduction to Software Design and Architecture With TypeScript** by Khalil Stemmler
+
+### Software Architecture
+- **Fundamentals of Software Architecture: A Comprehensive Guide** by Neal Ford and Mark Richards (O'Reilly Media, 2020)
+- **Software Architecture for Developers: Technical Leadership** by Simon Brown (2022)
+- **Head First Software Architecture: A Learner's Guide to Architectural Thinking** by Raju Gandhi, Mark Richards, and Neal Ford (O'Reilly Media, 2024)
+- **Clean Architecture: A Craftsman's Guide to Software Structure and Design** by Robert C. Martin (Pearson, 2017)
+- **Software Development, Design, and Coding: With Patterns, Debugging, Unit Testing, and Refactoring** by John F. Dooley and Vera A. Kazakova (Apress, 2024)
+
+### Design Philosophy & Principles
+- **A Philosophy of Software Design** by John Ousterhout (Yaknyam Press, 2019)
+- **Refactoring for Software Design Smells: Managing Technical Debt** by Ganesh Samarthyam, Tushar Sharma, and Girish Suryanarayana (Morgan Kaufmann, 2015)
+
+### RAG & Vector Databases
+- **Utilizing Vector Databases to Enhance RAG Models**
+
+### Microservices & Distributed Systems
+- **Microservices: Flexible Software Architecture** by Eberhard Wolff (Addison-Wesley Professional, 2016)
+- **Understanding Distributed Systems: What Every Developer Should Know** by Roberto Vitillo (2021)
+- **Distributed Systems for Practitioners** by Dimos Raptis (2020)
+- **Distributed Computing: 16th International Conference, DISC 2002** (Lecture Notes in Computer Science, 2002)
+
+### Interface & API Design
+- **Interface Oriented Design** by Ken Pugh (The Pragmatic Programmers, 2006)
+
+### Database Systems
+- **Database Design for Mere Mortals®, 25th Anniversary Edition** by Michael James Hernandez (Addison-Wesley, 2020)
+- **Database Reliability Engineering: Designing and Operating Resilient Datastores** by Laine Campbell and Charity Majors (O'Reilly Media, 2017)
+- **SQL Antipatterns: Avoiding the Pitfalls of Database Programming** by Bill Karwin and Jacquelyn Carter (The Pragmatic Programmers, 2018)
+
+### Systems Design & Analysis
+- **Knowledge-Based Design Systems** by M. A. Rosenman, A. D. Radford, M. Balachandran, and J. S. Gero (Addison-Wesley, 1990)
+- **Systems Analysis and Design** by Scott R. Tilley and Harry J. Rosenblatt (Course Technology, 2016)
+- **Visual Models for Software Requirements** by Joy Beatty and Anthony Chen (Microsoft Press, 2012)
+
+### Systems Thinking
+- **Thinking in Systems: A Primer** by Donella H. Meadows (Chelsea Green Publishing, 2008)
+
+### Business Analysis & Requirements
+- **BABOK v.3.0: A Guide to the Business Analysis Body of Knowledge** by International Institute of Business Analysis (2015)
+
+### Critical Thinking
+- **Critical Thinking: A Concise Guide, 3rd Edition**
+
+### Embedded Systems
+- **Embedded Systems Design** (CMP Books)
+- **Embedded Microprocessor Systems: Real World Design**
+- **Embedded Controller Hardware Design**
+- **C Programming for Embedded Systems** (CMP Books)
 
 ---
 
