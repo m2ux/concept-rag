@@ -125,8 +125,11 @@ export class LanceDBConceptRepository implements ConceptRepository {
   async findAll(): Promise<Concept[]> {
     try {
       // Load all concepts from database
+      // LanceDB query() has a default limit of 10 rows (safety feature)
+      // Concepts table can have 10k-100k+ concepts, so we need an explicit high limit
       const results = await this.conceptsTable
         .query()
+        .limit(100000) // High limit to ensure all concepts are loaded (10x safety margin over typical max)
         .toArray();
       
       // Map to Concept domain models and attach IDs
