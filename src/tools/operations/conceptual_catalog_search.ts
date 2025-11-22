@@ -1,5 +1,6 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { CatalogSearchService } from "../../domain/services/index.js";
+import { InputValidator } from "../../domain/services/validation/index.js";
 
 export interface ConceptualCatalogSearchParams extends ToolParams {
   text: string;
@@ -11,6 +12,8 @@ export interface ConceptualCatalogSearchParams extends ToolParams {
  * Thin adapter that delegates to CatalogSearchService.
  */
 export class ConceptualCatalogSearchTool extends BaseTool<ConceptualCatalogSearchParams> {
+  private validator = new InputValidator();
+  
   constructor(
     private catalogSearchService: CatalogSearchService
   ) {
@@ -51,6 +54,9 @@ RETURNS: Top 5 documents with text previews, hybrid scores (including strong tit
 
   async execute(params: ConceptualCatalogSearchParams) {
     try {
+      // Validate input
+      this.validator.validateCatalogSearch(params);
+      
       // Delegate to service
       const results = await this.catalogSearchService.searchCatalog({
         text: params.text,

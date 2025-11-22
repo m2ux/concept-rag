@@ -5,6 +5,7 @@
 import { BaseTool, ToolParams } from '../base/tool.js';
 import { CategoryIdCache } from '../../infrastructure/cache/category-id-cache.js';
 import { listCategories, ListCategoriesParams } from './list-categories.js';
+import { InputValidator } from '../../domain/services/validation/index.js';
 
 export interface ListCategoriesToolParams extends ToolParams {
   sortBy?: 'name' | 'popularity' | 'documentCount';
@@ -13,6 +14,8 @@ export interface ListCategoriesToolParams extends ToolParams {
 }
 
 export class ListCategoriesTool extends BaseTool<ListCategoriesToolParams> {
+  private validator = new InputValidator();
+  
   constructor(private categoryCache: CategoryIdCache) {
     super();
   }
@@ -42,6 +45,9 @@ export class ListCategoriesTool extends BaseTool<ListCategoriesToolParams> {
   
   async execute(params: ListCategoriesToolParams) {
     try {
+      // Validate input
+      this.validator.validateListCategories(params);
+      
       const result = await listCategories(
         params as ListCategoriesParams,
         this.categoryCache

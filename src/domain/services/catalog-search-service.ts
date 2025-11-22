@@ -37,6 +37,8 @@ export class CatalogSearchService {
    * 
    * @param params - Search parameters
    * @returns Search results
+   * @throws {DatabaseError} If database query fails
+   * @throws {SearchError} If search operation fails
    */
   async searchCatalog(params: CatalogSearchParams): Promise<SearchResult[]> {
     return await this.catalogRepo.search({

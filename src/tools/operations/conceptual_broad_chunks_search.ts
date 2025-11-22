@@ -1,5 +1,6 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ChunkSearchService } from "../../domain/services/index.js";
+import { InputValidator } from "../../domain/services/validation/index.js";
 
 export interface ConceptualBroadChunksSearchParams extends ToolParams {
   text: string;
@@ -11,6 +12,8 @@ export interface ConceptualBroadChunksSearchParams extends ToolParams {
  * Thin adapter that delegates to ChunkSearchService.
  */
 export class ConceptualBroadChunksSearchTool extends BaseTool<ConceptualBroadChunksSearchParams> {
+  private validator = new InputValidator();
+  
   constructor(
     private chunkSearchService: ChunkSearchService
   ) {
@@ -51,6 +54,9 @@ RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, concept,
 
   async execute(params: ConceptualBroadChunksSearchParams) {
     try {
+      // Validate input
+      this.validator.validateSearchQuery(params);
+      
       // Delegate to service
       const results = await this.chunkSearchService.searchBroad({
         text: params.text,

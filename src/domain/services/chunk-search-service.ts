@@ -55,6 +55,8 @@ export class ChunkSearchService {
    * 
    * @param params - Search parameters
    * @returns Search results ranked by hybrid score
+   * @throws {DatabaseError} If database query fails
+   * @throws {SearchError} If search operation fails
    */
   async searchBroad(params: BroadChunkSearchParams): Promise<SearchResult[]> {
     return await this.chunkRepo.search({
@@ -69,6 +71,8 @@ export class ChunkSearchService {
    * 
    * @param params - Search parameters including source filter
    * @returns Chunks from the specified source
+   * @throws {DatabaseError} If database query fails
+   * @throws {RecordNotFoundError} If source document not found
    */
   async searchInSource(params: TargetedChunkSearchParams): Promise<Chunk[]> {
     // Note: Current implementation returns all chunks from source

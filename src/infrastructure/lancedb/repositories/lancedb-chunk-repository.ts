@@ -5,6 +5,7 @@ import { EmbeddingService } from '../../../domain/interfaces/services/embedding-
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { Chunk, SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } from '../../../domain/exceptions.js';
+import { DatabaseError } from '../../../domain/exceptions/index.js';
 import { parseJsonField } from '../utils/field-parsers.js';
 import { validateChunkRow, detectVectorField } from '../utils/schema-validators.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
@@ -90,8 +91,9 @@ export class LanceDBChunkRepository implements ChunkRepository {
       if (error instanceof InvalidEmbeddingsError || error instanceof ConceptNotFoundError) {
         throw error;
       }
-      throw new DatabaseOperationError(
+      throw new DatabaseError(
         `Failed to find chunks for concept "${concept}"`,
+        'query',
         error as Error
       );
     }
