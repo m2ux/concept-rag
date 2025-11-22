@@ -7,7 +7,7 @@
  * 3. Dependency injection is properly wired
  */
 
-import { ApplicationContainer } from './src/application/container.js';
+import { ApplicationContainer } from '../../src/application/container.js';
 import * as os from 'os';
 import * as path from 'path';
 
