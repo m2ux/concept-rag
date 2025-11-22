@@ -27,7 +27,7 @@ describe('MCP Tools Integration Tests', () => {
     await fixture.setup();
     
     // Create ApplicationContainer with test database
-    const dbPath = fixture.getDatabasePath();
+    const dbPath = fixture.getDbPath();
     container = new ApplicationContainer();
     await container.initialize(dbPath);
   }, 30000);
