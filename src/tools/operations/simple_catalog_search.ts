@@ -1,11 +1,14 @@
 import { catalogTable, searchTable } from "../../lancedb/simple_client.js";
 import { BaseTool, ToolParams } from "../base/tool.js";
+import { InputValidator } from "../../domain/services/validation/index.js";
 
 export interface CatalogSearchParams extends ToolParams {
   text: string;
 }
 
 export class SimpleCatalogSearchTool extends BaseTool<CatalogSearchParams> {
+  private validator = new InputValidator();
+  
   name = "catalog_search";
   description = "Search for relevant documents in the catalog using fast local embeddings";
   inputSchema = {
@@ -22,6 +25,9 @@ export class SimpleCatalogSearchTool extends BaseTool<CatalogSearchParams> {
 
   async execute(params: CatalogSearchParams) {
     try {
+      // Validate input
+      this.validator.validateCatalogSearch({ text: params.text });
+      
       const results = await searchTable(catalogTable, params.text, 5);
       
       return {

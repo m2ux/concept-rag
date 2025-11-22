@@ -12,6 +12,13 @@ import { validateConceptRow, detectVectorField } from '../utils/schema-validator
 export class LanceDBConceptRepository implements ConceptRepository {
   constructor(private conceptsTable: lancedb.Table) {}
   
+  /**
+   * Find concept by ID.
+   * @param id - Concept ID
+   * @returns Concept if found, null otherwise
+   * @throws {DatabaseError} If database query fails
+   * @throws {InvalidEmbeddingsError} If concept has invalid embeddings
+   */
   async findById(id: number): Promise<Concept | null> {
     try {
       const results = await this.conceptsTable
@@ -46,6 +53,13 @@ export class LanceDBConceptRepository implements ConceptRepository {
     }
   }
   
+  /**
+   * Find concept by name (case-insensitive).
+   * @param conceptName - Name of the concept
+   * @returns Concept if found, null otherwise
+   * @throws {DatabaseError} If database query fails
+   * @throws {InvalidEmbeddingsError} If concept has invalid embeddings
+   */
   async findByName(conceptName: string): Promise<Concept | null> {
     const conceptLower = conceptName.toLowerCase().trim();
     
