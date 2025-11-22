@@ -1,4 +1,5 @@
 import { McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
+import { ConceptRAGError } from "../../domain/exceptions/index.js";
 
 export interface ToolResponse {
   content: {
@@ -54,7 +55,39 @@ export abstract class BaseTool<T extends ToolParams = ToolParams> {
     return value as Record<string, unknown>;
   }
 
+  /**
+   * Handle errors with structured error formatting.
+   * Formats ConceptRAGError instances with their full context.
+   */
   protected handleError(error: unknown): ToolResponse {
+    if (error instanceof ConceptRAGError) {
+      // Format structured error with full context
+      const errorInfo = {
+        error: {
+          code: error.code,
+          message: error.message,
+          context: error.context,
+          timestamp: error.timestamp.toISOString(),
+          ...(error.cause ? { cause: error.cause.message } : {})
+        }
+      };
+      
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(errorInfo, null, 2),
+          },
+        ],
+        isError: true,
+        _meta: {
+          errorCode: error.code,
+          errorName: error.name
+        }
+      };
+    }
+    
+    // For non-ConceptRAGError errors, use simple formatting
     return {
       content: [
         {

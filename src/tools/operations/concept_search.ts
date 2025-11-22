@@ -1,5 +1,6 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ConceptSearchService } from "../../domain/services/index.js";
+import { InputValidator } from "../../domain/services/validation/index.js";
 
 export interface ConceptSearchParams extends ToolParams {
   concept: string;
@@ -18,6 +19,8 @@ export interface ConceptSearchParams extends ToolParams {
  * Business logic is in ConceptSearchService for testability and reusability.
  */
 export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
+  private validator = new InputValidator();
+  
   constructor(
     private conceptSearchService: ConceptSearchService
   ) {
@@ -61,6 +64,9 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
 
   async execute(params: ConceptSearchParams) {
     try {
+      // Validate input
+      this.validator.validateConceptSearch(params);
+      
       const limit = params.limit || 10;
       
       console.error(`🔍 Searching for concept: "${params.concept}"`);

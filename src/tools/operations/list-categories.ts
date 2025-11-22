@@ -6,6 +6,7 @@
  */
 
 import type { CategoryIdCache } from '../../infrastructure/cache/category-id-cache.js';
+import { InputValidator } from '../../domain/services/validation/index.js';
 
 export interface ListCategoriesParams {
   /**
@@ -31,6 +32,10 @@ export async function listCategories(
   params: ListCategoriesParams,
   categoryCache: CategoryIdCache
 ): Promise<string> {
+  // Validate input
+  const validator = new InputValidator();
+  validator.validateListCategories(params);
+  
   // Get all categories
   let categories = categoryCache.exportAll();
   
