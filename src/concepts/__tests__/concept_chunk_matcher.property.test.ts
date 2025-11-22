@@ -277,11 +277,12 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
         fc.property(
           fc.string({ minLength: 0, maxLength: 2000 }),
           fc.array(fc.string({ minLength: 3, maxLength: 50 }), { minLength: 0, maxLength: 20 }),
-          (chunkText, concepts) => {
+          fc.array(fc.string({ minLength: 1, maxLength: 30 }), { minLength: 0, maxLength: 5 }),
+          (chunkText, concepts, categories) => {
             const documentConcepts: ConceptMetadata = {
-              primary_concepts: Array.isArray(concepts) ? concepts : [],
+              primary_concepts: concepts,
               related_concepts: [],
-              categories: Array.isArray(categories) ? categories : []
+              categories: categories
             };
             
             const result = matcher.matchConceptsToChunk(chunkText, documentConcepts);

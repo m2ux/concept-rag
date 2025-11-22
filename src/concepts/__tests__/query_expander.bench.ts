@@ -52,7 +52,7 @@ describe('Query Expansion Performance Benchmarks', () => {
       
       // Performance assertion: should be reasonable (< 200ms per call for DB + WordNet operations)
       expect(avgTime).toBeLessThan(200);
-    });
+    }, 60000); // 60 second timeout for long-running benchmark
     
     it('should benchmark expansion for medium queries', async () => {
       const mediumQuery = 'distributed systems design patterns and microservices architecture';
@@ -68,7 +68,7 @@ describe('Query Expansion Performance Benchmarks', () => {
       
       // Performance assertion: should be reasonable (< 600ms per call for DB + WordNet operations)
       expect(avgTime).toBeLessThan(600);
-    });
+    }, 60000); // 60 second timeout for long-running benchmark
     
     it('should benchmark expansion for long queries', async () => {
       const longQuery = 'clean architecture domain-driven design hexagonal architecture microservices patterns event sourcing CQRS';
@@ -84,7 +84,7 @@ describe('Query Expansion Performance Benchmarks', () => {
       
       // Performance assertion: should be reasonable (< 600ms per call for DB + WordNet operations)
       expect(avgTime).toBeLessThan(600);
-    });
+    }, 60000); // 60 second timeout for long-running benchmark
     
     it('should benchmark expansion with special characters', async () => {
       const specialQuery = 'C++ programming & design patterns (OOP)';
@@ -100,7 +100,7 @@ describe('Query Expansion Performance Benchmarks', () => {
       
       // Performance assertion: should handle special chars efficiently (< 250ms per call)
       expect(avgTime).toBeLessThan(250);
-    });
+    }, 60000); // 60 second timeout for long-running benchmark
   });
   
   describe('query expansion consistency', () => {

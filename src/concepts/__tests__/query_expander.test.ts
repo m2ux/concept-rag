@@ -143,7 +143,7 @@ describe('QueryExpander', () => {
       expect(expanded.original_terms).toContain('architecture');
       expect(expanded.original_terms).toContain('patterns');
       expect(expanded.original_terms.every(t => t === t.toLowerCase())).toBe(true);
-    });
+    }, 30000); // 30 second timeout for WordNet initialization
 
     it('should filter out short terms (length <= 2)', async () => {
       // SETUP
