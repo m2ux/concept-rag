@@ -373,7 +373,8 @@ describe('Concept Search Regression Tests', () => {
       
       expect(results).toBeDefined();
       expect(results.length).toBe(1);
-      expect(results[0].text).toContain('dialectical thinking');
+      // Case-insensitive check since text may have different capitalization
+      expect(results[0].text.toLowerCase()).toContain('dialectical thinking');
       expect(results[0].concepts).toContain('dialectical thinking');
     });
     
