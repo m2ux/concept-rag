@@ -2,6 +2,7 @@ import * as lancedb from "@lancedb/lancedb";
 import { ConceptRepository } from '../../../domain/interfaces/repositories/concept-repository.js';
 import { Concept } from '../../../domain/models/index.js';
 import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } from '../../../domain/exceptions.js';
+import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
 import { parseJsonField, escapeSqlString } from '../utils/field-parsers.js';
 import { validateConceptRow, detectVectorField } from '../utils/schema-validators.js';
 
@@ -37,8 +38,9 @@ export class LanceDBConceptRepository implements ConceptRepository {
       if (error instanceof ConceptNotFoundError || error instanceof InvalidEmbeddingsError) {
         throw error;
       }
-      throw new DatabaseOperationError(
+      throw new DatabaseError(
         `Failed to find concept by ID ${id}`,
+        'query',
         error as Error
       );
     }
@@ -79,8 +81,9 @@ export class LanceDBConceptRepository implements ConceptRepository {
       if (error instanceof ConceptNotFoundError || error instanceof InvalidEmbeddingsError) {
         throw error;  // Already a domain exception
       }
-      throw new DatabaseOperationError(
+      throw new DatabaseError(
         `Failed to find concept "${conceptName}"`,
+        'query',
         error as Error
       );
     }
@@ -142,10 +145,10 @@ export class LanceDBConceptRepository implements ConceptRepository {
     } catch (error) {
       console.error('[ConceptRepository] Error in findAll:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      throw new DatabaseOperationError(
+      throw new DatabaseError(
         `Failed to load all concepts from database: ${errorMessage}`,
-        error instanceof Error ? error : new Error(String(error)),
-        { operation: 'find_all_concepts' }
+        'query',
+        error instanceof Error ? error : new Error(String(error))
       );
     }
   }
