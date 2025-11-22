@@ -23,20 +23,13 @@
  */
 
 import type { Concept } from '../../domain/models/concept.js';
-
-/**
- * Repository interface for initializing the cache.
- * Only requires findAll() method to load all concepts.
- */
-export interface ConceptRepositoryForCache {
-  findAll(): Promise<Concept[]>;
-}
+import type { IConceptIdCache, ConceptRepositoryForCache } from '../../domain/interfaces/caches/concept-id-cache.js';
 
 /**
  * In-memory cache for bidirectional concept ID ↔ name mapping.
  * Singleton pattern ensures single source of truth.
  */
-export class ConceptIdCache {
+export class ConceptIdCache implements IConceptIdCache {
   private static instance: ConceptIdCache;
   
   private idToName = new Map<string, string>();

@@ -116,6 +116,22 @@ This directory contains all architectural decisions made during the development 
 
 ---
 
+### Phase 8: Infrastructure Maturity (November 22, 2025)
+
+**Major Improvements:** Comprehensive error handling, test suite expansion, configuration management, validation patterns
+
+| # | Title | Date | Status |
+|---|-------|------|--------|
+| [adr0034](adr0034-comprehensive-error-handling.md) | Comprehensive Error Handling Infrastructure | 2025-11-22 | Accepted |
+| [adr0035](adr0035-test-suite-expansion.md) | Test Suite Expansion (120 → 534 tests) | 2025-11-22 | Accepted |
+| [adr0036](adr0036-configuration-centralization.md) | Configuration Centralization with Type Safety | 2025-11-22 | Accepted |
+| [adr0037](adr0037-functional-validation-layer.md) | Functional Validation Layer Pattern | 2025-11-22 | Accepted |
+| [adr0038](adr0038-dependency-rules-enforcement.md) | Architecture Dependency Rules Enforcement | 2025-11-22 | Accepted |
+
+**Key Achievements:** 26 error types, 534 tests (345% increase), type-safe configuration, functional validation, automated architecture enforcement
+
+---
+
 ## Categories
 
 ### By Topic
@@ -131,8 +147,10 @@ This directory contains all architectural decisions made during the development 
 - Category System: [adr0027](adr0027-hash-based-integer-ids.md), [adr0028](adr0028-category-storage-strategy.md), [adr0029](adr0029-category-search-tools.md), [adr0030](adr0030-auto-extracted-categories.md)
 
 **Architecture & Quality:**
-- Architecture: [adr0009](adr0009-three-table-architecture.md), [adr0016](adr0016-layered-architecture-refactoring.md), [adr0017](adr0017-repository-pattern.md), [adr0018](adr0018-dependency-injection-container.md)
-- Quality: [adr0019](adr0019-vitest-testing-framework.md), [adr0020](adr0020-typescript-strict-mode.md), [adr0023](adr0023-sql-injection-prevention.md)
+- Architecture: [adr0009](adr0009-three-table-architecture.md), [adr0016](adr0016-layered-architecture-refactoring.md), [adr0017](adr0017-repository-pattern.md), [adr0018](adr0018-dependency-injection-container.md), [adr0038](adr0038-dependency-rules-enforcement.md)
+- Quality: [adr0019](adr0019-vitest-testing-framework.md), [adr0020](adr0020-typescript-strict-mode.md), [adr0023](adr0023-sql-injection-prevention.md), [adr0035](adr0035-test-suite-expansion.md)
+- Error Handling: [adr0034](adr0034-comprehensive-error-handling.md), [adr0037](adr0037-functional-validation-layer.md)
+- Configuration: [adr0036](adr0036-configuration-centralization.md)
 - Performance: [adr0021](adr0021-performance-optimization-vector-search.md)
 
 **Tools & UX:**
@@ -141,7 +159,7 @@ This directory contains all architectural decisions made during the development 
 
 ### By Status
 
-**Accepted:** 33 ADRs  
+**Accepted:** 38 ADRs  
 **Accepted (Inherited):** 5 ADRs (adr0001-0005 from lance-mcp)  
 **Superseded:** 0 ADRs  
 **Deprecated:** 0 ADRs
@@ -155,7 +173,9 @@ This directory contains all architectural decisions made during the development 
 - **95% success rate** document processing [adr0012]
 
 ### Quality Improvements
-- **37 tests** added (32 unit + 5 integration, 100% passing) [adr0019]
+- **534 tests** total (345% increase, 100% passing) [adr0035]
+- **76.51% coverage** (statements), 68.87% branches [adr0035]
+- **26 error types** in comprehensive exception hierarchy [adr0034]
 - **22 type errors** fixed with strict mode [adr0020]
 - **SQL injection** vulnerability eliminated [adr0023]
 - **Zero breaking changes** through all refactoring [adr0016]
@@ -197,6 +217,9 @@ This directory contains all architectural decisions made during the development 
 
 2025-Various: Tool Architecture (3 ADRs)
   └─ 8 tools strategy, selection guide, BaseTool pattern
+
+2025-11-22: Infrastructure Maturity (5 ADRs)
+  └─ Error handling, test expansion, configuration, validation, dependency rules
 ```
 
 ## Reading Guide
@@ -222,6 +245,15 @@ This directory contains all architectural decisions made during the development 
 1. [adr0016 - Layered Architecture](adr0016-layered-architecture-refactoring.md) - Clean Architecture
 2. [adr0017 - Repository Pattern](adr0017-repository-pattern.md) - Data access
 3. [adr0018 - DI Container](adr0018-dependency-injection-container.md) - Dependency wiring
+4. [adr0038 - Dependency Rules](adr0038-dependency-rules-enforcement.md) - Automated enforcement
+
+### For Quality & Reliability
+
+**Infrastructure Maturity:**
+1. [adr0034 - Error Handling](adr0034-comprehensive-error-handling.md) - Exception hierarchy & retry logic
+2. [adr0035 - Test Suite](adr0035-test-suite-expansion.md) - 534 tests, 76.51% coverage
+3. [adr0036 - Configuration](adr0036-configuration-centralization.md) - Type-safe config service
+4. [adr0037 - Validation](adr0037-functional-validation-layer.md) - Functional validation patterns
 
 ### For Performance & Optimization
 
@@ -233,8 +265,19 @@ This directory contains all architectural decisions made during the development 
 ## ADR Statistics
 
 ### By Origin
-- **Evidenced:** 23 ADRs - Explicit planning docs + implementation + validation
+- **Evidenced:** 28 ADRs - Explicit planning docs + implementation + validation
 - **Inferred:** 10 ADRs - Inferred from code/inherited + some documentation
+
+### By Phase
+- Phase 0 (Inherited): 5 ADRs
+- Phase 1 (Conceptual Search): 6 ADRs
+- Phase 2 (Robustness): 1 ADR
+- Phase 3 (Refinement): 3 ADRs
+- Phase 4 (Architecture): 8 ADRs
+- Phase 5 (Multi-Provider): 3 ADRs
+- Phase 6 (Categories): 4 ADRs
+- Phase 7 (Tools): 3 ADRs
+- Phase 8 (Infrastructure): 5 ADRs
 
 ## Using This Documentation
 
@@ -269,9 +312,10 @@ If decision is reversed without replacement:
 
 **Decision Clusters:**
 - Search System: adr0006, 0007, 0008, 0009, 0010, 0011, 0022
-- Architecture: adr0016, 0017, 0018, 0019, 0020, 0021, 0023
+- Architecture: adr0016, 0017, 0018, 0019, 0020, 0021, 0023, 0038
 - Categories: adr0027, 0028, 0029, 0030
 - Tools: adr0031, 0032, 0033
+- Infrastructure: adr0034, 0035, 0036, 0037, 0038
 
 ---
 
