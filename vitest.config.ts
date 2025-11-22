@@ -24,7 +24,7 @@ export default defineConfig({
       branches: 75,
       statements: 80
     },
-    include: ['src/**/*.{test,spec}.ts'],
+    include: ['src/**/*.{test,spec,bench}.ts'],
     exclude: ['node_modules', 'dist', 'test'],
     testTimeout: 10000
   }

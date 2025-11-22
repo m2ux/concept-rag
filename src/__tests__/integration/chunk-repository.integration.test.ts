@@ -201,7 +201,7 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       expect(first.hybridScore).toBeDefined();
       expect(first.vectorScore).toBeDefined();
       expect(first.bm25Score).toBeDefined();
-    });
+    }, 30000); // 30 second timeout for integration test with database operations
     
     it('should rank results by hybrid score', async () => {
       // ARRANGE: Query that will return multiple results

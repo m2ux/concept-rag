@@ -45,7 +45,9 @@
   "devDependencies": {
     "@types/minimist": "^1.2.5",
     "@types/node": "^22.10.7",
+    "@vitest/coverage-v8": "^4.0.13",
     "@vitest/ui": "^4.0.9",
+    "fast-check": "^4.3.0",
     "shx": "^0.3.4",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",
