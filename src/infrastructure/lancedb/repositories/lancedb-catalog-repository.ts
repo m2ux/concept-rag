@@ -3,6 +3,7 @@ import { CatalogRepository } from '../../../domain/interfaces/repositories/catal
 import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
+import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
 
 /**
  * LanceDB implementation of CatalogRepository
@@ -20,123 +21,184 @@ export class LanceDBCatalogRepository implements CatalogRepository {
     private hybridSearchService: HybridSearchService
   ) {}
   
+  /**
+   * Search the catalog using hybrid search.
+   * @param query - Search query parameters
+   * @returns Array of search results
+   * @throws {DatabaseError} If database query fails
+   * @throws {SearchError} If search operation fails
+   */
   async search(query: SearchQuery): Promise<SearchResult[]> {
-    // Use hybrid search for comprehensive multi-signal ranking
-    const limit = query.limit || 5;
-    const debug = query.debug || false;
-    
-    // Wrap table in adapter to prevent infrastructure leakage
-    const collection = new SearchableCollectionAdapter(this.catalogTable, 'catalog');
-    
-    return await this.hybridSearchService.search(
-      collection,
-      query.text,
-      limit,
-      debug
-    );
+    try {
+      // Use hybrid search for comprehensive multi-signal ranking
+      const limit = query.limit || 5;
+      const debug = query.debug || false;
+      
+      // Wrap table in adapter to prevent infrastructure leakage
+      const collection = new SearchableCollectionAdapter(this.catalogTable, 'catalog');
+      
+      return await this.hybridSearchService.search(
+        collection,
+        query.text,
+        limit,
+        debug
+      );
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to search catalog with query "${query.text}"`,
+        'search',
+        error as Error
+      );
+    }
   }
   
+  /**
+   * Find a catalog entry by source path.
+   * @param source - Source document path
+   * @returns Search result if found, null otherwise
+   * @throws {DatabaseError} If database query fails
+   */
   async findBySource(source: string): Promise<SearchResult | null> {
-    // Use hybrid search with source as query (benefits from title matching)
-    const collection = new SearchableCollectionAdapter(this.catalogTable, 'catalog');
-    
-    const results = await this.hybridSearchService.search(
-      collection,
-      source,
-      10,
-      false
-    );
-    
-    // Find exact source match
-    for (const result of results) {
-      if (result.source.toLowerCase() === source.toLowerCase()) {
-        return result;
+    try {
+      // Use hybrid search with source as query (benefits from title matching)
+      const collection = new SearchableCollectionAdapter(this.catalogTable, 'catalog');
+      
+      const results = await this.hybridSearchService.search(
+        collection,
+        source,
+        10,
+        false
+      );
+      
+      // Find exact source match
+      for (const result of results) {
+        if (result.source.toLowerCase() === source.toLowerCase()) {
+          return result;
+        }
       }
+      
+      // If no exact match, return best match if it's close
+      return results.length > 0 ? results[0] : null;
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to find catalog entry for source "${source}"`,
+        'query',
+        error as Error
+      );
     }
-    
-    // If no exact match, return best match if it's close
-    return results.length > 0 ? results[0] : null;
   }
   
+  /**
+   * Find documents by category ID.
+   * @param categoryId - Category ID
+   * @returns Array of documents in the category
+   * @throws {DatabaseError} If database query fails
+   */
   async findByCategory(categoryId: number): Promise<SearchResult[]> {
-    // Query all catalog entries and filter by category_ids
-    const allDocs = await this.catalogTable.query().toArray();
-    
-    const matches = allDocs.filter((doc: any) => {
-      if (!doc.category_ids) return false;
+    try {
+      // Query all catalog entries and filter by category_ids
+      const allDocs = await this.catalogTable.query().toArray();
       
-      try {
-        const categoryIds: number[] = JSON.parse(doc.category_ids);
-        return categoryIds.includes(categoryId);
-      } catch {
-        return false;
-      }
-    });
-    
-    // Convert to SearchResult format (simplified - no scoring for direct category match)
-    return matches.map((doc: any) => ({
-      id: doc.id,
-      text: doc.text,
-      source: doc.source,
-      hash: doc.hash,
-      concepts: this.parseConceptsField(doc),
-      embeddings: doc.vector || [],
-      distance: 0, // Not a vector search
-      hybridScore: 1.0, // Direct match, no ranking needed
-      vectorScore: 0,
-      bm25Score: 0,
-      titleScore: 1.0, // Direct category match
-      conceptScore: 0,
-      wordnetScore: 0
-    }));
+      const matches = allDocs.filter((doc: any) => {
+        if (!doc.category_ids) return false;
+        
+        try {
+          const categoryIds: number[] = JSON.parse(doc.category_ids);
+          return categoryIds.includes(categoryId);
+        } catch {
+          return false;
+        }
+      });
+      
+      // Convert to SearchResult format (simplified - no scoring for direct category match)
+      return matches.map((doc: any) => ({
+        id: doc.id,
+        text: doc.text,
+        source: doc.source,
+        hash: doc.hash,
+        concepts: this.parseConceptsField(doc),
+        embeddings: doc.vector || [],
+        distance: 0, // Not a vector search
+        hybridScore: 1.0, // Direct match, no ranking needed
+        vectorScore: 0,
+        bm25Score: 0,
+        titleScore: 1.0, // Direct category match
+        conceptScore: 0,
+        wordnetScore: 0
+      }));
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to find documents in category ${categoryId}`,
+        'query',
+        error as Error
+      );
+    }
   }
   
+  /**
+   * Get all unique concept IDs in a category.
+   * @param categoryId - Category ID
+   * @returns Array of concept IDs
+   * @throws {DatabaseError} If database query fails
+   */
   async getConceptsInCategory(categoryId: number): Promise<number[]> {
-    // Step 1: Find all documents in this category
-    const docs = await this.findByCategory(categoryId);
-    
-    // Step 2: Aggregate unique concepts from these documents
-    const uniqueConceptIds = new Set<number>();
-    const uniqueConceptNames = new Set<string>();
-    
-    for (const doc of docs) {
-      // Fetch full document data to access concept fields
-      const docData = await this.catalogTable.query()
-        .where(`id = '${doc.id}'`)
-        .limit(1)
-        .toArray();
+    try {
+      // Step 1: Find all documents in this category
+      const docs = await this.findByCategory(categoryId);
       
-      if (docData.length === 0) continue;
-      const row = docData[0];
+      // Step 2: Aggregate unique concepts from these documents
+      const uniqueConceptIds = new Set<number>();
+      const uniqueConceptNames = new Set<string>();
       
-      // NEW FORMAT: concept_ids field (hash-based integer IDs)
-      if (row.concept_ids) {
-        try {
-          const conceptIds: number[] = JSON.parse(row.concept_ids);
-          conceptIds.forEach(id => uniqueConceptIds.add(id));
-        } catch {
-          // Skip malformed data
+      for (const doc of docs) {
+        // Fetch full document data to access concept fields
+        const docData = await this.catalogTable.query()
+          .where(`id = '${doc.id}'`)
+          .limit(1)
+          .toArray();
+        
+        if (docData.length === 0) continue;
+        const row = docData[0];
+        
+        // NEW FORMAT: concept_ids field (hash-based integer IDs)
+        if (row.concept_ids) {
+          try {
+            const conceptIds: number[] = JSON.parse(row.concept_ids);
+            conceptIds.forEach(id => uniqueConceptIds.add(id));
+          } catch {
+            // Skip malformed data
+          }
+        }
+        // OLD FORMAT: concepts field with primary_concepts array (concept names)
+        else if (row.concepts) {
+          try {
+            const concepts = JSON.parse(row.concepts);
+            const conceptNames = concepts.primary_concepts || [];
+            
+            // Convert concept names to hash-based IDs
+            conceptNames.forEach((name: string) => {
+              const conceptId = this.hashConceptName(name);
+              uniqueConceptIds.add(conceptId);
+              uniqueConceptNames.add(name);
+            });
+          } catch {
+            // Skip malformed data
+          }
         }
       }
-      // OLD FORMAT: concepts field with primary_concepts array (concept names)
-      else if (row.concepts) {
-        try {
-          const concepts = JSON.parse(row.concepts);
-          const conceptNames = concepts.primary_concepts || [];
-          
-          // Convert concept names to hash-based IDs
-          conceptNames.forEach((name: string) => {
-            const conceptId = this.hashConceptName(name);
-            uniqueConceptIds.add(conceptId);
-            uniqueConceptNames.add(name);
-          });
-        } catch {
-          // Skip malformed data
-        }
+      
+      return Array.from(uniqueConceptIds);
+    } catch (error) {
+      // If it's already a DatabaseError from findByCategory, re-throw
+      if (error instanceof DatabaseError) {
+        throw error;
       }
+      throw new DatabaseError(
+        `Failed to get concepts in category ${categoryId}`,
+        'query',
+        error as Error
+      );
     }
-    
-    return Array.from(uniqueConceptIds);
   }
   
   /**

@@ -12,6 +12,8 @@
 
 import type { CategoryIdCache } from '../../infrastructure/cache/category-id-cache.js';
 import type { CatalogRepository } from '../../domain/interfaces/repositories/catalog-repository.js';
+import { InputValidator } from '../../domain/services/validation/index.js';
+import { RecordNotFoundError } from '../../domain/exceptions/index.js';
 
 export interface CategorySearchParams {
   /**
@@ -35,6 +37,10 @@ export async function categorySearch(
   categoryCache: CategoryIdCache,
   catalogRepo: CatalogRepository
 ): Promise<string> {
+  // Validate input
+  const validator = new InputValidator();
+  validator.validateCategorySearch(params);
+  
   // Resolve category ID (handle name, ID, or alias)
   let categoryId = categoryCache.getIdByAlias(params.category);
   if (!categoryId) {
@@ -50,10 +56,7 @@ export async function categorySearch(
   }
   
   if (!categoryId) {
-    return JSON.stringify({
-      error: `Category not found: ${params.category}`,
-      suggestion: 'Use list_categories to see available categories'
-    }, null, 2);
+    throw new RecordNotFoundError('Category', params.category);
   }
   
   // Get category metadata
@@ -61,9 +64,7 @@ export async function categorySearch(
   const categoryStats = categoryCache.getStatistics(categoryId);
   
   if (!categoryMetadata) {
-    return JSON.stringify({
-      error: `Category metadata not found for ID: ${categoryId}`
-    }, null, 2);
+    throw new RecordNotFoundError('Category metadata', String(categoryId));
   }
   
   // Determine which categories to search

@@ -1,5 +1,6 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ChunkSearchService } from "../../domain/services/index.js";
+import { InputValidator } from "../../domain/services/validation/index.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
   text: string;
@@ -12,6 +13,8 @@ export interface ConceptualChunksSearchParams extends ToolParams {
  * Thin adapter that delegates to ChunkSearchService.
  */
 export class ConceptualChunksSearchTool extends BaseTool<ConceptualChunksSearchParams> {
+  private validator = new InputValidator();
+  
   constructor(
     private chunkSearchService: ChunkSearchService
   ) {
@@ -58,6 +61,9 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
 
   async execute(params: ConceptualChunksSearchParams) {
     try {
+      // Validate input
+      this.validator.validateChunksSearch(params);
+      
       // Delegate to service
       const results = await this.chunkSearchService.searchInSource({
         text: params.text,

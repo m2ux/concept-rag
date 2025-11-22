@@ -1,5 +1,6 @@
 import { chunksTable, searchTable } from "../../lancedb/simple_client.js";
 import { BaseTool, ToolParams } from "../base/tool.js";
+import { InputValidator } from "../../domain/services/validation/index.js";
 
 export interface ChunksSearchParams extends ToolParams {
   text: string;
@@ -7,6 +8,8 @@ export interface ChunksSearchParams extends ToolParams {
 }
 
 export class SimpleChunksSearchTool extends BaseTool<ChunksSearchParams> {
+  private validator = new InputValidator();
+  
   name = "chunks_search";
   description = "Search for relevant document chunks using fast local embeddings";
   inputSchema = {
@@ -28,6 +31,12 @@ export class SimpleChunksSearchTool extends BaseTool<ChunksSearchParams> {
 
   async execute(params: ChunksSearchParams) {
     try {
+      // Validate input
+      this.validator.validateChunksSearch({ 
+        text: params.text, 
+        source: params.source || '' 
+      });
+      
       const results = await searchTable(chunksTable, params.text, 10);
 
       // Filter results by source if provided

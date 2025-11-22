@@ -6,6 +6,7 @@ import { BaseTool, ToolParams } from '../base/tool.js';
 import { CategoryIdCache } from '../../infrastructure/cache/category-id-cache.js';
 import { CatalogRepository } from '../../domain/interfaces/repositories/catalog-repository.js';
 import { categorySearch, CategorySearchParams } from './category-search.js';
+import { InputValidator } from '../../domain/services/validation/index.js';
 
 export interface CategorySearchToolParams extends ToolParams {
   category: string;
@@ -14,6 +15,8 @@ export interface CategorySearchToolParams extends ToolParams {
 }
 
 export class CategorySearchTool extends BaseTool<CategorySearchToolParams> {
+  private validator = new InputValidator();
+  
   constructor(
     private categoryCache: CategoryIdCache,
     private catalogRepo: CatalogRepository
@@ -45,6 +48,9 @@ export class CategorySearchTool extends BaseTool<CategorySearchToolParams> {
   
   async execute(params: CategorySearchToolParams) {
     try {
+      // Validate input
+      this.validator.validateCategorySearch(params);
+      
       const result = await categorySearch(
         params as CategorySearchParams,
         this.categoryCache,

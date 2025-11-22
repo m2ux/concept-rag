@@ -1,5 +1,7 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { CatalogRepository } from "../../domain/interfaces/repositories/catalog-repository.js";
+import { InputValidator } from "../../domain/services/validation/index.js";
+import { RecordNotFoundError } from "../../domain/exceptions/index.js";
 
 export interface DocumentConceptsExtractParams extends ToolParams {
   document_query: string;
@@ -12,6 +14,8 @@ export interface DocumentConceptsExtractParams extends ToolParams {
  * Uses vector search to find the document, then returns its concept metadata
  */
 export class DocumentConceptsExtractTool extends BaseTool<DocumentConceptsExtractParams> {
+  private validator = new InputValidator();
+  
   constructor(
     private catalogRepo: CatalogRepository
   ) {
@@ -62,6 +66,9 @@ OUTPUT FORMATS:
 
   async execute(params: DocumentConceptsExtractParams) {
     try {
+      // Validate input
+      this.validator.validateExtractConcepts(params);
+      
       const format = params.format || "json";
       const includeSummary = params.include_summary !== false;
 
@@ -73,33 +80,14 @@ OUTPUT FORMATS:
       });
 
       if (results.length === 0) {
-        return {
-          content: [{
-            type: "text" as const,
-            text: JSON.stringify({
-              error: "No documents found",
-              query: params.document_query
-            }, null, 2)
-          }],
-          isError: true
-        };
+        throw new RecordNotFoundError('Document', params.document_query);
       }
 
       // Take the best match
       const doc = results[0];
       
       if (!doc.concepts) {
-        return {
-          content: [{
-            type: "text" as const,
-            text: JSON.stringify({
-              error: "No concepts found for document",
-              document: doc.source,
-              message: "This document may not have been processed with concept extraction"
-            }, null, 2)
-          }],
-          isError: true
-        };
+        throw new RecordNotFoundError('Concepts', `document: ${doc.source}`);
       }
 
       // Parse concepts

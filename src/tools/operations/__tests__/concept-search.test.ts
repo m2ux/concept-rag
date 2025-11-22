@@ -177,9 +177,11 @@ describe('ConceptSearchTool', () => {
       // EXERCISE
       const result = await tool.execute({ concept: 'test', limit: -5 });
       
-      // VERIFY - Should return empty (no results with negative limit)
+      // VERIFY - Should return error due to validation
+      expect(result.isError).toBe(true);
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.results).toEqual([]);
+      expect(parsedContent.error).toBeDefined();
+      expect(parsedContent.error.code).toContain('VALIDATION');
     });
     
     it('should handle very large limit', async () => {
@@ -193,9 +195,11 @@ describe('ConceptSearchTool', () => {
       // EXERCISE
       const result = await tool.execute({ concept: 'test', limit: 10000 });
       
-      // VERIFY - Should work (just return what's available)
+      // VERIFY - Should return error due to validation (limit out of range)
+      expect(result.isError).toBe(true);
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.results).toHaveLength(1);
+      expect(parsedContent.error).toBeDefined();
+      expect(parsedContent.error.code).toContain('VALIDATION');
     });
   });
 });

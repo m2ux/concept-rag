@@ -100,6 +100,8 @@ export class ConceptSearchService {
    * 
    * @param params - Search parameters
    * @returns Search result with chunks and metadata
+   * @throws {DatabaseError} If database query fails
+   * @throws {SearchError} If search operation fails
    * 
    * @example
    * ```typescript

@@ -63,7 +63,9 @@ describe('DocumentConceptsExtractTool', () => {
       // VERIFY
       expect(result.isError).toBe(true);
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.error).toBe('No documents found');
+      // Now returns structured error object
+      expect(parsedContent.error).toBeDefined();
+      expect(parsedContent.error.message).toContain('not found');
     });
     
     it('should return error when document has no concepts', async () => {
@@ -81,7 +83,9 @@ describe('DocumentConceptsExtractTool', () => {
       // VERIFY
       expect(result.isError).toBe(true);
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.error).toBe('No concepts found for document');
+      // Now returns structured error object
+      expect(parsedContent.error).toBeDefined();
+      expect(parsedContent.error.message).toContain('not found');
     });
     
     it('should format output as markdown when format is markdown', async () => {
