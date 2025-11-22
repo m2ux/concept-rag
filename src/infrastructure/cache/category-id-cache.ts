@@ -17,10 +17,11 @@
  * - No reverse index needed (categories don't derive from concepts)
  */
 
-import type { CategoryRepository } from '../../domain/interfaces/category-repository';
-import type { Category } from '../../domain/models/category';
+import type { CategoryRepository } from '../../domain/interfaces/category-repository.js';
+import type { Category } from '../../domain/models/category.js';
+import type { ICategoryIdCache, CategoryRepositoryForCache } from '../../domain/interfaces/caches/category-id-cache.js';
 
-export class CategoryIdCache {
+export class CategoryIdCache implements ICategoryIdCache {
   private static instance: CategoryIdCache;
   
   // Core mappings
@@ -51,7 +52,7 @@ export class CategoryIdCache {
   /**
    * Initialize cache from repository
    */
-  public async initialize(categoryRepo: CategoryRepository): Promise<void> {
+  public async initialize(categoryRepo: CategoryRepositoryForCache): Promise<void> {
     console.log('🔄 Initializing CategoryIdCache...');
     
     const categories = await categoryRepo.findAll();
@@ -104,10 +105,15 @@ export class CategoryIdCache {
   }
   
   /**
-   * Get category ID by name
+   * Get category ID by name or alias
    */
-  public getId(name: string): number | undefined {
-    return this.nameToId.get(name.toLowerCase());
+  public getId(nameOrAlias: string): number | undefined {
+    // Try name first
+    const byName = this.nameToId.get(nameOrAlias.toLowerCase());
+    if (byName !== undefined) return byName;
+    
+    // Fall back to alias
+    return this.aliasToId.get(nameOrAlias.toLowerCase());
   }
   
   /**
@@ -143,7 +149,72 @@ export class CategoryIdCache {
   }
   
   /**
-   * Get category metadata
+   * Get category metadata (implementing interface)
+   */
+  public getCategory(id: number): Category | undefined {
+    return this.idToMetadata.get(id);
+  }
+  
+  /**
+   * Get categories with filtering and sorting (implementing interface)
+   */
+  public getCategories(options?: {
+    search?: string;
+    sortBy?: 'name' | 'popularity' | 'documentCount';
+    limit?: number;
+  }): Category[] {
+    let categories = Array.from(this.idToMetadata.values());
+    
+    // Apply search filter
+    if (options?.search) {
+      const lowerQuery = options.search.toLowerCase();
+      categories = categories.filter(cat =>
+        cat.category.toLowerCase().includes(lowerQuery) ||
+        cat.description.toLowerCase().includes(lowerQuery) ||
+        cat.aliases.some(alias => alias.toLowerCase().includes(lowerQuery))
+      );
+    }
+    
+    // Apply sorting
+    if (options?.sortBy === 'name') {
+      categories.sort((a, b) => a.category.localeCompare(b.category));
+    } else if (options?.sortBy === 'documentCount' || options?.sortBy === 'popularity') {
+      categories.sort((a, b) => b.documentCount - a.documentCount);
+    }
+    
+    // Apply limit
+    if (options?.limit) {
+      categories = categories.slice(0, options.limit);
+    }
+    
+    return categories;
+  }
+  
+  /**
+   * Find category by name (exact match, implementing interface)
+   */
+  public findByName(name: string): Category | undefined {
+    const id = this.nameToId.get(name.toLowerCase());
+    return id !== undefined ? this.idToMetadata.get(id) : undefined;
+  }
+  
+  /**
+   * Find category by alias (implementing interface)
+   */
+  public findByAlias(alias: string): Category | undefined {
+    const id = this.aliasToId.get(alias.toLowerCase());
+    return id !== undefined ? this.idToMetadata.get(id) : undefined;
+  }
+  
+  /**
+   * Check if category exists by name or alias (implementing interface)
+   */
+  public has(nameOrAlias: string): boolean {
+    return this.getId(nameOrAlias) !== undefined;
+  }
+  
+  /**
+   * Get category metadata (alias for backward compatibility)
    */
   public getMetadata(id: number): Category | undefined {
     return this.idToMetadata.get(id);
@@ -262,12 +333,14 @@ export class CategoryIdCache {
   }
   
   /**
-   * Get cache statistics
+   * Get cache statistics (implementing interface)
    */
   public getStats(): {
+    initialized: boolean;
     categoryCount: number;
-    aliasCount: number;
+    lastUpdated?: Date;
     memorySizeEstimate: number;
+    aliasCount?: number;
   } {
     // Estimate memory usage
     const categoryMemory = this.idToMetadata.size * 300; // ~300 bytes per category
@@ -275,9 +348,11 @@ export class CategoryIdCache {
     const hierarchyMemory = this.idToChildren.size * 40; // ~40 bytes per parent
     
     return {
+      initialized: this.initialized,
       categoryCount: this.idToMetadata.size,
       aliasCount: this.aliasToId.size,
-      memorySizeEstimate: categoryMemory + aliasMemory + hierarchyMemory
+      memorySizeEstimate: categoryMemory + aliasMemory + hierarchyMemory,
+      lastUpdated: undefined // Could track this if needed
     };
   }
   
