@@ -1,4 +1,5 @@
 import * as lancedb from "@lancedb/lancedb";
+import { ConnectionError, DatabaseError } from "../../domain/exceptions/index.js";
 
 /**
  * Manages LanceDB connection and table access
@@ -19,11 +20,16 @@ export class LanceDBConnection {
    * 
    * @param databaseUrl - Path to database directory
    * @returns Connected LanceDB instance
+   * @throws {ConnectionError} If connection fails
    */
   static async connect(databaseUrl: string): Promise<LanceDBConnection> {
-    console.error(`Connecting to database: ${databaseUrl}`);
-    const client = await lancedb.connect(databaseUrl);
-    return new LanceDBConnection(client);
+    try {
+      console.error(`Connecting to database: ${databaseUrl}`);
+      const client = await lancedb.connect(databaseUrl);
+      return new LanceDBConnection(client);
+    } catch (error) {
+      throw new ConnectionError(error as Error);
+    }
   }
   
   /**
@@ -31,14 +37,23 @@ export class LanceDBConnection {
    * 
    * @param tableName - Name of table to open
    * @returns LanceDB table handle
+   * @throws {DatabaseError} If table opening fails
    */
   async openTable(tableName: string): Promise<lancedb.Table> {
-    if (!this.tables.has(tableName)) {
-      const table = await this.client.openTable(tableName);
-      this.tables.set(tableName, table);
-      console.error(`✅ Opened table: ${tableName}`);
+    try {
+      if (!this.tables.has(tableName)) {
+        const table = await this.client.openTable(tableName);
+        this.tables.set(tableName, table);
+        console.error(`✅ Opened table: ${tableName}`);
+      }
+      return this.tables.get(tableName)!;
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to open table "${tableName}"`,
+        'open_table',
+        error as Error
+      );
     }
-    return this.tables.get(tableName)!;
   }
   
   /**
@@ -51,11 +66,20 @@ export class LanceDBConnection {
   
   /**
    * Close connection and cleanup
+   * @throws {DatabaseError} If closing fails
    */
   async close(): Promise<void> {
-    await this.client.close();
-    this.tables.clear();
-    console.error('🛑 Database connection closed');
+    try {
+      await this.client.close();
+      this.tables.clear();
+      console.error('🛑 Database connection closed');
+    } catch (error) {
+      throw new DatabaseError(
+        'Failed to close database connection',
+        'close',
+        error as Error
+      );
+    }
   }
 }
 
