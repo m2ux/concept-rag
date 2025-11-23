@@ -46,7 +46,7 @@ npm install --save-dev dependency-cruiser madge
 
 **Why dependency-cruiser**:
 - Rule-based validation with clear error messages
-- Integrates with CI/CD pipelines
+- Can integrate with CI/CD pipelines
 - Supports TypeScript
 - Zero runtime overhead (dev-only)
 - Actively maintained
@@ -59,193 +59,84 @@ npm install --save-dev dependency-cruiser madge
 
 ### 2. Define Architecture Rules
 
-Create `.dependency-cruiser.cjs` configuration:
+Create `.dependency-cruiser.cjs` configuration with core architectural rules:
 
 ```javascript
 module.exports = {
   forbidden: [
     {
       name: 'domain-independence',
-      comment: 'Domain layer must not depend on infrastructure, application, or tools',
+      comment: 'Domain layer must not depend on infrastructure or application layers',
       severity: 'error',
       from: { path: '^src/domain' },
-      to: { 
+      to: {
         path: '^src/(infrastructure|application|tools)',
         pathNot: '^src/domain'
       }
     },
     {
-      name: 'infrastructure-to-application',
-      comment: 'Infrastructure should not depend on application layer',
-      severity: 'error',
-      from: { path: '^src/infrastructure' },
-      to: { path: '^src/application' }
-    },
-    {
       name: 'infrastructure-to-tools',
-      comment: 'Infrastructure should not depend on tools layer',
+      comment: 'Infrastructure should not depend on tools (MCP layer)',
       severity: 'error',
       from: { path: '^src/infrastructure' },
-      to: { path: '^src/tools' }
-    },
-    {
-      name: 'application-to-tools',
-      comment: 'Application should not depend on tools layer',
-      severity: 'error',
-      from: { path: '^src/application' },
       to: { path: '^src/tools' }
     },
     {
       name: 'no-circular-dependencies',
-      comment: 'Circular dependencies create tight coupling and complicate testing',
+      comment: 'Circular dependencies are forbidden',
       severity: 'error',
       from: {},
       to: {},
       circular: true
-    },
-    {
-      name: 'no-orphans',
-      comment: 'Unused files should be removed',
-      severity: 'warn',
-      from: {
-        orphan: true,
-        pathNot: [
-          '^src/config\\.ts$',           // Deprecated but kept
-          '^src/.*\\.test\\.ts$',         // Test files
-          '^src/.*\\.bench\\.ts$',        // Benchmark files
-          '(^|/)\\.[^/]+\\.(js|ts)$'      // Config files
-        ]
-      },
-      to: {}
-    },
-    {
-      name: 'no-deprecated-core',
-      comment: 'Do not depend on deprecated core modules',
-      severity: 'warn',
-      from: {},
-      to: {
-        dependencyTypes: ['core'],
-        path: [
-          '^(punycode|domain|constants|sys|_linklist|_stream_wrap)$'
-        ]
-      }
     }
   ],
   options: {
     doNotFollow: {
-      path: [
-        'node_modules',
-        'dist',
-        'coverage',
-        '\\.d\\.ts$'
-      ]
+      path: 'node_modules'
     },
     tsPreCompilationDeps: true,
     tsConfig: {
-      fileName: './tsconfig.json'
-    },
-    enhancedResolveOptions: {
-      exportsFields: ['exports'],
-      conditionNames: ['import', 'require', 'node', 'default']
+      fileName: 'tsconfig.json'
     },
     reporterOptions: {
       dot: {
         collapsePattern: '^src/[^/]+',
         theme: {
-          graph: {
-            splines: 'ortho'
-          }
+          graph: { splines: 'ortho' },
+          modules: [
+            {
+              criteria: { matchesFocus: true },
+              attributes: { fillcolor: '#ccffcc', penwidth: 2 }
+            },
+            {
+              criteria: { source: '^src/domain' },
+              attributes: { fillcolor: '#ffcccc' }
+            },
+            {
+              criteria: { source: '^src/infrastructure' },
+              attributes: { fillcolor: '#ccccff' }
+            },
+            {
+              criteria: { source: '^src/application' },
+              attributes: { fillcolor: '#ffffcc' }
+            },
+            {
+              criteria: { source: '^src/tools' },
+              attributes: { fillcolor: '#ffccff' }
+            }
+          ]
         }
-      },
-      text: {
-        highlightFocused: true
       }
     }
   }
 };
 ```
 
-### 3. NPM Scripts for Validation
-
-Add scripts to `package.json`:
-
-```json
-{
-  "scripts": {
-    "check:deps": "dependency-cruiser --validate .dependency-cruiser.cjs src/",
-    "check:circular": "madge --circular --extensions ts src/",
-    "check:arch": "npm run check:deps && npm run check:circular",
-    "deps:graph": "madge --image deps.png --extensions ts src/",
-    "deps:json": "dependency-cruiser --output-type json src/"
-  }
-}
-```
-
-### 4. CI Integration
-
-Add to CI pipeline (e.g., GitHub Actions):
-
-```yaml
-# .github/workflows/ci.yml
-name: CI
-
-on: [push, pull_request]
-
-jobs:
-  architecture:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm run check:arch
-        name: Validate Architecture Rules
-```
-
-### 5. Architecture Documentation
-
-Document architecture rules in code:
-
-```typescript
-/**
- * ARCHITECTURE RULES
- * 
- * This project follows Clean Architecture with strict layer separation:
- * 
- * Layer Structure:
- *   Tools → Application → Infrastructure → Domain
- * 
- * Dependency Rules:
- *   1. Domain MUST NOT depend on any other layer
- *   2. Infrastructure MAY depend on Domain only
- *   3. Application MAY depend on Domain and Infrastructure only
- *   4. Tools MAY depend on all layers
- *   5. NO circular dependencies between any modules
- * 
- * Validation:
- *   Run `npm run check:arch` to validate these rules
- *   CI pipeline automatically validates on every commit
- * 
- * For details, see:
- *   - docs/architecture/adr0016-layered-architecture-refactoring.md
- *   - docs/architecture/adr0038-dependency-rules-enforcement.md
- *   - .dependency-cruiser.cjs
- */
-```
-
-### 6. Pre-commit Hook (Optional)
-
-Add git hook for local validation:
-
-```bash
-# .husky/pre-commit
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-npm run check:arch
-```
+**Key Rules Configured**:
+1. **Domain Independence**: Domain layer cannot depend on infrastructure, application, or tools
+2. **Infrastructure to Tools**: Infrastructure cannot depend on tools (MCP) layer
+3. **No Circular Dependencies**: Strict prohibition on circular dependencies
+4. **Visual Reporting**: Color-coded dependency graph generation
 
 ## Implementation
 
@@ -263,37 +154,41 @@ npm run check:arch
 ### Files Modified
 
 **Package Configuration**:
-- `package.json` - Added dependency-cruiser and madge
-- `package.json` - Added npm scripts for validation
+- `package.json` - Added dependency-cruiser and madge dev dependencies
 
 ### Tools Installed
 
 **Dependencies** (dev):
-- `dependency-cruiser@^16.0.0` - Rule enforcement
+- `dependency-cruiser@^17.3.1` - Rule enforcement
 - `madge@^8.0.0` - Circular dependency detection
 
-### Scripts Added
+### Validation Usage
 
-**Validation Scripts**:
-- `check:deps` - Validate dependency rules
-- `check:circular` - Check for circular dependencies
-- `check:arch` - Run all architecture checks
-- `deps:graph` - Generate visual dependency graph
-- `deps:json` - Export dependencies as JSON
+**Manual Validation**:
+```bash
+# Validate all architecture rules
+npx dependency-cruiser --validate .dependency-cruiser.cjs src/
+
+# Check for circular dependencies
+npx madge --circular --extensions ts src/
+
+# Generate visual dependency graph
+npx madge --image deps.png --extensions ts src/
+```
 
 ## Consequences
 
 ### Positive
 
-1. **Automated Enforcement**
-   - Architecture rules enforced automatically in CI
-   - No reliance on manual code review
-   - Immediate feedback on violations
+1. **Automated Enforcement Available**
+   - Architecture rules can be validated with simple command
+   - No reliance on manual code review alone
+   - Clear error messages explain violations
 
 2. **Prevented Violations**
-   - Impossible to merge code with architecture violations
+   - Developers can validate locally before committing
    - Circular dependencies caught immediately
-   - Accidental imports from wrong layers prevented
+   - Accidental imports from wrong layers detected
 
 3. **Documentation**
    - Rules explicitly documented in configuration
@@ -303,10 +198,10 @@ npm run check:arch
 4. **Developer Experience**
    - Fast local validation (< 5 seconds)
    - Clear error messages with file paths
-   - IDE integration possible
+   - Can be integrated with IDE workflows
 
 5. **Architecture Visibility**
-   - Generate dependency graphs for documentation
+   - Can generate dependency graphs for documentation
    - Track architecture evolution over time
    - Identify hotspots and coupling
 
@@ -316,15 +211,16 @@ npm run check:arch
    - Breaking changes caught immediately
 
 7. **Onboarding**
-   - New developers learn architecture rules quickly
+   - New developers can learn architecture rules quickly
    - Automated feedback teaches correct patterns
    - Documentation always up-to-date
 
 ### Negative
 
-1. **CI Build Time**
-   - Adds ~5 seconds to CI pipeline
-   - Mitigation: Fast execution, runs in parallel with tests
+1. **Manual Execution Required**
+   - Developers must remember to run validation
+   - Not yet integrated into CI pipeline
+   - Mitigation: Can add to pre-commit hooks or CI later
 
 2. **Configuration Maintenance**
    - Rules may need updates as architecture evolves
@@ -332,7 +228,7 @@ npm run check:arch
 
 3. **False Positives**
    - May flag legitimate dependencies as violations
-   - Mitigation: Rules tunable, can whitelist exceptions
+   - Mitigation: Rules tunable, can adjust as needed
 
 4. **Learning Curve**
    - Developers must learn dependency-cruiser syntax
@@ -468,17 +364,18 @@ describe('Architecture', () => {
 ### Code Statistics
 
 **Files Created**: 1 configuration file
-**Lines of Configuration**: ~120 lines
-**Rules Defined**: 7 rules (4 layer rules + 3 quality rules)
-**Scripts Added**: 5 npm scripts
+**Lines of Configuration**: ~85 lines
+**Rules Defined**: 3 core rules (domain independence, infrastructure-to-tools, no circular dependencies)
 **Time Investment**: ~25 minutes
 
 ### Validation Results
 
 **Initial Validation** (2025-11-22):
 ```bash
-$ npm run check:arch
-✔ no dependency violations found (148 modules, 423 dependencies cruised)
+$ npx dependency-cruiser --validate .dependency-cruiser.cjs src/
+✔ no dependency violations found
+
+$ npx madge --circular --extensions ts src/
 ✔ no circular dependencies found
 ```
 
@@ -489,16 +386,15 @@ $ npm run check:arch
 
 ### Rules Configured
 
-**Layer Rules** (4 rules):
+**Core Architecture Rules** (3 rules):
 1. Domain independence (cannot depend on infrastructure/application/tools)
-2. Infrastructure to application (prohibited)
-3. Infrastructure to tools (prohibited)
-4. Application to tools (prohibited)
+2. Infrastructure to tools (prohibited)
+3. No circular dependencies
 
-**Quality Rules** (3 rules):
-5. No circular dependencies
-6. No orphaned files
-7. No deprecated core modules
+**Features**:
+- TypeScript pre-compilation dependency analysis
+- Color-coded visual dependency graph generation
+- Clear error messages with file paths
 
 ### Knowledge Base Sources
 
@@ -517,28 +413,30 @@ This decision was informed by:
 
 ## Future Considerations
 
-1. **Module Boundaries**: Add finer-grained module boundaries within layers
-2. **Coupling Metrics**: Track coupling metrics over time
-3. **Dependency Graphs**: Generate graphs for documentation
-4. **Architecture Tests**: Add explicit architecture tests in test suite
-5. **Pre-commit Hooks**: Add optional pre-commit validation
-6. **IDE Integration**: VSCode extension for real-time feedback
-7. **Dashboard**: Visualize architecture evolution over time
+1. **NPM Scripts**: Add convenience scripts to package.json for easier execution
+2. **CI Integration**: Add architecture validation to GitHub Actions CI pipeline
+3. **Pre-commit Hooks**: Add optional pre-commit validation with husky
+4. **Module Boundaries**: Add finer-grained module boundaries within layers
+5. **Coupling Metrics**: Track coupling metrics over time
+6. **Architecture Tests**: Add explicit architecture tests in test suite
+7. **IDE Integration**: VSCode extension for real-time feedback
+8. **Dashboard**: Visualize architecture evolution over time
+9. **Additional Rules**: Consider rules for infrastructure-to-application, application-to-tools, orphans, deprecated modules
 
 ## Notes
 
-This ADR documents the addition of automated architecture enforcement to complement the layered architecture established in [adr0016](adr0016-layered-architecture-refactoring.md). The dependency-cruiser tool provides fast, reliable validation with clear error messages, making architecture violations impossible to merge.
+This ADR documents the addition of automated architecture enforcement tooling to complement the layered architecture established in [adr0016](adr0016-layered-architecture-refactoring.md). The dependency-cruiser tool provides fast, reliable validation with clear error messages.
 
-The 7 rules cover both layer boundaries (Clean Architecture) and code quality (no circular dependencies, no orphans). The configuration is maintainable and extensible as the architecture evolves.
+The configuration implements 3 core rules covering layer boundaries (Clean Architecture) and code quality (no circular dependencies). The tools are installed and configured but not yet integrated into CI or npm scripts, allowing for manual validation during development.
 
-The implementation took only 25 minutes but provides substantial long-term benefits in architecture integrity and developer productivity. The automated enforcement ensures the carefully designed architecture remains intact as the codebase grows.
+The implementation took only 25 minutes but provides substantial foundation for architecture integrity. The automated validation can be run locally before committing changes, and can be easily integrated into CI pipelines when desired.
 
 ---
 
 **References**:
 - Implementation: `.ai/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md`
 - Configuration: `.dependency-cruiser.cjs`
-- Rules: 7 (4 layer + 3 quality)
+- Core Rules: 3 (domain independence, infrastructure-to-tools, no circular dependencies)
 - Validation Time: ~5 seconds
 - Breaking Changes: None
 
