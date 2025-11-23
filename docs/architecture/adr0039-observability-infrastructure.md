@@ -358,7 +358,4 @@ This ADR implements concepts from:
 
 ---
 
-**Authors**: Concept-RAG Development Team  
-**Reviewers**: Architecture Review Board  
-**Approved**: 2025-11-23
 

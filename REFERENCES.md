@@ -11,7 +11,7 @@ This document lists the design patterns, architectural concepts, and books that 
 1. **Knowledge Base Creation** - Software design and architecture books (listed below) were indexed into the concept-rag database
 2. **Concept Discovery** - During development, concept search was used to find relevant patterns (e.g., searching for "dependency injection", "repository pattern", "test fixtures")
 3. **Pattern Application** - Retrieved concepts and principles were applied to the codebase design
-4. **Iterative Refinement** - The system's own broad chunks search and catalog search features were used to explore related concepts and deepen understanding
+4. **Iterative Refinement** - The system's own search tools were used to explore related concepts and expand the pertinent conceptual repertoire.
 
 ### Benefits of Recursive Application
 
@@ -19,8 +19,6 @@ This document lists the design patterns, architectural concepts, and books that 
 - **Design Consistency** - Pattern applications are grounded in authoritative sources from the knowledge base
 - **Knowledge Discovery** - Semantic search revealed relevant patterns that might not have been immediately obvious
 - **Documentation Trail** - Search results provided citations and context that informed implementation decisions
-
-This recursive approach demonstrates the power of RAG (Retrieval-Augmented Generation) systems for software development: the ability to query a structured knowledge base to inform architectural decisions in real-time.
 
 ## Architecture & Design Patterns
 
@@ -139,35 +137,4 @@ This recursive approach demonstrates the power of RAG (Retrieval-Augmented Gener
 - [Domain-Driven Design Community](https://www.dddcommunity.org/)
 - [DDD Reference by Eric Evans](https://www.domainlanguage.com/ddd/reference/)
 
-## How to Use This Document
-
-When reading code comments that reference design patterns (e.g., "Adapter Pattern", "Repository Pattern"), refer to this document for:
-1. **Context** - Which book or methodology introduced the pattern
-2. **Application** - How the pattern is applied in this codebase
-3. **Further Reading** - Book references for deeper understanding
-
-This approach keeps code comments focused on *what* and *why* specific to this codebase, while this document provides the broader context and references.
-
-## Applying Concept-RAG to Your Own Development
-
-Inspired by this project's recursive self-improvement, you can use concept-rag to inform your own software design:
-
-1. **Index your library** - Load software design and architecture books into the concept-rag database
-2. **Search during design** - Use `concept_search` to find patterns relevant to your current problem (e.g., "how to handle domain exceptions", "repository pattern implementation")
-3. **Explore relationships** - Use `broad_chunks_search` to discover related concepts and deepen understanding
-4. **Document sources** - Reference the books and concepts that informed your decisions (as done in this REFERENCES.md)
-
-The knowledge base becomes a queryable design reference that augments your architectural decision-making process.
-
-## Contributing
-
-When introducing new patterns or architectural concepts:
-1. Add the pattern name and brief description to code comments
-2. Update this document with the book reference and concept details
-3. List the files where the pattern is applied
-4. Provide brief rationale for why the pattern was chosen
-
----
-
-*Last Updated: November 2025*
 
