@@ -165,7 +165,7 @@ Table            Table            Table
                    │
      ┌─────────────┼─────────────┐
      │             │             │
-         Corpus       WordNet        Hybrid
+   Corpus       WordNet        Hybrid
   Concepts     Synonyms       Scoring
 ```
 
