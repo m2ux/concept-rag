@@ -105,8 +105,6 @@ npx tsx hybrid_fast_seed.ts \
 | [FAQ.md](FAQ.md) | Frequently asked questions |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Complete troubleshooting guide |
 | [REFERENCES.md](REFERENCES.md) | Design patterns and book sources |
-| [tool-selection-guide.md](tool-selection-guide.md) | AI agent tool selection guide |
-| [docs/applicable-knowledge-base-concepts.md](docs/applicable-knowledge-base-concepts.md) | Example: developing a conceptual lexicon for targeted knowledge base searches |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [SECURITY.md](SECURITY.md) | Security policy |
