@@ -10,3 +10,8 @@ export * from './concept-search-service.js';
 export * from './catalog-search-service.js';
 export * from './chunk-search-service.js';
 
+// Result-based services (functional error handling)
+export * from './result-catalog-search-service.js';
+export * from './result-chunk-search-service.js';
+export * from './result-concept-search-service.js';
+
