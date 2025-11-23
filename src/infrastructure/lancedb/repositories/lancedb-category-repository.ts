@@ -9,6 +9,7 @@ import type { Table } from '@lancedb/lancedb';
 import type { CategoryRepository } from '../../../domain/interfaces/category-repository';
 import type { Category } from '../../../domain/models/category';
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
+import { Option, fromNullable } from '../../../domain/functional/option.js';
 
 /**
  * Parse JSON field safely
@@ -100,6 +101,28 @@ export class LanceDBCategoryRepository implements CategoryRepository {
   }
 
   /**
+   * Find category by ID - Option variant.
+   * @param id - Category ID
+   * @returns Promise resolving to Some(category) if found, None if not found
+   * @throws {DatabaseError} If database query fails
+   */
+  async findByIdOpt(id: number): Promise<Option<Category>> {
+    const result = await this.findById(id);
+    return fromNullable(result);
+  }
+
+  /**
+   * Find category by name - Option variant.
+   * @param name - Category name
+   * @returns Promise resolving to Some(category) if found, None if not found
+   * @throws {DatabaseError} If database query fails
+   */
+  async findByNameOpt(name: string): Promise<Option<Category>> {
+    const result = await this.findByName(name);
+    return fromNullable(result);
+  }
+
+  /**
    * Find category by alias.
    * @param alias - Category alias
    * @returns Category if found, null otherwise
@@ -123,6 +146,17 @@ export class LanceDBCategoryRepository implements CategoryRepository {
         error as Error
       );
     }
+  }
+
+  /**
+   * Find category by alias - Option variant.
+   * @param alias - Category alias
+   * @returns Promise resolving to Some(category) if found, None if not found
+   * @throws {DatabaseError} If database query fails
+   */
+  async findByAliasOpt(alias: string): Promise<Option<Category>> {
+    const result = await this.findByAlias(alias);
+    return fromNullable(result);
   }
 
   async findRootCategories(): Promise<Category[]> {

@@ -4,6 +4,7 @@ import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
+import { Option, fromNullable } from '../../../domain/functional/option.js';
 
 /**
  * LanceDB implementation of CatalogRepository
@@ -86,6 +87,21 @@ export class LanceDBCatalogRepository implements CatalogRepository {
         error as Error
       );
     }
+  }
+  
+  /**
+   * Find a catalog entry by source path - Option variant.
+   * 
+   * Type-safe wrapper around findBySource that returns Option<SearchResult>.
+   * Eliminates null checks and enables functional composition.
+   * 
+   * @param source - Source document path
+   * @returns Promise resolving to Some(result) if found, None if not found
+   * @throws {DatabaseError} If database query fails
+   */
+  async findBySourceOpt(source: string): Promise<Option<SearchResult>> {
+    const result = await this.findBySource(source);
+    return fromNullable(result);
   }
   
   /**

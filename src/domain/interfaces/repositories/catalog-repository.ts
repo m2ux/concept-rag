@@ -1,4 +1,5 @@
 import { SearchQuery, SearchResult } from '../../models/index.js';
+import { Option } from '../../functional/option.js';
 
 /**
  * Repository interface for accessing document catalog (summaries and metadata).
@@ -108,6 +109,35 @@ export interface CatalogRepository {
    * ```
    */
   findBySource(sourcePath: string): Promise<SearchResult | null>;
+  
+  /**
+   * Find a catalog entry by source document path - Option variant.
+   * 
+   * Type-safe alternative to findBySource that uses Option<T> instead of nullable.
+   * Eliminates null checks and enables functional composition.
+   * 
+   * @param sourcePath - The source document path
+   * @returns Promise resolving to Some(entry) if found, None if not found
+   * @throws {Error} If database query fails
+   * 
+   * @example
+   * ```typescript
+   * import { map, fold } from '../../functional/option';
+   * 
+   * const entryOpt = await catalogRepo.findBySourceOpt('/docs/guide.pdf');
+   * 
+   * // Extract primary concepts with default
+   * const concepts = fold(
+   *   entryOpt,
+   *   () => [],
+   *   entry => entry.concepts.primary_concepts
+   * );
+   * 
+   * // Map to summary
+   * const summary = map(entryOpt, entry => entry.text);
+   * ```
+   */
+  findBySourceOpt(sourcePath: string): Promise<Option<SearchResult>>;
   
   /**
    * Find all documents in a specific category.
