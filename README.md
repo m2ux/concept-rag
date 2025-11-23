@@ -222,20 +222,6 @@ This project is forked from [lance-mcp](https://github.com/adiom-data/lance-mcp)
 
 We're grateful to the original author for creating and open-sourcing this excellent foundation!
 
-## 📊 Project Status
-
-- ✅ **Stable**: v1.0.0
-- 🔄 **Actively maintained**: Regular updates and bug fixes
-- 📈 **Growing**: New features and improvements planned
-
-## ⭐ Show Your Support
-
-If you find Concept-RAG useful, please:
-- ⭐ Star the repository
-- 🐛 Report bugs and suggest features
-- 📝 Share your use cases
-- 🤝 Contribute improvements
-
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
