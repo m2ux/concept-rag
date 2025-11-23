@@ -3,4 +3,5 @@
  */
 
 export { InputValidator } from './InputValidator.js';
+export * from './result-validator.js';
 
