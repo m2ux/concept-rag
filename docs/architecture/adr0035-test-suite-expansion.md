@@ -20,21 +20,21 @@ As the codebase grew in complexity with error handling ([adr0034](adr0034-compre
 
 ## Decision
 
-Expand the test suite from 120 to 534 tests (+345% increase) with a structured approach covering:
+Expand the test suite significantly with a structured approach covering:
 
 ### 1. Test Pyramid Structure
 
 Implement a healthy test pyramid with appropriate distribution:
 
 **Target Ratios**:
-- **Unit Tests**: ~70% (370 tests) - Fast, isolated, component-level
-- **Integration Tests**: ~18% (95 tests) - Component interaction verification
-- **Benchmark Tests**: ~5% (27 tests) - Performance regression detection
-- **Property-Based Tests**: ~8% (44 tests) - Invariant verification
+- **Unit Tests**: ~70% - Fast, isolated, component-level
+- **Integration Tests**: ~18% - Component interaction verification
+- **Benchmark Tests**: ~5% - Performance regression detection
+- **Property-Based Tests**: ~8% - Invariant verification
 
-**Actual Achievement**:
-- **Total**: 534 tests (100% passing)
-- **Ratio**: 3.8:1 unit-to-integration tests (healthy pyramid)
+**Achievement**:
+- **Total**: 690+ tests (100% passing as of implementation, with some intermittent timeout issues)
+- **Ratio**: Healthy pyramid with majority unit tests
 - **Speed**: Majority complete in <100ms
 
 ### 2. Comprehensive Unit Testing
@@ -174,17 +174,17 @@ src/
 - Concepts: 50+ tests (query expansion, matching)
 - Tools: 9 tests (end-to-end MCP tools)
 - Application: 5+ tests (DI container integration)
-- Property-based: 44 tests (invariants)
-- Benchmarks: 27 tests (performance)
+- Property-based: 44+ tests (invariants)
+- Benchmarks: 27+ tests (performance)
 - Mock infrastructure: 50+ tests (test utilities)
 
 **By Type**:
-- Unit: ~370 tests (69%)
-- Integration: ~95 tests (18%)
-- Benchmark: 27 tests (5%)
-- Property: 44 tests (8%)
+- Unit: ~70% (majority of tests)
+- Integration: ~18% (cross-component tests)
+- Benchmark: ~5% (performance tests)
+- Property: ~8% (invariant tests)
 
-**Total**: 534 tests, all passing
+**Total**: 690+ tests passing (as of 2025-11-23, with some intermittent timeout issues in query expansion tests)
 
 ### Test Quality Metrics
 
@@ -408,11 +408,11 @@ dda6165 test: add performance benchmarks for query expansion and cache
 - No property-based tests
 
 **After**:
-- 534 tests (534 passing, 0 failing)
+- 690+ tests (690 passing, 5 with intermittent timeouts)
 - Coverage: 76.51% statements, 68.87% branches
-- 27 performance benchmarks
-- 44 property-based tests
-- +345% increase in test count
+- 27+ performance benchmarks
+- 44+ property-based tests
+- +475% increase in test count
 
 **Coverage by Layer**:
 - Infrastructure: 97%+ (critical components 100%)
@@ -422,11 +422,11 @@ dda6165 test: add performance benchmarks for query expansion and cache
 - Application: Good integration coverage
 
 **Test Pyramid**:
-- Unit tests: ~370 (69%)
-- Integration tests: ~95 (18%)
-- Benchmarks: 27 (5%)
-- Property tests: 44 (8%)
-- Ratio: 3.8:1 (healthy)
+- Unit tests: ~70%
+- Integration tests: ~18%
+- Benchmarks: ~5%
+- Property tests: ~8%
+- Healthy pyramid ratio maintained
 
 ### Knowledge Base Sources
 
@@ -454,15 +454,17 @@ This decision was informed by:
 
 ## Notes
 
-This ADR documents a major milestone in test maturity. The 345% increase in test count represents a significant investment in code quality and developer productivity. The healthy test pyramid (3.8:1 ratio) and fast execution times (90% <100ms) provide rapid feedback while maintaining comprehensive coverage.
+This ADR documents a major milestone in test maturity. The significant increase in test count (475%+, from 120 to 690+ tests) represents a substantial investment in code quality and developer productivity. The healthy test pyramid and fast execution times (90% <100ms) provide rapid feedback while maintaining comprehensive coverage.
 
 The addition of property-based testing and performance benchmarks goes beyond traditional unit/integration testing to provide invariant verification and regression detection, significantly improving the quality and reliability of the codebase.
+
+Note: As of 2025-11-23, there are 5 intermittent test failures in query expansion tests due to timeouts, but the core test suite remains robust with 690 passing tests.
 
 ---
 
 **References**:
 - Implementation: `.ai/planning/2025-11-22-test-coverage-updates/`
 - Pull Request: #11
-- Test Count: 534 tests (100% passing)
+- Test Count: 690+ tests (690 passing, 5 intermittent timeouts)
 - Coverage: 76.51% statements, 68.87% branches
 

@@ -1407,8 +1407,9 @@ async function createCategoriesTable(
     const table = await db.createTable('categories', categoryRecords, { mode: 'overwrite' });
     console.log("  ✅ Categories table created successfully");
     
-    // Create vector index if we have enough categories
-    if (categoryRecords.length >= 256) {
+    // Create vector index only for large datasets to avoid KMeans warnings
+    // For datasets < 5000, linear scan is fast and avoids empty cluster warnings
+    if (categoryRecords.length >= 5000) {
         console.log("  🔧 Creating vector index for categories...");
         await table.createIndex("vector", {
             config: lancedb.Index.ivfPq({
@@ -1418,7 +1419,7 @@ async function createCategoriesTable(
         });
         console.log("  ✅ Vector index created");
     } else {
-        console.log(`  ⚠️  Skipping vector index (only ${categoryRecords.length} categories, need 256+ for IVF_PQ)`);
+        console.log(`  ✅ Using linear scan (${categoryRecords.length} categories - fast without index)`);
     }
 }
 
