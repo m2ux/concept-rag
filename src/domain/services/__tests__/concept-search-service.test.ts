@@ -11,6 +11,7 @@ import { ConceptSearchService } from '../concept-search-service.js';
 import { ChunkRepository } from '../../interfaces/repositories/chunk-repository.js';
 import { ConceptRepository } from '../../interfaces/repositories/concept-repository.js';
 import { Chunk, Concept } from '../../models/index.js';
+import { Option, fromNullable } from '../../functional/index.js';
 
 /**
  * Mock ChunkRepository for testing
@@ -59,6 +60,16 @@ class MockConceptRepository implements ConceptRepository {
   async findByName(conceptName: string): Promise<Concept | null> {
     const conceptLower = conceptName.toLowerCase();
     return Promise.resolve(this.concepts.get(conceptLower) || null);
+  }
+
+  async findByIdOpt(id: number): Promise<Option<Concept>> {
+    const result = await this.findById(id);
+    return fromNullable(result);
+  }
+
+  async findByNameOpt(conceptName: string): Promise<Option<Concept>> {
+    const result = await this.findByName(conceptName);
+    return fromNullable(result);
   }
 
   async findRelated(conceptName: string, limit: number): Promise<Concept[]> {
