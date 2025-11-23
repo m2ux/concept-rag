@@ -23,6 +23,7 @@ import {
   SearchQuery,
   SearchResult
 } from '../../domain/models/index.js';
+import { Option, fromNullable } from '../../domain/functional/index.js';
 
 /**
  * Fake ChunkRepository using in-memory Map
@@ -128,6 +129,16 @@ export class FakeConceptRepository implements ConceptRepository {
     return Promise.resolve(concept || null);
   }
   
+  async findByIdOpt(id: number): Promise<Option<Concept>> {
+    const result = await this.findById(id);
+    return fromNullable(result);
+  }
+  
+  async findByNameOpt(name: string): Promise<Option<Concept>> {
+    const result = await this.findByName(name);
+    return fromNullable(result);
+  }
+  
   async findRelated(conceptName: string, limit: number): Promise<Concept[]> {
     const concept = await this.findByName(conceptName);
     if (!concept) return [];
@@ -205,6 +216,11 @@ export class FakeCatalogRepository implements CatalogRepository {
       .filter(doc => doc.source === sourcePath);
     
     return Promise.resolve(results[0] || null);
+  }
+  
+  async findBySourceOpt(sourcePath: string): Promise<Option<SearchResult>> {
+    const result = await this.findBySource(sourcePath);
+    return fromNullable(result);
   }
   
   async findByCategory(_categoryId: number): Promise<SearchResult[]> {
