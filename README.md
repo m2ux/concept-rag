@@ -95,15 +95,6 @@ npx tsx hybrid_fast_seed.ts \
 
 **📖 For complete setup instructions for various IDEs, see [SETUP.md](SETUP.md)**
 
-## 🧠 Concept Model
-
-This system uses a **formal concept definition** ensuring high-quality semantic search:
-
-> **A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.**
-
-**✅ INCLUDE:** Domain terms, theories, methodologies, multi-word conceptual phrases, phenomena, abstract principles  
-**❌ EXCLUDE:** Temporal descriptions, action phrases, suppositions, proper names, dates
-
 ## 🛠️ Development
 
 ### Quick Testing
