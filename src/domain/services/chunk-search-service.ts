@@ -10,6 +10,7 @@
 
 import { ChunkRepository } from '../interfaces/repositories/chunk-repository.js';
 import { Chunk, SearchResult } from '../models/index.js';
+import { ILogger } from '../../infrastructure/observability/index.js';
 
 /**
  * Parameters for broad chunk search (across all documents).
@@ -46,7 +47,10 @@ export interface TargetedChunkSearchParams {
  * Domain service for chunk search operations.
  */
 export class ChunkSearchService {
-  constructor(private chunkRepo: ChunkRepository) {}
+  constructor(
+    private chunkRepo: ChunkRepository,
+    private logger: ILogger
+  ) {}
   
   /**
    * Search across all chunks in all documents.
@@ -59,11 +63,35 @@ export class ChunkSearchService {
    * @throws {SearchError} If search operation fails
    */
   async searchBroad(params: BroadChunkSearchParams): Promise<SearchResult[]> {
-    return await this.chunkRepo.search({
-      text: params.text,
+    const childLogger = this.logger.child({
+      operation: 'broad_chunk_search',
+      query: params.text,
       limit: params.limit,
-      debug: params.debug || false
+      debug: params.debug
     });
+    
+    childLogger.info('Starting broad chunk search');
+    
+    try {
+      const results = await this.chunkRepo.search({
+        text: params.text,
+        limit: params.limit,
+        debug: params.debug || false
+      });
+      
+      childLogger.info('Broad chunk search completed', {
+        resultsCount: results.length,
+        topScore: results[0]?.hybridScore
+      });
+      
+      return results;
+    } catch (error) {
+      childLogger.error('Broad chunk search failed', error as Error, {
+        query: params.text,
+        limit: params.limit
+      });
+      throw error;
+    }
   }
   
   /**
@@ -75,9 +103,31 @@ export class ChunkSearchService {
    * @throws {RecordNotFoundError} If source document not found
    */
   async searchInSource(params: TargetedChunkSearchParams): Promise<Chunk[]> {
-    // Note: Current implementation returns all chunks from source
-    // Future enhancement: Could filter results by params.text relevance
-    return await this.chunkRepo.findBySource(params.source, params.limit);
+    const childLogger = this.logger.child({
+      operation: 'targeted_chunk_search',
+      source: params.source,
+      limit: params.limit
+    });
+    
+    childLogger.info('Starting targeted chunk search');
+    
+    try {
+      // Note: Current implementation returns all chunks from source
+      // Future enhancement: Could filter results by params.text relevance
+      const results = await this.chunkRepo.findBySource(params.source, params.limit);
+      
+      childLogger.info('Targeted chunk search completed', {
+        chunksCount: results.length
+      });
+      
+      return results;
+    } catch (error) {
+      childLogger.error('Targeted chunk search failed', error as Error, {
+        source: params.source,
+        limit: params.limit
+      });
+      throw error;
+    }
   }
 }
 

@@ -34,6 +34,7 @@
 import { ChunkRepository } from '../interfaces/repositories/chunk-repository.js';
 import { ConceptRepository } from '../interfaces/repositories/concept-repository.js';
 import { Chunk, Concept } from '../models/index.js';
+import { ILogger } from '../../infrastructure/observability/index.js';
 
 /**
  * Parameters for concept search operations.
@@ -85,7 +86,8 @@ export interface ConceptSearchResult {
 export class ConceptSearchService {
   constructor(
     private chunkRepo: ChunkRepository,
-    private conceptRepo: ConceptRepository
+    private conceptRepo: ConceptRepository,
+    private logger: ILogger
   ) {}
   
   /**
@@ -116,43 +118,72 @@ export class ConceptSearchService {
   async searchConcept(params: ConceptSearchParams): Promise<ConceptSearchResult> {
     const conceptLower = params.concept.toLowerCase().trim();
     
-    // Get concept metadata (may be null if concept doesn't exist)
-    const conceptMetadata = await this.conceptRepo.findByName(conceptLower);
+    const childLogger = this.logger.child({
+      operation: 'concept_search',
+      concept: conceptLower,
+      limit: params.limit,
+      sourceFilter: params.sourceFilter
+    });
     
-    // Find matching chunks (returns empty array if concept not found)
-    // Request extra to allow for filtering
-    const candidateChunks = await this.chunkRepo.findByConceptName(
-      conceptLower,
-      params.limit * 2
-    );
+    childLogger.info('Starting concept search');
     
-    const totalFound = candidateChunks.length;
-    
-    // Apply source filter if provided
-    let filteredChunks = candidateChunks;
-    if (params.sourceFilter) {
-      const filterLower = params.sourceFilter.toLowerCase();
-      filteredChunks = candidateChunks.filter(chunk =>
-        chunk.source.toLowerCase().includes(filterLower)
+    try {
+      // Get concept metadata (may be null if concept doesn't exist)
+      const conceptMetadata = await this.conceptRepo.findByName(conceptLower);
+      
+      // Find matching chunks (returns empty array if concept not found)
+      // Request extra to allow for filtering
+      const candidateChunks = await this.chunkRepo.findByConceptName(
+        conceptLower,
+        params.limit * 2
       );
+      
+      const totalFound = candidateChunks.length;
+      childLogger.debug('Found candidate chunks', { candidateCount: totalFound });
+      
+      // Apply source filter if provided
+      let filteredChunks = candidateChunks;
+      if (params.sourceFilter) {
+        const filterLower = params.sourceFilter.toLowerCase();
+        filteredChunks = candidateChunks.filter(chunk =>
+          chunk.source.toLowerCase().includes(filterLower)
+        );
+        childLogger.debug('Applied source filter', { 
+          beforeFilter: candidateChunks.length,
+          afterFilter: filteredChunks.length 
+        });
+      }
+      
+      // Sort results
+      const sortedChunks = this.sortChunks(filteredChunks, params.sortBy || 'density', conceptLower);
+      
+      // Limit results
+      const limitedChunks = sortedChunks.slice(0, params.limit);
+      
+      // Extract related concepts
+      const relatedConcepts = conceptMetadata?.relatedConcepts?.slice(0, 10) || [];
+      
+      childLogger.info('Concept search completed', {
+        chunksReturned: limitedChunks.length,
+        totalFound,
+        hasMetadata: !!conceptMetadata,
+        relatedConceptsCount: relatedConcepts.length
+      });
+      
+      return {
+        concept: params.concept,
+        conceptMetadata,
+        chunks: limitedChunks,
+        relatedConcepts,
+        totalFound
+      };
+    } catch (error) {
+      childLogger.error('Concept search failed', error as Error, {
+        concept: conceptLower,
+        limit: params.limit
+      });
+      throw error;
     }
-    
-    // Sort results
-    const sortedChunks = this.sortChunks(filteredChunks, params.sortBy || 'density', conceptLower);
-    
-    // Limit results
-    const limitedChunks = sortedChunks.slice(0, params.limit);
-    
-    // Extract related concepts
-    const relatedConcepts = conceptMetadata?.relatedConcepts?.slice(0, 10) || [];
-    
-    return {
-      concept: params.concept,
-      conceptMetadata,
-      chunks: limitedChunks,
-      relatedConcepts,
-      totalFound
-    };
   }
   
   /**

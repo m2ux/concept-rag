@@ -190,10 +190,11 @@ export class ApplicationContainer {
     const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, this.conceptIdCache);
     const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     
-    // 5. Create domain services (with repositories)
-    const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);
-    const catalogSearchService = new CatalogSearchService(catalogRepo);
-    const chunkSearchService = new ChunkSearchService(chunkRepo);
+    // 5. Create domain services (with repositories and logger)
+    const serviceLogger = this.logger.child({ layer: 'domain-service' });
+    const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo, serviceLogger);
+    const catalogSearchService = new CatalogSearchService(catalogRepo, serviceLogger);
+    const chunkSearchService = new ChunkSearchService(chunkRepo, serviceLogger);
     
     // 6. Create tools (with domain services)
     this.tools.set('concept_search', new ConceptSearchTool(conceptSearchService));
