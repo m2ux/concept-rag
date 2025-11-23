@@ -178,22 +178,6 @@ All major technical decisions are documented in **[Architecture Decision Records
 
 The **[Concept Lexicon](docs/concept-lexicon.md)** catalogs concepts from the local knowledge base that are directly applicable to this project, organized by functional area: This lexicon serves as a reference for understanding the conceptual foundations that inform the project's design decisions.
 
-## 💰 Cost Breakdown
-
-**Seeding costs (one-time per document):**
-- Concept extraction: ~$0.041/doc (Claude Sonnet 4.5)
-- Summarization: ~$0.007/doc (Grok-4-fast)
-- **Total: ~$0.048 per document**
-
-**Runtime search:** No additional API calls (vector search is local)
-
-**Time & cost examples:**
-- Initial 100 docs: ~25 minutes + ~$4.80
-- Add 10 new docs: ~3 minutes + ~$0.48 (incremental)
-- Add 1 new doc: ~15 seconds + ~$0.05 (incremental)
-
-**Note:** AI agent usage (Cursor, Claude Desktop) incurs separate costs for processing search results.
-
 ## 💬 Support & Community
 
 ### Contributing
