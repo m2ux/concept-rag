@@ -95,20 +95,6 @@ npx tsx hybrid_fast_seed.ts \
 
 **📖 For complete setup instructions for mutliple IDEs, see [SETUP.md](SETUP.md)**
 
-## 📚 Documentation
-
-| Document | Description |
-|----------|-------------|
-| **[SETUP.md](SETUP.md)** | **Complete installation and configuration guide** |
-| [USAGE.md](USAGE.md) | Tool details and workflow examples |
-| [EXAMPLES.md](EXAMPLES.md) | Real-world usage scenarios |
-| [FAQ.md](FAQ.md) | Frequently asked questions |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Complete troubleshooting guide |
-| [REFERENCES.md](REFERENCES.md) | Design patterns and book sources |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
-| [CHANGELOG.md](CHANGELOG.md) | Version history |
-| [SECURITY.md](SECURITY.md) | Security policy |
-
 ## 🧠 Concept Model
 
 This system uses a **formal concept definition** ensuring high-quality semantic search:
