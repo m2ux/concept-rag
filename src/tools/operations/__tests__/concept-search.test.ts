@@ -16,7 +16,8 @@ import {
   FakeChunkRepository,
   FakeConceptRepository,
   createTestChunk,
-  createTestConcept
+  createTestConcept,
+  MockLogger
 } from '../../../__tests__/test-helpers/index.js';
 
 describe('ConceptSearchTool', () => {
@@ -24,12 +25,14 @@ describe('ConceptSearchTool', () => {
   let conceptRepo: FakeConceptRepository;
   let service: ConceptSearchService;
   let tool: ConceptSearchTool;
+  let mockLogger: MockLogger;
   
   beforeEach(() => {
     // SETUP - Fresh repositories and service for each test (test isolation)
     chunkRepo = new FakeChunkRepository();
     conceptRepo = new FakeConceptRepository();
-    service = new ConceptSearchService(chunkRepo, conceptRepo);
+    mockLogger = new MockLogger();
+    service = new ConceptSearchService(chunkRepo, conceptRepo, mockLogger);
     tool = new ConceptSearchTool(service);
   });
   

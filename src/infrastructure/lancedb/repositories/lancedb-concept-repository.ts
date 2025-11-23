@@ -5,12 +5,16 @@ import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } 
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
 import { parseJsonField, escapeSqlString } from '../utils/field-parsers.js';
 import { validateConceptRow, detectVectorField } from '../utils/schema-validators.js';
+import { ILogger } from '../../observability/index.js';
 
 /**
  * LanceDB implementation of ConceptRepository
  */
 export class LanceDBConceptRepository implements ConceptRepository {
-  constructor(private conceptsTable: lancedb.Table) {}
+  constructor(
+    private conceptsTable: lancedb.Table,
+    private logger: ILogger
+  ) {}
   
   /**
    * Find concept by ID.
@@ -20,6 +24,8 @@ export class LanceDBConceptRepository implements ConceptRepository {
    * @throws {InvalidEmbeddingsError} If concept has invalid embeddings
    */
   async findById(id: number): Promise<Concept | null> {
+    this.logger.debug('Finding concept by ID', { id });
+    
     try {
       const results = await this.conceptsTable
         .query()
@@ -28,6 +34,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
         .toArray();
       
       if (results.length === 0) {
+        this.logger.debug('Concept not found by ID', { id });
         return null;
       }
       
@@ -36,15 +43,19 @@ export class LanceDBConceptRepository implements ConceptRepository {
       try {
         validateConceptRow(row);
       } catch (validationError) {
+        this.logger.error('Schema validation failed for concept', validationError as Error, { id });
         console.error(`⚠️  Schema validation failed for concept ID ${id}:`, validationError);
         throw validationError;
       }
       
-      return this.mapRowToConcept(row);
+      const concept = this.mapRowToConcept(row);
+      this.logger.info('Found concept by ID', { id, conceptName: concept.name });
+      return concept;
     } catch (error) {
       if (error instanceof ConceptNotFoundError || error instanceof InvalidEmbeddingsError) {
         throw error;
       }
+      this.logger.error('Failed to find concept by ID', error as Error, { id });
       throw new DatabaseError(
         `Failed to find concept by ID ${id}`,
         'query',
@@ -63,6 +74,8 @@ export class LanceDBConceptRepository implements ConceptRepository {
   async findByName(conceptName: string): Promise<Concept | null> {
     const conceptLower = conceptName.toLowerCase().trim();
     
+    this.logger.debug('Finding concept by name', { conceptName: conceptLower });
+    
     try {
       // Escape single quotes to prevent SQL injection
       const escaped = escapeSqlString(conceptLower);
@@ -75,6 +88,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
         .toArray();
       
       if (results.length === 0) {
+        this.logger.debug('Concept not found by name', { conceptName: conceptLower });
         return null;  // Concept not found (not an error, just return null)
       }
       
@@ -85,16 +99,27 @@ export class LanceDBConceptRepository implements ConceptRepository {
         validateConceptRow(row);
       } catch (validationError) {
         // Schema validation failed - this indicates database integrity issue
+        this.logger.error('Schema validation failed for concept', validationError as Error, { 
+          conceptName: conceptLower 
+        });
         console.error(`⚠️  Schema validation failed for concept "${conceptName}":`, validationError);
         throw validationError;  // Re-throw to caller
       }
       
-      return this.mapRowToConcept(row);
+      const concept = this.mapRowToConcept(row);
+      this.logger.info('Found concept by name', { 
+        conceptName: conceptLower,
+        conceptId: concept.id 
+      });
+      return concept;
     } catch (error) {
       // Wrap database errors in domain exception
       if (error instanceof ConceptNotFoundError || error instanceof InvalidEmbeddingsError) {
         throw error;  // Already a domain exception
       }
+      this.logger.error('Failed to find concept by name', error as Error, { 
+        conceptName: conceptLower 
+      });
       throw new DatabaseError(
         `Failed to find concept "${conceptName}"`,
         'query',
@@ -104,21 +129,46 @@ export class LanceDBConceptRepository implements ConceptRepository {
   }
   
   async findRelated(conceptName: string, limit: number): Promise<Concept[]> {
-    // Get the concept first to use its embedding
-    const concept = await this.findByName(conceptName);
-    if (!concept) return [];
+    this.logger.debug('Finding related concepts', { conceptName, limit });
     
-    // Vector search using concept's embedding to find similar concepts
-    const results = await this.conceptsTable
-      .vectorSearch(concept.embeddings)
-      .limit(limit + 1)  // +1 because first result will be the concept itself
-      .toArray();
-    
-    // Filter out the original concept and map to domain models
-    return results
-      .filter((row: any) => row.concept.toLowerCase() !== conceptName.toLowerCase())
-      .slice(0, limit)
-      .map((row: any) => this.mapRowToConcept(row));
+    try {
+      // Get the concept first to use its embedding
+      const concept = await this.findByName(conceptName);
+      if (!concept) {
+        this.logger.warn('Cannot find related concepts - base concept not found', { conceptName });
+        return [];
+      }
+      
+      // Vector search using concept's embedding to find similar concepts
+      const results = await this.conceptsTable
+        .vectorSearch(concept.embeddings)
+        .limit(limit + 1)  // +1 because first result will be the concept itself
+        .toArray();
+      
+      // Filter out the original concept and map to domain models
+      const relatedConcepts = results
+        .filter((row: any) => row.concept.toLowerCase() !== conceptName.toLowerCase())
+        .slice(0, limit)
+        .map((row: any) => this.mapRowToConcept(row));
+      
+      this.logger.info('Found related concepts', { 
+        conceptName,
+        relatedCount: relatedConcepts.length,
+        limit 
+      });
+      
+      return relatedConcepts;
+    } catch (error) {
+      this.logger.error('Failed to find related concepts', error as Error, { 
+        conceptName,
+        limit 
+      });
+      throw new DatabaseError(
+        `Failed to find related concepts for "${conceptName}"`,
+        'query',
+        error as Error
+      );
+    }
   }
   
   async searchConcepts(_queryText: string, limit: number): Promise<Concept[]> {

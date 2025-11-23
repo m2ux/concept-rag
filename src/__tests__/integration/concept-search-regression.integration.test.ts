@@ -23,9 +23,20 @@ import { SimpleEmbeddingService } from '../../infrastructure/embeddings/simple-e
 import { ConceptualHybridSearchService } from '../../infrastructure/search/conceptual-hybrid-search-service.js';
 import { QueryExpander } from '../../concepts/query_expander.js';
 import { createSimpleEmbedding } from '../../lancedb/hybrid_search_client.js';
+import { ILogger } from '../../infrastructure/observability/index.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+
+// Mock Logger for tests
+class MockLogger implements ILogger {
+  debug = () => {};
+  info = () => {};
+  warn = () => {};
+  error = () => {};
+  logOperation = () => {};
+  child = () => this;
+}
 
 describe('Concept Search Regression Tests', () => {
   let dbPath: string;
@@ -313,7 +324,8 @@ describe('Concept Search Regression Tests', () => {
     const conceptsTable = await db.createTable('concepts', testConcepts);
     
     // Initialize repositories
-    conceptRepo = new LanceDBConceptRepository(conceptsTable);
+    const mockLogger = new MockLogger();
+    conceptRepo = new LanceDBConceptRepository(conceptsTable, mockLogger);
     const embeddingService = new SimpleEmbeddingService();
     const queryExpander = new QueryExpander(conceptsTable, embeddingService);
     const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
@@ -328,7 +340,8 @@ describe('Concept Search Regression Tests', () => {
       conceptRepo,
       embeddingService,
       hybridSearchService,
-      conceptIdCache
+      conceptIdCache,
+      mockLogger
     );
   }, 30000);
   

@@ -10,6 +10,7 @@ import { parseJsonField } from '../utils/field-parsers.js';
 import { validateChunkRow, detectVectorField } from '../utils/schema-validators.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
 import { ConceptIdCache } from '../../cache/concept-id-cache.js';
+import { ILogger } from '../../observability/index.js';
 
 /**
  * LanceDB implementation of ChunkRepository
@@ -25,7 +26,8 @@ export class LanceDBChunkRepository implements ChunkRepository {
     private conceptRepo: ConceptRepository,
     private embeddingService: EmbeddingService,
     private hybridSearchService: HybridSearchService,
-    private conceptIdCache: ConceptIdCache
+    private conceptIdCache: ConceptIdCache,
+    private logger: ILogger
   ) {}
   
   /**
@@ -45,22 +47,26 @@ export class LanceDBChunkRepository implements ChunkRepository {
   async findByConceptName(concept: string, limit: number): Promise<Chunk[]> {
     const conceptLower = concept.toLowerCase().trim();
     
+    this.logger.debug('Finding chunks by concept', { concept: conceptLower, limit });
+    
     try {
       // Verify concept exists
       const conceptRecord = await this.conceptRepo.findByName(conceptLower);
       
       if (!conceptRecord) {
+        this.logger.warn('Concept not found', { concept: conceptLower });
         console.error(`⚠️  Concept "${concept}" not found in concept table`);
         return [];
       }
       
       // Load chunks and filter by concepts field
-      // Note: LanceDB loads efficiently, and we can optimize with batching if needed
       const batchSize = 100000;
       const allRows = await this.chunksTable
         .query()
         .limit(batchSize)
         .toArray();
+      
+      this.logger.debug('Loaded chunk rows for filtering', { rowCount: allRows.length });
       
       const matches: Chunk[] = [];
       
@@ -69,6 +75,9 @@ export class LanceDBChunkRepository implements ChunkRepository {
         try {
           validateChunkRow(row);
         } catch (validationError) {
+          this.logger.warn('Chunk validation failed', undefined, { 
+            error: validationError instanceof Error ? validationError.message : String(validationError)
+          });
           console.error(`⚠️  Schema validation failed for chunk:`, validationError);
           continue;
         }
@@ -85,8 +94,19 @@ export class LanceDBChunkRepository implements ChunkRepository {
       // Sort by concept density (most concept-rich first)
       matches.sort((a, b) => (b.conceptDensity || 0) - (a.conceptDensity || 0));
       
+      this.logger.info('Found chunks by concept', { 
+        concept: conceptLower, 
+        matchCount: matches.length,
+        limit 
+      });
+      
       return matches.slice(0, limit);
     } catch (error) {
+      this.logger.error('Failed to find chunks by concept', error as Error, {
+        concept: conceptLower,
+        limit
+      });
+      
       // Wrap in domain exception if not already
       if (error instanceof InvalidEmbeddingsError || error instanceof ConceptNotFoundError) {
         throw error;
@@ -100,39 +120,94 @@ export class LanceDBChunkRepository implements ChunkRepository {
   }
   
   async findBySource(source: string, limit: number): Promise<Chunk[]> {
-    // LanceDB doesn't support SQL WHERE on non-indexed columns efficiently
-    // Best approach: vector search + filter, or use source as query
-    const sourceEmbedding = this.embeddingService.generateEmbedding(source);
+    this.logger.debug('Finding chunks by source', { source, limit });
     
-    const results = await this.chunksTable
-      .vectorSearch(sourceEmbedding)
-      .limit(limit * 2)  // Get extra for filtering
-      .toArray();
-    
-    return results
-      .filter((row: any) => row.source && row.source.toLowerCase().includes(source.toLowerCase()))
-      .slice(0, limit)
-      .map((row: any) => this.mapRowToChunk(row));
+    try {
+      // LanceDB doesn't support SQL WHERE on non-indexed columns efficiently
+      // Best approach: vector search + filter, or use source as query
+      const sourceEmbedding = this.embeddingService.generateEmbedding(source);
+      
+      const results = await this.chunksTable
+        .vectorSearch(sourceEmbedding)
+        .limit(limit * 2)  // Get extra for filtering
+        .toArray();
+      
+      const filteredResults = results
+        .filter((row: any) => row.source && row.source.toLowerCase().includes(source.toLowerCase()))
+        .slice(0, limit)
+        .map((row: any) => this.mapRowToChunk(row));
+      
+      this.logger.info('Found chunks by source', { 
+        source, 
+        totalResults: results.length,
+        filteredResults: filteredResults.length,
+        limit 
+      });
+      
+      return filteredResults;
+    } catch (error) {
+      this.logger.error('Failed to find chunks by source', error as Error, { source, limit });
+      throw new DatabaseError(
+        `Failed to find chunks for source "${source}"`,
+        'query',
+        error as Error
+      );
+    }
   }
   
   async search(query: SearchQuery): Promise<SearchResult[]> {
-    // Use hybrid search for multi-signal ranking
     const limit = query.limit || 10;
     const debug = query.debug || false;
     
-    // Wrap table in adapter to prevent infrastructure leakage
-    const collection = new SearchableCollectionAdapter(this.chunksTable, 'chunks');
+    this.logger.debug('Searching chunks', { query: query.text, limit, debug });
     
-    return await this.hybridSearchService.search(
-      collection,
-      query.text,
-      limit,
-      debug
-    );
+    try {
+      // Wrap table in adapter to prevent infrastructure leakage
+      const collection = new SearchableCollectionAdapter(this.chunksTable, 'chunks');
+      
+      const results = await this.hybridSearchService.search(
+        collection,
+        query.text,
+        limit,
+        debug
+      );
+      
+      this.logger.info('Chunk search completed', { 
+        query: query.text,
+        resultCount: results.length,
+        limit 
+      });
+      
+      return results;
+    } catch (error) {
+      this.logger.error('Chunk search failed', error as Error, { 
+        query: query.text,
+        limit,
+        debug 
+      });
+      throw new DatabaseError(
+        `Failed to search chunks for query "${query.text}"`,
+        'query',
+        error as Error
+      );
+    }
   }
   
   async countChunks(): Promise<number> {
-    return await this.chunksTable.countRows();
+    this.logger.debug('Counting chunks');
+    
+    try {
+      const count = await this.chunksTable.countRows();
+      this.logger.info('Chunk count retrieved', { count });
+      return count;
+    } catch (error) {
+      this.logger.error('Failed to count chunks', error as Error);
+      throw new DatabaseError(
+        'Failed to count chunks',
+        'query',
+        error as Error
+      );
+    }
   }
   
   // Helper methods

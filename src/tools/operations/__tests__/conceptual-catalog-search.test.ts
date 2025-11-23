@@ -10,18 +10,21 @@ import { ConceptualCatalogSearchTool } from '../conceptual_catalog_search.js';
 import { CatalogSearchService } from '../../../domain/services/index.js';
 import {
   FakeCatalogRepository,
-  createTestSearchResult
+  createTestSearchResult,
+  MockLogger
 } from '../../../__tests__/test-helpers/index.js';
 
 describe('ConceptualCatalogSearchTool', () => {
   let catalogRepo: FakeCatalogRepository;
   let service: CatalogSearchService;
   let tool: ConceptualCatalogSearchTool;
+  let mockLogger: MockLogger;
   
   beforeEach(() => {
     // SETUP - Fresh repositories and service for each test
     catalogRepo = new FakeCatalogRepository();
-    service = new CatalogSearchService(catalogRepo);
+    mockLogger = new MockLogger();
+    service = new CatalogSearchService(catalogRepo, mockLogger);
     tool = new ConceptualCatalogSearchTool(service);
   });
   

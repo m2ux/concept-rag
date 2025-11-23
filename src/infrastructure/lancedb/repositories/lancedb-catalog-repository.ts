@@ -4,6 +4,7 @@ import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
+import { ILogger } from '../../observability/index.js';
 
 /**
  * LanceDB implementation of CatalogRepository
@@ -18,7 +19,8 @@ import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/i
 export class LanceDBCatalogRepository implements CatalogRepository {
   constructor(
     private catalogTable: lancedb.Table,
-    private hybridSearchService: HybridSearchService
+    private hybridSearchService: HybridSearchService,
+    private logger: ILogger
   ) {}
   
   /**
@@ -29,21 +31,37 @@ export class LanceDBCatalogRepository implements CatalogRepository {
    * @throws {SearchError} If search operation fails
    */
   async search(query: SearchQuery): Promise<SearchResult[]> {
+    const limit = query.limit || 5;
+    const debug = query.debug || false;
+    
+    this.logger.debug('Searching catalog', { query: query.text, limit, debug });
+    
     try {
       // Use hybrid search for comprehensive multi-signal ranking
-      const limit = query.limit || 5;
-      const debug = query.debug || false;
       
       // Wrap table in adapter to prevent infrastructure leakage
       const collection = new SearchableCollectionAdapter(this.catalogTable, 'catalog');
       
-      return await this.hybridSearchService.search(
+      const results = await this.hybridSearchService.search(
         collection,
         query.text,
         limit,
         debug
       );
+      
+      this.logger.info('Catalog search completed', { 
+        query: query.text,
+        resultCount: results.length,
+        limit 
+      });
+      
+      return results;
     } catch (error) {
+      this.logger.error('Catalog search failed', error as Error, { 
+        query: query.text,
+        limit,
+        debug 
+      });
       throw new DatabaseError(
         `Failed to search catalog with query "${query.text}"`,
         'search',
@@ -59,6 +77,8 @@ export class LanceDBCatalogRepository implements CatalogRepository {
    * @throws {DatabaseError} If database query fails
    */
   async findBySource(source: string): Promise<SearchResult | null> {
+    this.logger.debug('Finding catalog entry by source', { source });
+    
     try {
       // Use hybrid search with source as query (benefits from title matching)
       const collection = new SearchableCollectionAdapter(this.catalogTable, 'catalog');
@@ -73,13 +93,24 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       // Find exact source match
       for (const result of results) {
         if (result.source.toLowerCase() === source.toLowerCase()) {
+          this.logger.info('Found exact source match', { source });
           return result;
         }
       }
       
       // If no exact match, return best match if it's close
-      return results.length > 0 ? results[0] : null;
+      const bestMatch = results.length > 0 ? results[0] : null;
+      if (bestMatch) {
+        this.logger.info('Found approximate source match', { 
+          source, 
+          matchedSource: bestMatch.source 
+        });
+      } else {
+        this.logger.warn('No catalog entry found for source', { source });
+      }
+      return bestMatch;
     } catch (error) {
+      this.logger.error('Failed to find catalog entry by source', error as Error, { source });
       throw new DatabaseError(
         `Failed to find catalog entry for source "${source}"`,
         'query',

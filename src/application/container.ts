@@ -154,7 +154,8 @@ export class ApplicationContainer {
     const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
     
     // 4. Create repositories (with infrastructure services)
-    const conceptRepo = new LanceDBConceptRepository(conceptsTable);
+    const repositoryLogger = this.logger.child({ layer: 'repository' });
+    const conceptRepo = new LanceDBConceptRepository(conceptsTable, repositoryLogger);
     
     // 4a. Initialize ConceptIdCache for fast ID↔name resolution
     this.conceptIdCache = ConceptIdCache.getInstance();
@@ -172,7 +173,7 @@ export class ApplicationContainer {
     
     // 4b. Initialize CategoryIdCache if categories table exists
     if (categoriesTable) {
-      this.categoryRepo = new LanceDBCategoryRepository(categoriesTable);
+      this.categoryRepo = new LanceDBCategoryRepository(categoriesTable, repositoryLogger);
       this.categoryIdCache = CategoryIdCache.getInstance();
       await this.instrumentor.measureAsync(
         'cache_initialization',
@@ -187,8 +188,8 @@ export class ApplicationContainer {
       console.error(`✅ CategoryIdCache initialized: ${catStats.categoryCount} categories, ~${Math.round(catStats.memorySizeEstimate / 1024)}KB`);
     }
     
-    const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, this.conceptIdCache);
-    const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
+    const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, this.conceptIdCache, repositoryLogger);
+    const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService, repositoryLogger);
     
     // 5. Create domain services (with repositories and logger)
     const serviceLogger = this.logger.child({ layer: 'domain-service' });
