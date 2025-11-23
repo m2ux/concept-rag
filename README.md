@@ -180,14 +180,6 @@ The **[Concept Lexicon](docs/concept-lexicon.md)** catalogs concepts from the lo
 
 ## 💬 Support & Community
 
-### Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
-- Development setup
-- Code style guidelines
-- Pull request process
-- Areas needing help
-
 ## 🙏 Acknowledgments
 
 This project is forked from [lance-mcp](https://github.com/adiom-data/lance-mcp) by [adiom-data](https://github.com/adiom-data). The original project provided the foundational MCP server architecture and LanceDB integration.
@@ -205,6 +197,14 @@ This project is forked from [lance-mcp](https://github.com/adiom-data/lance-mcp)
 - 🏗️ **Clean Architecture** - Domain-Driven Design patterns throughout (see [REFERENCES.md](REFERENCES.md))
 
 We're grateful to the original author for creating and open-sourcing this excellent foundation!
+
+### Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Development setup
+- Code style guidelines
+- Pull request process
+- Areas needing help
 
 ## 📜 License
 
