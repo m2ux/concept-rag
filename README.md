@@ -153,15 +153,12 @@ src/
   │                │                │
 Concept         Summary           Chunks
 Extraction      Generation        Creation
-(Sonnet 4.5)    (Grok-4-fast)    (Local)
-[Formal Model]  [Fast]           [Hybrid]
   ↓                ↓                ↓
 Concepts         Catalog          Chunks
 Table            Table            Table
   └────────────────┴────────────────┘
                    │
          Conceptual Search Engine
-              (5 signals)
                    │
      ┌─────────────┼─────────────┐
      │             │             │
@@ -198,14 +195,6 @@ The **[Concept Lexicon](docs/concept-lexicon.md)** catalogs concepts from the lo
 **Note:** AI agent usage (Cursor, Claude Desktop) incurs separate costs for processing search results.
 
 ## 💬 Support & Community
-
-### Getting Help
-
-- 📖 **Documentation**: [SETUP.md](SETUP.md), [USAGE.md](USAGE.md), [FAQ.md](FAQ.md)
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/m2ux/concept-rag/issues)
-- 💡 **Questions & Discussions**: [GitHub Discussions](https://github.com/m2ux/concept-rag/discussions)
-- 🔒 **Security Issues**: [SECURITY.md](SECURITY.md)
-- 🛠️ **Troubleshooting**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 
 ### Contributing
 
