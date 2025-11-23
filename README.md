@@ -97,19 +97,6 @@ npx tsx hybrid_fast_seed.ts \
 
 ## 🛠️ Development
 
-### Quick Testing
-
-```bash
-# Build
-npm run build
-
-# Interactive testing (MCP Inspector)
-npx @modelcontextprotocol/inspector dist/conceptual_index.js ~/.concept_rag
-
-# Command-line concept extraction
-npx tsx scripts/extract_concepts.ts "document name" markdown
-```
-
 ### Project Structure
 
 ```
