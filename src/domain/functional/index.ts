@@ -1,0 +1,45 @@
+/**
+ * Functional Programming Types
+ * 
+ * This module provides functional programming patterns for error handling
+ * and nullable value handling in TypeScript.
+ */
+
+// Result type - for operations that can succeed or fail
+export * as Result from './result.js';
+export type { Result } from './result.js';
+export { Ok, Err, isOk, isErr } from './result.js';
+
+// Either type - for bi-directional choice
+export * as Either from './either.js';
+export type { Either } from './either.js';
+export { Left, Right, isLeft, isRight } from './either.js';
+
+// Option type - for nullable value handling
+export * as Option from './option.js';
+export type { Option } from './option.js';
+export { Some, None, isSome, isNone } from './option.js';
+
+// Railway Oriented Programming utilities
+export * as Railway from './railway.js';
+export {
+  pipe,
+  pipeAsync,
+  lift,
+  liftTry,
+  liftTryAsync,
+  tee,
+  teeErr,
+  validateAll,
+  retry,
+  parallel,
+  parallelAll,
+  firstSuccess,
+  when,
+  branch,
+  bimap,
+  recover,
+  recoverWith,
+  ensure
+} from './railway.js';
+
