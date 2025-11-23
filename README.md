@@ -13,14 +13,6 @@ A powerful RAG MCP server that enables LLMs to interact with documents through c
 **🚀 [Quick Start](#-quick-start)** • **⚙️ [Setup Guide](SETUP.md)** • **📖 [Usage](USAGE.md)** • **💡 [Examples](EXAMPLES.md)** • **❓ [FAQ](FAQ.md)** • **🛠️ [Troubleshooting](TROUBLESHOOTING.md)**
 
 ---
-
-## ✨ Key Features
-
-- 🧠 **8 Specialized Search Tools** - Optimized for different search modalities (concept research, document discovery, comprehensive search, single-document, concept export, category browsing)
-- 🏷️ **Category Search** 🆕 - Browse documents by domain with 46 auto-extracted categories, hash-based stable IDs, and hierarchical organization
-- 🔍 **Multi-Signal Hybrid Ranking** - Vector similarity + BM25 keyword + concept matching + title matching + WordNet expansion
-- 🤖 **LLM-Powered Extraction** - Claude Sonnet 4.5 extracts 80-150+ concepts per document with formal semantic model
-
 ## 📝 Available Tools
 
 The server provides eight specialized search tools. **For AI agents:** See [tool-selection-guide.md](tool-selection-guide.md) for the complete decision tree.
