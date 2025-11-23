@@ -15,7 +15,7 @@ A powerful RAG MCP server that enables LLMs to interact with documents through c
 ---
 ## 📝 Available Tools
 
-The server provides eight specialized search tools. **For AI agents:** See [tool-selection-guide.md](tool-selection-guide.md) for the complete decision tree.
+The server provides eight specialized search tools.
 
 | Tool | Best For | Use When | Example Query |
 |------|----------|----------|---------------|
@@ -28,6 +28,7 @@ The server provides eight specialized search tools. **For AI agents:** See [tool
 | `list_categories` 🆕 | Category discovery | Explore available domains | `"What categories do I have?"` |
 | `list_concepts_in_category` 🆕 | Domain concept analysis | Find concepts in a category | `"What concepts are in distributed systems?"` |
 
+**For AI agents:** See [tool-selection-guide.md](tool-selection-guide.md) for the complete decision tree.
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -90,11 +91,9 @@ npx tsx hybrid_fast_seed.ts \
 }
 ```
 
-**Claude Desktop** (see [SETUP.md](SETUP.md) for config file locations)
-
 **Restart your MCP client** and start searching!
 
-**📖 For complete setup instructions, see [SETUP.md](SETUP.md)**
+**📖 For complete setup instructions for mutliple IDEs, see [SETUP.md](SETUP.md)**
 
 ## 📚 Documentation
 
