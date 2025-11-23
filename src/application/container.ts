@@ -19,6 +19,7 @@ import { ConceptIdCache } from '../infrastructure/cache/concept-id-cache.js';
 import { CategoryIdCache } from '../infrastructure/cache/category-id-cache.js';
 import { LanceDBCategoryRepository } from '../infrastructure/lancedb/repositories/lancedb-category-repository.js';
 import type { CategoryRepository } from '../domain/interfaces/category-repository.js';
+import { createLogger, ILogger, createInstrumentor, PerformanceInstrumentation } from '../infrastructure/observability/index.js';
 import * as defaults from '../config.js';
 
 /**
@@ -63,6 +64,8 @@ export class ApplicationContainer {
   private categoryIdCache?: CategoryIdCache;
   private categoryRepo?: CategoryRepository;
   private tools = new Map<string, BaseTool>();
+  private logger!: ILogger;
+  private instrumentor!: PerformanceInstrumentation;
   
   /**
    * Initialize the application container and wire all dependencies.
@@ -103,13 +106,38 @@ export class ApplicationContainer {
   async initialize(databaseUrl: string): Promise<void> {
     console.error('🏗️  Initializing application container...');
     
+    // 0. Initialize observability infrastructure
+    this.logger = createLogger({ 
+      service: 'concept-rag',
+      environment: process.env.NODE_ENV || 'development'
+    });
+    this.instrumentor = createInstrumentor(this.logger);
+    this.logger.info('Application container initialization started', { databaseUrl });
+    
     // 1. Connect to database
-    this.dbConnection = await LanceDBConnection.connect(databaseUrl);
+    this.dbConnection = await this.instrumentor.measureAsync(
+      'database_connection',
+      async () => LanceDBConnection.connect(databaseUrl),
+      { databaseUrl }
+    );
     
     // 2. Open tables
-    const chunksTable = await this.dbConnection.openTable(defaults.CHUNKS_TABLE_NAME);
-    const catalogTable = await this.dbConnection.openTable(defaults.CATALOG_TABLE_NAME);
-    const conceptsTable = await this.dbConnection.openTable(defaults.CONCEPTS_TABLE_NAME);
+    this.logger.debug('Opening database tables');
+    const chunksTable = await this.instrumentor.measureAsync(
+      'open_table',
+      async () => this.dbConnection.openTable(defaults.CHUNKS_TABLE_NAME),
+      { table: defaults.CHUNKS_TABLE_NAME }
+    );
+    const catalogTable = await this.instrumentor.measureAsync(
+      'open_table',
+      async () => this.dbConnection.openTable(defaults.CATALOG_TABLE_NAME),
+      { table: defaults.CATALOG_TABLE_NAME }
+    );
+    const conceptsTable = await this.instrumentor.measureAsync(
+      'open_table',
+      async () => this.dbConnection.openTable(defaults.CONCEPTS_TABLE_NAME),
+      { table: defaults.CONCEPTS_TABLE_NAME }
+    );
     
     // 2a. Open categories table if it exists (optional for backward compatibility)
     let categoriesTable = null;
@@ -130,16 +158,32 @@ export class ApplicationContainer {
     
     // 4a. Initialize ConceptIdCache for fast ID↔name resolution
     this.conceptIdCache = ConceptIdCache.getInstance();
-    await this.conceptIdCache.initialize(conceptRepo);
+    await this.instrumentor.measureAsync(
+      'cache_initialization',
+      async () => this.conceptIdCache!.initialize(conceptRepo),
+      { cache: 'ConceptIdCache' }
+    );
     const cacheStats = this.conceptIdCache.getStats();
+    this.logger.info('ConceptIdCache initialized', {
+      conceptCount: cacheStats.conceptCount,
+      memorySizeKB: Math.round(cacheStats.memorySizeEstimate / 1024)
+    });
     console.error(`✅ ConceptIdCache initialized: ${cacheStats.conceptCount} concepts, ~${Math.round(cacheStats.memorySizeEstimate / 1024)}KB`);
     
     // 4b. Initialize CategoryIdCache if categories table exists
     if (categoriesTable) {
       this.categoryRepo = new LanceDBCategoryRepository(categoriesTable);
       this.categoryIdCache = CategoryIdCache.getInstance();
-      await this.categoryIdCache.initialize(this.categoryRepo);
+      await this.instrumentor.measureAsync(
+        'cache_initialization',
+        async () => this.categoryIdCache!.initialize(this.categoryRepo!),
+        { cache: 'CategoryIdCache' }
+      );
       const catStats = this.categoryIdCache.getStats();
+      this.logger.info('CategoryIdCache initialized', {
+        categoryCount: catStats.categoryCount,
+        memorySizeKB: Math.round(catStats.memorySizeEstimate / 1024)
+      });
       console.error(`✅ CategoryIdCache initialized: ${catStats.categoryCount} categories, ~${Math.round(catStats.memorySizeEstimate / 1024)}KB`);
     }
     
@@ -167,6 +211,11 @@ export class ApplicationContainer {
     }
     
     console.error(`✅ Container initialized with ${this.tools.size} tool(s)`);
+    this.logger.info('Application container initialization completed', {
+      toolCount: this.tools.size,
+      cacheEnabled: !!this.conceptIdCache,
+      categoryFeaturesEnabled: !!this.categoryRepo
+    });
   }
   
   /**
@@ -262,7 +311,13 @@ export class ApplicationContainer {
    * ```
    */
   async close(): Promise<void> {
-    await this.dbConnection.close();
+    this.logger.info('Application container shutdown started');
+    
+    await this.instrumentor.measureAsync(
+      'database_close',
+      async () => this.dbConnection.close()
+    );
+    
     this.tools.clear();
     if (this.conceptIdCache) {
       this.conceptIdCache.clear();
@@ -270,7 +325,27 @@ export class ApplicationContainer {
     if (this.categoryIdCache) {
       this.categoryIdCache.clear();
     }
+    
+    this.logger.info('Application container shutdown completed');
     console.error('🛑 Container shutdown complete');
+  }
+  
+  /**
+   * Get the logger instance for use by other components.
+   * 
+   * @returns The configured logger
+   */
+  getLogger(): ILogger {
+    return this.logger;
+  }
+  
+  /**
+   * Get the performance instrumentor for use by other components.
+   * 
+   * @returns The configured performance instrumentor
+   */
+  getInstrumentor(): PerformanceInstrumentation {
+    return this.instrumentor;
   }
   
   /**
