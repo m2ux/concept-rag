@@ -10,18 +10,21 @@ import { ConceptualBroadChunksSearchTool } from '../conceptual_broad_chunks_sear
 import { ChunkSearchService } from '../../../domain/services/index.js';
 import {
   FakeChunkRepository,
-  createTestSearchResult
+  createTestSearchResult,
+  MockLogger
 } from '../../../__tests__/test-helpers/index.js';
 
 describe('ConceptualBroadChunksSearchTool', () => {
   let chunkRepo: FakeChunkRepository;
   let service: ChunkSearchService;
   let tool: ConceptualBroadChunksSearchTool;
+  let mockLogger: MockLogger;
   
   beforeEach(() => {
     // SETUP - Fresh repositories and service for each test
     chunkRepo = new FakeChunkRepository();
-    service = new ChunkSearchService(chunkRepo);
+    mockLogger = new MockLogger();
+    service = new ChunkSearchService(chunkRepo, mockLogger);
     tool = new ConceptualBroadChunksSearchTool(service);
   });
   

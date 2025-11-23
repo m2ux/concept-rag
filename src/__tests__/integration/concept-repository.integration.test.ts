@@ -16,7 +16,18 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { createTestDatabase, TestDatabaseFixture } from './test-db-setup.js';
 import { LanceDBConceptRepository } from '../../infrastructure/lancedb/repositories/lancedb-concept-repository.js';
+import { ILogger } from '../../infrastructure/observability/index.js';
 import * as defaults from '../../config.js';
+
+// Mock Logger for tests
+class MockLogger implements ILogger {
+  debug = () => {};
+  info = () => {};
+  warn = () => {};
+  error = () => {};
+  logOperation = () => {};
+  child = () => this;
+}
 
 describe('LanceDBConceptRepository - Integration Tests', () => {
   let fixture: TestDatabaseFixture;
@@ -30,8 +41,9 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
     // Create repository
     const connection = fixture.getConnection();
     const conceptsTable = await connection.openTable(defaults.CONCEPTS_TABLE_NAME);
+    const mockLogger = new MockLogger();
     
-    conceptRepo = new LanceDBConceptRepository(conceptsTable);
+    conceptRepo = new LanceDBConceptRepository(conceptsTable, mockLogger);
   }, 30000);
   
   afterAll(async () => {

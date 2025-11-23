@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ChunkSearchService } from '../chunk-search-service.js';
 import { ChunkRepository } from '../../interfaces/repositories/chunk-repository.js';
 import { Chunk, SearchResult } from '../../models/index.js';
+import { createLogger } from '../../../infrastructure/observability/index.js';
 
 /**
  * Mock ChunkRepository for testing
@@ -57,7 +58,8 @@ describe('ChunkSearchService', () => {
   beforeEach(() => {
     // SETUP: Create fresh mocks for each test
     mockRepo = new MockChunkRepository();
-    service = new ChunkSearchService(mockRepo);
+    const logger = createLogger({ service: 'test' }, 'error');
+    service = new ChunkSearchService(mockRepo, logger);
   });
 
   describe('searchBroad', () => {

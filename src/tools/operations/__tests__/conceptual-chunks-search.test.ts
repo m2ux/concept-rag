@@ -10,18 +10,21 @@ import { ConceptualChunksSearchTool } from '../conceptual_chunks_search.js';
 import { ChunkSearchService } from '../../../domain/services/index.js';
 import {
   FakeChunkRepository,
-  createTestChunk
+  createTestChunk,
+  MockLogger
 } from '../../../__tests__/test-helpers/index.js';
 
 describe('ConceptualChunksSearchTool', () => {
   let chunkRepo: FakeChunkRepository;
   let service: ChunkSearchService;
   let tool: ConceptualChunksSearchTool;
+  let mockLogger: MockLogger;
   
   beforeEach(() => {
     // SETUP - Fresh repositories and service for each test
     chunkRepo = new FakeChunkRepository();
-    service = new ChunkSearchService(chunkRepo);
+    mockLogger = new MockLogger();
+    service = new ChunkSearchService(chunkRepo, mockLogger);
     tool = new ConceptualChunksSearchTool(service);
   });
   

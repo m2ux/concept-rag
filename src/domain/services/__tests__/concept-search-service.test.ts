@@ -11,6 +11,7 @@ import { ConceptSearchService } from '../concept-search-service.js';
 import { ChunkRepository } from '../../interfaces/repositories/chunk-repository.js';
 import { ConceptRepository } from '../../interfaces/repositories/concept-repository.js';
 import { Chunk, Concept } from '../../models/index.js';
+import { createLogger } from '../../../infrastructure/observability/index.js';
 
 /**
  * Mock ChunkRepository for testing
@@ -92,7 +93,8 @@ describe('ConceptSearchService', () => {
     // SETUP: Create fresh mocks for each test
     mockChunkRepo = new MockChunkRepository();
     mockConceptRepo = new MockConceptRepository();
-    service = new ConceptSearchService(mockChunkRepo, mockConceptRepo);
+    const logger = createLogger({ service: 'test' }, 'error'); // Silent logger for tests
+    service = new ConceptSearchService(mockChunkRepo, mockConceptRepo, logger);
   });
 
   describe('searchConcept - basic functionality', () => {

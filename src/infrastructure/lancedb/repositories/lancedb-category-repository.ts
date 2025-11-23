@@ -9,6 +9,7 @@ import type { Table } from '@lancedb/lancedb';
 import type { CategoryRepository } from '../../../domain/interfaces/category-repository';
 import type { Category } from '../../../domain/models/category';
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
+import { ILogger } from '../../observability/index.js';
 
 /**
  * Parse JSON field safely
@@ -25,7 +26,10 @@ function parseJsonField<T>(field: string | undefined | null, defaultValue: T): T
 }
 
 export class LanceDBCategoryRepository implements CategoryRepository {
-  constructor(private table: Table) {}
+  constructor(
+    private table: Table,
+    private logger: ILogger
+  ) {}
 
   /**
    * Get all categories.
@@ -33,6 +37,8 @@ export class LanceDBCategoryRepository implements CategoryRepository {
    * @throws {DatabaseError} If database query fails
    */
   async findAll(): Promise<Category[]> {
+    this.logger.debug('Finding all categories');
+    
     try {
       // LanceDB query() has a default limit of 10 rows (safety feature)
       // Categories table is small (<200 typically, <1000 max realistic)
@@ -41,8 +47,13 @@ export class LanceDBCategoryRepository implements CategoryRepository {
         .query()
         .limit(10000) // 10x safety margin over max expected categories
         .toArray();
-      return rows.map((row: any) => this.mapRowToCategory(row));
+      
+      const categories = rows.map((row: any) => this.mapRowToCategory(row));
+      
+      this.logger.info('Retrieved all categories', { count: categories.length });
+      return categories;
     } catch (error) {
+      this.logger.error('Failed to retrieve all categories', error as Error);
       throw new DatabaseError(
         'Failed to retrieve all categories',
         'query',
@@ -58,14 +69,26 @@ export class LanceDBCategoryRepository implements CategoryRepository {
    * @throws {DatabaseError} If database query fails
    */
   async findById(id: number): Promise<Category | null> {
+    this.logger.debug('Finding category by ID', { id });
+    
     try {
       const rows = await this.table
         .query()
         .where(`id = ${id}`)
         .limit(1)
         .toArray();
-      return rows.length > 0 ? this.mapRowToCategory(rows[0]) : null;
+      
+      const category = rows.length > 0 ? this.mapRowToCategory(rows[0]) : null;
+      
+      if (category) {
+        this.logger.info('Found category by ID', { id, categoryName: category.name });
+      } else {
+        this.logger.debug('Category not found by ID', { id });
+      }
+      
+      return category;
     } catch (error) {
+      this.logger.error('Failed to find category by ID', error as Error, { id });
       throw new DatabaseError(
         `Failed to find category with id ${id}`,
         'query',
@@ -81,6 +104,8 @@ export class LanceDBCategoryRepository implements CategoryRepository {
    * @throws {DatabaseError} If database query fails
    */
   async findByName(name: string): Promise<Category | null> {
+    this.logger.debug('Finding category by name', { name });
+    
     try {
       // LanceDB string filtering requires proper escaping
       const escapedName = name.replace(/'/g, "''");
@@ -89,8 +114,18 @@ export class LanceDBCategoryRepository implements CategoryRepository {
         .where(`category = '${escapedName}'`)
         .limit(1)
         .toArray();
-      return rows.length > 0 ? this.mapRowToCategory(rows[0]) : null;
+      
+      const category = rows.length > 0 ? this.mapRowToCategory(rows[0]) : null;
+      
+      if (category) {
+        this.logger.info('Found category by name', { name, categoryId: category.id });
+      } else {
+        this.logger.debug('Category not found by name', { name });
+      }
+      
+      return category;
     } catch (error) {
+      this.logger.error('Failed to find category by name', error as Error, { name });
       throw new DatabaseError(
         `Failed to find category with name "${name}"`,
         'query',

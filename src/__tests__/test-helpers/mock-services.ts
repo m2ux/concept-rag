@@ -8,7 +8,22 @@
  */
 
 import { EmbeddingService } from '../../domain/interfaces/services/embedding-service.js';
+import { ILogger } from '../../infrastructure/observability/index.js';
 import { createTestEmbedding } from './test-data.js';
+
+/**
+ * Mock Logger for testing
+ * 
+ * Silent logger that does nothing - prevents console pollution during tests.
+ */
+export class MockLogger implements ILogger {
+  debug = () => {};
+  info = () => {};
+  warn = () => {};
+  error = () => {};
+  logOperation = () => {};
+  child = () => this;
+}
 
 /**
  * Fake EmbeddingService for testing

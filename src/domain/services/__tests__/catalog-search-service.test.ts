@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { CatalogSearchService } from '../catalog-search-service.js';
 import { CatalogRepository } from '../../interfaces/repositories/catalog-repository.js';
 import { SearchResult } from '../../models/index.js';
+import { createLogger } from '../../../infrastructure/observability/index.js';
 
 /**
  * Mock CatalogRepository for testing
@@ -50,7 +51,8 @@ describe('CatalogSearchService', () => {
   beforeEach(() => {
     // SETUP: Create fresh mocks for each test
     mockRepo = new MockCatalogRepository();
-    service = new CatalogSearchService(mockRepo);
+    const logger = createLogger({ service: 'test' }, 'error');
+    service = new CatalogSearchService(mockRepo, logger);
   });
 
   describe('searchCatalog', () => {

@@ -13,7 +13,18 @@ import { LanceDBCatalogRepository } from '../../infrastructure/lancedb/repositor
 import { SimpleEmbeddingService } from '../../infrastructure/embeddings/simple-embedding-service.js';
 import { ConceptualHybridSearchService } from '../../infrastructure/search/conceptual-hybrid-search-service.js';
 import { QueryExpander } from '../../concepts/query_expander.js';
+import { ILogger } from '../../infrastructure/observability/index.js';
 import * as defaults from '../../config.js';
+
+// Mock Logger for tests
+class MockLogger implements ILogger {
+  debug = () => {};
+  info = () => {};
+  warn = () => {};
+  error = () => {};
+  logOperation = () => {};
+  child = () => this;
+}
 
 describe('LanceDBCatalogRepository - Integration Tests', () => {
   let fixture: TestDatabaseFixture;
@@ -32,8 +43,9 @@ describe('LanceDBCatalogRepository - Integration Tests', () => {
     const embeddingService = new SimpleEmbeddingService();
     const queryExpander = new QueryExpander(conceptsTable, embeddingService);
     const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
+    const mockLogger = new MockLogger();
     
-    catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
+    catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService, mockLogger);
   }, 30000);
   
   afterAll(async () => {

@@ -20,7 +20,18 @@ import { LanceDBConceptRepository } from '../../infrastructure/lancedb/repositor
 import { SimpleEmbeddingService } from '../../infrastructure/embeddings/simple-embedding-service.js';
 import { ConceptualHybridSearchService } from '../../infrastructure/search/conceptual-hybrid-search-service.js';
 import { QueryExpander } from '../../concepts/query_expander.js';
+import { ILogger } from '../../infrastructure/observability/index.js';
 import * as defaults from '../../config.js';
+
+// Mock Logger for tests
+class MockLogger implements ILogger {
+  debug = () => {};
+  info = () => {};
+  warn = () => {};
+  error = () => {};
+  logOperation = () => {};
+  child = () => this;
+}
 
 describe('LanceDBChunkRepository - Integration Tests', () => {
   let fixture: TestDatabaseFixture;
@@ -39,7 +50,8 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
     const embeddingService = new SimpleEmbeddingService();
     const queryExpander = new QueryExpander(conceptsTable, embeddingService);
     const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
-    const conceptRepo = new LanceDBConceptRepository(conceptsTable);
+    const mockLogger = new MockLogger();
+    const conceptRepo = new LanceDBConceptRepository(conceptsTable, mockLogger);
     
     // Initialize ConceptIdCache for integer ID resolution
     const { ConceptIdCache } = await import('../../infrastructure/cache/concept-id-cache.js');
@@ -51,7 +63,8 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       conceptRepo,
       embeddingService,
       hybridSearchService,
-      conceptIdCache
+      conceptIdCache,
+      mockLogger
     );
   }, 30000); // Increased timeout for database setup
   
