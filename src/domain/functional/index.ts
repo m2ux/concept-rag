@@ -18,7 +18,7 @@ export { Left, Right, isLeft, isRight } from './either.js';
 // Option type - for nullable value handling
 export * as Option from './option.js';
 export type { Option } from './option.js';
-export { Some, None, isSome, isNone } from './option.js';
+export { Some, None, isSome, isNone, fromNullable, toNullable, map as mapOption, fold as foldOption, getOrElse } from './option.js';
 
 // Railway Oriented Programming utilities
 export * as Railway from './railway.js';

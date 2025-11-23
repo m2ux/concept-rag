@@ -5,6 +5,7 @@ import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } 
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
 import { parseJsonField, escapeSqlString } from '../utils/field-parsers.js';
 import { validateConceptRow, detectVectorField } from '../utils/schema-validators.js';
+import { Option, Some, None, fromNullable } from '../../../domain/functional/option.js';
 
 /**
  * LanceDB implementation of ConceptRepository
@@ -101,6 +102,37 @@ export class LanceDBConceptRepository implements ConceptRepository {
         error as Error
       );
     }
+  }
+  
+  /**
+   * Find concept by name - Option variant.
+   * 
+   * Type-safe wrapper around findByName that returns Option<Concept>.
+   * Eliminates null checks and enables functional composition.
+   * 
+   * @param conceptName - Name of the concept
+   * @returns Promise resolving to Some(concept) if found, None if not found
+   * @throws {DatabaseError} If database query fails
+   * @throws {InvalidEmbeddingsError} If concept has invalid embeddings
+   */
+  async findByNameOpt(conceptName: string): Promise<Option<Concept>> {
+    const result = await this.findByName(conceptName);
+    return fromNullable(result);
+  }
+  
+  /**
+   * Find concept by ID - Option variant.
+   * 
+   * Type-safe wrapper around findById that returns Option<Concept>.
+   * 
+   * @param id - Concept ID
+   * @returns Promise resolving to Some(concept) if found, None if not found
+   * @throws {DatabaseError} If database query fails
+   * @throws {InvalidEmbeddingsError} If concept has invalid embeddings
+   */
+  async findByIdOpt(id: number): Promise<Option<Concept>> {
+    const result = await this.findById(id);
+    return fromNullable(result);
   }
   
   async findRelated(conceptName: string, limit: number): Promise<Concept[]> {

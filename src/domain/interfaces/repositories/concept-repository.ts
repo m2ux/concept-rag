@@ -1,4 +1,5 @@
 import { Concept } from '../../models/index.js';
+import { Option } from '../../functional/option.js';
 
 /**
  * Repository interface for accessing concept data from the vector database.
@@ -61,6 +62,57 @@ export interface ConceptRepository {
    * ```
    */
   findByName(conceptName: string): Promise<Concept | null>;
+  
+  /**
+   * Find a concept by exact name match (case-insensitive) - Option variant.
+   * 
+   * Type-safe alternative to findByName that uses Option<T> instead of nullable.
+   * Provides functional composition and eliminates null checks.
+   * 
+   * **Performance**: O(1) - indexed lookup
+   * 
+   * @param conceptName - The concept name to find
+   * @returns Promise resolving to Some(concept) if found, None if not found
+   * @throws {Error} If database query fails
+   * 
+   * @example
+   * ```typescript
+   * import { map, getOrElse } from '../../functional/option';
+   * 
+   * // Functional composition
+   * const conceptOpt = await conceptRepo.findByNameOpt('dependency injection');
+   * const conceptName = map(conceptOpt, c => c.concept);
+   * 
+   * // With default
+   * const category = pipe(
+   *   conceptOpt,
+   *   map(c => c.category),
+   *   getOrElse('Unknown')
+   * );
+   * ```
+   */
+  findByNameOpt(conceptName: string): Promise<Option<Concept>>;
+  
+  /**
+   * Find a concept by hash-based integer ID - Option variant.
+   * 
+   * Type-safe alternative to findById that uses Option<T> instead of nullable.
+   * 
+   * @param id - Hash-based concept ID
+   * @returns Promise resolving to Some(concept) if found, None if not found
+   * @throws {Error} If database query fails
+   * 
+   * @example
+   * ```typescript
+   * const conceptOpt = await conceptRepo.findByIdOpt(123456);
+   * const relatedConcepts = fold(
+   *   conceptOpt,
+   *   () => [],
+   *   c => c.relatedConcepts
+   * );
+   * ```
+   */
+  findByIdOpt(id: number): Promise<Option<Concept>>;
   
   /**
    * Find concepts related to a given concept using vector similarity.

@@ -34,6 +34,7 @@
 import { ChunkRepository } from '../interfaces/repositories/chunk-repository.js';
 import { ConceptRepository } from '../interfaces/repositories/concept-repository.js';
 import { Chunk, Concept } from '../models/index.js';
+import { Option, foldOption, toNullable } from '../functional/index.js';
 
 /**
  * Parameters for concept search operations.
@@ -116,8 +117,8 @@ export class ConceptSearchService {
   async searchConcept(params: ConceptSearchParams): Promise<ConceptSearchResult> {
     const conceptLower = params.concept.toLowerCase().trim();
     
-    // Get concept metadata (may be null if concept doesn't exist)
-    const conceptMetadata = await this.conceptRepo.findByName(conceptLower);
+    // Get concept metadata using Option for type-safe nullable handling
+    const conceptMetadataOpt = await this.conceptRepo.findByNameOpt(conceptLower);
     
     // Find matching chunks (returns empty array if concept not found)
     // Request extra to allow for filtering
@@ -143,12 +144,16 @@ export class ConceptSearchService {
     // Limit results
     const limitedChunks = sortedChunks.slice(0, params.limit);
     
-    // Extract related concepts
-    const relatedConcepts = conceptMetadata?.relatedConcepts?.slice(0, 10) || [];
+    // Extract related concepts using Option composition
+    const relatedConcepts = foldOption(
+      conceptMetadataOpt,
+      () => [],  // None: return empty array
+      (concept) => concept.relatedConcepts?.slice(0, 10) || []  // Some: extract related
+    );
     
     return {
       concept: params.concept,
-      conceptMetadata,
+      conceptMetadata: toNullable(conceptMetadataOpt),  // Convert back to null for backward compat
       chunks: limitedChunks,
       relatedConcepts,
       totalFound

@@ -9,6 +9,4 @@
 export * from './concept-search-service.js';
 export * from './catalog-search-service.js';
 export * from './chunk-search-service.js';
-export * from './document-processing-service.js';
-export * from './result-catalog-search-service.js';
 
