@@ -93,7 +93,7 @@ npx tsx hybrid_fast_seed.ts \
 
 **Restart your MCP client** and start searching!
 
-**📖 For complete setup instructions for mutliple IDEs, see [SETUP.md](SETUP.md)**
+**📖 For complete setup instructions for various IDEs, see [SETUP.md](SETUP.md)**
 
 ## 🧠 Concept Model
 
