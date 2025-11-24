@@ -9,7 +9,8 @@ import type { Table } from '@lancedb/lancedb';
 import type { CategoryRepository } from '../../../domain/interfaces/category-repository';
 import type { Category } from '../../../domain/models/category';
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
-import { Option, fromNullable } from '../../../domain/functional/option.js';
+import type { Option } from "../../../../__tests__/test-helpers/../../domain/functional/index.js";
+import { fromNullable } from '../../../domain/functional/option.js';
 
 /**
  * Parse JSON field safely

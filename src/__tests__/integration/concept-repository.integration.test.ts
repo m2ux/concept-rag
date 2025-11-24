@@ -50,8 +50,8 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       // ASSERT: Concept should be found with correct data
       expect(isSome(conceptOpt)).toBe(true);
       expect(isSome(conceptOpt)).toBe(true);
-      expect(conceptOpt.value.concept).toBe('clean architecture');
-      expect(conceptOpt.value.category).toBe('Architecture Pattern');
+      expect((conceptOpt as { tag: "some"; value: Concept }).value.concept).toBe('clean architecture');
+      expect((conceptOpt as { tag: "some"; value: Concept }).value.category).toBe('Architecture Pattern');
     });
     
     it('should handle case-insensitive lookup', async () => {
@@ -97,14 +97,14 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       // ASSERT: Critical test - verifies vector/embeddings field mapping bug fix
       expect(isSome(conceptOpt)).toBe(true);
       if (isSome(conceptOpt)) {
-        expect(conceptOpt.value.embeddings).toBeDefined();
+        expect((conceptOpt as { tag: "some"; value: Concept }).value.embeddings).toBeDefined();
       }
       
       // Embeddings can be either an array or Arrow Vector object (both valid)
       const isArray = Array.isArray(conceptOpt.value.embeddings);
       const hasLength = 'length' in conceptOpt.value.embeddings && typeof conceptOpt.value.embeddings.length === 'number';
       expect(isArray || hasLength).toBe(true);
-      expect(conceptOpt.value.embeddings.length).toBe(384); // Expected embedding dimension
+      expect((conceptOpt as { tag: "some"; value: Concept }).value.embeddings.length).toBe(384); // Expected embedding dimension
       
       // Verify embeddings contain valid data (convert to array if needed)
       const embeddingsArray = Array.isArray(conceptOpt.value.embeddings) 
@@ -178,13 +178,13 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       expect(isSome(conceptOpt)).toBe(true);
       // Sources array
       expect(Array.isArray(conceptOpt.value.sources)).toBe(true);
-      expect(conceptOpt.value.sources.length).toBeGreaterThan(0);
-      expect(conceptOpt.value.sources[0]).toContain('.pdf');
+      expect((conceptOpt as { tag: "some"; value: Concept }).value.sources.length).toBeGreaterThan(0);
+      expect((conceptOpt as { tag: "some"; value: Concept }).value.sources[0]).toContain('.pdf');
       
       // Related concepts array
       expect(Array.isArray(conceptOpt.value.relatedConcepts)).toBe(true);
-      expect(conceptOpt.value.relatedConcepts.length).toBeGreaterThan(0);
-      expect(conceptOpt.value.relatedConcepts).toContain('layered architecture');
+      expect((conceptOpt as { tag: "some"; value: Concept }).value.relatedConcepts.length).toBeGreaterThan(0);
+      expect((conceptOpt as { tag: "some"; value: Concept }).value.relatedConcepts).toContain('layered architecture');
     });
   });
   
@@ -267,8 +267,8 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       // ASSERT: Vector field should be detected and mapped
       expect(isSome(conceptOpt)).toBe(true);
       if (isSome(conceptOpt)) {
-        expect(conceptOpt.value.embeddings).toBeDefined();
-        expect(conceptOpt.value.embeddings.length).toBe(384);
+        expect((conceptOpt as { tag: "some"; value: Concept }).value.embeddings).toBeDefined();
+        expect((conceptOpt as { tag: "some"; value: Concept }).value.embeddings.length).toBe(384);
       }
       
       // Verify it's either an array or Arrow Vector object (both valid)

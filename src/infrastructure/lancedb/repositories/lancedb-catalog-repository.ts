@@ -4,7 +4,8 @@ import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
-import { Option, fromNullable, Some, None, isSome } from '../../../domain/functional/option.js';
+import type { Option } from "../../../../__tests__/test-helpers/../../domain/functional/index.js";
+import { fromNullable, Some, None, isSome } from '../../../domain/functional/option.js';
 
 /**
  * LanceDB implementation of CatalogRepository

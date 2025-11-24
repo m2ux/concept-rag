@@ -15,7 +15,8 @@ import { ChunkRepository } from '../interfaces/repositories/chunk-repository.js'
 import { ConceptRepository } from '../interfaces/repositories/concept-repository.js';
 import { Chunk, Concept } from '../models/index.js';
 import { Result, Ok, Err } from '../functional/result.js';
-import { Option, fromNullable, foldOption, toNullable } from '../functional/index.js';
+import type { Option } from '../functional/index.js';
+import { fromNullable, foldOption, toNullable } from '../functional/index.js';
 import { InputValidator } from './validation/InputValidator.js';
 
 /**

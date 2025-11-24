@@ -101,7 +101,7 @@ export function mapErr<T, E, F>(
  */
 export function unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
   if (isOk(result)) {
-    return result.value;
+    return (result as Ok<T>).value;
   }
   return defaultValue;
 }
@@ -114,9 +114,9 @@ export function unwrapOrElse<T, E>(
   fn: (error: E) => T
 ): T {
   if (isOk(result)) {
-    return result.value;
+    return (result as Ok<T>).value;
   }
-  return fn(result.error);
+  return fn((result as Err<E>).error);
 }
 
 /**
@@ -125,7 +125,7 @@ export function unwrapOrElse<T, E>(
  */
 export function unwrap<T, E>(result: Result<T, E>): T {
   if (isOk(result)) {
-    return result.value;
+    return (result as Ok<T>).value;
   }
   throw new Error(`Called unwrap on an Err value: ${JSON.stringify(result.error)}`);
 }

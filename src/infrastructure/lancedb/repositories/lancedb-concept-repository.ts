@@ -5,7 +5,8 @@ import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } 
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
 import { parseJsonField, escapeSqlString } from '../utils/field-parsers.js';
 import { validateConceptRow, detectVectorField } from '../utils/schema-validators.js';
-import { Option, Some, None, fromNullable } from '../../../domain/functional/option.js';
+import type { Option } from "../../../../__tests__/test-helpers/../../domain/functional/index.js";
+import { Some, None, fromNullable } from '../../../domain/functional/option.js';
 
 /**
  * LanceDB implementation of ConceptRepository
