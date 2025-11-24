@@ -23,7 +23,8 @@ import {
   SearchQuery,
   SearchResult
 } from '../../domain/models/index.js';
-import { Option, fromNullable } from '../../domain/functional/index.js';
+import type { Option } from '../../domain/functional/index.js';
+import { fromNullable } from '../../domain/functional/index.js';
 
 /**
  * Fake ChunkRepository using in-memory Map

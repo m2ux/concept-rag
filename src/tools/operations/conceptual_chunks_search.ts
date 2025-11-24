@@ -1,7 +1,8 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ChunkSearchService } from "../../domain/services/index.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
-import { isOk, isErr } from "../../domain/functional/index.js";
+import { isErr } from "../../domain/functional/index.js";
+import { Chunk } from "../../domain/models/index.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
   text: string;
@@ -93,19 +94,31 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
     
     // Handle Result type
     if (isErr(result)) {
+      const error = result.error;
+      const errorMessage = 
+        error.type === 'validation' ? error.message :
+        error.type === 'database' ? error.message :
+        error.type === 'not_found' ? `Resource not found: ${error.resource}` :
+        error.type === 'unknown' ? error.message :
+        'An unknown error occurred';
+      
       return {
         content: [{
           type: "text" as const,
-          text: `Error: ${result.error.message}\nType: ${result.error.type}`
+          text: JSON.stringify({
+            error: {
+              type: error.type,
+              message: errorMessage
+            },
+            timestamp: new Date().toISOString()
+          })
         }],
         isError: true,
       };
     }
     
-    const results = result.value;
-    
     // Format results for MCP response
-    const formattedResults = results.map(r => ({
+    const formattedResults = result.value.map((r: Chunk) => ({
       text: r.text,
       source: r.source,
       concept_density: r.conceptDensity,

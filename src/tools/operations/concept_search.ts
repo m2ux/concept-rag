@@ -100,7 +100,15 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
     
     // Handle Result type
     if (isErr(result)) {
-      console.error(`❌ Search failed: ${result.error.message}`);
+      const error = result.error;
+      const errorMessage = 
+        error.type === 'validation' ? error.message :
+        error.type === 'database' ? error.message :
+        error.type === 'concept_not_found' ? `Concept not found: ${error.concept}` :
+        error.type === 'unknown' ? error.message :
+        'An unknown error occurred';
+      
+      console.error(`❌ Search failed: ${errorMessage}`);
       return {
         isError: true,
         content: [{
@@ -108,8 +116,8 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
           text: JSON.stringify({
             error: {
               code: 'SEARCH_ERROR',
-              message: result.error.message,
-              type: result.error.type
+              message: errorMessage,
+              type: error.type
             },
             timestamp: new Date().toISOString()
           })

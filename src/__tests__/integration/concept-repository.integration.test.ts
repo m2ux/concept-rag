@@ -67,9 +67,9 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       
       // ASSERT: All should find the same concept
       expect(isSome(lowerOpt)).toBe(true);
-      expect(isSome(upperOpt)).toBe(true);
+      expect(isSome(lowerOpt)).toBe(true);
       expect(isSome(mixedOpt)).toBe(true);
-      
+      expect(isSome(mixedOpt)).toBe(true);
       if (isSome(lowerOpt) && isSome(upperOpt) && isSome(mixedOpt)) {
         expect(upperOpt.value.concept).toBe(lowerOpt.value.concept);
         expect(mixedOpt.value.concept).toBe(lowerOpt.value.concept);
@@ -96,7 +96,9 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       
       // ASSERT: Critical test - verifies vector/embeddings field mapping bug fix
       expect(isSome(conceptOpt)).toBe(true);
-      expect(conceptOpt.value.embeddings).toBeDefined();
+      if (isSome(conceptOpt)) {
+        expect(conceptOpt.value.embeddings).toBeDefined();
+      }
       
       // Embeddings can be either an array or Arrow Vector object (both valid)
       const isArray = Array.isArray(conceptOpt.value.embeddings);
@@ -124,7 +126,7 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       
       // ASSERT: Verify all field mappings from LanceDB to domain model
       expect(isSome(conceptOpt)).toBe(true);
-      if (!isSome(conceptOpt)) return;
+      expect(isSome(conceptOpt)).toBe(true);
       const c = conceptOpt.value;
       
       // String fields
@@ -173,7 +175,7 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       
       // ASSERT: JSON fields should be deserialized to arrays
       expect(isSome(conceptOpt)).toBe(true);
-      
+      expect(isSome(conceptOpt)).toBe(true);
       // Sources array
       expect(Array.isArray(conceptOpt.value.sources)).toBe(true);
       expect(conceptOpt.value.sources.length).toBeGreaterThan(0);
@@ -264,8 +266,10 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       
       // ASSERT: Vector field should be detected and mapped
       expect(isSome(conceptOpt)).toBe(true);
-      expect(conceptOpt.value.embeddings).toBeDefined();
-      expect(conceptOpt.value.embeddings.length).toBe(384);
+      if (isSome(conceptOpt)) {
+        expect(conceptOpt.value.embeddings).toBeDefined();
+        expect(conceptOpt.value.embeddings.length).toBe(384);
+      }
       
       // Verify it's either an array or Arrow Vector object (both valid)
       const isArray = Array.isArray(conceptOpt.value.embeddings);

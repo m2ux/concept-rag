@@ -1,7 +1,8 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { CatalogSearchService } from "../../domain/services/index.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
-import { isOk, isErr } from "../../domain/functional/index.js";
+import { isErr } from "../../domain/functional/index.js";
+import { SearchResult } from "../../domain/models/index.js";
 
 export interface ConceptualCatalogSearchParams extends ToolParams {
   text: string;
@@ -85,19 +86,31 @@ RETURNS: Top 5 documents with text previews, hybrid scores (including strong tit
     
     // Handle Result type
     if (isErr(result)) {
+      const error = result.error;
+      const errorMessage = 
+        error.type === 'validation' ? error.message :
+        error.type === 'database' ? error.message :
+        error.type === 'empty_results' ? `No results found for query: ${error.query}` :
+        error.type === 'unknown' ? error.message :
+        'An unknown error occurred';
+      
       return {
         content: [{
           type: "text" as const,
-          text: `Error: ${result.error.message}\nType: ${result.error.type}`
+          text: JSON.stringify({
+            error: {
+              type: error.type,
+              message: errorMessage
+            },
+            timestamp: new Date().toISOString()
+          })
         }],
         isError: true,
       };
     }
     
-    const results = result.value;
-    
     // Format results for MCP response
-    const formattedResults = results.map(r => ({
+    const formattedResults = result.value.map((r: SearchResult) => ({
       source: r.source,
       text_preview: r.text.slice(0, 200) + '...',
       scores: {
