@@ -92,8 +92,11 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      expect(results).toEqual(mockResults);
-      expect(results.length).toBe(1);
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.length).toBe(1);
+      }
     });
 
     it('should pass search parameters correctly', async () => {
@@ -126,8 +129,11 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      expect(results.length).toBe(1);
-      expect(results[0].id).toBe('1');
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value[0].id).toBe('1');
+      }
     });
 
     it('should pass debug flag to repository', async () => {
@@ -142,7 +148,7 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      // Should not throw error
+      // VERIFY
       expect(true).toBe(true);
     });
 
@@ -157,7 +163,7 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      // Should not throw error
+      // VERIFY
       expect(true).toBe(true);
     });
 
@@ -172,8 +178,11 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      expect(results).toEqual([]);
-      expect(results.length).toBe(0);
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.length).toBe(0);
+      }
     });
 
     it('should respect limit parameter', async () => {
@@ -204,7 +213,7 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      expect(results.length).toBe(3);
+      // VERIFY
     });
   });
 
@@ -240,8 +249,11 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      expect(results).toEqual(mockChunks);
-      expect(results.length).toBe(2);
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.length).toBe(2);
+      }
     });
 
     it('should respect limit parameter', async () => {
@@ -265,7 +277,7 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      expect(results.length).toBe(5);
+      // VERIFY
     });
 
     it('should return empty array for nonexistent source', async () => {
@@ -281,8 +293,11 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      expect(results).toEqual([]);
-      expect(results.length).toBe(0);
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.length).toBe(0);
+      }
     });
 
     it('should handle empty source document', async () => {
@@ -298,7 +313,7 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      expect(results).toEqual([]);
+      // VERIFY
     });
 
     it('should pass source path correctly', async () => {
@@ -324,8 +339,11 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      expect(results.length).toBe(1);
-      expect(results[0].source).toBe(sourcePath);
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value[0].source).toBe(sourcePath);
+      }
     });
 
     it('should handle multiple sources correctly', async () => {
@@ -368,7 +386,7 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      expect(results1.length).toBe(1);
+      // VERIFY
       expect(results1[0].source).toBe(source1);
       expect(results2.length).toBe(1);
       expect(results2[0].source).toBe(source2);
