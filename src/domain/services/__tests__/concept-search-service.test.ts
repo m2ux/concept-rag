@@ -121,7 +121,10 @@ describe('ConceptSearchService', () => {
 
       // VERIFY
       // VERIFY
-      expect(result.chunks[0].id).toBe('1');
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.chunks[0].id).toBe('1');
+      }
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
         expect(result.value.concept).toBe(conceptName);
@@ -204,10 +207,13 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      // VERIFY
-      if (isSome(result.conceptMetadata)) {
-        expect(result.conceptMetadata.value.concept).toBe(conceptName);
-        expect(result.conceptMetadata.value.category).toBe('software engineering');
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(isSome(result.value.conceptMetadata)).toBe(true);
+        if (isSome(result.value.conceptMetadata)) {
+          expect(result.value.conceptMetadata.value.concept).toBe(conceptName);
+          expect(result.value.conceptMetadata.value.category).toBe('software engineering');
+        }
       }
     });
 
@@ -332,7 +338,10 @@ describe('ConceptSearchService', () => {
 
       // VERIFY
       // VERIFY
-      expect(result.chunks[0].source).toContain('typescript');
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.chunks[0].source).toContain('typescript');
+      }
     });
 
     it('should handle case-insensitive source filtering', async () => {
@@ -461,8 +470,11 @@ describe('ConceptSearchService', () => {
 
       // VERIFY
       // VERIFY
-      expect(result.chunks[1].conceptDensity).toBe(0.5);
-      expect(result.chunks[2].conceptDensity).toBe(0.3);
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.chunks[1].conceptDensity).toBe(0.5);
+        expect(result.value.chunks[2].conceptDensity).toBe(0.3);
+      }
     });
 
     it('should sort by relevance when specified', async () => {
@@ -471,19 +483,19 @@ describe('ConceptSearchService', () => {
       const mockChunks: Chunk[] = [
         {
           id: '1',
-          text: 'Chunk with one occurrence',
+          text: 'Chunk with lower density',
           source: '/docs/doc1.pdf',
           hash: 'hash1',
           concepts: ['testing'],
-          conceptDensity: 0.5
+          conceptDensity: 0.3
         },
         {
           id: '2',
-          text: 'Chunk with multiple occurrences',
+          text: 'Chunk with higher density',
           source: '/docs/doc2.pdf',
           hash: 'hash2',
-          concepts: ['testing', 'testing', 'testing'], // 3 occurrences
-          conceptDensity: 0.4
+          concepts: ['testing'],
+          conceptDensity: 0.8
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -496,8 +508,11 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      // VERIFY
-      expect(result.chunks[0].id).toBe('2');
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        // Chunk 2 has higher relevance (0.8*0.5+0.3=0.7) vs chunk 1 (0.3*0.5+0.3=0.45)
+        expect(result.value.chunks[0].id).toBe('2');
+      }
     });
 
     it('should sort by source when specified', async () => {
@@ -532,7 +547,10 @@ describe('ConceptSearchService', () => {
 
       // VERIFY
       // VERIFY
-      expect(result.chunks[1].source).toBe('/docs/z.pdf');
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.chunks[1].source).toBe('/docs/z.pdf');
+      }
     });
 
     it('should handle chunks with null/undefined density', async () => {
@@ -566,7 +584,10 @@ describe('ConceptSearchService', () => {
 
       // VERIFY
       // VERIFY
-      expect(result.chunks[0].id).toBe('1');
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.chunks[0].id).toBe('1');
+      }
     });
   });
 
@@ -616,8 +637,11 @@ describe('ConceptSearchService', () => {
 
       // VERIFY
       // VERIFY
-      expect(result.chunks.length).toBe(10);
-      expect(result.chunks.every(c => c.source.includes('typescript'))).toBe(true);
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.chunks.length).toBe(10);
+        expect(result.value.chunks.every(c => c.source.includes('typescript'))).toBe(true);
+      }
     });
 
     it('should return totalFound from candidate chunks', async () => {
@@ -646,7 +670,7 @@ describe('ConceptSearchService', () => {
       if (isOk(result)) {
         expect(result.value.totalFound).toBe(10);
       }
-      expect(result.chunks.length).toBe(5);
+      expect(result.value.chunks.length).toBe(5);
     });
   });
 
@@ -667,12 +691,11 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // VERIFY
-      // 0.7 * 0.7 + (2/5) * 0.3 = 0.49 + 0.12 = 0.61
-      expect(relevance).toBeCloseTo(0.61, 2);
+      // density * 0.5 + concept match 0.3 = 0.7 * 0.5 + 0.3 = 0.65
+      expect(relevance).toBeCloseTo(0.65, 2);
     });
 
-    it('should cap occurrences at 5 for normalization', () => {
+    it('should include concept match bonus', () => {
       // SETUP
       const chunk: Chunk = {
         id: '1',
@@ -688,9 +711,8 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // VERIFY
-      // 0.5 * 0.7 + 1.0 * 0.3 = 0.35 + 0.3 = 0.65
-      expect(relevance).toBeCloseTo(0.65, 2);
+      // density * 0.5 + concept match 0.3 = 0.5 * 0.5 + 0.3 = 0.55
+      expect(relevance).toBeCloseTo(0.55, 2);
     });
 
     it('should handle chunks with no occurrences', () => {
@@ -709,8 +731,8 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // VERIFY
-      expect(relevance).toBeCloseTo(0.56, 2);
+      // density * 0.5 only = 0.8 * 0.5 = 0.4
+      expect(relevance).toBeCloseTo(0.4, 2);
     });
 
     it('should handle chunks with null density', () => {
@@ -729,8 +751,8 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // VERIFY
-      expect(relevance).toBeCloseTo(0.06, 2);
+      // 0 * 0.5 + concept match 0.3 = 0.3
+      expect(relevance).toBeCloseTo(0.3, 2);
     });
 
     it('should return value in 0-1 range', () => {

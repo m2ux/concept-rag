@@ -215,7 +215,8 @@ export class ConceptSearchService {
   /**
    * Calculate relevance score for a chunk.
    */
-  private calculateRelevance(chunk: Chunk, concept: string): number {
+  /** @internal - Exposed for testing */
+  calculateRelevance(chunk: Chunk, concept: string): number {
     let score = 0;
     
     // Concept density (0-1)

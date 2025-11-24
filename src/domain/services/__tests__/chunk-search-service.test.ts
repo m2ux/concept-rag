@@ -386,10 +386,13 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      // VERIFY
-      expect(results1[0].source).toBe(source1);
-      expect(results2.length).toBe(1);
-      expect(results2[0].source).toBe(source2);
+      expect(isOk(results1)).toBe(true);
+      expect(isOk(results2)).toBe(true);
+      if (isOk(results1) && isOk(results2)) {
+        expect(results1.value[0].source).toBe(source1);
+        expect(results2.value.length).toBe(1);
+        expect(results2.value[0].source).toBe(source2);
+      }
     });
   });
 });
