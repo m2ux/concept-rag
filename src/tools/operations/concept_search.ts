@@ -90,7 +90,7 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
     
     console.error(`🔍 Searching for concept: "${params.concept}"`);
     
-    // Delegate to service for business logic (Result-based)
+    // Delegate to service for business logic
     const result = await this.conceptSearchService.searchConcept({
       concept: params.concept,
       limit: limit,
