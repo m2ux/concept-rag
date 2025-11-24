@@ -58,7 +58,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
    * @returns Category if found, null otherwise
    * @throws {DatabaseError} If database query fails
    */
-  async findById(id: number): Promise<Category | null> {
+  async findById(id: number): Promise<Option<Category>> {
     try {
       const rows = await this.table
         .query()
@@ -81,7 +81,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
    * @returns Category if found, null otherwise
    * @throws {DatabaseError} If database query fails
    */
-  async findByName(name: string): Promise<Category | null> {
+  async findByName(name: string): Promise<Option<Category>> {
     try {
       // LanceDB string filtering requires proper escaping
       const escapedName = name.replace(/'/g, "''");
@@ -106,10 +106,6 @@ export class LanceDBCategoryRepository implements CategoryRepository {
    * @returns Promise resolving to Some(category) if found, None if not found
    * @throws {DatabaseError} If database query fails
    */
-  async findByIdOpt(id: number): Promise<Option<Category>> {
-    const result = await this.findById(id);
-    return fromNullable(result);
-  }
 
   /**
    * Find category by name - Option variant.
@@ -117,10 +113,6 @@ export class LanceDBCategoryRepository implements CategoryRepository {
    * @returns Promise resolving to Some(category) if found, None if not found
    * @throws {DatabaseError} If database query fails
    */
-  async findByNameOpt(name: string): Promise<Option<Category>> {
-    const result = await this.findByName(name);
-    return fromNullable(result);
-  }
 
   /**
    * Find category by alias.
@@ -128,7 +120,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
    * @returns Category if found, null otherwise
    * @throws {DatabaseError} If database query fails
    */
-  async findByAlias(alias: string): Promise<Category | null> {
+  async findByAlias(alias: string): Promise<Option<Category>> {
     try {
       // Linear scan (categories table is small, acceptable performance)
       const all = await this.findAll();
@@ -154,10 +146,6 @@ export class LanceDBCategoryRepository implements CategoryRepository {
    * @returns Promise resolving to Some(category) if found, None if not found
    * @throws {DatabaseError} If database query fails
    */
-  async findByAliasOpt(alias: string): Promise<Option<Category>> {
-    const result = await this.findByAlias(alias);
-    return fromNullable(result);
-  }
 
   async findRootCategories(): Promise<Category[]> {
     try {

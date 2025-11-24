@@ -108,13 +108,11 @@ export interface CatalogRepository {
    * }
    * ```
    */
-  findBySource(sourcePath: string): Promise<SearchResult | null>;
-  
   /**
-   * Find a catalog entry by source document path - Option variant.
+   * Find a catalog entry by source document path.
    * 
-   * Type-safe alternative to findBySource that uses Option<T> instead of nullable.
-   * Eliminates null checks and enables functional composition.
+   * Returns Option<SearchResult> for type-safe nullable handling.
+   * Use isSome/isNone to check, or fold/map for functional composition.
    * 
    * @param sourcePath - The source document path
    * @returns Promise resolving to Some(entry) if found, None if not found
@@ -122,9 +120,15 @@ export interface CatalogRepository {
    * 
    * @example
    * ```typescript
-   * import { map, fold } from '../../functional/option';
+   * import { isSome, map, fold } from '../../functional/option';
    * 
-   * const entryOpt = await catalogRepo.findBySourceOpt('/docs/guide.pdf');
+   * const entryOpt = await catalogRepo.findBySource('/docs/guide.pdf');
+   * 
+   * if (isSome(entryOpt)) {
+   *   const entry = entryOpt.value;
+   *   console.log(`Document: ${entry.source}`);
+   *   console.log(`Summary: ${entry.text}`);
+   * }
    * 
    * // Extract primary concepts with default
    * const concepts = fold(
@@ -132,12 +136,9 @@ export interface CatalogRepository {
    *   () => [],
    *   entry => entry.concepts.primary_concepts
    * );
-   * 
-   * // Map to summary
-   * const summary = map(entryOpt, entry => entry.text);
    * ```
    */
-  findBySourceOpt(sourcePath: string): Promise<Option<SearchResult>>;
+  findBySource(sourcePath: string): Promise<Option<SearchResult>>;
   
   /**
    * Find all documents in a specific category.

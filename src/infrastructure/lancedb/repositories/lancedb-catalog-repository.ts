@@ -59,7 +59,7 @@ export class LanceDBCatalogRepository implements CatalogRepository {
    * @returns Search result if found, null otherwise
    * @throws {DatabaseError} If database query fails
    */
-  async findBySource(source: string): Promise<SearchResult | null> {
+  async findBySource(source: string): Promise<Option<SearchResult>> {
     try {
       // Use hybrid search with source as query (benefits from title matching)
       const collection = new SearchableCollectionAdapter(this.catalogTable, 'catalog');
@@ -74,12 +74,12 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       // Find exact source match
       for (const result of results) {
         if (result.source.toLowerCase() === source.toLowerCase()) {
-          return result;
+          return Some(result);
         }
       }
       
       // If no exact match, return best match if it's close
-      return results.length > 0 ? results[0] : null;
+      return results.length > 0 ? Some(results[0]) : None();
     } catch (error) {
       throw new DatabaseError(
         `Failed to find catalog entry for source "${source}"`,
@@ -99,10 +99,6 @@ export class LanceDBCatalogRepository implements CatalogRepository {
    * @returns Promise resolving to Some(result) if found, None if not found
    * @throws {DatabaseError} If database query fails
    */
-  async findBySourceOpt(source: string): Promise<Option<SearchResult>> {
-    const result = await this.findBySource(source);
-    return fromNullable(result);
-  }
   
   /**
    * Find documents by category ID.

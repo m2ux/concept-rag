@@ -53,23 +53,14 @@ class MockChunkRepository implements ChunkRepository {
 class MockConceptRepository implements ConceptRepository {
   private concepts: Map<string, Concept> = new Map();
 
-  async findById(id: number): Promise<Concept | null> {
-    return Promise.resolve(null);
+  async findById(id: number): Promise<Option<Concept>> {
+    return Promise.resolve(None());
   }
 
-  async findByName(conceptName: string): Promise<Concept | null> {
+  async findByName(conceptName: string): Promise<Option<Concept>> {
     const conceptLower = conceptName.toLowerCase();
-    return Promise.resolve(this.concepts.get(conceptLower) || null);
-  }
-
-  async findByIdOpt(id: number): Promise<Option<Concept>> {
-    const result = await this.findById(id);
-    return fromNullable(result);
-  }
-
-  async findByNameOpt(conceptName: string): Promise<Option<Concept>> {
-    const result = await this.findByName(conceptName);
-    return fromNullable(result);
+    const concept = this.concepts.get(conceptLower);
+    return Promise.resolve(fromNullable(concept));
   }
 
   async findRelated(conceptName: string, limit: number): Promise<Concept[]> {
