@@ -11,7 +11,7 @@ import { ConceptSearchService } from '../concept-search-service.js';
 import { ChunkRepository } from '../../interfaces/repositories/chunk-repository.js';
 import { ConceptRepository } from '../../interfaces/repositories/concept-repository.js';
 import { Chunk, Concept } from '../../models/index.js';
-import { Option, fromNullable } from '../../functional/index.js';
+import { Option, fromNullable, isSome, isNone } from '../../functional/index.js';
 
 /**
  * Mock ChunkRepository for testing
@@ -207,9 +207,11 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.conceptMetadata).not.toBeNull();
-      expect(result.conceptMetadata?.concept).toBe(conceptName);
-      expect(result.conceptMetadata?.category).toBe('software engineering');
+      expect(isSome(result.conceptMetadata)).toBe(true);
+      if (isSome(result.conceptMetadata)) {
+        expect(result.conceptMetadata.value.concept).toBe(conceptName);
+        expect(result.conceptMetadata.value.category).toBe('software engineering');
+      }
     });
 
     it('should return null metadata when concept not found', async () => {
@@ -224,7 +226,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.conceptMetadata).toBeNull();
+      expect(isNone(result.conceptMetadata)).toBe(true);
     });
 
     it('should return related concepts from metadata', async () => {
