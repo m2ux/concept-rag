@@ -160,8 +160,10 @@ export class LRUCache<K, V> {
     // Evict LRU if at capacity and key is new
     if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
-      this.metrics.evictions++;
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+        this.metrics.evictions++;
+      }
     }
     
     const entry: CacheEntry<V> = {
