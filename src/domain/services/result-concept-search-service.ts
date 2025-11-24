@@ -40,7 +40,7 @@ export interface ConceptSearchParams {
  */
 export interface ConceptSearchResult {
   concept: string;
-  conceptMetadata: Concept | null;
+  conceptMetadata: Option<Concept>;
   chunks: Chunk[];
   relatedConcepts: string[];
   totalFound: number;
@@ -157,7 +157,7 @@ export class ResultConceptSearchService {
       
       return Ok({
         concept: validParams.concept,
-        conceptMetadata: toNullable(conceptMetadataOpt),
+        conceptMetadata: conceptMetadataOpt,
         chunks: limitedChunks,
         relatedConcepts,
         totalFound

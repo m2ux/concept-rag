@@ -1,6 +1,7 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ConceptSearchService } from "../../domain/services/index.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
+import { isSome } from "../../domain/functional/index.js";
 
 export interface ConceptSearchParams extends ToolParams {
   concept: string;
@@ -111,12 +112,13 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       };
       
       // Add concept metadata if available
-    if (result.conceptMetadata) {
+    if (isSome(result.conceptMetadata)) {
+        const metadata = result.conceptMetadata.value;
         response.concept_metadata = {
-        category: result.conceptMetadata.category,
-        weight: result.conceptMetadata.weight,
-        chunk_count: result.conceptMetadata.chunkCount,
-        sources_count: result.conceptMetadata.sources.length
+        category: metadata.category,
+        weight: metadata.weight,
+        chunk_count: metadata.chunkCount,
+        sources_count: metadata.sources.length
         };
         
       // Add related concepts

@@ -60,8 +60,8 @@ export interface ConceptSearchResult {
   /** The concept that was searched */
   concept: string;
   
-  /** Concept metadata (null if concept not found) */
-  conceptMetadata: Concept | null;
+  /** Concept metadata (None if concept not found) */
+  conceptMetadata: Option<Concept>;
   
   /** Matching chunks */
   chunks: Chunk[];
@@ -153,7 +153,7 @@ export class ConceptSearchService {
     
     return {
       concept: params.concept,
-      conceptMetadata: toNullable(conceptMetadataOpt),  // Convert back to null for backward compat
+      conceptMetadata: conceptMetadataOpt,
       chunks: limitedChunks,
       relatedConcepts,
       totalFound
