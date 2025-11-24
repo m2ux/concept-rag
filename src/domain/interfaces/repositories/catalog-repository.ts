@@ -83,34 +83,6 @@ export interface CatalogRepository {
   /**
    * Find a catalog entry by source document path.
    * 
-   * Retrieves the catalog entry (summary, concepts, metadata) for a specific
-   * document. Uses hybrid search with the source path as the query, which
-   * benefits from strong title matching.
-   * 
-   * **Use Cases**:
-   * - Get document metadata
-   * - Extract document concepts
-   * - Document overview
-   * 
-   * @param sourcePath - The source document path (e.g., '/docs/guide.pdf')
-   * @returns Promise resolving to catalog entry if found, null if not found
-   * @throws {Error} If database query fails
-   * 
-   * @example
-   * ```typescript
-   * const entry = await catalogRepo.findBySource('/docs/microservices-guide.pdf');
-   * if (entry) {
-   *   console.log(`Document: ${entry.source}`);
-   *   console.log(`Summary: ${entry.text}`);
-   *   console.log(`Primary Concepts:`);
-   *   entry.concepts.primary_concepts.forEach(c => console.log(`  - ${c}`));
-   *   console.log(`Categories: ${entry.concepts.categories.join(', ')}`);
-   * }
-   * ```
-   */
-  /**
-   * Find a catalog entry by source document path.
-   * 
    * Returns Option<SearchResult> for type-safe nullable handling.
    * Use isSome/isNone to check, or fold/map for functional composition.
    * 

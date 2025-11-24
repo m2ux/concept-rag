@@ -1,15 +1,20 @@
 /**
- * Domain service for chunk-level search operations.
+ * Result-Based Chunk Search Service
  * 
- * This service encapsulates business logic for searching individual chunks,
- * including both broad searches across all documents and targeted searches
- * within specific sources.
+ * This service provides functional error handling for chunk search operations
+ * using Result types instead of exceptions. It complements the exception-based
+ * ChunkSearchService for callers who prefer functional composition.
  * 
- * **Responsibility**: Orchestrate chunk searches with appropriate filtering
+ * **Use this when you want to:**
+ * - Compose search operations functionally
+ * - Handle errors explicitly without try-catch
+ * - Use railway patterns (retry, fallback, etc.)
  */
 
 import { ChunkRepository } from '../interfaces/repositories/chunk-repository.js';
 import { Chunk, SearchResult } from '../models/index.js';
+import { Result, Ok, Err } from '../functional/result.js';
+import { InputValidator } from './validation/InputValidator.js';
 
 /**
  * Parameters for broad chunk search (across all documents).
@@ -43,41 +48,160 @@ export interface TargetedChunkSearchParams {
 }
 
 /**
- * Domain service for chunk search operations.
+ * Search error types
+ */
+export type SearchError =
+  | { type: 'validation'; field: string; message: string }
+  | { type: 'database'; message: string }
+  | { type: 'not_found'; resource: string }
+  | { type: 'unknown'; message: string };
+
+/**
+ * Chunk search service with Result-based error handling.
+ * 
+ * Returns Result<T, SearchError> instead of throwing exceptions,
+ * enabling functional composition and explicit error handling.
  */
 export class ChunkSearchService {
+  private validator = new InputValidator();
+  
   constructor(private chunkRepo: ChunkRepository) {}
   
   /**
    * Search across all chunks in all documents.
    * 
-   * Uses hybrid search with multi-signal ranking.
-   * 
    * @param params - Search parameters
-   * @returns Search results ranked by hybrid score
-   * @throws {DatabaseError} If database query fails
-   * @throws {SearchError} If search operation fails
+   * @returns Result containing search results or error
+   * 
+   * @example
+   * ```typescript
+   * const result = await service.searchBroad({ text: 'microservices', limit: 10 });
+   * if (result.ok) {
+   *   console.log('Found:', result.value);
+   * } else {
+   *   console.error('Error:', result.error);
+   * }
+   * ```
+   * 
+   * @example With retry
+   * ```typescript
+   * const result = await retry(
+   *   () => service.searchBroad({ text: query, limit: 10 }),
+   *   { maxAttempts: 3, delayMs: 100 }
+   * );
+   * ```
    */
-  async searchBroad(params: BroadChunkSearchParams): Promise<SearchResult[]> {
-    return await this.chunkRepo.search({
-      text: params.text,
-      limit: params.limit,
-      debug: params.debug || false
-    });
+  async searchBroad(
+    params: Partial<BroadChunkSearchParams>
+  ): Promise<Result<SearchResult[], SearchError>> {
+    // Validate parameters
+    try {
+      this.validator.validateBroadChunksSearch(params);
+    } catch (error) {
+      return Err({
+        type: 'validation',
+        field: 'params',
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+    
+    const validParams = params as BroadChunkSearchParams;
+    
+    // Execute search with error handling
+    try {
+      const results = await this.chunkRepo.search({
+        text: validParams.text,
+        limit: validParams.limit,
+        debug: validParams.debug || false
+      });
+      
+      return Ok(results);
+    } catch (error) {
+      if (error instanceof Error) {
+        // Check error type by name or message
+        if (error.constructor.name === 'DatabaseError') {
+          return Err({
+            type: 'database',
+            message: error.message
+          });
+        }
+      }
+      
+      return Err({
+        type: 'unknown',
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
   }
   
   /**
    * Search chunks within a specific source document.
    * 
    * @param params - Search parameters including source filter
-   * @returns Chunks from the specified source
-   * @throws {DatabaseError} If database query fails
-   * @throws {RecordNotFoundError} If source document not found
+   * @returns Result containing chunks or error
+   * 
+   * @example
+   * ```typescript
+   * const result = await service.searchInSource({
+   *   text: 'architecture',
+   *   source: '/docs/ddd.pdf',
+   *   limit: 20
+   * });
+   * 
+   * fold(
+   *   result,
+   *   chunks => displayChunks(chunks),
+   *   error => showError(error)
+   * );
+   * ```
    */
-  async searchInSource(params: TargetedChunkSearchParams): Promise<Chunk[]> {
-    // Note: Current implementation returns all chunks from source
-    // Future enhancement: Could filter results by params.text relevance
-    return await this.chunkRepo.findBySource(params.source, params.limit);
+  async searchInSource(
+    params: Partial<TargetedChunkSearchParams>
+  ): Promise<Result<Chunk[], SearchError>> {
+    // Validate parameters
+    try {
+      this.validator.validateChunksSearch(params);
+    } catch (error) {
+      return Err({
+        type: 'validation',
+        field: 'params',
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+    
+    const validParams = params as TargetedChunkSearchParams;
+    
+    // Execute search with error handling
+    try {
+      const chunks = await this.chunkRepo.findBySource(
+        validParams.source,
+        validParams.limit
+      );
+      
+      return Ok(chunks);
+    } catch (error) {
+      if (error instanceof Error) {
+        // Check if it's a not-found error
+        if (error.constructor.name === 'RecordNotFoundError') {
+          return Err({
+            type: 'not_found',
+            resource: validParams.source
+          });
+        }
+        
+        if (error.constructor.name === 'DatabaseError') {
+          return Err({
+            type: 'database',
+            message: error.message
+          });
+        }
+      }
+      
+      return Err({
+        type: 'unknown',
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
   }
 }
 

@@ -1,7 +1,7 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ConceptSearchService } from "../../domain/services/index.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
-import { isSome } from "../../domain/functional/index.js";
+import { isSome, isOk, isErr } from "../../domain/functional/index.js";
 
 export interface ConceptSearchParams extends ToolParams {
   concept: string;
@@ -64,29 +64,37 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
   };
 
   async execute(params: ConceptSearchParams) {
-    try {
-      // Validate input
-      this.validator.validateConceptSearch(params);
-      
-      const limit = params.limit || 10;
-      
-      console.error(`🔍 Searching for concept: "${params.concept}"`);
-      
-      // Delegate to service for business logic
-      const result = await this.conceptSearchService.searchConcept({
-        concept: params.concept,
-        limit: limit,
-        sourceFilter: params.source_filter,
-        sortBy: 'density'
-      });
-      
-      console.error(`✅ Found ${result.chunks.length} matching chunks`);
-      
-      // Format as MCP response (pure presentation logic)
-      return this.formatMCPResponse(result);
-    } catch (error) {
-      return this.handleError(error);
+    // Validate input
+    this.validator.validateConceptSearch(params);
+    
+    const limit = params.limit || 10;
+    
+    console.error(`🔍 Searching for concept: "${params.concept}"`);
+    
+    // Delegate to service for business logic (Result-based)
+    const result = await this.conceptSearchService.searchConcept({
+      concept: params.concept,
+      limit: limit,
+      sourceFilter: params.source_filter,
+      sortBy: 'density'
+    });
+    
+    // Handle Result type
+    if (isErr(result)) {
+      console.error(`❌ Search failed: ${result.error.message}`);
+      return {
+        content: [{
+          type: "text" as const,
+          text: `Error: ${result.error.message}\nType: ${result.error.type}`
+        }]
+      };
     }
+    
+    const searchResult = result.value;
+    console.error(`✅ Found ${searchResult.chunks.length} matching chunks`);
+    
+    // Format as MCP response (pure presentation logic)
+    return this.formatMCPResponse(searchResult);
   }
   
   /**
