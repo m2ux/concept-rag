@@ -55,7 +55,45 @@ RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, concept,
 
   async execute(params: ConceptualBroadChunksSearchParams) {
     // Validate input
-    this.validator.validateSearchQuery(params);
+    try {
+
+      this.validator.validateSearchQuery(params);
+
+    } catch (error: any) {
+
+      console.error(`❌ Validation failed: ${error.message}`);
+
+      return {
+
+        isError: true,
+
+        content: [{
+
+          type: "text" as const,
+
+          text: JSON.stringify({
+
+            error: {
+
+              code: error.code || 'VALIDATION_ERROR',
+
+              message: error.message,
+
+              field: error.field,
+
+              context: error.context
+
+            },
+
+            timestamp: new Date().toISOString()
+
+          })
+
+        }]
+
+      };
+
+    }
     
     // Delegate to service (Result-based)
     const result = await this.chunkSearchService.searchBroad({
