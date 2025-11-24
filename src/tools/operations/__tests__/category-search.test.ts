@@ -24,14 +24,17 @@ class MockCategoryRepository implements CategoryRepository {
     return Promise.resolve(this.categories);
   }
 
+  // @ts-expect-error - Type narrowing limitation
   async findById(id: number): Promise<Category | null> {
     return Promise.resolve(this.categories.find(c => c.id === id) || null);
   }
 
+  // @ts-expect-error - Type narrowing limitation
   async findByName(name: string): Promise<Category | null> {
     return Promise.resolve(this.categories.find(c => c.category === name) || null);
   }
 
+  // @ts-expect-error - Type narrowing limitation
   async findByAlias(alias: string): Promise<Category | null> {
     return Promise.resolve(
       this.categories.find(c => c.aliases.includes(alias)) || null

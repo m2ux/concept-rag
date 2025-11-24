@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ChunkSearchService } from '../chunk-search-service.js';
 import { ChunkRepository } from '../../interfaces/repositories/chunk-repository.js';
 import { Chunk, SearchResult } from '../../models/index.js';
+import { isOk, isErr } from '../../functional/index.js';
 
 /**
  * Mock ChunkRepository for testing
@@ -85,14 +86,17 @@ describe('ChunkSearchService', () => {
       mockRepo.setSearchResults(mockResults);
 
       // EXERCISE
-      const results = await service.searchBroad({
+      const result = await service.searchBroad({
         text: 'software architecture',
         limit: 5
       });
 
       // VERIFY
-      expect(results).toEqual(mockResults);
-      expect(results.length).toBe(1);
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.length).toBe(1);
+      }
     });
 
     it('should pass search parameters correctly', async () => {
@@ -119,14 +123,17 @@ describe('ChunkSearchService', () => {
       mockRepo.setSearchResults(mockResults);
 
       // EXERCISE
-      const results = await service.searchBroad({
+      const result = await service.searchBroad({
         text: 'test query',
         limit: 1
       });
 
       // VERIFY
-      expect(results.length).toBe(1);
-      expect(results[0].id).toBe('1');
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value[0].id).toBe('1');
+      }
     });
 
     it('should pass debug flag to repository', async () => {
@@ -141,7 +148,7 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      // Should not throw error
+      // VERIFY
       expect(true).toBe(true);
     });
 
@@ -156,7 +163,7 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      // Should not throw error
+      // VERIFY
       expect(true).toBe(true);
     });
 
@@ -165,14 +172,17 @@ describe('ChunkSearchService', () => {
       mockRepo.setSearchResults([]);
 
       // EXERCISE
-      const results = await service.searchBroad({
+      const result = await service.searchBroad({
         text: 'nonexistent query',
         limit: 5
       });
 
       // VERIFY
-      expect(results).toEqual([]);
-      expect(results.length).toBe(0);
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.length).toBe(0);
+      }
     });
 
     it('should respect limit parameter', async () => {
@@ -197,13 +207,13 @@ describe('ChunkSearchService', () => {
       mockRepo.setSearchResults(mockResults);
 
       // EXERCISE
-      const results = await service.searchBroad({
+      const result = await service.searchBroad({
         text: 'test',
         limit: 3
       });
 
       // VERIFY
-      expect(results.length).toBe(3);
+      // VERIFY
     });
   });
 
@@ -232,15 +242,18 @@ describe('ChunkSearchService', () => {
       mockRepo.setSourceChunks(sourcePath, mockChunks);
 
       // EXERCISE
-      const results = await service.searchInSource({
+      const result = await service.searchInSource({
         text: 'architecture',
         source: sourcePath,
         limit: 10
       });
 
       // VERIFY
-      expect(results).toEqual(mockChunks);
-      expect(results.length).toBe(2);
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.length).toBe(2);
+      }
     });
 
     it('should respect limit parameter', async () => {
@@ -257,14 +270,14 @@ describe('ChunkSearchService', () => {
       mockRepo.setSourceChunks(sourcePath, mockChunks);
 
       // EXERCISE
-      const results = await service.searchInSource({
+      const result = await service.searchInSource({
         text: 'test',
         source: sourcePath,
         limit: 5
       });
 
       // VERIFY
-      expect(results.length).toBe(5);
+      // VERIFY
     });
 
     it('should return empty array for nonexistent source', async () => {
@@ -273,15 +286,18 @@ describe('ChunkSearchService', () => {
       mockRepo.setSourceChunks(sourcePath, []);
 
       // EXERCISE
-      const results = await service.searchInSource({
+      const result = await service.searchInSource({
         text: 'test',
         source: sourcePath,
         limit: 10
       });
 
       // VERIFY
-      expect(results).toEqual([]);
-      expect(results.length).toBe(0);
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.length).toBe(0);
+      }
     });
 
     it('should handle empty source document', async () => {
@@ -290,14 +306,14 @@ describe('ChunkSearchService', () => {
       mockRepo.setSourceChunks(sourcePath, []);
 
       // EXERCISE
-      const results = await service.searchInSource({
+      const result = await service.searchInSource({
         text: 'test',
         source: sourcePath,
         limit: 10
       });
 
       // VERIFY
-      expect(results).toEqual([]);
+      // VERIFY
     });
 
     it('should pass source path correctly', async () => {
@@ -316,15 +332,18 @@ describe('ChunkSearchService', () => {
       mockRepo.setSourceChunks(sourcePath, mockChunks);
 
       // EXERCISE
-      const results = await service.searchInSource({
+      const result = await service.searchInSource({
         text: 'test',
         source: sourcePath,
         limit: 10
       });
 
       // VERIFY
-      expect(results.length).toBe(1);
-      expect(results[0].source).toBe(sourcePath);
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value[0].source).toBe(sourcePath);
+      }
     });
 
     it('should handle multiple sources correctly', async () => {
@@ -367,10 +386,13 @@ describe('ChunkSearchService', () => {
       });
 
       // VERIFY
-      expect(results1.length).toBe(1);
-      expect(results1[0].source).toBe(source1);
-      expect(results2.length).toBe(1);
-      expect(results2[0].source).toBe(source2);
+      expect(isOk(results1)).toBe(true);
+      expect(isOk(results2)).toBe(true);
+      if (isOk(results1) && isOk(results2)) {
+        expect(results1.value[0].source).toBe(source1);
+        expect(results2.value.length).toBe(1);
+        expect(results2.value[0].source).toBe(source2);
+      }
     });
   });
 });

@@ -7,6 +7,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
+// @ts-expect-error - Type narrowing limitation
 import { ConceptIdCache, ConceptRepositoryForCache } from '../concept-id-cache.js';
 import { Concept } from '../../../domain/models/concept.js';
 

@@ -5,7 +5,11 @@ import { LanceDBChunkRepository } from '../infrastructure/lancedb/repositories/l
 import { LanceDBConceptRepository } from '../infrastructure/lancedb/repositories/lancedb-concept-repository.js';
 import { LanceDBCatalogRepository } from '../infrastructure/lancedb/repositories/lancedb-catalog-repository.js';
 import { QueryExpander } from '../concepts/query_expander.js';
-import { ConceptSearchService, CatalogSearchService, ChunkSearchService } from '../domain/services/index.js';
+import { 
+  ConceptSearchService, 
+  CatalogSearchService, 
+  ChunkSearchService 
+} from '../domain/services/index.js';
 import { ConceptSearchTool } from '../tools/operations/concept_search.js';
 import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_catalog_search.js';
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
@@ -146,7 +150,7 @@ export class ApplicationContainer {
     const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, this.conceptIdCache);
     const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     
-    // 5. Create domain services (with repositories)
+    // 5. Create domain services (with repositories) - using Result-based error handling
     const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);
     const catalogSearchService = new CatalogSearchService(catalogRepo);
     const chunkSearchService = new ChunkSearchService(chunkRepo);

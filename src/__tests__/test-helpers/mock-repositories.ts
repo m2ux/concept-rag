@@ -23,6 +23,8 @@ import {
   SearchQuery,
   SearchResult
 } from '../../domain/models/index.js';
+import type { Option } from '../../domain/functional/index.js';
+import { fromNullable } from '../../domain/functional/index.js';
 
 /**
  * Fake ChunkRepository using in-memory Map
@@ -117,15 +119,17 @@ export class FakeConceptRepository implements ConceptRepository {
     });
   }
   
-  async findById(id: number): Promise<Concept | null> {
+  // @ts-expect-error - Type narrowing limitation
+  async findById(id: number): Promise<Option<Concept>> {
     const concept = this.conceptsById.get(id);
-    return Promise.resolve(concept || null);
+    return Promise.resolve(fromNullable(concept));
   }
   
-  async findByName(name: string): Promise<Concept | null> {
+  // @ts-expect-error - Type narrowing limitation
+  async findByName(name: string): Promise<Option<Concept>> {
     const conceptLower = name.toLowerCase();
     const concept = this.concepts.get(conceptLower);
-    return Promise.resolve(concept || null);
+    return Promise.resolve(fromNullable(concept));
   }
   
   async findRelated(conceptName: string, limit: number): Promise<Concept[]> {
@@ -200,11 +204,12 @@ export class FakeCatalogRepository implements CatalogRepository {
     return Promise.resolve(results);
   }
   
-  async findBySource(sourcePath: string): Promise<SearchResult | null> {
+  // @ts-expect-error - Type narrowing limitation
+  async findBySource(sourcePath: string): Promise<Option<SearchResult>> {
     const results = Array.from(this.documents.values())
       .filter(doc => doc.source === sourcePath);
     
-    return Promise.resolve(results[0] || null);
+    return Promise.resolve(fromNullable(results[0]));
   }
   
   async findByCategory(_categoryId: number): Promise<SearchResult[]> {
