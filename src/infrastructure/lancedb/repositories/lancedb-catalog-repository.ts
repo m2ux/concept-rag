@@ -90,17 +90,6 @@ export class LanceDBCatalogRepository implements CatalogRepository {
   }
   
   /**
-   * Find a catalog entry by source path - Option variant.
-   * 
-   * Type-safe wrapper around findBySource that returns Option<SearchResult>.
-   * Eliminates null checks and enables functional composition.
-   * 
-   * @param source - Source document path
-   * @returns Promise resolving to Some(result) if found, None if not found
-   * @throws {DatabaseError} If database query fails
-   */
-  
-  /**
    * Find documents by category ID.
    * @param categoryId - Category ID
    * @returns Array of documents in the category

@@ -56,43 +56,24 @@ RETURNS: Top 5 documents with text previews, hybrid scores (including strong tit
   async execute(params: ConceptualCatalogSearchParams) {
     // Validate input
     try {
-
       this.validator.validateCatalogSearch(params);
-
     } catch (error: any) {
-
       console.error(`❌ Validation failed: ${error.message}`);
-
       return {
-
         isError: true,
-
         content: [{
-
           type: "text" as const,
-
           text: JSON.stringify({
-
             error: {
-
               code: error.code || 'VALIDATION_ERROR',
-
               message: error.message,
-
               field: error.field,
-
               context: error.context
-
             },
-
             timestamp: new Date().toISOString()
-
           })
-
         }]
-
       };
-
     }
     
     // Delegate to service (Result-based)
