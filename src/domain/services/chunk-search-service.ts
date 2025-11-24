@@ -96,7 +96,7 @@ export class ChunkSearchService {
   ): Promise<Result<SearchResult[], SearchError>> {
     // Validate parameters
     try {
-      this.validator.validateBroadChunksSearch(params);
+      this.validator.validateSearchQuery(params);
     } catch (error) {
       return Err({
         type: 'validation',

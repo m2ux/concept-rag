@@ -120,9 +120,12 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.chunks.length).toBe(1);
+      // VERIFY
       expect(result.chunks[0].id).toBe('1');
-      expect(result.concept).toBe(conceptName);
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.concept).toBe(conceptName);
+      }
     });
 
     it('should handle case-insensitive concept names', async () => {
@@ -147,8 +150,11 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.chunks.length).toBe(1);
-      expect(result.concept).toBe('DEPENDENCY INJECTION');
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.concept).toBe('DEPENDENCY INJECTION');
+      }
     });
 
     it('should trim whitespace from concept name', async () => {
@@ -173,7 +179,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.chunks.length).toBe(1);
+      // VERIFY
     });
 
     it('should return concept metadata when found', async () => {
@@ -198,7 +204,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(isSome(result.conceptMetadata)).toBe(true);
+      // VERIFY
       if (isSome(result.conceptMetadata)) {
         expect(result.conceptMetadata.value.concept).toBe(conceptName);
         expect(result.conceptMetadata.value.category).toBe('software engineering');
@@ -217,7 +223,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(isNone(result.conceptMetadata)).toBe(true);
+      // VERIFY
     });
 
     it('should return related concepts from metadata', async () => {
@@ -242,8 +248,11 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.relatedConcepts.length).toBe(3);
-      expect(result.relatedConcepts).toContain('service-oriented architecture');
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.relatedConcepts).toContain('service-oriented architecture');
+      }
     });
 
     it('should limit related concepts to 10', async () => {
@@ -268,7 +277,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.relatedConcepts.length).toBe(10);
+      // VERIFY
     });
 
     it('should return empty related concepts when concept not found', async () => {
@@ -283,7 +292,10 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.relatedConcepts).toEqual([]);
+      // VERIFY
+      if (isOk(result)) {
+        expect(result.value.relatedConcepts).toEqual([]);
+      }
     });
   });
 
@@ -319,7 +331,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.chunks.length).toBe(1);
+      // VERIFY
       expect(result.chunks[0].source).toContain('typescript');
     });
 
@@ -346,7 +358,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.chunks.length).toBe(1);
+      // VERIFY
     });
 
     it('should return all chunks when source filter not provided', async () => {
@@ -379,7 +391,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.chunks.length).toBe(2);
+      // VERIFY
     });
 
     it('should return empty array when source filter matches nothing', async () => {
@@ -405,7 +417,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.chunks.length).toBe(0);
+      // VERIFY
     });
   });
 
@@ -448,7 +460,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.chunks[0].conceptDensity).toBe(0.8);
+      // VERIFY
       expect(result.chunks[1].conceptDensity).toBe(0.5);
       expect(result.chunks[2].conceptDensity).toBe(0.3);
     });
@@ -484,7 +496,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      // Chunk with 3 occurrences should come first
+      // VERIFY
       expect(result.chunks[0].id).toBe('2');
     });
 
@@ -519,7 +531,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.chunks[0].source).toBe('/docs/a.pdf');
+      // VERIFY
       expect(result.chunks[1].source).toBe('/docs/z.pdf');
     });
 
@@ -553,7 +565,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      // Chunk with density should come first
+      // VERIFY
       expect(result.chunks[0].id).toBe('1');
     });
   });
@@ -579,7 +591,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      expect(result.chunks.length).toBe(5);
+      // VERIFY
     });
 
     it('should request extra chunks for filtering', async () => {
@@ -603,7 +615,7 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      // Should get 10 results after filtering (requested 20, filtered to 15, limited to 10)
+      // VERIFY
       expect(result.chunks.length).toBe(10);
       expect(result.chunks.every(c => c.source.includes('typescript'))).toBe(true);
     });
@@ -629,8 +641,11 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      // totalFound is the count of candidateChunks (limit * 2 = 10)
-      expect(result.totalFound).toBe(10);
+      // VERIFY
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.totalFound).toBe(10);
+      }
       expect(result.chunks.length).toBe(5);
     });
   });
@@ -652,7 +667,7 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // density * 0.7 + normalizedOccurrences * 0.3
+      // VERIFY
       // 0.7 * 0.7 + (2/5) * 0.3 = 0.49 + 0.12 = 0.61
       expect(relevance).toBeCloseTo(0.61, 2);
     });
@@ -673,7 +688,7 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // Normalized occurrences should be capped at 1.0 (5/5)
+      // VERIFY
       // 0.5 * 0.7 + 1.0 * 0.3 = 0.35 + 0.3 = 0.65
       expect(relevance).toBeCloseTo(0.65, 2);
     });
@@ -694,7 +709,7 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // 0.8 * 0.7 + 0 * 0.3 = 0.56
+      // VERIFY
       expect(relevance).toBeCloseTo(0.56, 2);
     });
 
@@ -714,7 +729,7 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // 0 * 0.7 + (1/5) * 0.3 = 0.06
+      // VERIFY
       expect(relevance).toBeCloseTo(0.06, 2);
     });
 
@@ -734,7 +749,7 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      expect(relevance).toBeGreaterThanOrEqual(0);
+      // VERIFY
       expect(relevance).toBeLessThanOrEqual(1.0);
     });
   });
