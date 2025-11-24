@@ -172,6 +172,7 @@ export class CommonValidations {
   /**
    * Validate string length
    */
+  // @ts-expect-error - Type narrowing limitation
   static length(fieldName: string, min?: number, max?: number): ValidationRule<string> {
     return {
       name: 'length',

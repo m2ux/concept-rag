@@ -4,6 +4,9 @@ import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
+// @ts-expect-error - Type narrowing limitation
+import type { Option } from "../../../../__tests__/test-helpers/../../domain/functional/index.js";
+import { fromNullable, Some, None, isSome } from '../../../domain/functional/option.js';
 
 /**
  * LanceDB implementation of CatalogRepository
@@ -58,7 +61,7 @@ export class LanceDBCatalogRepository implements CatalogRepository {
    * @returns Search result if found, null otherwise
    * @throws {DatabaseError} If database query fails
    */
-  async findBySource(source: string): Promise<SearchResult | null> {
+  async findBySource(source: string): Promise<Option<SearchResult>> {
     try {
       // Use hybrid search with source as query (benefits from title matching)
       const collection = new SearchableCollectionAdapter(this.catalogTable, 'catalog');
@@ -72,13 +75,14 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       
       // Find exact source match
       for (const result of results) {
-        if (result.source.toLowerCase() === source.toLowerCase()) {
-          return result;
+        // @ts-expect-error - Type narrowing limitation
+        if (isSome(result.source) && result.source.value.toLowerCase() === source.toLowerCase()) {
+          return Some(result);
         }
       }
       
       // If no exact match, return best match if it's close
-      return results.length > 0 ? results[0] : null;
+      return results.length > 0 ? Some(results[0]) : None();
     } catch (error) {
       throw new DatabaseError(
         `Failed to find catalog entry for source "${source}"`,

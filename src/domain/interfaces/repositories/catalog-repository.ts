@@ -1,4 +1,5 @@
 import { SearchQuery, SearchResult } from '../../models/index.js';
+import { Option } from '../../functional/option.js';
 
 /**
  * Repository interface for accessing document catalog (summaries and metadata).
@@ -82,32 +83,34 @@ export interface CatalogRepository {
   /**
    * Find a catalog entry by source document path.
    * 
-   * Retrieves the catalog entry (summary, concepts, metadata) for a specific
-   * document. Uses hybrid search with the source path as the query, which
-   * benefits from strong title matching.
+   * Returns Option<SearchResult> for type-safe nullable handling.
+   * Use isSome/isNone to check, or fold/map for functional composition.
    * 
-   * **Use Cases**:
-   * - Get document metadata
-   * - Extract document concepts
-   * - Document overview
-   * 
-   * @param sourcePath - The source document path (e.g., '/docs/guide.pdf')
-   * @returns Promise resolving to catalog entry if found, null if not found
+   * @param sourcePath - The source document path
+   * @returns Promise resolving to Some(entry) if found, None if not found
    * @throws {Error} If database query fails
    * 
    * @example
    * ```typescript
-   * const entry = await catalogRepo.findBySource('/docs/microservices-guide.pdf');
-   * if (entry) {
+   * import { isSome, map, fold } from '../../functional/option';
+   * 
+   * const entryOpt = await catalogRepo.findBySource('/docs/guide.pdf');
+   * 
+   * if (isSome(entryOpt)) {
+   *   const entry = entryOpt.value;
    *   console.log(`Document: ${entry.source}`);
    *   console.log(`Summary: ${entry.text}`);
-   *   console.log(`Primary Concepts:`);
-   *   entry.concepts.primary_concepts.forEach(c => console.log(`  - ${c}`));
-   *   console.log(`Categories: ${entry.concepts.categories.join(', ')}`);
    * }
+   * 
+   * // Extract primary concepts with default
+   * const concepts = fold(
+   *   entryOpt,
+   *   () => [],
+   *   entry => entry.concepts.primary_concepts
+   * );
    * ```
    */
-  findBySource(sourcePath: string): Promise<SearchResult | null>;
+  findBySource(sourcePath: string): Promise<Option<SearchResult>>;
   
   /**
    * Find all documents in a specific category.

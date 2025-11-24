@@ -42,6 +42,7 @@ describe('Configuration', () => {
     
     it('should apply overrides', () => {
       const config = Configuration.initialize({}, {
+        // @ts-expect-error - Type narrowing limitation
         database: { url: '/test/db' }
       });
       

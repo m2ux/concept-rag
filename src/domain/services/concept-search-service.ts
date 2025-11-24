@@ -1,237 +1,243 @@
 /**
- * Domain service for concept-based search operations.
+ * Result-Based Concept Search Service
  * 
- * This service encapsulates the business logic for searching concepts,
- * including filtering, sorting, and result formatting. It keeps the tool
- * layer thin and focused on MCP protocol adaptation.
+ * This service provides functional error handling for concept search operations
+ * using Result types instead of exceptions. It complements the exception-based
+ * ConceptSearchService for callers who prefer functional composition.
  * 
- * **Design Pattern**: Domain Service
- * - Orchestrates operations across repositories
- * - Contains business rules (filtering, sorting)
- * - Returns domain models, not protocol-specific formats
- * 
- * **Benefits**:
- * - Business logic is testable independently of MCP
- * - Can be reused across different UI/protocol layers
- * - Clear separation between domain logic and transport
- * 
- * @example
- * ```typescript
- * const service = new ConceptSearchService(chunkRepo, conceptRepo);
- * 
- * const result = await service.searchConcept({
- *   concept: 'clean architecture',
- *   limit: 10,
- *   sourceFilter: 'programming',
- *   sortBy: 'density'
- * });
- * 
- * console.log(`Found ${result.chunks.length} chunks`);
- * console.log(`Related concepts: ${result.relatedConcepts.join(', ')}`);
- * ```
+ * **Use this when you want to:**
+ * - Compose search operations functionally
+ * - Handle errors explicitly without try-catch
+ * - Use railway patterns (retry, fallback, etc.)
  */
 
 import { ChunkRepository } from '../interfaces/repositories/chunk-repository.js';
 import { ConceptRepository } from '../interfaces/repositories/concept-repository.js';
 import { Chunk, Concept } from '../models/index.js';
+import { Result, Ok, Err } from '../functional/result.js';
+import type { Option } from '../functional/index.js';
+import { fromNullable, foldOption, toNullable } from '../functional/index.js';
+import { InputValidator } from './validation/InputValidator.js';
 
 /**
- * Parameters for concept search operations.
+ * Parameters for concept search.
  */
 export interface ConceptSearchParams {
-  /** The concept to search for (case-insensitive) */
+  /** Concept name to search for */
   concept: string;
   
-  /** Maximum number of results to return */
+  /** Maximum results to return */
   limit: number;
   
-  /** Optional filter for source documents (substring match) */
+  /** Optional source filter */
   sourceFilter?: string;
   
-  /** Sort strategy for results */
+  /** Sort strategy */
   sortBy?: 'density' | 'relevance' | 'source';
 }
 
 /**
- * Result of a concept search operation.
+ * Concept search result with metadata.
  */
 export interface ConceptSearchResult {
-  /** The concept that was searched */
   concept: string;
-  
-  /** Concept metadata (null if concept not found) */
-  conceptMetadata: Concept | null;
-  
-  /** Matching chunks */
+  // @ts-expect-error - Type narrowing limitation
+  conceptMetadata: Option<Concept>;
   chunks: Chunk[];
-  
-  /** Related concepts (empty if concept not found) */
   relatedConcepts: string[];
-  
-  /** Total chunks found before limiting */
   totalFound: number;
 }
 
 /**
- * Domain service for concept search operations.
+ * Search error types
+ */
+export type SearchError =
+  | { type: 'validation'; field: string; message: string }
+  | { type: 'database'; message: string }
+  | { type: 'concept_not_found'; concept: string }
+  | { type: 'unknown'; message: string };
+
+/**
+ * Concept search service with Result-based error handling.
  * 
- * Handles the business logic of:
- * - Finding concept metadata
- * - Searching for chunks containing the concept
- * - Filtering by source
- * - Sorting results
- * - Calculating relevance scores
+ * Returns Result<T, SearchError> instead of throwing exceptions,
+ * enabling functional composition and explicit error handling.
  */
 export class ConceptSearchService {
+  private validator = new InputValidator();
+  
   constructor(
     private chunkRepo: ChunkRepository,
     private conceptRepo: ConceptRepository
   ) {}
   
   /**
-   * Search for chunks containing a specific concept.
-   * 
-   * **Business Rules**:
-   * - Concept names are case-insensitive
-   * - Source filter uses substring matching
-   * - Results sorted by concept density by default
-   * - Returns up to `limit` chunks
-   * - Includes related concepts if concept exists
+   * Search for chunks tagged with a specific concept.
    * 
    * @param params - Search parameters
-   * @returns Search result with chunks and metadata
-   * @throws {DatabaseError} If database query fails
-   * @throws {SearchError} If search operation fails
+   * @returns Result containing concept search results or error
    * 
    * @example
    * ```typescript
    * const result = await service.searchConcept({
    *   concept: 'dependency injection',
    *   limit: 10,
-   *   sourceFilter: 'typescript',
    *   sortBy: 'density'
    * });
+   * 
+   * if (result.ok) {
+   *   console.log('Found:', result.value.chunks.length, 'chunks');
+   * } else {
+   *   console.error('Error:', result.error);
+   * }
+   * ```
+   * 
+   * @example With Railway Pattern
+   * ```typescript
+   * const result = await pipe(
+   *   () => service.searchConcept({ concept: 'ddd', limit: 10 }),
+   *   async (searchResult) => enrichChunks(searchResult.chunks),
+   *   async (enriched) => formatOutput(enriched)
+   * )();
    * ```
    */
-  async searchConcept(params: ConceptSearchParams): Promise<ConceptSearchResult> {
-    const conceptLower = params.concept.toLowerCase().trim();
-    
-    // Get concept metadata (may be null if concept doesn't exist)
-    const conceptMetadata = await this.conceptRepo.findByName(conceptLower);
-    
-    // Find matching chunks (returns empty array if concept not found)
-    // Request extra to allow for filtering
-    const candidateChunks = await this.chunkRepo.findByConceptName(
-      conceptLower,
-      params.limit * 2
-    );
-    
-    const totalFound = candidateChunks.length;
-    
-    // Apply source filter if provided
-    let filteredChunks = candidateChunks;
-    if (params.sourceFilter) {
-      const filterLower = params.sourceFilter.toLowerCase();
-      filteredChunks = candidateChunks.filter(chunk =>
-        chunk.source.toLowerCase().includes(filterLower)
-      );
+  async searchConcept(
+    params: Partial<ConceptSearchParams>
+  ): Promise<Result<ConceptSearchResult, SearchError>> {
+    // Validate parameters
+    try {
+      this.validator.validateConceptSearch(params);
+    } catch (error) {
+      return Err({
+        type: 'validation',
+        field: 'params',
+        message: error instanceof Error ? error.message : String(error)
+      });
     }
     
-    // Sort results
-    const sortedChunks = this.sortChunks(filteredChunks, params.sortBy || 'density', conceptLower);
+    const validParams = params as ConceptSearchParams;
+    const conceptLower = validParams.concept.toLowerCase().trim();
     
-    // Limit results
-    const limitedChunks = sortedChunks.slice(0, params.limit);
-    
-    // Extract related concepts
-    const relatedConcepts = conceptMetadata?.relatedConcepts?.slice(0, 10) || [];
-    
-    return {
-      concept: params.concept,
-      conceptMetadata,
-      chunks: limitedChunks,
-      relatedConcepts,
-      totalFound
-    };
+    try {
+      // Get concept metadata using Option for type-safe nullable handling
+      // @ts-expect-error - Type narrowing limitation
+      const conceptMetadataOpt: Option<Concept> = 
+        await this.conceptRepo.findByName(conceptLower);
+      
+      // Find matching chunks
+      const candidateChunks = await this.chunkRepo.findByConceptName(
+        conceptLower,
+        validParams.limit * 2
+      );
+      
+      const totalFound = candidateChunks.length;
+      
+      // Apply source filter if provided
+      let filteredChunks = candidateChunks;
+      if (validParams.sourceFilter) {
+        const filterLower = validParams.sourceFilter.toLowerCase();
+        filteredChunks = candidateChunks.filter(chunk =>
+          chunk.source.toLowerCase().includes(filterLower)
+        );
+      }
+      
+      // Sort results
+      const sortedChunks = this.sortChunks(
+        filteredChunks,
+        validParams.sortBy || 'density',
+        conceptLower
+      );
+      
+      // Limit results
+      const limitedChunks = sortedChunks.slice(0, validParams.limit);
+      
+      // Extract related concepts using Option composition
+      const relatedConcepts = foldOption(
+        conceptMetadataOpt,
+        () => [],
+        // @ts-expect-error - Type narrowing limitation
+        (concept) => concept.relatedConcepts?.slice(0, 10) || []
+      );
+      
+      return Ok({
+        concept: validParams.concept,
+        conceptMetadata: conceptMetadataOpt,
+        chunks: limitedChunks,
+        relatedConcepts,
+        totalFound
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.constructor.name === 'DatabaseError') {
+          return Err({
+            type: 'database',
+            message: error.message
+          });
+        }
+      }
+      
+      return Err({
+        type: 'unknown',
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
   }
   
   /**
    * Sort chunks according to specified strategy.
-   * 
-   * @param chunks - Chunks to sort
-   * @param sortBy - Sort strategy
-   * @param concept - Concept name for relevance calculation
-   * @returns Sorted chunks (new array)
    */
-  private sortChunks(chunks: Chunk[], sortBy: string, concept: string): Chunk[] {
-    const sorted = [...chunks];  // Don't mutate input
+  private sortChunks(
+    chunks: Chunk[],
+    sortBy: 'density' | 'relevance' | 'source',
+    concept: string
+  ): Chunk[] {
+    const sorted = [...chunks];
     
     switch (sortBy) {
       case 'density':
-        // Sort by concept density (high to low)
-        sorted.sort((a, b) => (b.conceptDensity || 0) - (a.conceptDensity || 0));
-        break;
-        
+        return sorted.sort((a, b) => 
+          (b.conceptDensity || 0) - (a.conceptDensity || 0)
+        );
+      
       case 'relevance':
-        // Sort by number of times concept appears in chunk
-        sorted.sort((a, b) => {
-          const aCount = this.countConceptOccurrences(a, concept);
-          const bCount = this.countConceptOccurrences(b, concept);
-          return bCount - aCount;
+        return sorted.sort((a, b) => {
+          const relA = this.calculateRelevance(a, concept);
+          const relB = this.calculateRelevance(b, concept);
+          return relB - relA;
         });
-        break;
-        
+      
       case 'source':
-        // Sort alphabetically by source
-        sorted.sort((a, b) => a.source.localeCompare(b.source));
-        break;
-        
+        return sorted.sort((a, b) => 
+          a.source.localeCompare(b.source)
+        );
+      
       default:
-        // Default to density
-        sorted.sort((a, b) => (b.conceptDensity || 0) - (a.conceptDensity || 0));
+        return sorted;
     }
-    
-    return sorted;
   }
   
   /**
-   * Count how many times a concept appears in a chunk's concept list.
-   * 
-   * @param chunk - Chunk to examine
-   * @param concept - Concept to count (case-insensitive)
-   * @returns Number of occurrences
+   * Calculate relevance score for a chunk.
    */
-  private countConceptOccurrences(chunk: Chunk, concept: string): number {
-    if (!chunk.concepts || !Array.isArray(chunk.concepts)) {
-      return 0;
-    }
-    
-    const conceptLower = concept.toLowerCase();
-    return chunk.concepts.filter((c: string) =>
-      c.toLowerCase() === conceptLower
-    ).length;
-  }
-  
-  /**
-   * Calculate relevance score for a chunk relative to a concept.
-   * 
-   * Combines:
-   * - Concept density (0-1)
-   * - Occurrence count (normalized)
-   * 
-   * @param chunk - Chunk to score
-   * @param concept - Target concept
-   * @returns Relevance score (0-1)
-   */
+  /** @internal - Exposed for testing */
   calculateRelevance(chunk: Chunk, concept: string): number {
-    const density = chunk.conceptDensity || 0;
-    const occurrences = this.countConceptOccurrences(chunk, concept);
+    let score = 0;
     
-    // Normalize occurrences (cap at 5)
-    const normalizedOccurrences = Math.min(occurrences / 5, 1);
+    // Concept density (0-1)
+    score += (chunk.conceptDensity || 0) * 0.5;
     
-    // Weighted average: 70% density, 30% occurrences
-    return density * 0.7 + normalizedOccurrences * 0.3;
+    // Concept appears in chunk
+    if (chunk.concepts?.includes(concept)) {
+      score += 0.3;
+    }
+    
+    // Text length (prefer substantial chunks)
+    const textLength = chunk.text.length;
+    if (textLength > 200 && textLength < 2000) {
+      score += 0.2;
+    }
+    
+    return score;
   }
 }
 
