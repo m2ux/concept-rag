@@ -17,38 +17,23 @@ export interface CategoryRepository {
   /**
    * Find category by ID
    * @param id Category hash ID
+   * @returns Some(category) if found, None otherwise
    */
-  findById(id: number): Promise<Category | null>;
-  
-  /**
-   * Find category by ID - Option variant
-   * @param id Category hash ID
-   */
-  findByIdOpt(id: number): Promise<Option<Category>>;
+  findById(id: number): Promise<Option<Category>>;
   
   /**
    * Find category by name (exact match)
    * @param name Category name
+   * @returns Some(category) if found, None otherwise
    */
-  findByName(name: string): Promise<Category | null>;
-  
-  /**
-   * Find category by name - Option variant
-   * @param name Category name
-   */
-  findByNameOpt(name: string): Promise<Option<Category>>;
+  findByName(name: string): Promise<Option<Category>>;
   
   /**
    * Find category by alias
    * @param alias Category alias
+   * @returns Some(category) if found, None otherwise
    */
-  findByAlias(alias: string): Promise<Category | null>;
-  
-  /**
-   * Find category by alias - Option variant
-   * @param alias Category alias
-   */
-  findByAliasOpt(alias: string): Promise<Option<Category>>;
+  findByAlias(alias: string): Promise<Option<Category>>;
   
   /**
    * Find root categories (no parent)

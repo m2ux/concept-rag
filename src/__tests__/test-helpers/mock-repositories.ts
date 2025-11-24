@@ -118,25 +118,15 @@ export class FakeConceptRepository implements ConceptRepository {
     });
   }
   
-  async findById(id: number): Promise<Concept | null> {
+  async findById(id: number): Promise<Option<Concept>> {
     const concept = this.conceptsById.get(id);
-    return Promise.resolve(concept || null);
+    return Promise.resolve(fromNullable(concept));
   }
   
-  async findByName(name: string): Promise<Concept | null> {
+  async findByName(name: string): Promise<Option<Concept>> {
     const conceptLower = name.toLowerCase();
     const concept = this.concepts.get(conceptLower);
-    return Promise.resolve(concept || null);
-  }
-  
-  async findByIdOpt(id: number): Promise<Option<Concept>> {
-    const result = await this.findById(id);
-    return fromNullable(result);
-  }
-  
-  async findByNameOpt(name: string): Promise<Option<Concept>> {
-    const result = await this.findByName(name);
-    return fromNullable(result);
+    return Promise.resolve(fromNullable(concept));
   }
   
   async findRelated(conceptName: string, limit: number): Promise<Concept[]> {
@@ -211,16 +201,11 @@ export class FakeCatalogRepository implements CatalogRepository {
     return Promise.resolve(results);
   }
   
-  async findBySource(sourcePath: string): Promise<SearchResult | null> {
+  async findBySource(sourcePath: string): Promise<Option<SearchResult>> {
     const results = Array.from(this.documents.values())
       .filter(doc => doc.source === sourcePath);
     
-    return Promise.resolve(results[0] || null);
-  }
-  
-  async findBySourceOpt(sourcePath: string): Promise<Option<SearchResult>> {
-    const result = await this.findBySource(sourcePath);
-    return fromNullable(result);
+    return Promise.resolve(fromNullable(results[0]));
   }
   
   async findByCategory(_categoryId: number): Promise<SearchResult[]> {

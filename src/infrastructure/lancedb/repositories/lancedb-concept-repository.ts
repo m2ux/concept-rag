@@ -16,11 +16,11 @@ export class LanceDBConceptRepository implements ConceptRepository {
   /**
    * Find concept by ID.
    * @param id - Concept ID
-   * @returns Concept if found, null otherwise
+   * @returns Some(concept) if found, None otherwise
    * @throws {DatabaseError} If database query fails
    * @throws {InvalidEmbeddingsError} If concept has invalid embeddings
    */
-  async findById(id: number): Promise<Concept | null> {
+  async findById(id: number): Promise<Option<Concept>> {
     try {
       const results = await this.conceptsTable
         .query()
@@ -29,7 +29,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
         .toArray();
       
       if (results.length === 0) {
-        return null;
+        return None();
       }
       
       const row = results[0];
@@ -41,7 +41,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
         throw validationError;
       }
       
-      return this.mapRowToConcept(row);
+      return Some(this.mapRowToConcept(row));
     } catch (error) {
       if (error instanceof ConceptNotFoundError || error instanceof InvalidEmbeddingsError) {
         throw error;
@@ -57,11 +57,11 @@ export class LanceDBConceptRepository implements ConceptRepository {
   /**
    * Find concept by name (case-insensitive).
    * @param conceptName - Name of the concept
-   * @returns Concept if found, null otherwise
+   * @returns Some(concept) if found, None otherwise
    * @throws {DatabaseError} If database query fails
    * @throws {InvalidEmbeddingsError} If concept has invalid embeddings
    */
-  async findByName(conceptName: string): Promise<Concept | null> {
+  async findByName(conceptName: string): Promise<Option<Concept>> {
     const conceptLower = conceptName.toLowerCase().trim();
     
     try {
@@ -76,7 +76,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
         .toArray();
       
       if (results.length === 0) {
-        return null;  // Concept not found (not an error, just return null)
+        return None();  // Concept not found (not an error, just return None)
       }
       
       const row = results[0];
@@ -90,7 +90,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
         throw validationError;  // Re-throw to caller
       }
       
-      return this.mapRowToConcept(row);
+      return Some(this.mapRowToConcept(row));
     } catch (error) {
       // Wrap database errors in domain exception
       if (error instanceof ConceptNotFoundError || error instanceof InvalidEmbeddingsError) {
@@ -104,36 +104,6 @@ export class LanceDBConceptRepository implements ConceptRepository {
     }
   }
   
-  /**
-   * Find concept by name - Option variant.
-   * 
-   * Type-safe wrapper around findByName that returns Option<Concept>.
-   * Eliminates null checks and enables functional composition.
-   * 
-   * @param conceptName - Name of the concept
-   * @returns Promise resolving to Some(concept) if found, None if not found
-   * @throws {DatabaseError} If database query fails
-   * @throws {InvalidEmbeddingsError} If concept has invalid embeddings
-   */
-  async findByNameOpt(conceptName: string): Promise<Option<Concept>> {
-    const result = await this.findByName(conceptName);
-    return fromNullable(result);
-  }
-  
-  /**
-   * Find concept by ID - Option variant.
-   * 
-   * Type-safe wrapper around findById that returns Option<Concept>.
-   * 
-   * @param id - Concept ID
-   * @returns Promise resolving to Some(concept) if found, None if not found
-   * @throws {DatabaseError} If database query fails
-   * @throws {InvalidEmbeddingsError} If concept has invalid embeddings
-   */
-  async findByIdOpt(id: number): Promise<Option<Concept>> {
-    const result = await this.findById(id);
-    return fromNullable(result);
-  }
   
   async findRelated(conceptName: string, limit: number): Promise<Concept[]> {
     // Get the concept first to use its embedding
