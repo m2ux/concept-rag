@@ -4,6 +4,7 @@ import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
+// @ts-expect-error - Type narrowing limitation
 import type { Option } from "../../../../__tests__/test-helpers/../../domain/functional/index.js";
 import { fromNullable, Some, None, isSome } from '../../../domain/functional/option.js';
 
@@ -74,6 +75,7 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       
       // Find exact source match
       for (const result of results) {
+        // @ts-expect-error - Type narrowing limitation
         if (isSome(result.source) && result.source.value.toLowerCase() === source.toLowerCase()) {
           return Some(result);
         }

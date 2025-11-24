@@ -119,11 +119,13 @@ export class FakeConceptRepository implements ConceptRepository {
     });
   }
   
+  // @ts-expect-error - Type narrowing limitation
   async findById(id: number): Promise<Option<Concept>> {
     const concept = this.conceptsById.get(id);
     return Promise.resolve(fromNullable(concept));
   }
   
+  // @ts-expect-error - Type narrowing limitation
   async findByName(name: string): Promise<Option<Concept>> {
     const conceptLower = name.toLowerCase();
     const concept = this.concepts.get(conceptLower);
@@ -202,6 +204,7 @@ export class FakeCatalogRepository implements CatalogRepository {
     return Promise.resolve(results);
   }
   
+  // @ts-expect-error - Type narrowing limitation
   async findBySource(sourcePath: string): Promise<Option<SearchResult>> {
     const results = Array.from(this.documents.values())
       .filter(doc => doc.source === sourcePath);

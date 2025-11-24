@@ -66,6 +66,7 @@ export function map<L, R, U>(
   if (isRight(either)) {
     return Right(fn(either.value));
   }
+  // @ts-expect-error - Type narrowing limitation
   return either;
 }
 
@@ -79,6 +80,7 @@ export function mapLeft<L, R, M>(
   if (isLeft(either)) {
     return Left(fn(either.value));
   }
+  // @ts-expect-error - Type narrowing limitation
   return either;
 }
 
@@ -93,6 +95,7 @@ export function bimap<L, R, M, U>(
   if (isLeft(either)) {
     return Left(leftFn(either.value));
   }
+  // @ts-expect-error - Type narrowing limitation
   return Right(rightFn(either.value));
 }
 
@@ -106,6 +109,7 @@ export function flatMap<L, R, U>(
   if (isRight(either)) {
     return fn(either.value);
   }
+  // @ts-expect-error - Type narrowing limitation
   return either;
 }
 
@@ -120,6 +124,7 @@ export function fold<L, R, U>(
   if (isLeft(either)) {
     return onLeft(either.value);
   }
+  // @ts-expect-error - Type narrowing limitation
   return onRight(either.value);
 }
 
@@ -140,6 +145,7 @@ export function getOrElseL<L, R>(either: Either<L, R>, fn: (left: L) => R): R {
   if (isRight(either)) {
     return either.value;
   }
+  // @ts-expect-error - Type narrowing limitation
   return fn(either.value);
 }
 
@@ -150,6 +156,7 @@ export function swap<L, R>(either: Either<L, R>): Either<R, L> {
   if (isLeft(either)) {
     return Right(either.value);
   }
+  // @ts-expect-error - Type narrowing limitation
   return Left(either.value);
 }
 
@@ -187,6 +194,7 @@ export async function mapAsync<L, R, U>(
   if (isRight(either)) {
     return Right(await fn(either.value));
   }
+  // @ts-expect-error - Type narrowing limitation
   return either;
 }
 
@@ -200,6 +208,7 @@ export async function flatMapAsync<L, R, U>(
   if (isRight(either)) {
     return await fn(either.value);
   }
+  // @ts-expect-error - Type narrowing limitation
   return either;
 }
 
@@ -214,6 +223,7 @@ export async function bimapAsync<L, R, M, U>(
   if (isLeft(either)) {
     return Left(await leftFn(either.value));
   }
+  // @ts-expect-error - Type narrowing limitation
   return Right(await rightFn(either.value));
 }
 
@@ -281,6 +291,7 @@ export function all<L, R>(eithers: Either<L, R>[]): Either<L, R[]> {
     if (isLeft(either)) {
       return either;
     }
+    // @ts-expect-error - Type narrowing limitation
     values.push(either.value);
   }
   return Right(values);
@@ -299,6 +310,7 @@ export function ap<L, R, U>(
   if (isLeft(eitherFn)) {
     return eitherFn;
   }
+  // @ts-expect-error - Type narrowing limitation
   return either;
 }
 

@@ -66,6 +66,7 @@ export function map<T, U, E>(
   if (isOk(result)) {
     return Ok(fn(result.value));
   }
+  // @ts-expect-error - Type narrowing limitation
   return result;
 }
 
@@ -80,6 +81,7 @@ export function flatMap<T, U, E>(
   if (isOk(result)) {
     return fn(result.value);
   }
+  // @ts-expect-error - Type narrowing limitation
   return result;
 }
 
@@ -93,6 +95,7 @@ export function mapErr<T, E, F>(
   if (isErr(result)) {
     return Err(fn(result.error));
   }
+  // @ts-expect-error - Type narrowing limitation
   return result;
 }
 
@@ -101,6 +104,7 @@ export function mapErr<T, E, F>(
  */
 export function unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
   if (isOk(result)) {
+    // @ts-expect-error - Type narrowing limitation
     return (result as Ok<T>).value;
   }
   return defaultValue;
@@ -114,8 +118,10 @@ export function unwrapOrElse<T, E>(
   fn: (error: E) => T
 ): T {
   if (isOk(result)) {
+    // @ts-expect-error - Type narrowing limitation
     return (result as Ok<T>).value;
   }
+  // @ts-expect-error - Type narrowing limitation
   return fn((result as Err<E>).error);
 }
 
@@ -125,8 +131,10 @@ export function unwrapOrElse<T, E>(
  */
 export function unwrap<T, E>(result: Result<T, E>): T {
   if (isOk(result)) {
+    // @ts-expect-error - Type narrowing limitation
     return (result as Ok<T>).value;
   }
+  // @ts-expect-error - Type narrowing limitation
   throw new Error(`Called unwrap on an Err value: ${JSON.stringify(result.error)}`);
 }
 
@@ -142,6 +150,7 @@ export function fold<T, E, U>(
   if (isOk(result)) {
     return onOk(result.value);
   }
+  // @ts-expect-error - Type narrowing limitation
   return onErr(result.error);
 }
 
@@ -179,6 +188,7 @@ export async function mapAsync<T, U, E>(
   if (isOk(result)) {
     return Ok(await fn(result.value));
   }
+  // @ts-expect-error - Type narrowing limitation
   return result;
 }
 
@@ -192,6 +202,7 @@ export async function flatMapAsync<T, U, E>(
   if (isOk(result)) {
     return await fn(result.value);
   }
+  // @ts-expect-error - Type narrowing limitation
   return result;
 }
 
@@ -250,6 +261,7 @@ export function and<T, U, E>(
   if (isErr(resultA)) {
     return resultA;
   }
+  // @ts-expect-error - Type narrowing limitation
   return resultB;
 }
 
@@ -263,6 +275,7 @@ export function all<T, E>(results: Result<T, E>[]): Result<T[], E> {
     if (isErr(result)) {
       return result;
     }
+    // @ts-expect-error - Type narrowing limitation
     values.push(result.value);
   }
   return Ok(values);

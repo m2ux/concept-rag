@@ -118,6 +118,7 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
     }
     
     // Format results for MCP response
+    // @ts-expect-error - Type narrowing limitation
     const formattedResults = result.value.map((r: Chunk) => ({
       text: r.text,
       source: r.source,

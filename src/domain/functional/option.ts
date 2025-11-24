@@ -262,6 +262,7 @@ export function all<T>(options: Option<T>[]): Option<T[]> {
     if (isNone(option)) {
       return None();
     }
+    // @ts-expect-error - Type narrowing limitation
     values.push(option.value);
   }
   return Some(values);

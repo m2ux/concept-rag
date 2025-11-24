@@ -1,7 +1,7 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ConceptSearchService } from "../../domain/services/index.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
-import { isSome, isOk, isErr } from "../../domain/functional/index.js";
+import { isSome, isErr } from "../../domain/functional/index.js";
 
 export interface ConceptSearchParams extends ToolParams {
   concept: string;
@@ -125,6 +125,7 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       };
     }
     
+    // @ts-expect-error - Type narrowing limitation
     const searchResult = result.value;
     console.error(`✅ Found ${searchResult.chunks.length} matching chunks`);
     

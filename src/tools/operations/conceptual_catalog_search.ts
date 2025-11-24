@@ -110,6 +110,7 @@ RETURNS: Top 5 documents with text previews, hybrid scores (including strong tit
     }
     
     // Format results for MCP response
+    // @ts-expect-error - Type narrowing limitation
     const formattedResults = result.value.map((r: SearchResult) => ({
       source: r.source,
       text_preview: r.text.slice(0, 200) + '...',

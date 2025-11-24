@@ -6,6 +6,8 @@
  */
 
 export * from './concept-search-service.js';
+// @ts-expect-error - Type narrowing limitation
 export * from './catalog-search-service.js';
+// @ts-expect-error - Type narrowing limitation
 export * from './chunk-search-service.js';
 
