@@ -2,6 +2,7 @@ import { HybridSearchService, SearchableCollection } from '../../domain/interfac
 import { EmbeddingService } from '../../domain/interfaces/services/embedding-service.js';
 import { SearchResult } from '../../domain/models/search-result.js';
 import { QueryExpander } from '../../concepts/query_expander.js';
+import { SearchResultCache } from '../cache/search-result-cache.js';
 import {
   calculateVectorScore,
   calculateWeightedBM25,
@@ -25,12 +26,22 @@ import {
  * 
  * This service orchestrates query expansion, vector search, and multi-signal
  * scoring to provide high-quality search results.
+ * 
+ * **Caching:**
+ * Optionally uses SearchResultCache to avoid redundant searches.
+ * Cache key includes collection name to prevent cross-collection pollution.
  */
 export class ConceptualHybridSearchService implements HybridSearchService {
+  /** Optional search result cache */
+  private cache?: SearchResultCache<SearchResult[]>;
+  
   constructor(
     private embeddingService: EmbeddingService,
-    private queryExpander: QueryExpander
-  ) {}
+    private queryExpander: QueryExpander,
+    cache?: SearchResultCache<SearchResult[]>
+  ) {
+    this.cache = cache;
+  }
 
   async search(
     collection: SearchableCollection,
@@ -38,6 +49,15 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     limit: number = 5,
     debug: boolean = false
   ): Promise<SearchResult[]> {
+    // Check cache first (if enabled and not in debug mode)
+    if (this.cache && !debug) {
+      const cacheKey = `${collection.getName()}:${queryText}`;
+      const cached = this.cache.get(cacheKey, { limit });
+      if (cached) {
+        return cached;
+      }
+    }
+    
     // Step 1: Expand query with corpus concepts and WordNet synonyms
     const expanded = await this.queryExpander.expandQuery(queryText);
     
@@ -105,6 +125,12 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     
     if (debug) {
       this.printDebugScores(finalResults);
+    }
+    
+    // Cache results (if enabled and not in debug mode)
+    if (this.cache && !debug) {
+      const cacheKey = `${collection.getName()}:${queryText}`;
+      this.cache.set(cacheKey, { limit }, finalResults);
     }
     
     return finalResults;
