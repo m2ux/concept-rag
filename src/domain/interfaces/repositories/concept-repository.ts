@@ -39,16 +39,6 @@ export interface ConceptRepository {
    * @param id - Hash-based concept ID
    * @returns Promise resolving to Some(concept) if found, None if not found
    * @throws {Error} If database query fails
-   * 
-   * @example
-   * ```typescript
-   * const conceptOpt = await conceptRepo.findById(123456);
-   * const relatedConcepts = fold(
-   *   conceptOpt,
-   *   () => [],
-   *   c => c.relatedConcepts
-   * );
-   * ```
    */
   findById(id: number): Promise<Option<Concept>>;
   

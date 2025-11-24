@@ -1,6 +1,7 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ChunkSearchService } from "../../domain/services/index.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
+import { isOk, isErr } from "../../domain/functional/index.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
   text: string;
@@ -60,36 +61,45 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
   };
 
   async execute(params: ConceptualChunksSearchParams) {
-    try {
-      // Validate input
-      this.validator.validateChunksSearch(params);
-      
-      // Delegate to service
-      const results = await this.chunkSearchService.searchInSource({
-        text: params.text,
-        source: params.source,
-        limit: 5,
-        debug: params.debug || false
-      });
-      
-      // Format results for MCP response
-      const formattedResults = results.map(r => ({
-        text: r.text,
-        source: r.source,
-        concept_density: r.conceptDensity,
-        concepts: r.concepts || [],
-        categories: r.conceptCategories || []
-      }));
-      
+    // Validate input
+    this.validator.validateChunksSearch(params);
+    
+    // Delegate to service (Result-based)
+    const result = await this.chunkSearchService.searchInSource({
+      text: params.text,
+      source: params.source,
+      limit: 5,
+      debug: params.debug || false
+    });
+    
+    // Handle Result type
+    if (isErr(result)) {
       return {
-        content: [
-          { type: "text" as const, text: JSON.stringify(formattedResults, null, 2) },
-        ],
-        isError: false,
+        content: [{
+          type: "text" as const,
+          text: `Error: ${result.error.message}\nType: ${result.error.type}`
+        }],
+        isError: true,
       };
-    } catch (error) {
-      return this.handleError(error);
     }
+    
+    const results = result.value;
+    
+    // Format results for MCP response
+    const formattedResults = results.map(r => ({
+      text: r.text,
+      source: r.source,
+      concept_density: r.conceptDensity,
+      concepts: r.concepts || [],
+      categories: r.conceptCategories || []
+    }));
+    
+    return {
+      content: [
+        { type: "text" as const, text: JSON.stringify(formattedResults, null, 2) },
+      ],
+      isError: false,
+    };
   }
 }
 
