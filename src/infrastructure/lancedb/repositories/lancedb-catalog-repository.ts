@@ -4,7 +4,7 @@ import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
 import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
-import { Option, fromNullable } from '../../../domain/functional/option.js';
+import { Option, fromNullable, Some, None, isSome } from '../../../domain/functional/option.js';
 
 /**
  * LanceDB implementation of CatalogRepository
@@ -73,7 +73,7 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       
       // Find exact source match
       for (const result of results) {
-        if (result.source.toLowerCase() === source.toLowerCase()) {
+        if (isSome(result.source) && result.source.value.toLowerCase() === source.toLowerCase()) {
           return Some(result);
         }
       }

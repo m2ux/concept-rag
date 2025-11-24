@@ -118,7 +118,7 @@ export class ConceptSearchService {
     const conceptLower = params.concept.toLowerCase().trim();
     
     // Get concept metadata using Option for type-safe nullable handling
-    const conceptMetadataOpt = await this.conceptRepo.findByNameOpt(conceptLower);
+    const conceptMetadataOpt = await this.conceptRepo.findByName(conceptLower);
     
     // Find matching chunks (returns empty array if concept not found)
     // Request extra to allow for filtering
