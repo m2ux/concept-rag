@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ChunkSearchService } from '../chunk-search-service.js';
 import { ChunkRepository } from '../../interfaces/repositories/chunk-repository.js';
 import { Chunk, SearchResult } from '../../models/index.js';
+import { isOk, isErr } from '../../functional/index.js';
 
 /**
  * Mock ChunkRepository for testing
@@ -85,7 +86,7 @@ describe('ChunkSearchService', () => {
       mockRepo.setSearchResults(mockResults);
 
       // EXERCISE
-      const results = await service.searchBroad({
+      const result = await service.searchBroad({
         text: 'software architecture',
         limit: 5
       });
@@ -119,7 +120,7 @@ describe('ChunkSearchService', () => {
       mockRepo.setSearchResults(mockResults);
 
       // EXERCISE
-      const results = await service.searchBroad({
+      const result = await service.searchBroad({
         text: 'test query',
         limit: 1
       });
@@ -165,7 +166,7 @@ describe('ChunkSearchService', () => {
       mockRepo.setSearchResults([]);
 
       // EXERCISE
-      const results = await service.searchBroad({
+      const result = await service.searchBroad({
         text: 'nonexistent query',
         limit: 5
       });
@@ -197,7 +198,7 @@ describe('ChunkSearchService', () => {
       mockRepo.setSearchResults(mockResults);
 
       // EXERCISE
-      const results = await service.searchBroad({
+      const result = await service.searchBroad({
         text: 'test',
         limit: 3
       });
@@ -232,7 +233,7 @@ describe('ChunkSearchService', () => {
       mockRepo.setSourceChunks(sourcePath, mockChunks);
 
       // EXERCISE
-      const results = await service.searchInSource({
+      const result = await service.searchInSource({
         text: 'architecture',
         source: sourcePath,
         limit: 10
@@ -257,7 +258,7 @@ describe('ChunkSearchService', () => {
       mockRepo.setSourceChunks(sourcePath, mockChunks);
 
       // EXERCISE
-      const results = await service.searchInSource({
+      const result = await service.searchInSource({
         text: 'test',
         source: sourcePath,
         limit: 5
@@ -273,7 +274,7 @@ describe('ChunkSearchService', () => {
       mockRepo.setSourceChunks(sourcePath, []);
 
       // EXERCISE
-      const results = await service.searchInSource({
+      const result = await service.searchInSource({
         text: 'test',
         source: sourcePath,
         limit: 10
@@ -290,7 +291,7 @@ describe('ChunkSearchService', () => {
       mockRepo.setSourceChunks(sourcePath, []);
 
       // EXERCISE
-      const results = await service.searchInSource({
+      const result = await service.searchInSource({
         text: 'test',
         source: sourcePath,
         limit: 10
@@ -316,7 +317,7 @@ describe('ChunkSearchService', () => {
       mockRepo.setSourceChunks(sourcePath, mockChunks);
 
       // EXERCISE
-      const results = await service.searchInSource({
+      const result = await service.searchInSource({
         text: 'test',
         source: sourcePath,
         limit: 10

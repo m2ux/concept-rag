@@ -10,6 +10,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { CatalogSearchService } from '../catalog-search-service.js';
 import { CatalogRepository } from '../../interfaces/repositories/catalog-repository.js';
 import { SearchResult } from '../../models/index.js';
+import { isOk, isErr } from '../../functional/index.js';
 
 /**
  * Mock CatalogRepository for testing
@@ -78,14 +79,17 @@ describe('CatalogSearchService', () => {
       mockRepo.setSearchResults(mockResults);
 
       // EXERCISE
-      const results = await service.searchCatalog({
+      const result = await service.searchCatalog({
         text: 'software architecture',
         limit: 5
       });
 
       // VERIFY
-      expect(results).toEqual(mockResults);
-      expect(results.length).toBe(1);
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value).toEqual(mockResults);
+        expect(result.value.length).toBe(1);
+      }
     });
 
     it('should pass search parameters correctly', async () => {
@@ -129,14 +133,17 @@ describe('CatalogSearchService', () => {
       mockRepo.setSearchResults(mockResults);
 
       // EXERCISE
-      const results = await service.searchCatalog({
+      const result = await service.searchCatalog({
         text: 'test query',
         limit: 1
       });
 
       // VERIFY
-      expect(results.length).toBe(1);
-      expect(results[0].id).toBe('1');
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.length).toBe(1);
+        expect(result.value[0].id).toBe('1');
+      }
     });
 
     it('should pass debug flag to repository', async () => {
@@ -176,14 +183,17 @@ describe('CatalogSearchService', () => {
       mockRepo.setSearchResults([]);
 
       // EXERCISE
-      const results = await service.searchCatalog({
+      const result = await service.searchCatalog({
         text: 'nonexistent query',
         limit: 5
       });
 
       // VERIFY
-      expect(results).toEqual([]);
-      expect(results.length).toBe(0);
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value).toEqual([]);
+        expect(result.value.length).toBe(0);
+      }
     });
 
     it('should respect limit parameter', async () => {
@@ -208,13 +218,16 @@ describe('CatalogSearchService', () => {
       mockRepo.setSearchResults(mockResults);
 
       // EXERCISE
-      const results = await service.searchCatalog({
+      const result = await service.searchCatalog({
         text: 'test',
         limit: 3
       });
 
       // VERIFY
-      expect(results.length).toBe(3);
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.length).toBe(3);
+      }
     });
 
     it('should handle large result sets', async () => {
@@ -239,13 +252,16 @@ describe('CatalogSearchService', () => {
       mockRepo.setSearchResults(mockResults);
 
       // EXERCISE
-      const results = await service.searchCatalog({
+      const result = await service.searchCatalog({
         text: 'test',
         limit: 20
       });
 
       // VERIFY
-      expect(results.length).toBe(20);
+      expect(isOk(result)).toBe(true);
+      if (isOk(result)) {
+        expect(result.value.length).toBe(20);
+      }
     });
   });
 });
