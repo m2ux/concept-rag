@@ -132,152 +132,19 @@ This directory contains all architectural decisions made during the development 
 
 ---
 
-## Categories
+### Phase 9: Observability & Functional Patterns (November 23-24, 2025)
 
-### By Topic
+**Major Enhancements:** Observability infrastructure, functional error handling, performance caching
 
-**Foundational (Inherited):**
-- Technology Stack: [adr0001](adr0001-typescript-nodejs-runtime.md), [adr0002](adr0002-lancedb-vector-storage.md)
-- Protocol & Architecture: [adr0003](adr0003-mcp-protocol.md), [adr0004](adr0004-rag-architecture.md)
-- Document Processing: [adr0005](adr0005-pdf-document-processing.md), [adr0012](adr0012-ocr-fallback-tesseract.md), [adr0025](adr0025-document-loader-factory.md), [adr0026](adr0026-epub-format-support.md)
+| # | Title | Date | Status |
+|---|-------|------|--------|
+| [adr0039](adr0039-observability-infrastructure.md) | Observability Infrastructure (Structured Logging & Instrumentation) | 2025-11-23 | Accepted |
+| [adr0040](adr0040-result-option-types.md) | Result/Option Types for Functional Error Handling | 2025-11-23 | Accepted |
+| [adr0041](adr0041-advanced-caching.md) | Multi-Level Caching Strategy (LRU + TTL) | 2025-11-24 | Accepted |
 
-**Search & Retrieval:**
-- Search Strategy: [adr0006](adr0006-hybrid-search-strategy.md), [adr0010](adr0010-query-expansion.md), [adr0022](adr0022-hybrid-search-service-extraction.md)
-- Concept System: [adr0007](adr0007-concept-extraction-llm.md), [adr0008](adr0008-wordnet-integration.md), [adr0015](adr0015-formal-concept-model.md)
-- Category System: [adr0027](adr0027-hash-based-integer-ids.md), [adr0028](adr0028-category-storage-strategy.md), [adr0029](adr0029-category-search-tools.md), [adr0030](adr0030-auto-extracted-categories.md)
+**Key Achievements:** Structured JSON logging with trace IDs, 218 new tests for functional types, LRU caching (40-60% latency reduction), 17 railway-oriented programming utilities, bounded memory usage (~130MB max)
 
-**Architecture & Quality:**
-- Architecture: [adr0009](adr0009-three-table-architecture.md), [adr0016](adr0016-layered-architecture-refactoring.md), [adr0017](adr0017-repository-pattern.md), [adr0018](adr0018-dependency-injection-container.md), [adr0038](adr0038-dependency-rules-enforcement.md)
-- Quality: [adr0019](adr0019-vitest-testing-framework.md), [adr0020](adr0020-typescript-strict-mode.md), [adr0023](adr0023-sql-injection-prevention.md), [adr0035](adr0035-test-suite-expansion.md)
-- Error Handling: [adr0034](adr0034-comprehensive-error-handling.md), [adr0037](adr0037-functional-validation-layer.md)
-- Configuration: [adr0036](adr0036-configuration-centralization.md)
-- Performance: [adr0021](adr0021-performance-optimization-vector-search.md)
-
-**Tools & UX:**
-- Tool Design: [adr0031](adr0031-eight-specialized-tools-strategy.md), [adr0032](adr0032-tool-selection-guide.md), [adr0033](adr0033-basetool-abstraction.md)
-- Features: [adr0011](adr0011-multi-model-strategy.md), [adr0013](adr0013-incremental-seeding.md), [adr0014](adr0014-multi-pass-extraction.md), [adr0024](adr0024-multi-provider-embeddings.md)
-
-### By Status
-
-**Accepted:** 38 ADRs  
-**Accepted (Inherited):** 5 ADRs (adr0001-0005 from lance-mcp)  
-**Superseded:** 0 ADRs  
-**Deprecated:** 0 ADRs
-
-## Key Metrics from ADRs
-
-### Performance Achievements
-- **80x-240x faster** concept search (8-12s → 50-100ms) [adr0021]
-- **1000x less memory** (5GB → 5MB) [adr0021]
-- **54% storage reduction** (699 MB → 324 MB) [adr0027]
-- **95% success rate** document processing [adr0012]
-
-### Quality Improvements
-- **534 tests** total (345% increase, 100% passing) [adr0035]
-- **76.51% coverage** (statements), 68.87% branches [adr0035]
-- **26 error types** in comprehensive exception hierarchy [adr0034]
-- **22 type errors** fixed with strict mode [adr0020]
-- **SQL injection** vulnerability eliminated [adr0023]
-- **Zero breaking changes** through all refactoring [adr0016]
-
-### Feature Growth
-- **2 → 8 tools** (4x tool proliferation) [adr0031]
-- **46 categories** auto-extracted [adr0030]
-- **37,267 concepts** indexed [adr0007]
-- **165 documents** in production [various]
-
-### Cost Efficiency
-- **$0.048/doc** one-time indexing [adr0011]
-- **$0 runtime** search costs [adr0004]
-- **$7.93 total** for 165 documents [adr0011]
-
-## Decision Timeline
-
-```
-2024: lance-mcp Foundation
-  └─ TypeScript, LanceDB, MCP, RAG, PDF
-
-2025-10-13: Conceptual Search (6 ADRs)
-  └─ Hybrid search, concepts, WordNet, 3-table, expansion, multi-model
-
-2025-10-21: Robustness (1 ADR)
-  └─ OCR fallback
-
-2025-11-12-13: Refinement (3 ADRs)
-  └─ Incremental seeding, multi-pass, formal model
-
-2025-11-14: Architecture Refactoring (8 ADRs)
-  └─ Layered arch, repository, DI, testing, strict mode, performance, service, security
-
-2025-11-15: Multi-Provider & Formats (3 ADRs)
-  └─ Embedding providers, loader factory, EPUB
-
-2025-11-19: Category System (4 ADRs)
-  └─ Hash IDs, category storage, category tools, 46 categories
-
-2025-Various: Tool Architecture (3 ADRs)
-  └─ 8 tools strategy, selection guide, BaseTool pattern
-
-2025-11-22: Infrastructure Maturity (5 ADRs)
-  └─ Error handling, test expansion, configuration, validation, dependency rules
-```
-
-## Reading Guide
-
-### For New Team Members
-
-**Start Here:**
-1. [adr0004 - RAG Architecture](adr0004-rag-architecture.md) - Understand the approach
-2. [adr0016 - Layered Architecture](adr0016-layered-architecture-refactoring.md) - Current structure
-3. [adr0007 - Concept Extraction](adr0007-concept-extraction-llm.md) - Core feature
-4. [adr0031 - Eight Tools](adr0031-eight-specialized-tools-strategy.md) - Tool ecosystem
-
-### For Understanding Search
-
-**Read These:**
-1. [adr0006 - Hybrid Search](adr0006-hybrid-search-strategy.md) - Multi-signal ranking
-2. [adr0010 - Query Expansion](adr0010-query-expansion.md) - Term expansion
-3. [adr0022 - HybridSearchService](adr0022-hybrid-search-service-extraction.md) - Service layer
-
-### For Architecture Context
-
-**Architecture Evolution:**
-1. [adr0016 - Layered Architecture](adr0016-layered-architecture-refactoring.md) - Clean Architecture
-2. [adr0017 - Repository Pattern](adr0017-repository-pattern.md) - Data access
-3. [adr0018 - DI Container](adr0018-dependency-injection-container.md) - Dependency wiring
-4. [adr0038 - Dependency Rules](adr0038-dependency-rules-enforcement.md) - Automated enforcement
-
-### For Quality & Reliability
-
-**Infrastructure Maturity:**
-1. [adr0034 - Error Handling](adr0034-comprehensive-error-handling.md) - Exception hierarchy & retry logic
-2. [adr0035 - Test Suite](adr0035-test-suite-expansion.md) - 534 tests, 76.51% coverage
-3. [adr0036 - Configuration](adr0036-configuration-centralization.md) - Type-safe config service
-4. [adr0037 - Validation](adr0037-functional-validation-layer.md) - Functional validation patterns
-
-### For Performance & Optimization
-
-**Critical Decisions:**
-1. [adr0021 - Performance Optimization](adr0021-performance-optimization-vector-search.md) - 80x-240x improvement
-2. [adr0027 - Hash-Based IDs](adr0027-hash-based-integer-ids.md) - 54% storage reduction
-3. [adr0013 - Incremental Seeding](adr0013-incremental-seeding.md) - Efficient updates
-
-## ADR Statistics
-
-### By Origin
-- **Evidenced:** 28 ADRs - Explicit planning docs + implementation + validation
-- **Inferred:** 10 ADRs - Inferred from code/inherited + some documentation
-
-### By Phase
-- Phase 0 (Inherited): 5 ADRs
-- Phase 1 (Conceptual Search): 6 ADRs
-- Phase 2 (Robustness): 1 ADR
-- Phase 3 (Refinement): 3 ADRs
-- Phase 4 (Architecture): 8 ADRs
-- Phase 5 (Multi-Provider): 3 ADRs
-- Phase 6 (Categories): 4 ADRs
-- Phase 7 (Tools): 3 ADRs
-- Phase 8 (Infrastructure): 5 ADRs
+---
 
 ## Using This Documentation
 
@@ -302,20 +169,6 @@ If decision is reversed without replacement:
 1. Change status to "Deprecated"
 2. Add deprecation note explaining why
 3. Keep content intact (historical record)
-
-## Cross-Reference Matrix
-
-**Most Referenced ADRs:**
-- adr0002 (LanceDB): Referenced by 8 other ADRs (foundational)
-- adr0007 (Concept Extraction): Referenced by 7 other ADRs (core feature)
-- adr0016 (Layered Architecture): Referenced by 6 other ADRs (major refactoring)
-
-**Decision Clusters:**
-- Search System: adr0006, 0007, 0008, 0009, 0010, 0011, 0022
-- Architecture: adr0016, 0017, 0018, 0019, 0020, 0021, 0023, 0038
-- Categories: adr0027, 0028, 0029, 0030
-- Tools: adr0031, 0032, 0033
-- Infrastructure: adr0034, 0035, 0036, 0037, 0038
 
 ---
 
