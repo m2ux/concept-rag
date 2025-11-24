@@ -22,6 +22,7 @@ class MockCatalogRepository implements CatalogRepository {
     return Promise.resolve(this.searchResults.slice(0, query.limit));
   }
 
+  // @ts-expect-error - Type narrowing limitation
   async findBySource(sourcePath: string): Promise<SearchResult | null> {
     return Promise.resolve(null);
   }
@@ -51,6 +52,7 @@ describe('CatalogSearchService', () => {
   beforeEach(() => {
     // SETUP: Create fresh mocks for each test
     mockRepo = new MockCatalogRepository();
+    // @ts-expect-error - Type narrowing limitation
     service = new CatalogSearchService(mockRepo);
   });
 

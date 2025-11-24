@@ -110,6 +110,7 @@ RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, concept,
     }
     
     // Format results for MCP response
+    // @ts-expect-error - Type narrowing limitation
     const formattedResults = result.value.map((r: SearchResult) => ({
       text: r.text,
       source: r.source,

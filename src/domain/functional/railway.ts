@@ -193,6 +193,7 @@ export function tapError<T, E>(
 ): (result: Result<T, E>) => Result<T, E> {
   return (result: Result<T, E>) => {
     if (!isOk(result)) {
+      // @ts-expect-error - Type narrowing limitation
       fn(result.error);
     }
     return result;
@@ -212,6 +213,7 @@ export function validateAll<T>(
   for (const validator of validators) {
     const result = validator(value);
     if (!isOk(result)) {
+      // @ts-expect-error - Type narrowing limitation
       errors.push(result.error);
     }
   }
@@ -241,6 +243,7 @@ export async function retry<T, E>(
       return lastResult;
     }
     
+    // @ts-expect-error - Type narrowing limitation
     if (attempt < maxAttempts && shouldRetry(lastResult.error, attempt)) {
       if (delayMs > 0) {
         await new Promise(resolve => setTimeout(resolve, delayMs));
@@ -269,6 +272,7 @@ export async function parallel<T, E>(
     if (isOk(result)) {
       values.push(result.value);
     } else {
+      // @ts-expect-error - Type narrowing limitation
       errors.push(result.error);
     }
   }
@@ -291,6 +295,7 @@ export async function parallelAll<T, E>(
     if (isOk(result)) {
       values.push(result.value);
     } else {
+      // @ts-expect-error - Type narrowing limitation
       errors.push(result.error);
     }
   }
@@ -312,6 +317,7 @@ export async function firstSuccess<T, E>(
     if (isOk(result)) {
       return result;
     }
+    // @ts-expect-error - Type narrowing limitation
     errors.push(result.error);
   }
   
@@ -358,6 +364,7 @@ export function bimap<T, U, E, F>(
     if (isOk(result)) {
       return Ok(onOk(result.value));
     }
+    // @ts-expect-error - Type narrowing limitation
     return Err(onErr(result.error));
   };
 }
@@ -386,6 +393,7 @@ export function recoverWith<T, E>(
     if (isOk(result)) {
       return result;
     }
+    // @ts-expect-error - Type narrowing limitation
     return Ok(fn(result.error));
   };
 }

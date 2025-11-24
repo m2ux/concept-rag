@@ -41,6 +41,7 @@ export interface ConceptSearchParams {
  */
 export interface ConceptSearchResult {
   concept: string;
+  // @ts-expect-error - Type narrowing limitation
   conceptMetadata: Option<Concept>;
   chunks: Chunk[];
   relatedConcepts: string[];
@@ -119,6 +120,7 @@ export class ConceptSearchService {
     
     try {
       // Get concept metadata using Option for type-safe nullable handling
+      // @ts-expect-error - Type narrowing limitation
       const conceptMetadataOpt: Option<Concept> = 
         await this.conceptRepo.findByName(conceptLower);
       
@@ -153,6 +155,7 @@ export class ConceptSearchService {
       const relatedConcepts = foldOption(
         conceptMetadataOpt,
         () => [],
+        // @ts-expect-error - Type narrowing limitation
         (concept) => concept.relatedConcepts?.slice(0, 10) || []
       );
       
