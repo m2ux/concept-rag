@@ -11,7 +11,7 @@ import { ConceptSearchService } from '../concept-search-service.js';
 import { ChunkRepository } from '../../interfaces/repositories/chunk-repository.js';
 import { ConceptRepository } from '../../interfaces/repositories/concept-repository.js';
 import { Chunk, Concept } from '../../models/index.js';
-import { Option, fromNullable, isSome, isNone } from '../../functional/index.js';
+import { Option, fromNullable, isSome, isNone, None } from '../../functional/index.js';
 
 /**
  * Mock ChunkRepository for testing
