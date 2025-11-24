@@ -65,7 +65,26 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
 
   async execute(params: ConceptSearchParams) {
     // Validate input
-    this.validator.validateConceptSearch(params);
+    try {
+      this.validator.validateConceptSearch(params);
+    } catch (error: any) {
+      console.error(`❌ Validation failed: ${error.message}`);
+      return {
+        isError: true,
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            error: {
+              code: error.code || 'VALIDATION_ERROR',
+              message: error.message,
+              field: error.field,
+              context: error.context
+            },
+            timestamp: new Date().toISOString()
+          })
+        }]
+      };
+    }
     
     const limit = params.limit || 10;
     
@@ -83,9 +102,17 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
     if (isErr(result)) {
       console.error(`❌ Search failed: ${result.error.message}`);
       return {
+        isError: true,
         content: [{
           type: "text" as const,
-          text: `Error: ${result.error.message}\nType: ${result.error.type}`
+          text: JSON.stringify({
+            error: {
+              code: 'SEARCH_ERROR',
+              message: result.error.message,
+              type: result.error.type
+            },
+            timestamp: new Date().toISOString()
+          })
         }]
       };
     }

@@ -62,7 +62,45 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
 
   async execute(params: ConceptualChunksSearchParams) {
     // Validate input
-    this.validator.validateChunksSearch(params);
+    try {
+
+      this.validator.validateChunksSearch(params);
+
+    } catch (error: any) {
+
+      console.error(`❌ Validation failed: ${error.message}`);
+
+      return {
+
+        isError: true,
+
+        content: [{
+
+          type: "text" as const,
+
+          text: JSON.stringify({
+
+            error: {
+
+              code: error.code || 'VALIDATION_ERROR',
+
+              message: error.message,
+
+              field: error.field,
+
+              context: error.context
+
+            },
+
+            timestamp: new Date().toISOString()
+
+          })
+
+        }]
+
+      };
+
+    }
     
     // Delegate to service (Result-based)
     const result = await this.chunkSearchService.searchInSource({
