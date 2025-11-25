@@ -5,7 +5,11 @@ import { LanceDBChunkRepository } from '../infrastructure/lancedb/repositories/l
 import { LanceDBConceptRepository } from '../infrastructure/lancedb/repositories/lancedb-concept-repository.js';
 import { LanceDBCatalogRepository } from '../infrastructure/lancedb/repositories/lancedb-catalog-repository.js';
 import { QueryExpander } from '../concepts/query_expander.js';
-import { ConceptSearchService, CatalogSearchService, ChunkSearchService } from '../domain/services/index.js';
+import { 
+  ConceptSearchService, 
+  CatalogSearchService, 
+  ChunkSearchService 
+} from '../domain/services/index.js';
 import { ConceptSearchTool } from '../tools/operations/concept_search.js';
 import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_catalog_search.js';
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
@@ -15,12 +19,12 @@ import { CategorySearchTool } from '../tools/operations/category-search-tool.js'
 import { ListCategoriesTool } from '../tools/operations/list-categories-tool.js';
 import { ListConceptsInCategoryTool } from '../tools/operations/list-concepts-in-category-tool.js';
 import { BaseTool } from '../tools/base/tool.js';
-import { ConceptIdCache } from '../infrastructure/cache/concept-id-cache.js';
-import { CategoryIdCache } from '../infrastructure/cache/category-id-cache.js';
+import { ConceptIdCache, CategoryIdCache, EmbeddingCache, SearchResultCache } from '../infrastructure/cache/index.js';
 import { LanceDBCategoryRepository } from '../infrastructure/lancedb/repositories/lancedb-category-repository.js';
 import type { CategoryRepository } from '../domain/interfaces/category-repository.js';
 import { RetryService } from '../infrastructure/utils/retry-service.js';
 import { ResilientExecutor } from '../infrastructure/resilience/resilient-executor.js';
+import type { SearchResult } from '../domain/models/search-result.js';
 import * as defaults from '../config.js';
 
 /**
@@ -66,6 +70,8 @@ export class ApplicationContainer {
   private categoryRepo?: CategoryRepository;
   private retryService!: RetryService;
   private resilientExecutor!: ResilientExecutor;
+  private embeddingCache?: EmbeddingCache;
+  private searchResultCache?: SearchResultCache<SearchResult[]>;
   private tools = new Map<string, BaseTool>();
   
   /**
@@ -129,10 +135,15 @@ export class ApplicationContainer {
       console.error('⚠️  Categories table not found (skipping category features)');
     }
     
-    // 4. Create infrastructure services (with resilience integration)
-    const embeddingService = new SimpleEmbeddingService();
+    // 3b. Create performance caches
+    this.embeddingCache = new EmbeddingCache(10000); // Cache up to 10k embeddings
+    this.searchResultCache = new SearchResultCache<SearchResult[]>(1000, 5 * 60 * 1000); // 1k searches, 5min TTL
+    console.error(`✅ Performance caches initialized`);
+    
+    // 4. Create infrastructure services (with caches and resilience integration)
+    const embeddingService = new SimpleEmbeddingService(this.embeddingCache);
     const queryExpander = new QueryExpander(conceptsTable, embeddingService);
-    const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander, this.resilientExecutor);
+    const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander, this.searchResultCache, this.resilientExecutor);
     
     // 5. Create repositories (with infrastructure services)
     const conceptRepo = new LanceDBConceptRepository(conceptsTable);
@@ -155,7 +166,7 @@ export class ApplicationContainer {
     const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, this.conceptIdCache);
     const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     
-    // 6. Create domain services (with repositories)
+    // 6. Create domain services (with repositories) - using Result-based error handling
     const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);
     const catalogSearchService = new CatalogSearchService(catalogRepo);
     const chunkSearchService = new ChunkSearchService(chunkRepo);
@@ -278,6 +289,12 @@ export class ApplicationContainer {
     }
     if (this.categoryIdCache) {
       this.categoryIdCache.clear();
+    }
+    if (this.embeddingCache) {
+      this.embeddingCache.clear();
+    }
+    if (this.searchResultCache) {
+      this.searchResultCache.clear();
     }
     console.error('🛑 Container shutdown complete');
   }

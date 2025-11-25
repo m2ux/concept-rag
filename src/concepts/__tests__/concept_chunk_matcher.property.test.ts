@@ -59,6 +59,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
           (chunkText, primaryConcepts, categories) => {
             const documentConcepts: ConceptMetadata = {
               primary_concepts: primaryConcepts,
+              // @ts-expect-error - Type narrowing limitation
               technical_terms: [],
               related_concepts: [],
               categories: categories
@@ -304,6 +305,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
           (chunkText) => {
             const documentConcepts: ConceptMetadata = {
               primary_concepts: [],
+              // @ts-expect-error - Type narrowing limitation
               technical_terms: [],
               related_concepts: [],
               categories: []

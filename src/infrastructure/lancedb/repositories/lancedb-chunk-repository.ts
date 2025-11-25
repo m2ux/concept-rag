@@ -10,6 +10,7 @@ import { parseJsonField } from '../utils/field-parsers.js';
 import { validateChunkRow, detectVectorField } from '../utils/schema-validators.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
 import { ConceptIdCache } from '../../cache/concept-id-cache.js';
+import { isNone } from '../../../domain/functional/index.js';
 
 /**
  * LanceDB implementation of ChunkRepository
@@ -47,9 +48,9 @@ export class LanceDBChunkRepository implements ChunkRepository {
     
     try {
       // Verify concept exists
-      const conceptRecord = await this.conceptRepo.findByName(conceptLower);
+      const conceptRecordOpt = await this.conceptRepo.findByName(conceptLower);
       
-      if (!conceptRecord) {
+      if (isNone(conceptRecordOpt)) {
         console.error(`⚠️  Concept "${concept}" not found in concept table`);
         return [];
       }

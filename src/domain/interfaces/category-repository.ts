@@ -6,6 +6,7 @@
  */
 
 import type { Category } from '../models/category';
+import { Option } from '../functional/option.js';
 
 export interface CategoryRepository {
   /**
@@ -16,20 +17,23 @@ export interface CategoryRepository {
   /**
    * Find category by ID
    * @param id Category hash ID
+   * @returns Some(category) if found, None otherwise
    */
-  findById(id: number): Promise<Category | null>;
+  findById(id: number): Promise<Option<Category>>;
   
   /**
    * Find category by name (exact match)
    * @param name Category name
+   * @returns Some(category) if found, None otherwise
    */
-  findByName(name: string): Promise<Category | null>;
+  findByName(name: string): Promise<Option<Category>>;
   
   /**
    * Find category by alias
    * @param alias Category alias
+   * @returns Some(category) if found, None otherwise
    */
-  findByAlias(alias: string): Promise<Category | null>;
+  findByAlias(alias: string): Promise<Option<Category>>;
   
   /**
    * Find root categories (no parent)

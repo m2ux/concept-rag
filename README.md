@@ -6,31 +6,16 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
 
-A powerful RAG MCP server that enables LLMs to interact with documents through conceptual search. Combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking powered by LanceDB for superior retrieval accuracy.
+A powerful RAG MCP server that enables LLMs to interact with local PDF/EPUB documents through conceptual search. Combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking powered by LanceDB for superior retrieval accuracy.
 
 ---
 
 **🚀 [Quick Start](#-quick-start)** • **⚙️ [Setup Guide](SETUP.md)** • **📖 [Usage](USAGE.md)** • **💡 [Examples](EXAMPLES.md)** • **❓ [FAQ](FAQ.md)** • **🛠️ [Troubleshooting](TROUBLESHOOTING.md)**
 
 ---
-
-## ✨ Key Features
-
-- 🧠 **8 Specialized Search Tools** - Optimized for different search modalities (concept research, document discovery, comprehensive search, single-document, concept export, category browsing)
-- 🏷️ **Category Search** 🆕 - Browse documents by domain with 46 auto-extracted categories, hash-based stable IDs, and hierarchical organization
-- 🔍 **Multi-Signal Hybrid Ranking** - Vector similarity + BM25 keyword + concept matching + title matching + WordNet expansion
-- 🤖 **LLM-Powered Extraction** - Claude Sonnet 4.5 extracts 80-150+ concepts per document with formal semantic model
-- 🌐 **WordNet Integration** - Automatic synonym expansion and hierarchical navigation (161K+ words)
-- 🛡️ **Robust PDF Handling** - Gracefully handles corrupted files with OCR fallback for scanned documents
-- 📚 **Large Document Support** - Multi-pass extraction for documents >100k tokens
-- ⚡ **Incremental Seeding** - Smart detection skips already-processed files for fast updates
-- 💾 **Efficient Storage** - Hash-based IDs reduce storage by 54% with perfect stability across rebuilds
-- 💡 **Intelligent Tool Selection** - Embedded documentation guides AI agents to optimal tool choice
-- 🔄 **Recursive Self-Improvement** - Built using its own concept search to discover design patterns from indexed technical books
-
 ## 📝 Available Tools
 
-The server provides eight specialized search tools. **For AI agents:** See [tool-selection-guide.md](tool-selection-guide.md) for the complete decision tree.
+The server provides eight specialized search tools.
 
 | Tool | Best For | Use When | Example Query |
 |------|----------|----------|---------------|
@@ -43,6 +28,7 @@ The server provides eight specialized search tools. **For AI agents:** See [tool
 | `list_categories` 🆕 | Category discovery | Explore available domains | `"What categories do I have?"` |
 | `list_concepts_in_category` 🆕 | Domain concept analysis | Find concepts in a category | `"What concepts are in distributed systems?"` |
 
+**For AI agents:** See [tool-selection-guide.md](tool-selection-guide.md) for the complete decision tree.
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -105,51 +91,11 @@ npx tsx hybrid_fast_seed.ts \
 }
 ```
 
-**Claude Desktop** (see [SETUP.md](SETUP.md) for config file locations)
-
 **Restart your MCP client** and start searching!
 
-**📖 For complete setup instructions, see [SETUP.md](SETUP.md)**
-
-## 📚 Documentation
-
-| Document | Description |
-|----------|-------------|
-| **[SETUP.md](SETUP.md)** | **Complete installation and configuration guide** |
-| [USAGE.md](USAGE.md) | Tool details and workflow examples |
-| [EXAMPLES.md](EXAMPLES.md) | Real-world usage scenarios |
-| [FAQ.md](FAQ.md) | Frequently asked questions |
-| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Complete troubleshooting guide |
-| [REFERENCES.md](REFERENCES.md) | Design patterns and book sources |
-| [tool-selection-guide.md](tool-selection-guide.md) | AI agent tool selection guide |
-| [docs/applicable-knowledge-base-concepts.md](docs/applicable-knowledge-base-concepts.md) | Example: developing a conceptual lexicon for targeted knowledge base searches |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
-| [CHANGELOG.md](CHANGELOG.md) | Version history |
-| [SECURITY.md](SECURITY.md) | Security policy |
-
-## 🧠 Concept Model
-
-This system uses a **formal concept definition** ensuring high-quality semantic search:
-
-> **A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.**
-
-**✅ INCLUDE:** Domain terms, theories, methodologies, multi-word conceptual phrases, phenomena, abstract principles  
-**❌ EXCLUDE:** Temporal descriptions, action phrases, suppositions, proper names, dates
+**📖 For complete setup instructions for various IDEs, see [SETUP.md](SETUP.md)**
 
 ## 🛠️ Development
-
-### Quick Testing
-
-```bash
-# Build
-npm run build
-
-# Interactive testing (MCP Inspector)
-npx @modelcontextprotocol/inspector dist/conceptual_index.js ~/.concept_rag
-
-# Command-line concept extraction
-npx tsx scripts/extract_concepts.ts "document name" markdown
-```
 
 ### Project Structure
 
@@ -185,19 +131,16 @@ src/
   │                │                │
 Concept         Summary           Chunks
 Extraction      Generation        Creation
-(Sonnet 4.5)    (Grok-4-fast)    (Local)
-[Formal Model]  [Fast]           [Hybrid]
   ↓                ↓                ↓
 Concepts         Catalog          Chunks
 Table            Table            Table
   └────────────────┴────────────────┘
                    │
          Conceptual Search Engine
-              (5 signals)
                    │
      ┌─────────────┼─────────────┐
      │             │             │
-         Corpus       WordNet        Hybrid
+   Corpus       WordNet        Hybrid
   Concepts     Synonyms       Scoring
 ```
 
@@ -213,39 +156,7 @@ All major technical decisions are documented in **[Architecture Decision Records
 
 The **[Concept Lexicon](docs/concept-lexicon.md)** catalogs concepts from the local knowledge base that are directly applicable to this project, organized by functional area: This lexicon serves as a reference for understanding the conceptual foundations that inform the project's design decisions.
 
-## 💰 Cost Breakdown
-
-**Seeding costs (one-time per document):**
-- Concept extraction: ~$0.041/doc (Claude Sonnet 4.5)
-- Summarization: ~$0.007/doc (Grok-4-fast)
-- **Total: ~$0.048 per document**
-
-**Runtime search:** No additional API calls (vector search is local)
-
-**Time & cost examples:**
-- Initial 100 docs: ~25 minutes + ~$4.80
-- Add 10 new docs: ~3 minutes + ~$0.48 (incremental)
-- Add 1 new doc: ~15 seconds + ~$0.05 (incremental)
-
-**Note:** AI agent usage (Cursor, Claude Desktop) incurs separate costs for processing search results.
-
 ## 💬 Support & Community
-
-### Getting Help
-
-- 📖 **Documentation**: [SETUP.md](SETUP.md), [USAGE.md](USAGE.md), [FAQ.md](FAQ.md)
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/m2ux/concept-rag/issues)
-- 💡 **Questions & Discussions**: [GitHub Discussions](https://github.com/m2ux/concept-rag/discussions)
-- 🔒 **Security Issues**: [SECURITY.md](SECURITY.md)
-- 🛠️ **Troubleshooting**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-
-### Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
-- Development setup
-- Code style guidelines
-- Pull request process
-- Areas needing help
 
 ## 🙏 Acknowledgments
 
@@ -265,19 +176,13 @@ This project is forked from [lance-mcp](https://github.com/adiom-data/lance-mcp)
 
 We're grateful to the original author for creating and open-sourcing this excellent foundation!
 
-## 📊 Project Status
+### Contributing
 
-- ✅ **Stable**: v1.0.0
-- 🔄 **Actively maintained**: Regular updates and bug fixes
-- 📈 **Growing**: New features and improvements planned
-
-## ⭐ Show Your Support
-
-If you find Concept-RAG useful, please:
-- ⭐ Star the repository
-- 🐛 Report bugs and suggest features
-- 📝 Share your use cases
-- 🤝 Contribute improvements
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Development setup
+- Code style guidelines
+- Pull request process
+- Areas needing help
 
 ## 📜 License
 
