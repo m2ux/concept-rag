@@ -74,6 +74,18 @@ npx tsx hybrid_fast_seed.ts \
   --filesdir ~/Documents/my-pdfs
 ```
 
+**To seed specific documents**
+
+```bash
+# Seed specific documents by hash prefix (shown in seeding output)
+npx tsx scripts/seed_specific.ts --hash 3cde 7f2b
+
+# Or by filename pattern
+npx tsx scripts/seed_specific.ts --pattern "Transaction Processing"
+```
+
+See [scripts/README.md](scripts/README.md) for all maintenance utilities.
+
 ### Configure MCP Client
 
 **Cursor** (`~/.cursor/mcp.json`):

@@ -1,16 +1,28 @@
 #!/usr/bin/env tsx
 /**
- * Standalone script to rebuild concept index from existing catalog and chunks
- * Does NOT require API key since we're not extracting new concepts
+ * Rebuild concept index from existing catalog and chunks
+ * 
+ * This script regenerates the concept index table without re-extracting concepts.
+ * Useful after:
+ * - Fixing bugs in concept index building logic
+ * - Updating chunk metadata
+ * - Database maintenance
+ * 
+ * Does NOT require API key since we're not extracting new concepts.
+ * 
+ * Usage:
+ *   npx tsx scripts/rebuild_concept_index.ts [--dbpath <path>]
  */
 
 import * as lancedb from '@lancedb/lancedb';
 import * as path from 'path';
 import { homedir } from 'os';
 import { Document } from "@langchain/core/documents";
-import { ConceptIndexBuilder } from './src/concepts/concept_index.js';
+import { ConceptIndexBuilder } from '../src/concepts/concept_index.js';
+import minimist from 'minimist';
 
-const DB_PATH = path.join(homedir(), '.concept_rag');
+const argv = minimist(process.argv.slice(2));
+const DB_PATH = argv['dbpath'] || path.join(homedir(), '.concept_rag');
 
 async function rebuildConceptIndex() {
     console.log("🔧 Rebuilding Concept Index from Existing Data\n");
