@@ -800,7 +800,7 @@ async function loadDocumentsWithErrorHandling(
                     );
                     
                     if (completeness.isComplete) {
-                        console.log(`  ⏭ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (complete)`);
+                        console.log(`  ⏭[${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (complete)`);
                         skippedFiles.push(relativePath);
                         continue; // Skip loading this file entirely
                     } else if (completeness.hasRecord) {
@@ -925,7 +925,7 @@ async function loadDocumentsWithErrorHandling(
                 } else {
                     contentInfo = `${docs.length} docs`;
                 }
-                console.log(`  📥 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
+                console.log(`  📥[${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
             } catch (error: any) {
                 const errorMsg = error?.message || String(error);
                 const fileExt = path.extname(docFile).toLowerCase();
@@ -962,7 +962,7 @@ async function loadDocumentsWithErrorHandling(
                         }
                     } catch (ocrError: any) {
                         const hashDisplay = hash !== 'unknown' ? `[${hash.slice(0, 4)}..${hash.slice(-4)}]` : '[????..????]';
-                        console.log(`  ❌ ${hashDisplay} ${truncateFilePath(relativePath)} (OCR failed: ${ocrError.message})`);
+                        console.log(`  ❌${hashDisplay} ${truncateFilePath(relativePath)} (OCR failed: ${ocrError.message})`);
                         ocrAttempted = true;
                     }
                 }
