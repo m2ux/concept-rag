@@ -51,7 +51,7 @@ The system started with 2 basic tools (catalog_search, chunks_search) [Initial: 
 7. list_categories (added)
 8. list_concepts_in_category (added)
 
-**Current Total:** 8 specialized tools [Source: README.md, line 19; CHANGELOG.md, line 20]
+**Current Total:** 8 specialized tools [Source: README.md, line 19]
 
 ### Tool Specialization Matrix
 

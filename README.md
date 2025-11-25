@@ -72,7 +72,21 @@ npx tsx hybrid_fast_seed.ts \
 npx tsx hybrid_fast_seed.ts \
   --dbpath ~/.concept_rag \
   --filesdir ~/Documents/my-pdfs
+
+# Rebuild concept index (after algorithm updates)
+npx tsx hybrid_fast_seed.ts \
+  --dbpath ~/.concept_rag \
+  --filesdir ~/Documents/my-pdfs \
+  --rebuild-concepts
+
+# Fix incomplete catalog records
+npx tsx hybrid_fast_seed.ts \
+  --dbpath ~/.concept_rag \
+  --filesdir ~/Documents/my-pdfs \
+  --auto-reseed
 ```
+
+**📝 Automatic Logging**: Each run creates a timestamped log file in `logs/seed-YYYY-MM-DDTHH-MM-SS.log` for troubleshooting and audit trails.
 
 **To seed specific documents**
 
