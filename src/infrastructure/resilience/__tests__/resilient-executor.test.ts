@@ -1,18 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ResilientExecutor, ResilienceProfiles } from '../resilient-executor.js';
 import { RetryService } from '../../utils/retry-service.js';
-import { TimeoutError, CircuitBreakerOpenError, BulkheadRejectionError } from '../errors.js';
+import { CircuitBreakerOpenError, BulkheadRejectionError } from '../errors.js';
 
 describe('ResilientExecutor', () => {
   let retryService: RetryService;
   let executor: ResilientExecutor;
-  let consoleSpy: ReturnType<typeof vi.spyOn>;
   
   beforeEach(() => {
     vi.useFakeTimers();
     retryService = new RetryService();
     executor = new ResilientExecutor(retryService);
-    consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
   
