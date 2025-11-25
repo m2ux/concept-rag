@@ -36,7 +36,7 @@ npx tsx scripts/extract_concepts.ts "Christopher Alexander" json
 
 ---
 
-### `rebuild_indexes.ts` - Rebuild LanceDB Indexes
+### `rebuild_indexes.ts` - Rebuild Vector Indexes
 
 Rebuild vector indexes for existing tables with optimized parameters.
 
@@ -56,8 +56,43 @@ npx tsx scripts/rebuild_indexes.ts --dbpath /path/to/database
 
 **What it does:**
 - Analyzes each table to determine optimal partition count
-- Rebuilds indexes with optimized parameters
+- Rebuilds vector indexes with optimized parameters
 - Eliminates clustering warnings
+
+---
+
+### `rebuild_concept_index.ts` - Rebuild Concept Index
+
+Rebuild the concept index table from existing catalog and chunk data.
+
+**Usage:**
+```bash
+npx tsx scripts/rebuild_concept_index.ts [--dbpath <path>]
+```
+
+**Examples:**
+```bash
+# Rebuild concept index for default database
+npx tsx scripts/rebuild_concept_index.ts
+
+# Rebuild for custom database path
+npx tsx scripts/rebuild_concept_index.ts --dbpath /path/to/database
+```
+
+**When to use:**
+- After fixing bugs in concept index building logic
+- After updating chunk metadata
+- Database maintenance and optimization
+- When concept counts seem incorrect
+
+**What it does:**
+1. Loads all catalog entries with concepts
+2. Loads all chunks with concept metadata
+3. Aggregates concept statistics (co-occurrence, counts)
+4. Rebuilds the concept index table
+5. Shows top concepts by chunk count
+
+**Note:** Does NOT require API key - no concept extraction, just aggregation.
 
 ---
 
