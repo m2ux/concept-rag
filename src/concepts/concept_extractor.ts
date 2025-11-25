@@ -44,14 +44,7 @@ export class ConceptExtractor {
                 const data = await response.json();
                 const { limit_remaining, usage_daily } = data.data;
                 
-                console.log(`💳 API Status:`);
-                if (limit_remaining !== null) {
-                    console.log(`   Credits: ${limit_remaining}`);
-                } else {
-                    console.log(`   Credits: Unlimited`);
-                }
-                console.log(`   Usage today: $${usage_daily || 0}`);
-                
+                // Only show warning if credits are low
                 if (limit_remaining !== null && limit_remaining < 1) {
                     console.warn(`  ⚠️  WARNING: Low/no credits remaining!`);
                 }
@@ -172,6 +165,56 @@ export class ConceptExtractor {
     }
     
     // Fix control characters (newlines, tabs, etc.) within JSON string literals
+    // Strip JSON-style comments (// ...) from the text
+    // This is needed because some LLMs add comments to JSON responses
+    private stripJSONComments(jsonText: string): string {
+        const lines = jsonText.split('\n');
+        const result: string[] = [];
+        
+        for (const line of lines) {
+            // Check if line has a // comment
+            const commentIndex = line.indexOf('//');
+            if (commentIndex === -1) {
+                // No comment, keep the line as-is
+                result.push(line);
+            } else {
+                // We need to check if // is inside a string literal
+                let inString = false;
+                let escaped = false;
+                let isCommentOutsideString = false;
+                
+                for (let i = 0; i < commentIndex; i++) {
+                    const char = line[i];
+                    
+                    if (char === '"' && !escaped) {
+                        inString = !inString;
+                    }
+                    
+                    escaped = char === '\\' && !escaped;
+                }
+                
+                // If we're not in a string at the comment position, it's a real comment
+                if (!inString) {
+                    isCommentOutsideString = true;
+                }
+                
+                if (isCommentOutsideString) {
+                    // Remove the comment, keeping content before it
+                    const lineWithoutComment = line.substring(0, commentIndex).trimEnd();
+                    // Only add non-empty lines
+                    if (lineWithoutComment.length > 0) {
+                        result.push(lineWithoutComment);
+                    }
+                } else {
+                    // Comment is inside a string, keep the whole line
+                    result.push(line);
+                }
+            }
+        }
+        
+        return result.join('\n');
+    }
+    
     private fixControlCharactersInStrings(jsonText: string): string {
         let result = '';
         let inString = false;
@@ -226,7 +269,11 @@ export class ConceptExtractor {
     
     // Sanitize JSON to fix common issues
     private sanitizeJSON(jsonText: string): string {
-        // Step 0: Fix control characters (newlines, tabs, etc.) within string literals
+        // Step 0a: Remove JSON comments (// style) which some LLMs add
+        // This must be done before other processing to avoid breaking string detection
+        jsonText = this.stripJSONComments(jsonText);
+        
+        // Step 0b: Fix control characters (newlines, tabs, etc.) within string literals
         // This handles cases where the LLM breaks long strings across multiple lines
         jsonText = this.fixControlCharactersInStrings(jsonText);
         

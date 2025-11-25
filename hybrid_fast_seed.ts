@@ -19,6 +19,40 @@ import { PDFDocumentLoader } from './src/infrastructure/document-loaders/pdf-loa
 import { EPUBDocumentLoader } from './src/infrastructure/document-loaders/epub-loader.js';
 import { hashToId, generateStableId } from './src/infrastructure/utils/hash.js';
 
+// Setup timestamped logging
+const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+const logsDir = path.join(process.cwd(), 'logs');
+const logFile = path.join(logsDir, `seed-${timestamp}.log`);
+
+// Create logs directory if it doesn't exist
+if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true });
+}
+
+// Create write stream for log file
+const logStream = fs.createWriteStream(logFile, { flags: 'a' });
+
+// Helper to write to both console and file
+function writeToLog(level: string, ...args: any[]) {
+    const message = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+    ).join(' ');
+    const logLine = `[${new Date().toISOString()}] [${level}] ${message}\n`;
+    logStream.write(logLine);
+}
+
+/**
+ * Note: To suppress Lance Rust library warnings, set RUST_LOG=lance=error before running:
+ * 
+ * Direct execution:
+ *   RUST_LOG=lance=error npx tsx hybrid_fast_seed.ts --filesdir ~/docs
+ * 
+ * Or use npm script (already configured):
+ *   npm run seed -- --filesdir ~/docs
+ * 
+ * The environment variable must be set before the script runs because
+ * the native Rust module reads it during initialization (before any code executes).
+ */
 
 // ASCII progress bar utility with gradual progress for both stages
 function drawProgressBar(stage: 'converting' | 'processing', current: number, total: number, width: number = 40): string {
@@ -67,15 +101,15 @@ process.on('unhandledRejection', (reason: any, promise) => {
     console.warn(`⚠️  PDF processing error: ${message}`);
 });
 
-// Suppress PDF.js warnings that clutter output
+// Suppress PDF.js warnings that clutter output and add logging to file
 const originalConsoleWarn = console.warn;
 const originalConsoleError = console.error;
 const originalConsoleLog = console.log;
 
-// Suppress console.warn
+// Suppress console.warn and log to file
 console.warn = (...args: any[]) => {
     const message = args.join(' ');
-    if (message.includes('Ran out of space in font private use area') ||
+    const shouldSuppress = message.includes('Ran out of space in font private use area') ||
         message.includes('font private use area') ||
         message.includes('private use area') ||
         message.includes('FormatError') ||
@@ -85,16 +119,18 @@ console.warn = (...args: any[]) => {
         message.includes('Unknown type') && message.includes('charstring') ||
         message.includes('TT: undefined function') ||
         message.includes('Indexing all PDF objects') ||
-        message.includes('webpack://') ) {
-        return; // Suppress these verbose warnings
+        message.includes('webpack://');
+    
+    if (!shouldSuppress) {
+        writeToLog('WARN', ...args);
+        originalConsoleWarn.apply(console, args);
     }
-    originalConsoleWarn.apply(console, args);
 };
 
-// Suppress console.error for the same messages
+// Suppress console.error for the same messages and log to file
 console.error = (...args: any[]) => {
     const message = args.join(' ');
-    if (message.includes('Ran out of space in font private use area') ||
+    const shouldSuppress = message.includes('Ran out of space in font private use area') ||
         message.includes('font private use area') ||
         message.includes('private use area') ||
         message.includes('FlateDecode') ||
@@ -103,16 +139,18 @@ console.error = (...args: any[]) => {
         message.includes('Unknown type') && message.includes('charstring') ||
         message.includes('TT: undefined function') ||
         message.includes('Indexing all PDF objects') ||
-        message.includes('Warning:') && message.includes('font')) {
-        return; // Suppress these verbose warnings
+        message.includes('Warning:') && message.includes('font');
+    
+    if (!shouldSuppress) {
+        writeToLog('ERROR', ...args);
+        originalConsoleError.apply(console, args);
     }
-    originalConsoleError.apply(console, args);
 };
 
-// Also suppress console.log for these warnings (some libraries use it)
+// Also suppress console.log for these warnings (some libraries use it) and log to file
 console.log = (...args: any[]) => {
     const message = args.join(' ');
-    if (message.includes('Warning:') && (
+    const shouldSuppress = message.includes('Warning:') && (
         message.includes('TT: undefined function') ||
         message.includes('Indexing all PDF objects') ||
         message.includes('Ran out of space in font private use area') ||
@@ -121,28 +159,32 @@ console.log = (...args: any[]) => {
         message.includes('FlateDecode') ||
         message.includes('charstring command') ||
         message.includes('Unknown type') && message.includes('charstring') ||
-        message.includes('Empty') && message.includes('stream'))) {
-        return; // Suppress these verbose warnings
+        message.includes('Empty') && message.includes('stream'));
+    
+    if (!shouldSuppress) {
+        writeToLog('INFO', ...args);
+        originalConsoleLog.apply(console, args);
     }
-    originalConsoleLog.apply(console, args);
 };
 
-const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: ["overwrite", "rebuild-concepts"]});
+const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: ["overwrite", "rebuild-concepts", "auto-reseed"]});
 
 const databaseDir = argv["dbpath"] || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag");
 const filesDir = argv["filesdir"];
 const overwrite = argv["overwrite"];
 const rebuildConcepts = argv["rebuild-concepts"];
+const autoReseed = argv["auto-reseed"];
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
 function validateArgs() {
     if (!filesDir) {
         console.error("Please provide a directory with files (--filesdir) to process");
-        console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [--overwrite] [--rebuild-concepts]");
+        console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [--overwrite] [--rebuild-concepts] [--auto-reseed]");
         console.error("  --filesdir: Directory containing PDF files to process (required)");
         console.error("  --dbpath: Database path (optional, defaults to ~/.concept_rag)");
         console.error("  --overwrite: Overwrite existing database tables (optional)");
         console.error("  --rebuild-concepts: Rebuild concept index even if no new documents (optional)");
+        console.error("  --auto-reseed: Automatically re-process documents with incomplete metadata (optional)");
         process.exit(1);
     }
     
@@ -151,11 +193,8 @@ function validateArgs() {
         process.exit(1);
     }
     
-    console.log("DATABASE PATH: ", databaseDir);
-    console.log("FILES DIRECTORY: ", filesDir);
-    console.log("OVERWRITE FLAG: ", overwrite);
-    console.log("✅ LLM API key configured");
-    console.log("🚀 Hybrid approach: LLM summaries + Fast local embeddings");
+    console.log(`📂 Database: ${databaseDir}`);
+    console.log(`🔄 Overwrite mode: ${overwrite}`);
 }
 
 // LLM API call for summarization
@@ -732,10 +771,10 @@ async function loadDocumentsWithErrorHandling(
         console.log(`🔍 Recursively scanning ${filesDir} for document files (${supportedExtensions.join(', ')})...`);
         const documentFiles = await findDocumentFilesRecursively(filesDir, supportedExtensions);
         
-        console.log(`📚 Found ${documentFiles.length} document files`);
-        
         if (!skipExistsCheck && catalogTable) {
-            console.log(`🔍 Checking document completeness (summaries, concepts, chunks)...`);
+            console.log(`📊 Processing ${documentFiles.length} documents...`);
+        } else {
+            console.log(`📚 Found ${documentFiles.length} document files`);
         }
         
         for (const docFile of documentFiles) {
@@ -761,7 +800,7 @@ async function loadDocumentsWithErrorHandling(
                     );
                     
                     if (completeness.isComplete) {
-                        console.log(`✅ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (complete)`);
+                        console.log(`  ⏭ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (complete)`);
                         skippedFiles.push(relativePath);
                         continue; // Skip loading this file entirely
                     } else if (completeness.hasRecord) {
@@ -961,7 +1000,7 @@ async function loadDocumentsWithErrorHandling(
         const ocrProcessedCount = documents.filter(doc => doc.metadata.ocr_processed).length;
         const standardProcessedCount = loadedCount - (ocrProcessedCount > 0 ? 1 : 0); // Approximate count of files processed via standard PDF loading
         
-        console.log(`\n📊 Summary: • 📥 Loaded: ${loadedCount} • ⏭️ Skipped: ${skippedFiles.length} • ⚠️ Error: ${failedFiles.length}`);
+        console.log(`📊 Summary: • 📥 Loaded: ${loadedCount} • ⏭️ Skipped: ${skippedFiles.length} • ⚠️ Error: ${failedFiles.length}`);
         
         if (incompleteFiles.length > 0) {
             console.log(`🔄 Incomplete documents (will reprocess): ${incompleteFiles.length}`);
@@ -988,7 +1027,7 @@ async function createLanceTableWithSimpleEmbeddings(
     mode?: "overwrite"
 ): Promise<lancedb.Table> {
     
-    console.log(`🔄 Creating simple embeddings for ${documents.length} documents...`);
+    console.log(`🔄 Creating simple embeddings for ${documents.length} ${tableName}...`);
     
     // Build category ID map for hash-based IDs
     const allCategories = new Set<string>();
@@ -1318,7 +1357,7 @@ async function createCategoriesTable(
     db: lancedb.Connection,
     catalogDocs: Document[]
 ): Promise<void> {
-    console.log("\n📊 Creating categories table...");
+    console.log("📊 Creating categories table...");
     
     // Extract unique categories from all documents
     const categorySet = new Set<string>();
@@ -1393,10 +1432,6 @@ async function createCategoriesTable(
             concept_count: 0, // Will be updated when concepts are processed
             vector: vector
         });
-        
-        if (categoryRecords.length % 10 === 0) {
-            console.log(`    Processed ${categoryRecords.length}/${sortedCategories.length} categories...`);
-        }
     }
     
     console.log(`  ✅ Generated ${categoryRecords.length} category records`);
@@ -1424,8 +1459,6 @@ async function createCategoriesTable(
             })
         });
         console.log("  ✅ Vector index created");
-    } else {
-        console.log(`  ✅ Using linear scan (${categoryRecords.length} categories - fast without index)`);
     }
 }
 
@@ -1451,7 +1484,6 @@ async function rebuildConceptIndexFromExistingData(
     catalogTable: lancedb.Table,
     chunksTable: lancedb.Table
 ): Promise<void> {
-    console.log("  📚 Loading ALL catalog records...");
     const catalogRecords = await catalogTable.query().limit(100000).toArray();
     
     // Convert to Document format
@@ -1480,9 +1512,8 @@ async function rebuildConceptIndexFromExistingData(
     
     console.log(`  ✅ Loaded ${catalogRecords.length} catalog records (${catalogDocs.length} with concepts)`);
     
-    console.log("  📦 Loading ALL chunks for accurate concept counting...");
     const allChunkRecords = await chunksTable.query().limit(1000000).toArray();
-    
+
     // Convert chunk records to Documents
     const allChunks = allChunkRecords.map((chunk: any) => {
         let concepts = [];
@@ -1511,47 +1542,88 @@ async function rebuildConceptIndexFromExistingData(
     
     console.log(`  ✅ Loaded ${allChunks.length} total chunks`);
     
-    console.log("  🧠 Building concept index from ALL data...");
     const conceptBuilder = new ConceptIndexBuilder();
     const conceptRecords = await conceptBuilder.buildConceptIndex(catalogDocs, allChunks);
     
     console.log(`  ✅ Built ${conceptRecords.length} unique concept records`);
-    
-    // Log concepts with highest chunk counts
-    const topConceptsByChunks = conceptRecords
-        .filter(c => (c.chunk_count ?? 0) > 0)
-        .sort((a, b) => (b.chunk_count ?? 0) - (a.chunk_count ?? 0))
-        .slice(0, 10);
-    
-    if (topConceptsByChunks.length > 0) {
-        console.log(`\n  🔝 Top 10 concepts by chunk count:`);
-        topConceptsByChunks.forEach((c, idx) => {
-            console.log(`    ${idx + 1}. "${c.concept}" - ${c.chunk_count ?? 0} chunks (${c.category})`);
-        });
-    }
-    
     // Build source → catalog ID mapping for integer ID optimization
-    console.log("\n  🔗 Building source-to-catalog-ID mapping...");
-    const catalogRows = await catalogTable.query().toArray();
+    console.log("  🔗 Building source-to-catalog-ID mapping...");
     const sourceToIdMap = new Map<string, string>();
-    for (const row of catalogRows) {
+    const incompleteRecords = [];
+    const sourceCounts = new Map<string, number>();
+    const duplicateSources = [];
+    
+    for (const row of catalogRecords) {
         if (row.source && row.id) {
+            // Check for duplicate sources
+            if (sourceToIdMap.has(row.source)) {
+                const existingId = sourceToIdMap.get(row.source);
+                duplicateSources.push({
+                    source: row.source,
+                    existingId: existingId,
+                    duplicateId: row.id,
+                    hash: row.hash
+                });
+            }
             sourceToIdMap.set(row.source, row.id);
+            
+            // Track source counts
+            sourceCounts.set(row.source, (sourceCounts.get(row.source) || 0) + 1);
+        } else {
+            // Detailed analysis of what's wrong
+            let reason = '';
+            if (!row.source) {
+                reason = `missing/empty source (type: ${typeof row.source}, value: ${JSON.stringify(row.source)})`;
+            } else if (!row.id) {
+                reason = `missing/empty id (type: ${typeof row.id}, value: ${JSON.stringify(row.id)})`;
+            }
+            
+            incompleteRecords.push({
+                source: row.source || '[no source]',
+                id: row.id || '[no id]',
+                hash: row.hash || 'unknown',
+                reason: reason,
+                hasText: !!row.text,
+                hasConcepts: !!row.concepts
+            });
         }
     }
-    console.log(`  ✅ Mapped ${sourceToIdMap.size} sources to catalog IDs`);
     
+    // Report incomplete records
+    if (incompleteRecords.length > 0) {
+        console.log(`  ⚠️  Found ${incompleteRecords.length} incomplete catalog records:`);
+        incompleteRecords.forEach((rec, idx) => {
+            const sourceDisplay = typeof rec.source === 'string' ? rec.source.substring(0, 50) : rec.source;
+            console.log(`     ${idx + 1}. ${sourceDisplay}... [${rec.hash.slice(0, 8)}]`);
+            console.log(`        → ${rec.reason}`);
+            console.log(`        → has text: ${rec.hasText}, has concepts: ${rec.hasConcepts}`);
+        });
+        console.log(`\n  💡 To fix: run with --auto-reseed to delete and re-process these records`);
+    }
+    
+    // Report duplicate sources
+    if (duplicateSources.length > 0) {
+        console.log(`  ⚠️  Found ${duplicateSources.length} duplicate source paths (same file path, different IDs):`);
+        duplicateSources.forEach((dup, idx) => {
+            const sourceDisplay = dup.source.substring(0, 60);
+            console.log(`     ${idx + 1}. ${sourceDisplay}...`);
+            console.log(`        → Existing ID: ${dup.existingId}, Duplicate ID: ${dup.duplicateId} [${dup.hash.slice(0, 8)}]`);
+        });
+        console.log(`\n  💡 Duplicate sources mean multiple catalog entries point to the same file`);
+        console.log(`     This usually happens when re-seeding without --overwrite`);
+    }
+    
+    console.log(`  ✅ Mapped ${sourceToIdMap.size}/${catalogRecords.length} sources to catalog IDs`);
     // Drop and recreate concepts table
     try {
         await db.dropTable('concepts');
-        console.log("\n  🗑️  Dropped existing concepts table");
+        console.log("  🗑️  Dropped existing concepts table");
     } catch (e) {
         // Table didn't exist, that's fine
     }
     
     await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToIdMap);
     console.log("  ✅ Concept index created successfully (with catalog_ids optimization)");
-    
     // Create categories table with hash-based IDs
     await createCategoriesTable(db, catalogDocs);
 }
@@ -1592,18 +1664,75 @@ async function hybridFastSeed() {
         }
     }
 
+    // Check for incomplete catalog records and handle auto-reseed
+    if (autoReseed && catalogTable) {
+        console.log("\n🔍 Checking for incomplete catalog records...");
+        const allCatalogRecords = await catalogTable.query().limit(100000).toArray();
+        
+        // Find records with missing fields or invalid IDs
+        // Note: '0' (string) is valid - it's the first record ID. Only 0 (number) is invalid.
+        const incompleteRecords = allCatalogRecords.filter((row: any) => 
+            !row.source || !row.id || row.id === 0 || row.id === ''
+        );
+        
+        // Find duplicate source paths (keep first occurrence, mark rest for deletion)
+        const sourceMap = new Map<string, any>();
+        const duplicateRecords = [];
+        for (const row of allCatalogRecords) {
+            if (row.source) {
+                if (sourceMap.has(row.source)) {
+                    // This is a duplicate
+                    duplicateRecords.push({
+                        ...row,
+                        reason: 'duplicate source path',
+                        originalHash: sourceMap.get(row.source).hash
+                    });
+                } else {
+                    // First occurrence - keep it
+                    sourceMap.set(row.source, row);
+                }
+            }
+        }
+        
+        const recordsToRemove = [...incompleteRecords, ...duplicateRecords];
+        
+        if (recordsToRemove.length > 0) {
+            console.log(`  ⚠️  Found ${recordsToRemove.length} problematic records:`);
+            if (incompleteRecords.length > 0) {
+                console.log(`     - ${incompleteRecords.length} incomplete records (missing/invalid fields)`);
+            }
+            if (duplicateRecords.length > 0) {
+                console.log(`     - ${duplicateRecords.length} duplicate source paths`);
+            }
+            console.log(`  🔄 Auto-reseed enabled - removing problematic records...`);
+            
+            // Delete records by hash
+            for (const rec of recordsToRemove) {
+                if (rec.hash) {
+                    try {
+                        await catalogTable.delete(`hash = '${rec.hash}'`);
+                        const reason = !rec.source ? 'no source' : 
+                                     (!rec.id || rec.id === 0 || rec.id === '') ? 'invalid ID' : 
+                                     rec.reason || 'unknown';
+                        console.log(`     ✓ Removed: ${(rec.source || 'unknown').substring(0, 50)}... [${rec.hash.slice(0, 8)}] (${reason})`);
+                    } catch (e: any) {
+                        console.log(`     ✗ Failed to remove ${rec.hash.slice(0, 8)}: ${e.message}`);
+                    }
+                }
+            }
+            console.log(`  ✅ Removed ${recordsToRemove.length} problematic records - they will be re-processed`);
+        } else {
+            console.log(`  ✅ No incomplete or duplicate records found`);
+        }
+    }
+
     // Load files
-    console.log("Loading files...");
     const { documents: rawDocs, documentsNeedingChunks } = await loadDocumentsWithErrorHandling(filesDir, catalogTable, chunksTable, overwrite || !catalogTableExists);
 
     if (rawDocs.length === 0) {
-        console.log("✅ No new documents to process - all files already exist in database.");
-        
         // Check if we should rebuild the concept index (opt-in via flag)
         if (rebuildConcepts && catalogTable && chunksTable) {
             try {
-                console.log("\n🔍 Rebuild concepts flag detected - rebuilding concept index...");
-                
                 // Check if concepts table exists
                 const tableNames = await db.tableNames();
                 const hasConceptsTable = tableNames.includes('concepts');
@@ -1611,7 +1740,7 @@ async function hybridFastSeed() {
                 if (!hasConceptsTable) {
                     console.log("📊 Concept index missing - will rebuild from existing data");
                 } else {
-                    console.log("📊 Rebuilding concept index with latest algorithm...");
+                    console.log("📊 Rebuilding concept index...");
                 }
                 
                 // Rebuild concept index from ALL existing catalog records and chunks
@@ -1958,7 +2087,6 @@ async function hybridFastSeed() {
         const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogRecords, allChunks);
         
         console.log(`✅ Built ${conceptRecords.length} unique concept records`);
-        
         // Log concepts with highest chunk counts
         const topConceptsByChunks = conceptRecords
             .filter(c => (c.chunk_count ?? 0) > 0)
@@ -1977,7 +2105,7 @@ async function hybridFastSeed() {
                 // Always drop and recreate concepts table to ensure consistency
                 try {
                     await db.dropTable('concepts');
-                    console.log("  🗑️  Dropped existing concepts table");
+                    console.log("🗑️  Dropped existing concepts table");
                 } catch (e) {
                     // Table didn't exist, that's fine
                 }
@@ -2021,10 +2149,32 @@ async function hybridFastSeed() {
     console.log("🎉 Seeding completed successfully!");
 }
 
+// Log script start
+console.log(`📝 Log file: ${logFile}`);
+
+// Ensure log stream is closed on exit
+process.on('exit', () => {
+    logStream.end();
+});
+
+process.on('SIGINT', () => {
+    console.log('\n\n⚠️  Interrupted by user');
+    logStream.end();
+    process.exit(130);
+});
+
+process.on('SIGTERM', () => {
+    console.log('\n\n⚠️  Terminated');
+    logStream.end();
+    process.exit(143);
+});
+
 hybridFastSeed().catch((error) => {
     console.error("❌ Seeding failed:", error);
+    logStream.end();
     process.exit(1);
 });
+
 
 
 

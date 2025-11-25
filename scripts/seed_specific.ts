@@ -82,7 +82,7 @@ async function main() {
   }
   
   console.log(`🔧 Seeding specific documents`);
-  console.log(`📂 Database: ${dbPath}\n`);
+  console.log(`📂 Database: ${dbPath}`);
   
   if (hashPrefixes.length > 0) {
     console.log(`🔍 Target hash prefixes: ${hashPrefixes.join(', ')}`);
@@ -102,7 +102,7 @@ async function main() {
   // Load all catalog entries
   console.log('📚 Loading catalog entries...');
   const allCatalog = await catalogTable.query().limit(100000).toArray();
-  console.log(`  ✅ Loaded ${allCatalog.length} entries\n`);
+  console.log(`  ✅ Loaded ${allCatalog.length} entries`);
   
   // Find matching documents
   console.log('🔍 Finding matching documents...');
@@ -151,34 +151,14 @@ async function main() {
     }
   }
   
-  console.log(`  ✅ Found ${targets.length} matching documents\n`);
+  console.log(`  ✅ Found ${targets.length} matching documents`);
   
   if (targets.length === 0) {
     console.log('❌ No matching documents found');
     return;
   }
   
-  // Show what will be seeded
-  console.log('📋 Documents to seed:');
-  targets.forEach((item, idx) => {
-    const filename = item.entry.source.split('/').pop();
-    const hashPrefix = item.entry.hash.substring(0, 8);
-    const currentConcepts = (() => {
-      try {
-        const concepts = typeof item.entry.concepts === 'string' 
-          ? JSON.parse(item.entry.concepts)
-          : item.entry.concepts;
-        return concepts.primary_concepts?.length || 0;
-      } catch {
-        return 0;
-      }
-    })();
-    console.log(`  ${idx + 1}. [${hashPrefix}] ${filename}`);
-    console.log(`     Current concepts: ${currentConcepts}`);
-    console.log(`     Reason: ${item.reason}`);
-  });
-  
-  console.log(`\n🔄 Starting seeding...\n`);
+  console.log(`🔄 Starting seeding ${targets.length} document(s)...`);
   
   const extractor = new ConceptExtractor(apiKey);
   await extractor.checkRateLimits();
@@ -190,7 +170,7 @@ async function main() {
     const { entry, reason } = targets[i];
     const filename = entry.source.split('/').pop();
     
-    console.log(`\n[${i + 1}/${targets.length}] 🔧 Seeding: ${filename}`);
+    console.log(`[${i + 1}/${targets.length}] 🔧 Seeding: ${filename}`);
     console.log(`   Previous: ${reason}`);
     
     try {
@@ -250,23 +230,23 @@ async function main() {
     }
   }
   
-  console.log(`\n\n📊 Seeding Summary:`);
+  console.log(`📊 Seeding Summary:`);
   console.log(`   - Documents processed: ${targets.length}`);
   console.log(`   - Successfully seeded: ${seededDocs.length}`);
   console.log(`   - Failed: ${failedDocs.length}`);
   
   if (failedDocs.length > 0) {
-    console.log(`\n⚠️  Failed documents:`);
+    console.log(`⚠️  Failed documents:`);
     failedDocs.forEach(name => console.log(`   - ${name}`));
   }
   
   if (seededDocs.length === 0) {
-    console.log(`\n❌ No documents successfully seeded`);
+    console.log(`❌ No documents successfully seeded`);
     return;
   }
   
   // Update catalog
-  console.log(`\n📝 Updating catalog with seeded concepts...`);
+  console.log(`📝 Updating catalog with seeded concepts...`);
   
   for (const doc of seededDocs) {
     const source = doc.metadata.source;
@@ -278,12 +258,30 @@ async function main() {
       
       if (!originalEntry) continue;
       
-      // Update the concepts field
-      await catalogTable
-        .update()
+      // LanceDB doesn't have update API - use delete + add pattern
+      // First, get the full record to preserve all fields
+      const existingRecords = await catalogTable
+        .query()
         .where(`source = "${source}"`)
-        .set({ concepts: JSON.stringify(concepts) })
-        .execute();
+        .limit(1)
+        .toArray();
+      
+      if (existingRecords.length === 0) {
+        console.log(`   ⚠️  Record not found: ${source.split('/').pop()}`);
+        continue;
+      }
+      
+      const existingRecord = existingRecords[0];
+      
+      // Update the concepts field while preserving everything else
+      const updatedRecord = {
+        ...existingRecord,
+        concepts: JSON.stringify(concepts)
+      };
+      
+      // Delete old record and add updated one
+      await catalogTable.delete(`source = "${source}"`);
+      await catalogTable.add([updatedRecord]);
       
       console.log(`   ✅ Updated: ${source.split('/').pop()}`);
     } catch (error) {
@@ -292,7 +290,7 @@ async function main() {
   }
   
   // Enrich chunks
-  console.log(`\n🔄 Enriching chunks for seeded documents...`);
+  console.log(`🔄 Enriching chunks for seeded documents...`);
   
   const matcher = new ConceptChunkMatcher();
   let totalUpdated = 0;
@@ -312,50 +310,112 @@ async function main() {
     
     console.log(`      Found ${chunks.length} chunks`);
     
-    // Re-enrich each chunk
-    for (const chunk of chunks) {
+    // Enrich all chunks in memory (fast)
+    console.log(`      🔄 Enriching chunks...`);
+    const updatedChunks = chunks.map(chunk => {
       const matched = matcher.matchConceptsToChunk(
         chunk.text || '',
         documentConcepts
       );
       
-      await chunksTable
-        .update()
-        .where(`id = "${chunk.id}"`)
-        .set({
-          concepts: JSON.stringify(matched.concepts),
-          concept_categories: JSON.stringify(matched.categories),
-          concept_density: matched.concept_density
-        })
-        .execute();
-      
-      totalUpdated++;
-    }
+      return {
+        ...chunk,
+        concepts: JSON.stringify(matched.concepts),
+        concept_categories: JSON.stringify(matched.categories),
+        concept_density: matched.concept_density
+      };
+    });
     
-    console.log(`      ✅ Updated ${chunks.length} chunks`);
+    console.log(`      🗑️  Deleting old chunks...`);
+    try {
+      // Delete ALL chunks for this document at once (much faster than individual deletes)
+      await chunksTable.delete(`source = "${source}"`);
+      
+      console.log(`      ➕  Adding updated chunks...`);
+      // Add all updated chunks back in batches of 500 (LanceDB limit)
+      const batchSize = 500;
+      for (let i = 0; i < updatedChunks.length; i += batchSize) {
+        const batch = updatedChunks.slice(i, i + batchSize);
+        await chunksTable.add(batch);
+        
+        if ((i + batchSize) % 1000 === 0 || i + batchSize >= updatedChunks.length) {
+          console.log(`      📊 Added ${Math.min(i + batchSize, updatedChunks.length)}/${updatedChunks.length} chunks`);
+        }
+      }
+      
+      totalUpdated += updatedChunks.length;
+      console.log(`      ✅ Updated ${updatedChunks.length} chunks`);
+    } catch (error: any) {
+      console.warn(`      ⚠️  Error updating chunks: ${error.message}`);
+    }
   }
   
   console.log(`   ✅ Total chunks updated: ${totalUpdated}`);
   
   // Rebuild concept index
-  console.log(`\n🧠 Rebuilding concept index...`);
+  console.log(`🧠 Rebuilding concept index...`);
   
-  const allCatalogFresh = await catalogTable.query().limit(100000).toArray();
+  const allCatalogRows = await catalogTable.query().limit(100000).toArray();
   const allChunks = await chunksTable.query().limit(1000000).toArray();
   
-  const docs = allChunks.map((chunk: any) => 
-    new Document({
+  // Transform catalog rows into Document objects for concept builder
+  const allCatalogFresh = allCatalogRows.map((row: any) => {
+    // Safe JSON parsing for catalog concepts
+    let concepts = row.concepts;
+    if (typeof concepts === 'string' && concepts.trim()) {
+      try {
+        concepts = JSON.parse(concepts);
+      } catch {
+        concepts = { primary_concepts: [], categories: [], related_concepts: [] };
+      }
+    } else if (!concepts) {
+      concepts = { primary_concepts: [], categories: [], related_concepts: [] };
+    }
+    
+    return new Document({
+      pageContent: row.text || '',
+      metadata: {
+        source: row.source,
+        hash: row.hash,
+        concepts: concepts
+      }
+    });
+  });
+  
+  const docs = allChunks.map((chunk: any) => {
+    // Safe JSON parsing with fallbacks
+    let concepts = chunk.concepts;
+    if (typeof concepts === 'string' && concepts.trim()) {
+      try {
+        concepts = JSON.parse(concepts);
+      } catch {
+        concepts = [];
+      }
+    } else if (!concepts) {
+      concepts = [];
+    }
+    
+    let conceptCategories = chunk.concept_categories;
+    if (typeof conceptCategories === 'string' && conceptCategories.trim()) {
+      try {
+        conceptCategories = JSON.parse(conceptCategories);
+      } catch {
+        conceptCategories = [];
+      }
+    } else if (!conceptCategories) {
+      conceptCategories = [];
+    }
+    
+    return new Document({
       pageContent: chunk.text || '',
       metadata: {
         source: chunk.source,
-        concepts: typeof chunk.concepts === 'string' ? JSON.parse(chunk.concepts) : chunk.concepts,
-        concept_categories: typeof chunk.concept_categories === 'string' 
-          ? JSON.parse(chunk.concept_categories) 
-          : chunk.concept_categories,
-        concept_density: chunk.concept_density
+        concepts: concepts,
+        concept_categories: conceptCategories,
+        concept_density: chunk.concept_density || 0
       }
-    })
-  );
+    });
+  });
   
   const conceptBuilder = new ConceptIndexBuilder();
   const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogFresh, docs);
@@ -373,8 +433,8 @@ async function main() {
   const conceptsTable = await db.createTable('concepts', conceptRecords, { mode: 'create' });
   console.log(`   ✅ Created new concepts table with ${conceptRecords.length} records`);
   
-  console.log(`\n✅ Seeding complete!`);
-  console.log(`\n📊 Final Summary:`);
+  console.log(`✅ Seeding complete!`);
+  console.log(`📊 Final Summary:`);
   console.log(`   - Documents seeded: ${seededDocs.length}`);
   console.log(`   - Chunks updated: ${totalUpdated}`);
   console.log(`   - Concepts in index: ${conceptRecords.length}`);
