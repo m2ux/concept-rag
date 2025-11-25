@@ -2,6 +2,8 @@ import { HybridSearchService, SearchableCollection } from '../../domain/interfac
 import { EmbeddingService } from '../../domain/interfaces/services/embedding-service.js';
 import { SearchResult } from '../../domain/models/search-result.js';
 import { QueryExpander } from '../../concepts/query_expander.js';
+import type { ResilientExecutor } from '../resilience/resilient-executor.js';
+import { ResilienceProfiles } from '../resilience/resilient-executor.js';
 import { SearchResultCache } from '../cache/search-result-cache.js';
 import {
   calculateVectorScore,
@@ -27,6 +29,9 @@ import {
  * This service orchestrates query expansion, vector search, and multi-signal
  * scoring to provide high-quality search results.
  * 
+ * **Resilience:** When ResilientExecutor is provided, search operations are
+ * protected with timeout (5s) and bulkhead (15 concurrent max).
+ * 
  * **Caching:**
  * Optionally uses SearchResultCache to avoid redundant searches.
  * Cache key includes collection name to prevent cross-collection pollution.
@@ -38,7 +43,8 @@ export class ConceptualHybridSearchService implements HybridSearchService {
   constructor(
     private embeddingService: EmbeddingService,
     private queryExpander: QueryExpander,
-    cache?: SearchResultCache<SearchResult[]>
+    cache?: SearchResultCache<SearchResult[]>,
+    private resilientExecutor?: ResilientExecutor
   ) {
     this.cache = cache;
   }
@@ -58,6 +64,31 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       }
     }
     
+    // Wrap search operation with resilience if available
+    if (this.resilientExecutor) {
+      return this.resilientExecutor.execute(
+        () => this.performSearch(collection, queryText, limit, debug),
+        {
+          ...ResilienceProfiles.SEARCH,
+          name: 'hybrid_search'
+        }
+      );
+    }
+    
+    // Fallback: execute without resilience (backward compatible)
+    return this.performSearch(collection, queryText, limit, debug);
+  }
+  
+  /**
+   * Core search implementation (can be wrapped with resilience).
+   * @private
+   */
+  private async performSearch(
+    collection: SearchableCollection,
+    queryText: string,
+    limit: number,
+    debug: boolean
+  ): Promise<SearchResult[]> {
     // Step 1: Expand query with corpus concepts and WordNet synonyms
     const expanded = await this.queryExpander.expandQuery(queryText);
     

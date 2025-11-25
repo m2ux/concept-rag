@@ -83,6 +83,8 @@ console.warn = (...args: any[]) => {
         message.includes('Empty') && message.includes('stream') ||
         message.includes('charstring command') ||
         message.includes('Unknown type') && message.includes('charstring') ||
+        message.includes('TT: undefined function') ||
+        message.includes('Indexing all PDF objects') ||
         message.includes('webpack://') ) {
         return; // Suppress these verbose warnings
     }
@@ -99,6 +101,8 @@ console.error = (...args: any[]) => {
         message.includes('Empty') && message.includes('stream') ||
         message.includes('charstring command') ||
         message.includes('Unknown type') && message.includes('charstring') ||
+        message.includes('TT: undefined function') ||
+        message.includes('Indexing all PDF objects') ||
         message.includes('Warning:') && message.includes('font')) {
         return; // Suppress these verbose warnings
     }
@@ -109,6 +113,8 @@ console.error = (...args: any[]) => {
 console.log = (...args: any[]) => {
     const message = args.join(' ');
     if (message.includes('Warning:') && (
+        message.includes('TT: undefined function') ||
+        message.includes('Indexing all PDF objects') ||
         message.includes('Ran out of space in font private use area') ||
         message.includes('font private use area') ||
         message.includes('private use area') ||

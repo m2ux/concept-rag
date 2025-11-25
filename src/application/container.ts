@@ -22,6 +22,8 @@ import { BaseTool } from '../tools/base/tool.js';
 import { ConceptIdCache, CategoryIdCache, EmbeddingCache, SearchResultCache } from '../infrastructure/cache/index.js';
 import { LanceDBCategoryRepository } from '../infrastructure/lancedb/repositories/lancedb-category-repository.js';
 import type { CategoryRepository } from '../domain/interfaces/category-repository.js';
+import { RetryService } from '../infrastructure/utils/retry-service.js';
+import { ResilientExecutor } from '../infrastructure/resilience/resilient-executor.js';
 import type { SearchResult } from '../domain/models/search-result.js';
 import * as defaults from '../config.js';
 
@@ -66,6 +68,8 @@ export class ApplicationContainer {
   private conceptIdCache?: ConceptIdCache;
   private categoryIdCache?: CategoryIdCache;
   private categoryRepo?: CategoryRepository;
+  private retryService!: RetryService;
+  private resilientExecutor!: ResilientExecutor;
   private embeddingCache?: EmbeddingCache;
   private searchResultCache?: SearchResultCache<SearchResult[]>;
   private tools = new Map<string, BaseTool>();
@@ -109,15 +113,20 @@ export class ApplicationContainer {
   async initialize(databaseUrl: string): Promise<void> {
     console.error('🏗️  Initializing application container...');
     
-    // 1. Connect to database
-    this.dbConnection = await LanceDBConnection.connect(databaseUrl);
+    // 1. Create resilience infrastructure (early, so it's available for all services)
+    this.retryService = new RetryService();
+    this.resilientExecutor = new ResilientExecutor(this.retryService);
+    console.error('✅ Resilience infrastructure initialized (circuit breaker, bulkhead, timeout)');
     
-    // 2. Open tables
+    // 2. Connect to database (with resilience protection)
+    this.dbConnection = await LanceDBConnection.connect(databaseUrl, this.resilientExecutor);
+    
+    // 3. Open tables
     const chunksTable = await this.dbConnection.openTable(defaults.CHUNKS_TABLE_NAME);
     const catalogTable = await this.dbConnection.openTable(defaults.CATALOG_TABLE_NAME);
     const conceptsTable = await this.dbConnection.openTable(defaults.CONCEPTS_TABLE_NAME);
     
-    // 2a. Open categories table if it exists (optional for backward compatibility)
+    // 3a. Open categories table if it exists (optional for backward compatibility)
     let categoriesTable = null;
     try {
       categoriesTable = await this.dbConnection.openTable(defaults.CATEGORIES_TABLE_NAME);
@@ -126,15 +135,15 @@ export class ApplicationContainer {
       console.error('⚠️  Categories table not found (skipping category features)');
     }
     
-    // 3. Create performance caches
+    // 3b. Create performance caches
     this.embeddingCache = new EmbeddingCache(10000); // Cache up to 10k embeddings
     this.searchResultCache = new SearchResultCache<SearchResult[]>(1000, 5 * 60 * 1000); // 1k searches, 5min TTL
     console.error(`✅ Performance caches initialized`);
     
-    // 4. Create infrastructure services (with caches)
+    // 4. Create infrastructure services (with caches and resilience integration)
     const embeddingService = new SimpleEmbeddingService(this.embeddingCache);
     const queryExpander = new QueryExpander(conceptsTable, embeddingService);
-    const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander, this.searchResultCache);
+    const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander, this.searchResultCache, this.resilientExecutor);
     
     // 5. Create repositories (with infrastructure services)
     const conceptRepo = new LanceDBConceptRepository(conceptsTable);
@@ -302,6 +311,36 @@ export class ApplicationContainer {
    */
   getCategoryIdCache(): CategoryIdCache | undefined {
     return this.categoryIdCache;
+  }
+  
+  /**
+   * Get ResilientExecutor for external service protection.
+   * 
+   * Use this to wrap external API calls with circuit breaker, bulkhead,
+   * timeout, and retry protection.
+   * 
+   * @returns ResilientExecutor instance
+   * 
+   * @example
+   * ```typescript
+   * const executor = container.getResilientExecutor();
+   * const result = await executor.execute(
+   *   () => externalAPI.call(),
+   *   ResilienceProfiles.LLM_API
+   * );
+   * ```
+   */
+  getResilientExecutor(): ResilientExecutor {
+    return this.resilientExecutor;
+  }
+  
+  /**
+   * Get RetryService for custom retry logic.
+   * 
+   * @returns RetryService instance
+   */
+  getRetryService(): RetryService {
+    return this.retryService;
   }
 }
 
