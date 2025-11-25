@@ -171,8 +171,65 @@ export class ConceptExtractor {
         }
     }
     
+    // Fix control characters (newlines, tabs, etc.) within JSON string literals
+    private fixControlCharactersInStrings(jsonText: string): string {
+        let result = '';
+        let inString = false;
+        let escaped = false;
+        
+        for (let i = 0; i < jsonText.length; i++) {
+            const char = jsonText[i];
+            
+            // Track if we're inside a string literal
+            if (char === '"' && !escaped) {
+                inString = !inString;
+                result += char;
+                escaped = false;
+                continue;
+            }
+            
+            // Track escape sequences
+            if (char === '\\' && !escaped) {
+                escaped = true;
+                result += char;
+                continue;
+            }
+            
+            // If we're inside a string and encounter a control character
+            if (inString && !escaped) {
+                if (char === '\n' || char === '\r' || char === '\t') {
+                    // Remove the newline and any following whitespace
+                    // This handles cases like:
+                    // "text with line\n  break" -> "text with line break"
+                    while (i + 1 < jsonText.length && /\s/.test(jsonText[i + 1])) {
+                        i++;
+                    }
+                    // Add a space only if the previous character wasn't whitespace
+                    if (result.length > 0 && !/\s$/.test(result)) {
+                        result += ' ';
+                    }
+                } else if (char.charCodeAt(0) < 32) {
+                    // Other control characters - just skip them
+                    continue;
+                } else {
+                    result += char;
+                }
+            } else {
+                result += char;
+            }
+            
+            escaped = false;
+        }
+        
+        return result;
+    }
+    
     // Sanitize JSON to fix common issues
     private sanitizeJSON(jsonText: string): string {
+        // Step 0: Fix control characters (newlines, tabs, etc.) within string literals
+        // This handles cases where the LLM breaks long strings across multiple lines
+        jsonText = this.fixControlCharactersInStrings(jsonText);
+        
         // Step 1: Handle truncated JSON
         if (!jsonText.endsWith('}') && !jsonText.endsWith('}]')) {
             // Try to find the last complete array element
