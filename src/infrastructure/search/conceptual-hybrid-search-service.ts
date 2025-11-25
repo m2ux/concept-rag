@@ -4,6 +4,7 @@ import { SearchResult } from '../../domain/models/search-result.js';
 import { QueryExpander } from '../../concepts/query_expander.js';
 import type { ResilientExecutor } from '../resilience/resilient-executor.js';
 import { ResilienceProfiles } from '../resilience/resilient-executor.js';
+import { SearchResultCache } from '../cache/search-result-cache.js';
 import {
   calculateVectorScore,
   calculateWeightedBM25,
@@ -30,13 +31,23 @@ import {
  * 
  * **Resilience:** When ResilientExecutor is provided, search operations are
  * protected with timeout (5s) and bulkhead (15 concurrent max).
+ * 
+ * **Caching:**
+ * Optionally uses SearchResultCache to avoid redundant searches.
+ * Cache key includes collection name to prevent cross-collection pollution.
  */
 export class ConceptualHybridSearchService implements HybridSearchService {
+  /** Optional search result cache */
+  private cache?: SearchResultCache<SearchResult[]>;
+  
   constructor(
     private embeddingService: EmbeddingService,
     private queryExpander: QueryExpander,
+    cache?: SearchResultCache<SearchResult[]>,
     private resilientExecutor?: ResilientExecutor
-  ) {}
+  ) {
+    this.cache = cache;
+  }
 
   async search(
     collection: SearchableCollection,
@@ -44,6 +55,15 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     limit: number = 5,
     debug: boolean = false
   ): Promise<SearchResult[]> {
+    // Check cache first (if enabled and not in debug mode)
+    if (this.cache && !debug) {
+      const cacheKey = `${collection.getName()}:${queryText}`;
+      const cached = this.cache.get(cacheKey, { limit });
+      if (cached) {
+        return cached;
+      }
+    }
+    
     // Wrap search operation with resilience if available
     if (this.resilientExecutor) {
       return this.resilientExecutor.execute(
@@ -136,6 +156,12 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     
     if (debug) {
       this.printDebugScores(finalResults);
+    }
+    
+    // Cache results (if enabled and not in debug mode)
+    if (this.cache && !debug) {
+      const cacheKey = `${collection.getName()}:${queryText}`;
+      this.cache.set(cacheKey, { limit }, finalResults);
     }
     
     return finalResults;

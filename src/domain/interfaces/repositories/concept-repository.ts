@@ -1,4 +1,5 @@
 import { Concept } from '../../models/index.js';
+import { Option } from '../../functional/option.js';
 
 /**
  * Repository interface for accessing concept data from the vector database.
@@ -32,35 +33,50 @@ export interface ConceptRepository {
   /**
    * Find a concept by hash-based integer ID.
    * 
+   * Returns Option<Concept> for type-safe nullable handling.
+   * Use isSome/isNone to check, or fold/map for functional composition.
+   * 
    * @param id - Hash-based concept ID
-   * @returns Promise resolving to the concept if found, null if not found
+   * @returns Promise resolving to Some(concept) if found, None if not found
+   * @throws {Error} If database query fails
    */
-  findById(id: number): Promise<Concept | null>;
+  findById(id: number): Promise<Option<Concept>>;
   
   /**
    * Find a concept by exact name match (case-insensitive).
    * 
    * Looks up a concept in the concept table using an exact name match.
    * The search is case-insensitive and trims whitespace.
+   * Returns Option<Concept> for type-safe nullable handling.
    * 
    * **Performance**: O(1) - indexed lookup
    * 
    * @param conceptName - The concept name to find (e.g., 'REST API', 'microservices')
-   * @returns Promise resolving to the concept if found, null if not found
+   * @returns Promise resolving to Some(concept) if found, None if not found
    * @throws {Error} If database query fails
    * 
    * @example
    * ```typescript
-   * const concept = await conceptRepo.findByName('dependency injection');
-   * if (concept) {
+   * import { isSome, map, getOrElse } from '../../functional/option';
+   * 
+   * const conceptOpt = await conceptRepo.findByName('dependency injection');
+   * if (isSome(conceptOpt)) {
+   *   const concept = conceptOpt.value;
    *   console.log(`Found: ${concept.concept}`);
    *   console.log(`Type: ${concept.conceptType}`);
    *   console.log(`Sources: ${concept.sources.length} documents`);
    *   console.log(`Related: ${concept.relatedConcepts.join(', ')}`);
    * }
+   * 
+   * // Functional composition
+   * const category = pipe(
+   *   conceptOpt,
+   *   map(c => c.category),
+   *   getOrElse('Unknown')
+   * );
    * ```
    */
-  findByName(conceptName: string): Promise<Concept | null>;
+  findByName(conceptName: string): Promise<Option<Concept>>;
   
   /**
    * Find concepts related to a given concept using vector similarity.

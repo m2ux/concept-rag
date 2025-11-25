@@ -1,6 +1,7 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ConceptSearchService } from "../../domain/services/index.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
+import { isSome, isErr } from "../../domain/functional/index.js";
 
 export interface ConceptSearchParams extends ToolParams {
   concept: string;
@@ -63,29 +64,73 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
   };
 
   async execute(params: ConceptSearchParams) {
+    // Validate input
     try {
-      // Validate input
       this.validator.validateConceptSearch(params);
-      
-      const limit = params.limit || 10;
-      
-      console.error(`🔍 Searching for concept: "${params.concept}"`);
-      
-      // Delegate to service for business logic
-      const result = await this.conceptSearchService.searchConcept({
-        concept: params.concept,
-        limit: limit,
-        sourceFilter: params.source_filter,
-        sortBy: 'density'
-      });
-      
-      console.error(`✅ Found ${result.chunks.length} matching chunks`);
-      
-      // Format as MCP response (pure presentation logic)
-      return this.formatMCPResponse(result);
-    } catch (error) {
-      return this.handleError(error);
+    } catch (error: any) {
+      console.error(`❌ Validation failed: ${error.message}`);
+      return {
+        isError: true,
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            error: {
+              code: error.code || 'VALIDATION_ERROR',
+              message: error.message,
+              field: error.field,
+              context: error.context
+            },
+            timestamp: new Date().toISOString()
+          })
+        }]
+      };
     }
+    
+    const limit = params.limit || 10;
+    
+    console.error(`🔍 Searching for concept: "${params.concept}"`);
+    
+    // Delegate to service for business logic
+    const result = await this.conceptSearchService.searchConcept({
+      concept: params.concept,
+      limit: limit,
+      sourceFilter: params.source_filter,
+      sortBy: 'density'
+    });
+    
+    // Handle Result type
+    if (isErr(result)) {
+      const error = result.error;
+      const errorMessage = 
+        error.type === 'validation' ? error.message :
+        error.type === 'database' ? error.message :
+        error.type === 'concept_not_found' ? `Concept not found: ${error.concept}` :
+        error.type === 'unknown' ? error.message :
+        'An unknown error occurred';
+      
+      console.error(`❌ Search failed: ${errorMessage}`);
+      return {
+        isError: true,
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            error: {
+              code: 'SEARCH_ERROR',
+              message: errorMessage,
+              type: error.type
+            },
+            timestamp: new Date().toISOString()
+          })
+        }]
+      };
+    }
+    
+    // @ts-expect-error - Type narrowing limitation
+    const searchResult = result.value;
+    console.error(`✅ Found ${searchResult.chunks.length} matching chunks`);
+    
+    // Format as MCP response (pure presentation logic)
+    return this.formatMCPResponse(searchResult);
   }
   
   /**
@@ -111,12 +156,13 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       };
       
       // Add concept metadata if available
-    if (result.conceptMetadata) {
+    if (isSome(result.conceptMetadata)) {
+        const metadata = result.conceptMetadata.value;
         response.concept_metadata = {
-        category: result.conceptMetadata.category,
-        weight: result.conceptMetadata.weight,
-        chunk_count: result.conceptMetadata.chunkCount,
-        sources_count: result.conceptMetadata.sources.length
+        category: metadata.category,
+        weight: metadata.weight,
+        chunk_count: metadata.chunkCount,
+        sources_count: metadata.sources.length
         };
         
       // Add related concepts

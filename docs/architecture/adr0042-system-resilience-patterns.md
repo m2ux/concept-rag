@@ -2,7 +2,7 @@
 
 **Date:** 2025-11-25  
 **Status:** Accepted  
-**Deciders:** Engineering Team  
+**Deciders**: Development Team   
 **Technical Story:** Implement resilience patterns to protect against external dependency failures and prevent cascade failures.
 
 **Sources:**
@@ -116,20 +116,20 @@ const result = await executor.execute(
                │
 ┌──────────────▼──────────────────────────┐
 │      ResilientExecutor                  │
-│  ┌──────────────────────────────────┐  │
-│  │  1. Bulkhead (concurrency limit)│  │
-│  │         │                        │  │
-│  │  2. Circuit Breaker (fast-fail) │  │
-│  │         │                        │  │
-│  │  3. Timeout (bound duration)    │  │
-│  │         │                        │  │
-│  │  4. Retry (exponential backoff) │  │
-│  └──────────────────────────────────┘  │
+│  ┌──────────────────────────────────┐   │
+│  │  1. Bulkhead (concurrency limit) │   │
+│  │         │                        │   │
+│  │  2. Circuit Breaker (fast-fail)  │   │
+│  │         │                        │   │
+│  │  3. Timeout (bound duration)     │   │
+│  │         │                        │   │
+│  │  4. Retry (exponential backoff)  │   │
+│  └──────────────────────────────────┘   │
 └──────────────┬──────────────────────────┘
                │
 ┌──────────────▼──────────────────────────┐
 │       External Services                 │
-│  • LLM API (Anthropic/OpenAI)          │
+│  • LLM API (Anthropic/OpenAI)           │
 │  • Embedding Service                    │
 │  • External Database                    │
 └─────────────────────────────────────────┘
@@ -408,4 +408,5 @@ Each pattern provides detailed metrics:
 - Branch: feat/system-resilience-patterns
 
 **Traceability:** .ai/planning/2025-11-25-resilience-patterns/
+
 
