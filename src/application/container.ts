@@ -19,6 +19,8 @@ import { ConceptIdCache } from '../infrastructure/cache/concept-id-cache.js';
 import { CategoryIdCache } from '../infrastructure/cache/category-id-cache.js';
 import { LanceDBCategoryRepository } from '../infrastructure/lancedb/repositories/lancedb-category-repository.js';
 import type { CategoryRepository } from '../domain/interfaces/category-repository.js';
+import { RetryService } from '../infrastructure/utils/retry-service.js';
+import { ResilientExecutor } from '../infrastructure/resilience/resilient-executor.js';
 import * as defaults from '../config.js';
 
 /**
@@ -62,6 +64,8 @@ export class ApplicationContainer {
   private conceptIdCache?: ConceptIdCache;
   private categoryIdCache?: CategoryIdCache;
   private categoryRepo?: CategoryRepository;
+  private retryService!: RetryService;
+  private resilientExecutor!: ResilientExecutor;
   private tools = new Map<string, BaseTool>();
   
   /**
@@ -103,15 +107,20 @@ export class ApplicationContainer {
   async initialize(databaseUrl: string): Promise<void> {
     console.error('🏗️  Initializing application container...');
     
-    // 1. Connect to database
-    this.dbConnection = await LanceDBConnection.connect(databaseUrl);
+    // 1. Create resilience infrastructure (early, so it's available for all services)
+    this.retryService = new RetryService();
+    this.resilientExecutor = new ResilientExecutor(this.retryService);
+    console.error('✅ Resilience infrastructure initialized (circuit breaker, bulkhead, timeout)');
     
-    // 2. Open tables
+    // 2. Connect to database (with resilience protection)
+    this.dbConnection = await LanceDBConnection.connect(databaseUrl, this.resilientExecutor);
+    
+    // 3. Open tables
     const chunksTable = await this.dbConnection.openTable(defaults.CHUNKS_TABLE_NAME);
     const catalogTable = await this.dbConnection.openTable(defaults.CATALOG_TABLE_NAME);
     const conceptsTable = await this.dbConnection.openTable(defaults.CONCEPTS_TABLE_NAME);
     
-    // 2a. Open categories table if it exists (optional for backward compatibility)
+    // 3a. Open categories table if it exists (optional for backward compatibility)
     let categoriesTable = null;
     try {
       categoriesTable = await this.dbConnection.openTable(defaults.CATEGORIES_TABLE_NAME);
@@ -120,21 +129,21 @@ export class ApplicationContainer {
       console.error('⚠️  Categories table not found (skipping category features)');
     }
     
-    // 3. Create infrastructure services
+    // 4. Create infrastructure services (with resilience integration)
     const embeddingService = new SimpleEmbeddingService();
     const queryExpander = new QueryExpander(conceptsTable, embeddingService);
-    const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
+    const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander, this.resilientExecutor);
     
-    // 4. Create repositories (with infrastructure services)
+    // 5. Create repositories (with infrastructure services)
     const conceptRepo = new LanceDBConceptRepository(conceptsTable);
     
-    // 4a. Initialize ConceptIdCache for fast ID↔name resolution
+    // 5a. Initialize ConceptIdCache for fast ID↔name resolution
     this.conceptIdCache = ConceptIdCache.getInstance();
     await this.conceptIdCache.initialize(conceptRepo);
     const cacheStats = this.conceptIdCache.getStats();
     console.error(`✅ ConceptIdCache initialized: ${cacheStats.conceptCount} concepts, ~${Math.round(cacheStats.memorySizeEstimate / 1024)}KB`);
     
-    // 4b. Initialize CategoryIdCache if categories table exists
+    // 5b. Initialize CategoryIdCache if categories table exists
     if (categoriesTable) {
       this.categoryRepo = new LanceDBCategoryRepository(categoriesTable);
       this.categoryIdCache = CategoryIdCache.getInstance();
@@ -146,19 +155,19 @@ export class ApplicationContainer {
     const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, this.conceptIdCache);
     const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     
-    // 5. Create domain services (with repositories)
+    // 6. Create domain services (with repositories)
     const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);
     const catalogSearchService = new CatalogSearchService(catalogRepo);
     const chunkSearchService = new ChunkSearchService(chunkRepo);
     
-    // 6. Create tools (with domain services)
+    // 7. Create tools (with domain services)
     this.tools.set('concept_search', new ConceptSearchTool(conceptSearchService));
     this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogSearchService));
     this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService));
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));
     this.tools.set('extract_concepts', new DocumentConceptsExtractTool(catalogRepo));
     
-    // 6a. Register category tools if categories table exists
+    // 7a. Register category tools if categories table exists
     if (categoriesTable && this.categoryIdCache) {
       this.tools.set('category_search', new CategorySearchTool(this.categoryIdCache, catalogRepo));
       this.tools.set('list_categories', new ListCategoriesTool(this.categoryIdCache));
@@ -285,6 +294,36 @@ export class ApplicationContainer {
    */
   getCategoryIdCache(): CategoryIdCache | undefined {
     return this.categoryIdCache;
+  }
+  
+  /**
+   * Get ResilientExecutor for external service protection.
+   * 
+   * Use this to wrap external API calls with circuit breaker, bulkhead,
+   * timeout, and retry protection.
+   * 
+   * @returns ResilientExecutor instance
+   * 
+   * @example
+   * ```typescript
+   * const executor = container.getResilientExecutor();
+   * const result = await executor.execute(
+   *   () => externalAPI.call(),
+   *   ResilienceProfiles.LLM_API
+   * );
+   * ```
+   */
+  getResilientExecutor(): ResilientExecutor {
+    return this.resilientExecutor;
+  }
+  
+  /**
+   * Get RetryService for custom retry logic.
+   * 
+   * @returns RetryService instance
+   */
+  getRetryService(): RetryService {
+    return this.retryService;
   }
 }
 
