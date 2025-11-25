@@ -302,6 +302,56 @@ ls -la ~/.concept_rag
 
 3. Process smaller documents first
 
+### Where are the log files?
+
+**Answer**: Each seeding run creates a timestamped log file in the `logs/` directory:
+
+```
+logs/seed-2025-11-25T15-30-42.log
+```
+
+**What's logged**:
+- All console output (INFO, WARN, ERROR)
+- Timestamps for each message
+- Full diagnostic information
+
+**Viewing logs**:
+```bash
+# View latest log
+ls -t logs/seed-*.log | head -1 | xargs cat
+
+# Search for errors
+grep ERROR logs/seed-*.log
+```
+
+**Cleanup**: Logs are not automatically deleted. To clean up old logs:
+```bash
+# Keep only last 10 logs
+cd logs && ls -t seed-*.log | tail -n +11 | xargs rm -f
+```
+
+### How do I fix duplicate/incomplete catalog records?
+
+**Symptoms**:
+- "Mapped X/Y sources" where X < Y
+- Duplicate source path warnings
+- Missing document IDs
+
+**Solution**: Use `--auto-reseed` to automatically fix:
+```bash
+npx tsx hybrid_fast_seed.ts --filesdir ~/Documents --auto-reseed
+```
+
+This will:
+1. Detect incomplete records (missing/invalid IDs)
+2. Remove them from catalog
+3. Re-process those documents properly
+
+**Check diagnostics**: Run with `--rebuild-concepts` to see detailed analysis:
+```bash
+npx tsx hybrid_fast_seed.ts --filesdir ~/Documents --rebuild-concepts
+```
+
 ---
 
 ## Technical Details

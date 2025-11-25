@@ -427,7 +427,6 @@ By contributing to Concept-RAG, you agree that your contributions will be licens
 ## 🙏 Recognition
 
 Contributors will be:
-- Listed in CHANGELOG.md
 - Credited in release notes
 - Recognized in the project README
 
