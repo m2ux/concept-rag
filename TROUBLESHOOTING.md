@@ -679,6 +679,48 @@ npx tsx hybrid_fast_seed.ts \
    npx tsx scripts/repair_missing_concepts.ts --min-concepts 50
    ```
 
+### Incomplete Catalog Records / Duplicate Source Paths
+
+**Problem**: You see warnings during `--rebuild-concepts` about:
+- Incomplete catalog records (missing ID or source)
+- Duplicate source paths (same file, multiple IDs)
+- Mapped X/Y sources (X < Y)
+
+**Symptoms**:
+```
+⚠️  Found 8 duplicate source paths (same file path, different IDs):
+   1. /path/to/document.pdf...
+      → Existing ID: 0, Duplicate ID: 0 [hash1234]
+
+✅ Mapped 255/263 sources to catalog IDs
+```
+
+**Causes**:
+- Re-seeding without `--overwrite` created duplicate entries
+- Interrupted seeding left incomplete records
+- Database corruption or migration issues
+
+**Solution 1: Auto-Reseed** (Recommended):
+```bash
+npx tsx hybrid_fast_seed.ts \
+  --filesdir ~/Documents \
+  --auto-reseed
+```
+
+This will:
+- Detect incomplete records (missing/invalid IDs)
+- Remove them from the catalog
+- Re-process those documents properly
+
+**Solution 2: Full Rebuild**:
+```bash
+npx tsx hybrid_fast_seed.ts \
+  --filesdir ~/Documents \
+  --overwrite
+```
+
+**Check Logs**: Look in `logs/seed-YYYY-MM-DDTHH-MM-SS.log` for detailed diagnostics.
+
 ---
 
 ## Advanced Debugging

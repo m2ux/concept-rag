@@ -310,6 +310,40 @@ Concepts are category-agnostic (cross-domain entities). This tool shows which co
 
 For bulk operations or automation, use the CLI scripts in the `scripts/` directory.
 
+### Seeding and Maintenance
+
+#### `hybrid_fast_seed.ts` - Main Seeding Script
+
+```bash
+npx tsx hybrid_fast_seed.ts --filesdir <directory> [options]
+```
+
+**Options:**
+- `--filesdir <path>` - Directory containing PDF/EPUB files (required)
+- `--dbpath <path>` - Database directory (default: `~/.concept_rag`)
+- `--overwrite` - Drop existing tables and rebuild from scratch
+- `--rebuild-concepts` - Rebuild concept index without re-processing documents
+- `--auto-reseed` - Automatically fix and re-process incomplete catalog records
+
+**Examples:**
+```bash
+# Initial setup
+npx tsx hybrid_fast_seed.ts --filesdir ~/Documents --overwrite
+
+# Add new documents
+npx tsx hybrid_fast_seed.ts --filesdir ~/Documents
+
+# Rebuild concept index (after algorithm updates)
+npx tsx hybrid_fast_seed.ts --filesdir ~/Documents --rebuild-concepts
+
+# Fix database issues (duplicate/incomplete records)
+npx tsx hybrid_fast_seed.ts --filesdir ~/Documents --auto-reseed
+```
+
+**📝 Logging:** Each run creates a timestamped log in `logs/seed-YYYY-MM-DDTHH-MM-SS.log`.
+
+---
+
 ### Extract Concepts (CLI)
 
 ```bash

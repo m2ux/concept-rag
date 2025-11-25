@@ -312,3 +312,4 @@ cython_debug/
 *.code-workspace
 .archive
 sample-docs
+logs
