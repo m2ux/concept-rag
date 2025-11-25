@@ -2,15 +2,23 @@ import { Document } from "@langchain/core/documents";
 import { ConceptMetadata } from "./types.js";
 import { buildConceptExtractionPrompt } from "../config.js";
 import * as fs from "fs";
+import type { ResilientExecutor } from "../infrastructure/resilience/resilient-executor.js";
+import { ResilienceProfiles } from "../infrastructure/resilience/resilient-executor.js";
 
 export class ConceptExtractor {
     
     private openRouterApiKey: string;
     private lastRequestTime: number = 0;
     private minRequestInterval: number = 3000; // 3 seconds between requests
+    private resilientExecutor?: ResilientExecutor;
     
-    constructor(apiKey: string) {
+    /**
+     * @param apiKey - OpenRouter API key
+     * @param resilientExecutor - Optional resilient executor for circuit breaker, retry, and timeout protection
+     */
+    constructor(apiKey: string, resilientExecutor?: ResilientExecutor) {
         this.openRouterApiKey = apiKey;
+        this.resilientExecutor = resilientExecutor;
     }
     
     private async rateLimitDelay(): Promise<void> {
@@ -360,13 +368,30 @@ export class ConceptExtractor {
             return allContent;
         }
     
-    private async callOpenRouter(prompt: string, maxTokens: number, retryCount = 0): Promise<string> {
-        const maxRetries = 3;
-        
+    private async callOpenRouter(prompt: string, maxTokens: number): Promise<string> {
         // Rate limit requests to avoid API throttling
         await this.rateLimitDelay();
         
-        try {
+        // Use resilient executor if available (provides retry, circuit breaker, timeout, bulkhead)
+        if (this.resilientExecutor) {
+            return this.resilientExecutor.execute(
+                () => this.performAPICall(prompt, maxTokens),
+                {
+                    ...ResilienceProfiles.LLM_API,
+                    name: 'llm_concept_extraction'
+                }
+            );
+        }
+        
+        // Fallback: direct call without resilience (backward compatible)
+        return this.performAPICall(prompt, maxTokens);
+    }
+    
+    /**
+     * Performs the actual LLM API call (can be wrapped with resilience).
+     * @private
+     */
+    private async performAPICall(prompt: string, maxTokens: number): Promise<string> {
             const requestBody = {
                 model: 'openai/gpt-5-mini',  // 400k context, excellent instruction-following, $0.25/M in, $2/M out
                 messages: [
@@ -378,7 +403,6 @@ export class ConceptExtractor {
                 temperature: 0.3,  // Higher temp for more creative/comprehensive extraction
                 max_tokens: maxTokens  // Dynamically calculated based on input size
             };
-            
             
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
@@ -395,42 +419,19 @@ export class ConceptExtractor {
                 const errorText = await response.text();
                 console.error(`  ❌ LLM API error: ${response.status} ${response.statusText}`);
                 console.error(`  Response: ${errorText.substring(0, 500)}`);
-                
-                // Handle rate limiting specifically
-                if (response.status === 429) {
-                    console.warn(`  🚦 Rate limited! Waiting 10 seconds before retry...`);
-                    if (retryCount < maxRetries) {
-                        await new Promise(resolve => setTimeout(resolve, 10000));
-                        return this.callOpenRouter(prompt, maxTokens, retryCount + 1);
-                    }
-                }
-                
             throw new Error(`LLM API error: ${response.status} ${response.statusText}`);
         }
         
-            // Try to parse response, handle large responses carefully
-            let data;
-            try {
+        // Parse response
                 const responseText = await response.text();
                 
                 // Check for empty response
-                const trimmedResponse = responseText.trim();
-                if (trimmedResponse.length === 0) {
+        if (responseText.trim().length === 0) {
                     console.error(`  ❌ Response is empty or only whitespace!`);
                     throw new Error('API returned empty response');
                 }
                 
-                data = JSON.parse(responseText);
-            } catch (parseError) {
-                console.error(`  ❌ Failed to parse API response JSON`);
-                if (retryCount < maxRetries) {
-                    const waitTime = 5000 * (retryCount + 1); // 5s, 10s, 15s
-                    console.warn(`  🔄 Retrying (${retryCount + 1}/${maxRetries}) after ${waitTime/1000}s...`);
-                    await new Promise(resolve => setTimeout(resolve, waitTime));
-                    return this.callOpenRouter(prompt, maxTokens, retryCount + 1);
-                }
-                throw parseError;
-            }
+        const data = JSON.parse(responseText);
         
         if (!data.choices || data.choices.length === 0) {
                 console.error('  ❌ No choices in API response:', JSON.stringify(data).substring(0, 500));
@@ -439,26 +440,13 @@ export class ConceptExtractor {
         
             const content = data.choices[0].message.content;
             
-            // Check if content is mostly whitespace
+        // Check if content is meaningful
             if (!content || content.trim().length < 100) {
                 console.error(`  ❌ Empty response from API (length: ${content?.length || 0})`);
-                
-                // Retry with exponential backoff
-                if (retryCount < maxRetries) {
-                    const waitTime = 5000 * (retryCount + 1); // 5s, 10s, 15s
-                    console.warn(`  🔄 Retrying empty response (${retryCount + 1}/${maxRetries}) after ${waitTime/1000}s...`);
-                    await new Promise(resolve => setTimeout(resolve, waitTime));
-                    return this.callOpenRouter(prompt, maxTokens, retryCount + 1);
-                }
-                
-                throw new Error('API returned empty or whitespace-only content after retries');
+            throw new Error('API returned empty or whitespace-only content');
             }
             
             return content;
-        } catch (error) {
-            console.error('  ❌ LLM API call failed:', error);
-            throw error;
-        }
     }
 }
 
