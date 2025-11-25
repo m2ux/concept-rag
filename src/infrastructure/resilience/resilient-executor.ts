@@ -285,7 +285,8 @@ export class ResilientExecutor {
    * @returns True if at least one circuit breaker is open
    */
   hasOpenCircuits(): boolean {
-    for (const cb of this.circuitBreakers.values()) {
+    const breakers = Array.from(this.circuitBreakers.values());
+    for (const cb of breakers) {
       if (cb.isOpen()) {
         return true;
       }
