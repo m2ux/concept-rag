@@ -925,7 +925,7 @@ async function loadDocumentsWithErrorHandling(
                 } else {
                     contentInfo = `${docs.length} docs`;
                 }
-                console.log(`📥 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
+                console.log(`  📥 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
             } catch (error: any) {
                 const errorMsg = error?.message || String(error);
                 const fileExt = path.extname(docFile).toLowerCase();
@@ -962,7 +962,7 @@ async function loadDocumentsWithErrorHandling(
                         }
                     } catch (ocrError: any) {
                         const hashDisplay = hash !== 'unknown' ? `[${hash.slice(0, 4)}..${hash.slice(-4)}]` : '[????..????]';
-                        console.log(`❌ ${hashDisplay} ${truncateFilePath(relativePath)} (OCR failed: ${ocrError.message})`);
+                        console.log(`  ❌ ${hashDisplay} ${truncateFilePath(relativePath)} (OCR failed: ${ocrError.message})`);
                         ocrAttempted = true;
                     }
                 }
@@ -1117,7 +1117,7 @@ async function createLanceTableWithSimpleEmbeddings(
         return baseData;
     });
     
-    console.log(`✅ Generated ${data.length} embeddings locally (instant)`);
+    console.log(`✅ Generated ${data.length} embeddings locally`);
     
     // Calculate appropriate number of partitions based on dataset size
     // Rule of thumb: ~100-200 vectors per partition for good cluster quality
@@ -1447,7 +1447,6 @@ async function createCategoriesTable(
     // Create categories table
     const table = await db.createTable('categories', categoryRecords, { mode: 'overwrite' });
     console.log("  ✅ Categories table created successfully");
-    
     // Create vector index only for large datasets to avoid KMeans warnings
     // For datasets < 5000, linear scan is fast and avoids empty cluster warnings
     if (categoryRecords.length >= 5000) {
@@ -1788,9 +1787,8 @@ async function hybridFastSeed() {
     }
 
     console.log(`Number of new catalog records: ${catalogRecords.length}`);
-    
     // Build source → catalog ID mapping for integer ID optimization
-    console.log("\n🔗 Building source-to-catalog-ID mapping for optimization...");
+    console.log("🔗 Building source-to-catalog-ID mapping for optimization...");
     catalogTable = await db.openTable(defaults.CATALOG_TABLE_NAME);
     const catalogRows = await catalogTable.query().toArray();
     const sourceToIdMap = new Map<string, string>();
@@ -1800,11 +1798,9 @@ async function hybridFastSeed() {
         }
     }
     console.log(`✅ Mapped ${sourceToIdMap.size} sources to catalog IDs`);
-    
     // Build and store concept index (moved to after chunk creation for chunk_count)
     // We'll create chunks first, then build concept index with chunk stats
-
-    console.log("\n🔧 Creating chunks with fast local embeddings...");
+    console.log("🔧 Creating chunks with fast local embeddings...");
     
     // Separate docs that need new chunks vs. existing chunks needing enrichment
     const docsNeedingNewChunks = rawDocs.filter(doc => 
@@ -1836,7 +1832,7 @@ async function hybridFastSeed() {
     
     // ENHANCED: Enrich chunks with concept metadata
     if (catalogRecords.length > 0 && docs.length > 0) {
-        console.log("\n🧠 Enriching chunks with concept metadata...");
+        console.log("🧠 Enriching chunks with concept metadata...");
         
         // Create a map of source -> concepts
         const sourceConceptsMap = new Map<string, any>();
@@ -1990,7 +1986,7 @@ async function hybridFastSeed() {
     // ENHANCED: Build concept index with chunk statistics
     // When reprocessing documents, we need to rebuild from ALL catalog records, not just new ones
     if (catalogRecords.length > 0) {
-        console.log("\n🧠 Building concept index with chunk statistics...");
+        console.log("🧠 Building concept index with chunk statistics...");
         
         // Load ALL catalog records to build complete concept index
         let allCatalogRecords = catalogRecords;
@@ -2043,7 +2039,6 @@ async function hybridFastSeed() {
         let allChunks: Document[] = [];
         if (chunksTable) {
             try {
-                console.log("  📦 Loading ALL existing chunks for accurate concept counting...");
                 const allChunkRecords = await chunksTable.query().limit(1000000).toArray();
                 
                 // Convert chunk records to Documents
@@ -2115,9 +2110,8 @@ async function hybridFastSeed() {
                 
                 // Create categories table with hash-based IDs
                 await createCategoriesTable(db, allCatalogRecords);
-                
                 // Initialize ConceptIdCache for concept_ids optimization
-                console.log("\n🔧 Initializing ConceptIdCache for fast ID resolution...");
+                console.log("🔧 Initializing ConceptIdCache for fast ID resolution...");
                 const { ConceptIdCache } = await import('./src/infrastructure/cache/concept-id-cache.js');
                 const { LanceDBConceptRepository } = await import('./src/infrastructure/lancedb/repositories/lancedb-concept-repository.js');
                 const conceptsTable = await db.openTable('concepts');
@@ -2127,7 +2121,6 @@ async function hybridFastSeed() {
                 await conceptIdCache.initialize(conceptRepo);
                 const cacheStats = conceptIdCache.getStats();
                 console.log(`✅ ConceptIdCache initialized: ${cacheStats.conceptCount} concepts, ~${Math.round(cacheStats.memorySizeEstimate / 1024)}KB`);
-                
             } catch (error: any) {
                 console.error("⚠️  Error creating concept table:", error.message);
                 console.log("  Continuing with seeding...");
@@ -2137,8 +2130,7 @@ async function hybridFastSeed() {
 
     // Calculate database size
     const dbSize = await getDatabaseSize(databaseDir);
-    
-    console.log(`\n✅ Created ${catalogRecords.length} catalog records`);
+    console.log(`✅ Created ${catalogRecords.length} catalog records`);
     if (newChunksToCreate.length > 0) {
         console.log(`✅ Created ${newChunksToCreate.length} new chunk records`);
     }
