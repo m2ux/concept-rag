@@ -108,6 +108,60 @@ npx tsx scripts/repair_missing_concepts.ts --min-concepts 50
 
 ---
 
+### `seed_specific.ts` - Targeted Document Seeding
+
+Seed (or re-seed) specific documents by hash, filename pattern, or source path.
+
+**Usage:**
+```bash
+npx tsx scripts/seed_specific.ts [--hash <prefix>...] [--pattern <text>...] [--source <path>...]
+```
+
+**Parameters:**
+- `--hash` - One or more hash prefixes to match (e.g., `3cde 7f2b`)
+- `--pattern` - One or more filename patterns to match (e.g., `"Transaction Processing"`)
+- `--source` - One or more source path substrings to match (e.g., `"DistributedSystems/"`)
+
+**Examples:**
+```bash
+# Seed specific documents by hash prefix
+npx tsx scripts/seed_specific.ts --hash 3cde 7f2b
+
+# Seed by filename pattern
+npx tsx scripts/seed_specific.ts --pattern "Transaction Processing"
+
+# Seed by source path
+npx tsx scripts/seed_specific.ts --source "Cryptography/Tutorials"
+
+# Mix multiple criteria
+npx tsx scripts/seed_specific.ts --hash 3cde --pattern "Foundation"
+```
+
+**When to use:**
+- Seed previously unprocessed documents
+- After fixing a bug in concept extraction (e.g., JSON parsing fix)
+- When specific documents had partial chunk failures during seeding
+- To update concepts for a subset of documents
+- After improving extraction prompts for targeted re-seeding
+
+**What it does:**
+1. Finds matching documents by hash/pattern/source
+2. Shows what will be seeded with current concept counts
+3. Extracts concepts from all chunks using current code
+4. Updates catalog with new concept metadata
+5. Enriches all chunks for those documents
+6. Rebuilds the complete concept index
+
+**Safety:**
+- ✅ Only touches specified documents
+- ✅ Preserves data (updates in place)
+- ✅ Idempotent (safe to run multiple times)
+- ⚠️ Makes API calls (costs apply)
+
+**Requires:** `OPENROUTER_API_KEY` environment variable
+
+---
+
 ## Environment Variables
 
 ```bash
