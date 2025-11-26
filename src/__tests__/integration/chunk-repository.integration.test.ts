@@ -44,6 +44,8 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
     // Initialize ConceptIdCache for integer ID resolution
     const { ConceptIdCache } = await import('../../infrastructure/cache/concept-id-cache.js');
     const conceptIdCache = ConceptIdCache.getInstance();
+    // Clear any existing cache (singleton might be initialized from previous test)
+    conceptIdCache.clear();
     await conceptIdCache.initialize(conceptRepo);
     
     chunkRepo = new LanceDBChunkRepository(

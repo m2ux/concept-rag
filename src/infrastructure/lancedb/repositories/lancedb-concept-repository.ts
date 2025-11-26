@@ -176,28 +176,25 @@ export class LanceDBConceptRepository implements ConceptRepository {
     const vectorField = detectVectorField(row);
     const embeddings = vectorField ? row[vectorField] : [];
     
-    // Parse catalog_ids (native array or JSON string)
-    let catalogIds: number[] = [];
-    if (row.catalog_ids) {
-      catalogIds = Array.isArray(row.catalog_ids)
-        ? row.catalog_ids
-        : parseJsonField(row.catalog_ids);
-    }
-    
-    // Parse related_concept_ids (native array or JSON string)
-    let relatedConceptIds: number[] = [];
-    if (row.related_concept_ids) {
-      relatedConceptIds = Array.isArray(row.related_concept_ids)
-        ? row.related_concept_ids
-        : parseJsonField(row.related_concept_ids);
-    }
-    
-    // Parse WordNet fields (native arrays or JSON strings)
-    const parseArrayField = (value: any): string[] => {
+    // Helper to parse array fields (handles native arrays, Arrow Vectors, and JSON strings)
+    const parseArrayField = <T>(value: any): T[] => {
       if (!value) return [];
       if (Array.isArray(value)) return value;
-      return parseJsonField(value);
+      if (typeof value === 'object' && 'toArray' in value) {
+        // Arrow Vector - convert to JavaScript array
+        return Array.from(value.toArray());
+      }
+      if (typeof value === 'string') {
+        return parseJsonField(value);
+      }
+      return [];
     };
+    
+    // Parse catalog_ids (native array, Arrow Vector, or JSON string)
+    const catalogIds = parseArrayField<number>(row.catalog_ids);
+    
+    // Parse related_concept_ids (native array, Arrow Vector, or JSON string)
+    const relatedConceptIds = parseArrayField<number>(row.related_concept_ids);
     
     return {
       concept: row.concept || '',
