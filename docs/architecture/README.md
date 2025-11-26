@@ -146,6 +146,19 @@ This directory contains all architectural decisions made during the development 
 
 ---
 
+### Phase 10: System Resilience & Schema Normalization (November 25-26, 2025)
+
+**Major Improvements:** Circuit breaker patterns, rate limiting, schema cleanup
+
+| # | Title | Date | Status |
+|---|-------|------|--------|
+| [adr0042](adr0042-system-resilience-patterns.md) | System Resilience Patterns (Circuit Breaker, Timeout, Bulkhead) | 2025-11-25 | Accepted |
+| [adr0043](adr0043-schema-normalization.md) | Schema Normalization (Redundant Field Removal) | 2025-11-26 | Accepted |
+
+**Key Achievements:** Circuit breaker with configurable thresholds, timeout operations, bulkhead isolation, ~25% database storage reduction, native array storage, single source of truth
+
+---
+
 ## Using This Documentation
 
 ### For Adding New ADRs
