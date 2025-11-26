@@ -273,18 +273,19 @@ export function validateChunkRow(row: any): void {
 /**
  * Validate concept row has all required fields with correct types.
  * 
- * **Validation Rules**:
- * - Required: concept, concept_type, category
+ * **Validation Rules (Normalized Schema)**:
+ * - Required: concept
  * - Vector: Must be 384-dimensional array
- * - JSON fields: sources, related_concepts, synonyms, etc. (optional)
+ * - Array fields: catalog_ids, related_concept_ids (native arrays, not JSON)
+ * - Optional JSON fields: synonyms, broader_terms, narrower_terms
  * 
  * @param row - Concept row from LanceDB
  * @throws {SchemaValidationError} If validation fails
  * @throws {InvalidEmbeddingsError} If embeddings are invalid
  */
 export function validateConceptRow(row: any): void {
-  // Validate required fields (concept_type is optional for backward compatibility)
-  validateRequiredFields(row, ['concept', 'category'], 'concept');
+  // Validate required fields (only 'concept' is required in normalized schema)
+  validateRequiredFields(row, ['concept'], 'concept');
   
   // Validate vector field
   const vectorField = detectVectorField(row);
@@ -302,8 +303,8 @@ export function validateConceptRow(row: any): void {
   }
   validateEmbeddings(row, vectorField, row.concept || 'concept');
   
-  // Validate JSON fields (all optional for concepts)
-  const jsonFields = ['sources', 'catalog_ids', 'related_concepts', 'synonyms', 'broader_terms', 'narrower_terms'];
+  // Validate optional JSON fields (only WordNet fields remain as JSON)
+  const jsonFields = ['synonyms', 'broader_terms', 'narrower_terms'];
   for (const field of jsonFields) {
     if (row[field] !== null && row[field] !== undefined) {
       validateJsonField(row, field, 'concept');

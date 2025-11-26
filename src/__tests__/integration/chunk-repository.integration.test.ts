@@ -72,7 +72,8 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       expect(chunks).toBeDefined();
       expect(chunks.length).toBeGreaterThan(0);
       expect(chunks[0].text).toContain('architecture');
-      expect(chunks[0].concepts).toContain('clean architecture');
+      // Note: chunks no longer store concept names, only conceptIds (normalized schema)
+      expect(chunks[0].conceptIds).toBeDefined();
     });
     
     it('should respect limit parameter', async () => {
@@ -254,7 +255,7 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       // ACT: Retrieve chunk
       const chunks = await chunkRepo.findBySource(sourcePath, 1);
       
-      // ASSERT: Verify all field mappings from LanceDB to domain model
+      // ASSERT: Verify all field mappings from LanceDB to domain model (normalized schema)
       expect(chunks.length).toBe(1);
       const chunk = chunks[0];
       
@@ -265,10 +266,7 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       expect(chunk.source).toBeDefined();
       expect(typeof chunk.source).toBe('string');
       
-      // Array fields (native arrays)
-      expect(chunk.concepts).toBeDefined();
-      expect(Array.isArray(chunk.concepts)).toBe(true);
-      
+      // Array fields (native arrays - normalized schema)
       expect(chunk.conceptIds).toBeDefined();
       expect(Array.isArray(chunk.conceptIds)).toBe(true);
       
@@ -285,21 +283,17 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       }
     });
     
-    it('should parse JSON fields correctly', async () => {
-      // ARRANGE: Chunk with JSON-stringified array fields
+    it('should handle array fields correctly', async () => {
+      // ARRANGE: Chunk with array fields (normalized schema uses native arrays)
       const sourcePath = '/docs/principles/solid.pdf';
       
       // ACT: Retrieve chunk
       const chunks = await chunkRepo.findBySource(sourcePath, 1);
       const chunk = chunks[0];
       
-      // ASSERT: Array fields should be native arrays
-      expect(Array.isArray(chunk.concepts)).toBe(true);
-      expect(chunk.concepts!.length).toBeGreaterThan(0);
-      expect(chunk.concepts).toContain('solid principles');
-      
-      // ID-based fields should also be arrays
+      // ASSERT: ID-based array fields should be native arrays
       expect(Array.isArray(chunk.conceptIds)).toBe(true);
+      expect(Array.isArray(chunk.categoryIds)).toBe(true);
     });
   });
   

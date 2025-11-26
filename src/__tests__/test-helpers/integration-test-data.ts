@@ -9,6 +9,7 @@
  */
 
 import { SimpleEmbeddingService } from '../../infrastructure/embeddings/simple-embedding-service.js';
+import { hashToId } from '../../infrastructure/utils/hash.js';
 
 // Singleton embedding service for test data generation
 const embeddingService = new SimpleEmbeddingService();
@@ -80,11 +81,18 @@ export interface IntegrationCatalogData {
  * @returns Chunk data ready for LanceDB insertion
  */
 export function createIntegrationTestChunk(overrides?: Partial<IntegrationChunkData>): IntegrationChunkData {
+  // Use hash-based concept IDs that match the test concepts
+  const defaultConceptIds = [
+    hashToId('clean architecture'),
+    hashToId('repository pattern'),
+    hashToId('dependency injection')
+  ];
+  
   const defaults: IntegrationChunkData = {
     text: 'Clean architecture is a software design philosophy that emphasizes separation of concerns and dependency inversion.',
     source: '/docs/architecture/clean-architecture.pdf',
     vector: embeddingService.generateEmbedding('Clean architecture is a software design philosophy'),
-    concept_ids: [123456, 234567, 345678],
+    concept_ids: defaultConceptIds,
     category_ids: [111111, 222222],
     chunk_index: 0
   };
@@ -99,9 +107,11 @@ export function createIntegrationTestChunk(overrides?: Partial<IntegrationChunkD
  * @returns Concept data ready for LanceDB insertion
  */
 export function createIntegrationTestConcept(overrides?: Partial<IntegrationConceptData>): IntegrationConceptData {
+  const conceptName = overrides?.concept || 'clean architecture';
   const defaults: IntegrationConceptData = {
-    concept: 'clean architecture',
-    vector: embeddingService.generateEmbedding('clean architecture'),
+    id: hashToId(conceptName), // Hash-based ID for reliable cache lookups
+    concept: conceptName,
+    vector: embeddingService.generateEmbedding(conceptName),
     weight: 0.85,
     catalog_ids: [12345678],
     related_concept_ids: [11111111, 22222222, 33333333]
@@ -117,9 +127,11 @@ export function createIntegrationTestConcept(overrides?: Partial<IntegrationConc
  * @returns Catalog data ready for LanceDB insertion
  */
 export function createIntegrationTestCatalogEntry(overrides?: Partial<IntegrationCatalogData>): IntegrationCatalogData {
+  const source = overrides?.source || '/docs/architecture/clean-architecture.pdf';
   const defaults: IntegrationCatalogData = {
+    id: hashToId(source), // Hash-based ID for reliable lookups
     text: 'Comprehensive guide to Clean Architecture principles and implementation patterns.',
-    source: '/docs/architecture/clean-architecture.pdf',
+    source,
     vector: embeddingService.generateEmbedding('Clean Architecture principles'),
     category_ids: [111111]
   };
@@ -137,28 +149,28 @@ export function createStandardTestChunks(): IntegrationChunkData[] {
       text: 'Repository pattern provides an abstraction layer between the domain and data mapping layers.',
       source: '/docs/patterns/repository-pattern.pdf',
       vector: embeddingService.generateEmbedding('Repository pattern provides an abstraction layer'),
-      concept_ids: [456789, 567890, 678901],
+      concept_ids: [hashToId('repository pattern'), hashToId('clean architecture')],
       category_ids: [333333]
     }),
     createIntegrationTestChunk({
       text: 'Dependency injection is a technique for achieving Inversion of Control between classes and their dependencies.',
       source: '/docs/patterns/dependency-injection.pdf',
       vector: embeddingService.generateEmbedding('Dependency injection is a technique'),
-      concept_ids: [789012, 890123, 901234],
+      concept_ids: [hashToId('dependency injection'), hashToId('solid principles')],
       category_ids: [333333, 444444]
     }),
     createIntegrationTestChunk({
       text: 'SOLID principles are five design principles intended to make software designs more understandable, flexible and maintainable.',
       source: '/docs/principles/solid.pdf',
       vector: embeddingService.generateEmbedding('SOLID principles are five design principles'),
-      concept_ids: [111111, 222222, 333333],
+      concept_ids: [hashToId('solid principles'), hashToId('clean architecture')],
       category_ids: [555555, 666666]
     }),
     createIntegrationTestChunk({
       text: 'TypeScript provides static type checking for JavaScript, catching errors at compile time rather than runtime.',
       source: '/docs/languages/typescript.pdf',
       vector: embeddingService.generateEmbedding('TypeScript provides static type checking'),
-      concept_ids: [444444, 555555, 666666],
+      concept_ids: [hashToId('typescript'), hashToId('dependency injection')],
       category_ids: [777777, 888888]
     })
   ];

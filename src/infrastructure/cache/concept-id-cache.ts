@@ -74,7 +74,9 @@ export class ConceptIdCache implements IConceptIdCache {
       // Concepts in domain model don't have an ID field, use the concept name as a pseudo-ID
       // When we retrieve from DB, we'll need to track IDs separately
       // For now, we'll need the actual row data with IDs from the repository
-      const id = (concept as any).id || concept.concept; // Fallback to concept name if no ID
+      const rawId = (concept as any).id || concept.concept; // Fallback to concept name if no ID
+      // Convert to string for consistent key types (LanceDB IDs are numbers but lookups use strings)
+      const id = String(rawId);
       this.idToName.set(id, concept.concept);
       this.nameToId.set(concept.concept, id);
     }
