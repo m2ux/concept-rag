@@ -30,6 +30,10 @@ describe('SourceConceptsTool', () => {
   
   describe('single concept', () => {
     it('should find all sources for a single concept', async () => {
+      // Add catalog entries that the concept references
+      catalogRepo.addDocument(createTestSearchResult({ id: '12345678', source: '/books/tdd-book.pdf' }));
+      catalogRepo.addDocument(createTestSearchResult({ id: '23456789', source: '/books/clean-code.pdf' }));
+      
       const testConcept = createTestConcept({
         concept: 'test driven development',
         catalogIds: [12345678, 23456789]

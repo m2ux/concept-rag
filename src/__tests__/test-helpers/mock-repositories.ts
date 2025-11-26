@@ -196,7 +196,8 @@ export class FakeCatalogRepository implements CatalogRepository {
     const queryLower = query.text.toLowerCase();
     const results = Array.from(this.documents.values())
       .filter(doc => {
-        const textMatch = doc.text.toLowerCase().includes(queryLower);
+        // Return all documents if query is empty
+        const textMatch = !queryLower || doc.text.toLowerCase().includes(queryLower);
         const sourceMatch = !query.sourceFilter || (doc.source || '').includes(query.sourceFilter);
         return textMatch && sourceMatch;
       })
