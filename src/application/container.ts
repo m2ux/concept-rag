@@ -16,6 +16,7 @@ import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_cata
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
 import { ConceptualBroadChunksSearchTool } from '../tools/operations/conceptual_broad_chunks_search.js';
 import { DocumentConceptsExtractTool } from '../tools/operations/document_concepts_extract.js';
+import { SourceConceptsTool } from '../tools/operations/source_concepts.js';
 import { ConceptSourcesTool } from '../tools/operations/concept_sources.js';
 import { CategorySearchTool } from '../tools/operations/category-search-tool.js';
 import { ListCategoriesTool } from '../tools/operations/list-categories-tool.js';
@@ -181,6 +182,7 @@ export class ApplicationContainer {
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));
     this.tools.set('extract_concepts', new DocumentConceptsExtractTool(catalogRepo));
     this.tools.set('concept_sources', new ConceptSourcesTool(conceptSourcesService));
+    this.tools.set('source_concepts', new SourceConceptsTool(conceptSourcesService));
     
     // 7a. Register category tools if categories table exists
     if (categoriesTable && this.categoryIdCache) {
@@ -198,7 +200,8 @@ export class ApplicationContainer {
    * 
    * Available tools:
    * - `concept_search`: Find chunks by concept name
-   * - `concept_sources`: Find all documents where a concept appears (source attribution)
+   * - `concept_sources`: Get sources for each concept separately (array of source arrays)
+   * - `source_concepts`: Find union of sources matching any concept (with concept attribution)
    * - `catalog_search`: Search document summaries
    * - `chunks_search`: Search within a specific document
    * - `broad_chunks_search`: Search all chunks with hybrid ranking

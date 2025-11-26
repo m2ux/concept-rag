@@ -1,6 +1,5 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ConceptSourcesService } from "../../domain/services/index.js";
-import { InputValidator } from "../../domain/services/validation/index.js";
 import { isErr } from "../../domain/functional/index.js";
 
 export interface ConceptSourcesParams extends ToolParams {
@@ -9,27 +8,27 @@ export interface ConceptSourcesParams extends ToolParams {
 }
 
 /**
- * MCP tool for concept source attribution.
+ * MCP tool for getting sources organized by concept (per-concept arrays).
  * 
- * This tool finds all documents (sources) where one or more concepts appear.
- * Use it to understand where concepts are discussed across your library
- * and to get source attribution for research or citation purposes.
+ * This tool accepts one or more concepts and returns an array where each
+ * position corresponds to an input concept, containing that concept's sources.
  * 
- * **Single concept example:**
- * Input: "test driven development"
- * Returns: All sources containing that concept
- * 
- * **Multiple concepts example:**
+ * **Example:**
  * Input: ["test driven development", "dependency injection"]
- * Returns: Union of all sources containing ANY of the concepts, with
- * `concept_indices` showing which input concepts each source matches.
+ * Output: {
+ *   concepts_searched: ["test driven development", "dependency injection"],
+ *   results: [
+ *     [{ title: "Book A", ... }, { title: "Book B", ... }],  // sources for concept[0]
+ *     [{ title: "Book C", ... }, { title: "Book A", ... }]   // sources for concept[1]
+ *   ]
+ * }
  * 
- * Results are sorted by number of matching concepts (most matches first).
+ * Position in results array corresponds to position in concepts_searched array.
+ * Each concept may have 0 or more sources.
  * 
  * Business logic is in ConceptSourcesService for testability and reusability.
  */
 export class ConceptSourcesTool extends BaseTool<ConceptSourcesParams> {
-  private validator = new InputValidator();
   
   constructor(
     private conceptSourcesService: ConceptSourcesService
@@ -38,23 +37,20 @@ export class ConceptSourcesTool extends BaseTool<ConceptSourcesParams> {
   }
   
   name = "concept_sources";
-  description = `Find all documents (sources) where a specific concept appears. Returns source attribution for concepts across your library.
+  description = `Get sources for each concept separately, returning an array where each position corresponds to an input concept.
 
 USE THIS TOOL WHEN:
-- You need to know which documents discuss a specific concept
-- Finding source attribution for research or citation purposes
-- Understanding concept coverage across your document library
-- Answering questions like "Which books mention X?" or "Where is Y discussed?"
-- Finding documents that cover MULTIPLE concepts (pass an array)
+- You need separate source lists for each concept (not merged)
+- Comparing which sources cover which specific concepts
+- Building per-concept bibliographies or citations
+- Need to know exactly which sources discuss each individual concept
 
 DO NOT USE for:
-- Finding specific text passages about a concept (use concept_search instead)
-- General keyword search (use broad_chunks_search instead)
+- Getting a merged/union list of all sources (use source_concepts instead)
+- Finding specific text passages (use concept_search instead)
 - Finding documents by title (use catalog_search instead)
 
-RETURNS: List of source documents with titles, summaries (optional), and concept metadata including related concepts and document categories. Shows the total count of sources where the concept appears.
-
-When multiple concepts are provided, returns the union of all sources. Each source includes a \`concept_indices\` array indicating which input concepts (by index) that source matches. Sources matching more concepts are sorted first.`;
+RETURNS: Array where results[i] contains sources for concepts_searched[i]. Each concept may have 0 or more sources. Sources include title, author, year, and source_path.`;
 
   inputSchema = {
     type: "object" as const,
@@ -64,7 +60,7 @@ When multiple concepts are provided, returns the union of all sources. Each sour
           { type: "string" },
           { type: "array", items: { type: "string" } }
         ],
-        description: "The concept(s) to find sources for. Can be a single concept string or an array of concepts. When multiple concepts are provided, returns the union of all sources.",
+        description: "The concept(s) to find sources for. Can be a single concept string or an array of concepts. Returns separate source arrays for each concept.",
       },
       include_metadata: {
         type: "boolean",
@@ -76,7 +72,7 @@ When multiple concepts are provided, returns the union of all sources. Each sour
   };
 
   async execute(params: ConceptSourcesParams) {
-    // Normalize concept to array for logging
+    // Normalize concept to array
     const concepts = Array.isArray(params.concept) ? params.concept : [params.concept];
     
     // Basic validation - at least one concept required
@@ -98,102 +94,70 @@ When multiple concepts are provided, returns the union of all sources. Each sour
       };
     }
     
-    console.error(`🔍 Finding sources for concept(s): "${concepts.join('", "')}"`);
+    console.error(`🔍 Getting sources for concept(s): "${concepts.join('", "')}"`);
     
-    // Delegate to service for business logic
-    const result = await this.conceptSourcesService.getConceptSources({
-      concept: params.concept,
-      includeMetadata: params.include_metadata ?? true
-    });
+    const includeMetadata = params.include_metadata ?? true;
     
-    // Handle Result type
-    if (isErr(result)) {
-      const error = result.error;
-      const errorMessage = 
-        error.type === 'validation' ? error.message :
-        error.type === 'database' ? error.message :
-        error.type === 'concept_not_found' ? `No concepts found: "${error.concept}". Try different concept names or check spelling.` :
-        error.type === 'unknown' ? error.message :
-        'An unknown error occurred';
+    // Get sources for each concept separately
+    const results: any[][] = [];
+    
+    for (const conceptName of concepts) {
+      // Use the service to get sources for this single concept
+      const result = await this.conceptSourcesService.getConceptSources({
+        concept: conceptName,
+        includeMetadata
+      });
       
-      console.error(`❌ Source lookup failed: ${errorMessage}`);
-      return {
-        isError: true,
-        content: [{
-          type: "text" as const,
-          text: JSON.stringify({
-            error: {
-              code: error.type === 'concept_not_found' ? 'CONCEPT_NOT_FOUND' : 'LOOKUP_ERROR',
-              message: errorMessage,
-              type: error.type
-            },
-            timestamp: new Date().toISOString()
-          })
-        }]
-      };
+      if (isErr(result)) {
+        // Concept not found - add empty array for this position
+        console.error(`⚠️  Concept "${conceptName}" not found, adding empty array`);
+        results.push([]);
+      } else {
+        // @ts-expect-error - Type narrowing limitation
+        const sourcesResult = result.value;
+        
+        // Format sources for output
+        const formattedSources = sourcesResult.sources.map((source: any) => {
+          const formatted: any = {
+            title: source.title
+          };
+          
+          if (source.author) {
+            formatted.author = source.author;
+          }
+          
+          if (source.year) {
+            formatted.year = source.year;
+          }
+          
+          formatted.source_path = source.source;
+          
+          if (source.summary) {
+            formatted.summary = source.summary;
+          }
+          
+          if (source.primaryConcepts?.length > 0) {
+            formatted.primary_concepts = source.primaryConcepts;
+          }
+          
+          if (source.categories?.length > 0) {
+            formatted.categories = source.categories;
+          }
+          
+          return formatted;
+        });
+        
+        results.push(formattedSources);
+      }
     }
     
-    // @ts-expect-error - Type narrowing limitation
-    const sourcesResult = result.value;
-    console.error(`✅ Found ${sourcesResult.sourceCount} unique source(s) for ${sourcesResult.foundConcepts.length} concept(s)`);
+    console.error(`✅ Retrieved sources for ${concepts.length} concept(s)`);
     
-    // Format as MCP response
-    return this.formatMCPResponse(sourcesResult);
-  }
-  
-  /**
-   * Format service result as MCP response.
-   * Pure presentation logic - converts domain model to MCP JSON format.
-   */
-  private formatMCPResponse(result: any) {
-    // Format sources for output
-    const formattedSources = result.sources.map((source: any) => {
-      const formatted: any = {
-        title: source.title
-      };
-      
-      if (source.author) {
-        formatted.author = source.author;
-      }
-      
-      if (source.year) {
-        formatted.year = source.year;
-      }
-      
-      // Show concept indices for attribution (references concepts_searched array)
-      if (source.conceptIndices?.length > 0) {
-        formatted.concept_indices = source.conceptIndices;
-      }
-      
-      formatted.source_path = source.source;
-      
-      if (source.summary) {
-        formatted.summary = source.summary;
-      }
-      
-      if (source.primaryConcepts?.length > 0) {
-        formatted.primary_concepts = source.primaryConcepts;
-      }
-      
-      if (source.categories?.length > 0) {
-        formatted.categories = source.categories;
-      }
-      
-      return formatted;
-    });
-    
-    // Build response object
-    const response: any = {
-      concepts_searched: result.concepts,
-      concepts_found: result.foundConcepts,
-      source_count: result.sourceCount,
-      sources: formattedSources
+    // Build response
+    const response = {
+      concepts_searched: concepts,
+      results
     };
-    
-    // Include not found concepts if any
-    if (result.notFoundConcepts?.length > 0) {
-      response.concepts_not_found = result.notFoundConcepts;
-    }
     
     return {
       content: [
@@ -203,4 +167,3 @@ When multiple concepts are provided, returns the union of all sources. Each sour
     };
   }
 }
-

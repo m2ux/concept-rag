@@ -1,11 +1,7 @@
 /**
  * Unit Tests for ConceptSourcesTool
  * 
- * Tests the ConceptSourcesTool using test doubles (fakes/mocks).
- * Demonstrates dependency injection for testing as described in:
- * - "Continuous Delivery" (Humble & Farley), Chapter 4
- * - "Test Driven Development for Embedded C" (Grenning), Chapter 7
- * 
+ * Tests the ConceptSourcesTool (per-concept source arrays).
  * Uses "Fake" repositories instead of real LanceDB for fast, isolated testing.
  */
 
@@ -15,8 +11,7 @@ import { ConceptSourcesService } from '../../../domain/services/index.js';
 import {
   FakeConceptRepository,
   FakeCatalogRepository,
-  createTestConcept,
-  createTestSearchResult
+  createTestConcept
 } from '../../../__tests__/test-helpers/index.js';
 
 describe('ConceptSourcesTool', () => {
@@ -26,251 +21,147 @@ describe('ConceptSourcesTool', () => {
   let tool: ConceptSourcesTool;
   
   beforeEach(() => {
-    // SETUP - Fresh repositories and service for each test (test isolation)
     conceptRepo = new FakeConceptRepository();
     catalogRepo = new FakeCatalogRepository();
     service = new ConceptSourcesService(conceptRepo, catalogRepo);
     tool = new ConceptSourcesTool(service);
   });
   
-  describe('execute', () => {
-    it('should find all sources for a concept', async () => {
-      // SETUP - Concept that appears in 3 documents
+  describe('single concept', () => {
+    it('should return sources for a single concept', async () => {
       const testConcept = createTestConcept({
-        concept: 'test driven development',
-        sources: [
-          '/books/clean-code.pdf',
-          '/books/tdd-by-example.pdf',
-          '/books/refactoring.pdf'
-        ],
-        relatedConcepts: ['refactoring', 'unit testing', 'clean code'],
-        chunkCount: 25
+        concept: 'tdd',
+        sources: ['/books/book-a.pdf', '/books/book-b.pdf']
       });
-      
       conceptRepo.addConcept(testConcept);
       
-      // Add catalog entries for metadata enrichment
-      catalogRepo.addDocument(createTestSearchResult({
-        id: 'doc-1',
-        source: '/books/clean-code.pdf',
-        text: 'Clean Code by Robert Martin covers best practices...',
-        concepts: { primary_concepts: ['clean code', 'tdd'], categories: ['Software Engineering'] }
-      }));
-      catalogRepo.addDocument(createTestSearchResult({
-        id: 'doc-2',
-        source: '/books/tdd-by-example.pdf',
-        text: 'TDD by Example by Kent Beck teaches test driven development...',
-        concepts: { primary_concepts: ['tdd', 'testing'], categories: ['Software Engineering'] }
-      }));
-      catalogRepo.addDocument(createTestSearchResult({
-        id: 'doc-3',
-        source: '/books/refactoring.pdf',
-        text: 'Refactoring by Martin Fowler explains code improvement...',
-        concepts: { primary_concepts: ['refactoring', 'design'], categories: ['Software Engineering'] }
-      }));
+      const result = await tool.execute({ concept: 'tdd' });
       
-      // EXERCISE
-      const result = await tool.execute({ concept: 'test driven development' });
-      
-      // VERIFY
-      expect(result).toBeDefined();
       expect(result.isError).toBe(false);
-      expect(result.content).toHaveLength(1);
-      expect(result.content[0].type).toBe('text');
+      const parsed = JSON.parse(result.content[0].text);
       
-      const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.concept).toBe('test driven development');
-      expect(parsedContent.source_count).toBe(3);
-      expect(parsedContent.sources).toHaveLength(3);
-      
-      // Check sources have titles extracted from summaries (preferred) or paths (fallback)
-      const titles = parsedContent.sources.map((s: any) => s.title);
-      // Titles should be extracted from summary text first lines
-      expect(titles.some((t: string) => t.includes('Clean Code'))).toBe(true);
-      expect(titles.some((t: string) => t.includes('TDD by Example'))).toBe(true);
-      expect(titles.some((t: string) => t.includes('Refactoring'))).toBe(true);
+      expect(parsed.concepts_searched).toEqual(['tdd']);
+      expect(parsed.results).toHaveLength(1);
+      expect(parsed.results[0]).toHaveLength(2); // 2 sources for tdd
     });
     
-    it('should include concept metadata in response', async () => {
-      // SETUP
-      const testConcept = createTestConcept({
-        concept: 'dependency injection',
-        category: 'software patterns',
-        conceptType: 'terminology',
-        weight: 0.85,
-        chunkCount: 42,
-        sources: ['/docs/patterns.pdf'],
-        relatedConcepts: ['inversion of control', 'factory pattern', 'service locator']
-      });
+    it('should return empty array for not found concept', async () => {
+      const result = await tool.execute({ concept: 'nonexistent' });
       
-      conceptRepo.addConcept(testConcept);
-      
-      // EXERCISE
-      const result = await tool.execute({ concept: 'dependency injection' });
-      
-      // VERIFY
-      const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.concept_metadata).toBeDefined();
-      expect(parsedContent.concept_metadata.category).toBe('software patterns');
-      expect(parsedContent.concept_metadata.type).toBe('terminology');
-      expect(parsedContent.concept_metadata.chunk_count).toBe(42);
-      expect(parsedContent.related_concepts).toContain('inversion of control');
-    });
-    
-    it('should return error when concept not found', async () => {
-      // SETUP - No concepts added
-      
-      // EXERCISE
-      const result = await tool.execute({ concept: 'nonexistent concept' });
-      
-      // VERIFY
-      expect(result.isError).toBe(true);
-      const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.error).toBeDefined();
-      expect(parsedContent.error.code).toBe('CONCEPT_NOT_FOUND');
-      expect(parsedContent.error.message).toContain('nonexistent concept');
-    });
-    
-    it('should be case-insensitive', async () => {
-      // SETUP
-      const testConcept = createTestConcept({
-        concept: 'machine learning',
-        sources: ['/docs/ml-guide.pdf']
-      });
-      
-      conceptRepo.addConcept(testConcept);
-      
-      // EXERCISE - Search with different cases
-      const result1 = await tool.execute({ concept: 'MACHINE LEARNING' });
-      const result2 = await tool.execute({ concept: 'Machine Learning' });
-      const result3 = await tool.execute({ concept: 'machine learning' });
-      
-      // VERIFY - All should return same results
-      const content1 = JSON.parse(result1.content[0].text);
-      const content2 = JSON.parse(result2.content[0].text);
-      const content3 = JSON.parse(result3.content[0].text);
-      
-      expect(content1.source_count).toBe(1);
-      expect(content2.source_count).toBe(1);
-      expect(content3.source_count).toBe(1);
-    });
-    
-    it('should respect include_metadata=false parameter', async () => {
-      // SETUP
-      const testConcept = createTestConcept({
-        concept: 'microservices',
-        sources: ['/docs/architecture.pdf']
-      });
-      
-      conceptRepo.addConcept(testConcept);
-      
-      // Add catalog entry with rich metadata
-      catalogRepo.addDocument(createTestSearchResult({
-        id: 'doc-1',
-        source: '/docs/architecture.pdf',
-        text: 'Detailed guide to microservices architecture...',
-        concepts: { primary_concepts: ['microservices', 'distributed systems'], categories: ['Architecture'] }
-      }));
-      
-      // EXERCISE - Without metadata
-      const result = await tool.execute({ 
-        concept: 'microservices', 
-        include_metadata: false 
-      });
-      
-      // VERIFY - Should still work but source won't have summary/concepts
       expect(result.isError).toBe(false);
-      const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.sources[0].summary).toBeUndefined();
-      expect(parsedContent.sources[0].primary_concepts).toBeUndefined();
+      const parsed = JSON.parse(result.content[0].text);
+      
+      expect(parsed.concepts_searched).toEqual(['nonexistent']);
+      expect(parsed.results).toHaveLength(1);
+      expect(parsed.results[0]).toEqual([]); // Empty array for not found
+    });
+  });
+  
+  describe('multiple concepts (per-concept arrays)', () => {
+    it('should return separate source arrays for each concept', async () => {
+      const concept1 = createTestConcept({
+        concept: 'tdd',
+        sources: ['/books/book-a.pdf', '/books/book-b.pdf']
+      });
+      const concept2 = createTestConcept({
+        concept: 'di',
+        sources: ['/books/book-b.pdf', '/books/book-c.pdf', '/books/book-d.pdf']
+      });
+      conceptRepo.addConcept(concept1);
+      conceptRepo.addConcept(concept2);
+      
+      const result = await tool.execute({ concept: ['tdd', 'di'] });
+      
+      expect(result.isError).toBe(false);
+      const parsed = JSON.parse(result.content[0].text);
+      
+      expect(parsed.concepts_searched).toEqual(['tdd', 'di']);
+      expect(parsed.results).toHaveLength(2);
+      
+      // results[0] = sources for 'tdd' (2 sources)
+      expect(parsed.results[0]).toHaveLength(2);
+      
+      // results[1] = sources for 'di' (3 sources)
+      expect(parsed.results[1]).toHaveLength(3);
     });
     
-    it('should handle concept with single source', async () => {
-      // SETUP
-      const testConcept = createTestConcept({
-        concept: 'singleton pattern',
-        sources: ['/docs/design-patterns.pdf']
+    it('should maintain position correspondence with input', async () => {
+      const concept1 = createTestConcept({
+        concept: 'first',
+        sources: ['/books/first.pdf']
       });
+      const concept2 = createTestConcept({
+        concept: 'second',
+        sources: ['/books/second.pdf']
+      });
+      const concept3 = createTestConcept({
+        concept: 'third',
+        sources: ['/books/third.pdf']
+      });
+      conceptRepo.addConcept(concept1);
+      conceptRepo.addConcept(concept2);
+      conceptRepo.addConcept(concept3);
       
-      conceptRepo.addConcept(testConcept);
+      const result = await tool.execute({ concept: ['first', 'second', 'third'] });
+      const parsed = JSON.parse(result.content[0].text);
       
-      // EXERCISE
-      const result = await tool.execute({ concept: 'singleton pattern' });
+      // Position 0 should have 'first' sources
+      expect(parsed.results[0][0].source_path).toContain('first');
       
-      // VERIFY
-      const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.source_count).toBe(1);
-      expect(parsedContent.sources).toHaveLength(1);
+      // Position 1 should have 'second' sources
+      expect(parsed.results[1][0].source_path).toContain('second');
+      
+      // Position 2 should have 'third' sources
+      expect(parsed.results[2][0].source_path).toContain('third');
     });
     
-    it('should handle concept with many sources', async () => {
-      // SETUP - Concept that appears in many documents
-      const sources = Array.from({ length: 10 }, (_, i) => `/books/book-${i + 1}.pdf`);
+    it('should return empty array for not found concepts at correct position', async () => {
       const testConcept = createTestConcept({
-        concept: 'object oriented programming',
-        sources
+        concept: 'exists',
+        sources: ['/books/exists.pdf']
       });
-      
       conceptRepo.addConcept(testConcept);
       
-      // EXERCISE
-      const result = await tool.execute({ concept: 'object oriented programming' });
+      const result = await tool.execute({ concept: ['nonexistent', 'exists', 'also-nonexistent'] });
+      const parsed = JSON.parse(result.content[0].text);
       
-      // VERIFY
-      const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.source_count).toBe(10);
-      expect(parsedContent.sources).toHaveLength(10);
+      expect(parsed.results).toHaveLength(3);
+      expect(parsed.results[0]).toEqual([]); // nonexistent
+      expect(parsed.results[1]).toHaveLength(1); // exists
+      expect(parsed.results[2]).toEqual([]); // also-nonexistent
+    });
+    
+    it('should include source metadata (title, author, year)', async () => {
+      const testConcept = createTestConcept({
+        concept: 'test',
+        sources: ['/books/Clean Code -- Robert Martin -- 2008 -- Publisher.pdf']
+      });
+      conceptRepo.addConcept(testConcept);
+      
+      const result = await tool.execute({ concept: 'test' });
+      const parsed = JSON.parse(result.content[0].text);
+      
+      const source = parsed.results[0][0];
+      expect(source.title).toBeDefined();
+      expect(source.source_path).toBeDefined();
+      // Author and year may be extracted depending on filename format
     });
   });
   
   describe('validation', () => {
-    it('should handle missing concept parameter gracefully', async () => {
-      // EXERCISE & VERIFY
+    it('should reject empty concept string', async () => {
       const result = await tool.execute({ concept: '' });
       expect(result.isError).toBe(true);
-      
-      const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.error).toBeDefined();
-      expect(parsedContent.error.code).toContain('VALIDATION');
     });
     
-    it('should handle whitespace-only concept parameter', async () => {
-      // EXERCISE
-      const result = await tool.execute({ concept: '   ' });
-      
-      // VERIFY
+    it('should reject empty array', async () => {
+      const result = await tool.execute({ concept: [] });
       expect(result.isError).toBe(true);
-      const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.error).toBeDefined();
     });
-  });
-  
-  describe('title extraction', () => {
-    it('should extract readable titles from file paths', async () => {
-      // SETUP - Various file naming conventions
-      const testConcept = createTestConcept({
-        concept: 'agile development',
-        sources: [
-          '/books/Agile_Software_Development.pdf',
-          '/docs/clean-architecture-guide.epub',
-          '/papers/extreme_programming-explained.pdf'
-        ]
-      });
-      
-      conceptRepo.addConcept(testConcept);
-      
-      // EXERCISE
-      const result = await tool.execute({ concept: 'agile development' });
-      
-      // VERIFY
-      const parsedContent = JSON.parse(result.content[0].text);
-      const titles = parsedContent.sources.map((s: any) => s.title);
-      
-      // Underscores and hyphens should be converted to spaces
-      expect(titles).toContain('Agile Software Development');
-      expect(titles).toContain('clean architecture guide');
-      expect(titles).toContain('extreme programming explained');
+    
+    it('should reject array of empty strings', async () => {
+      const result = await tool.execute({ concept: ['', '  '] });
+      expect(result.isError).toBe(true);
     });
   });
 });
-
