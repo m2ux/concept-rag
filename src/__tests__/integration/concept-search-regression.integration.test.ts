@@ -23,6 +23,7 @@ import { SimpleEmbeddingService } from '../../infrastructure/embeddings/simple-e
 import { ConceptualHybridSearchService } from '../../infrastructure/search/conceptual-hybrid-search-service.js';
 import { QueryExpander } from '../../concepts/query_expander.js';
 import { createSimpleEmbedding } from '../../lancedb/hybrid_search_client.js';
+import { hashToId } from '../../infrastructure/utils/hash.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -38,6 +39,9 @@ describe('Concept Search Regression Tests', () => {
     dbPath = path.join(os.tmpdir(), `concept-search-regression-${Date.now()}`);
     db = await lancedb.connect(dbPath);
     
+    // Create concept ID mapping using hashToId for consistent lookups
+    const conceptId = (name: string) => hashToId(name.toLowerCase());
+    
     // Create test data covering all three impact categories
     const testChunks = [
       // 🔴 High Impact: Abstract/theoretical concepts
@@ -48,9 +52,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-abstract-1',
         loc: '{}',
         vector: createSimpleEmbedding('exaptive bootstrapping theory innovation'),
-        concepts: JSON.stringify(['exaptive bootstrapping', 'innovation', 'agent-artifact space']),
-        concept_categories: JSON.stringify(['complex systems science', 'innovation theory']),
-        concept_density: 0.85
+        concept_ids: [conceptId('exaptive bootstrapping'), conceptId('innovation'), conceptId('agent-artifact space')],
+        category_ids: [conceptId('complex systems science'), conceptId('innovation theory')]
       },
       {
         id: 'chunk-abstract-2',
@@ -59,9 +62,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-abstract-2',
         loc: '{}',
         vector: createSimpleEmbedding('ideality index triz technical systems'),
-        concepts: JSON.stringify(['ideality index', 'triz methodology', 'technical system evolution']),
-        concept_categories: JSON.stringify(['innovation methodology', 'systems engineering']),
-        concept_density: 0.78
+        concept_ids: [conceptId('ideality index'), conceptId('triz methodology'), conceptId('technical system evolution')],
+        category_ids: [conceptId('innovation methodology'), conceptId('systems engineering')]
       },
       {
         id: 'chunk-abstract-3',
@@ -70,9 +72,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-abstract-3',
         loc: '{}',
         vector: createSimpleEmbedding('dialectical thinking contradictions philosophy'),
-        concepts: JSON.stringify(['dialectical thinking', 'contradiction resolution', 'synthesis']),
-        concept_categories: JSON.stringify(['philosophy', 'critical thinking']),
-        concept_density: 0.82
+        concept_ids: [conceptId('dialectical thinking'), conceptId('contradiction resolution'), conceptId('synthesis')],
+        category_ids: [conceptId('philosophy'), conceptId('critical thinking')]
       },
       {
         id: 'chunk-abstract-4',
@@ -81,9 +82,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-abstract-4',
         loc: '{}',
         vector: createSimpleEmbedding('exaptive bootstrapping socio-technical transitions'),
-        concepts: JSON.stringify(['exaptive bootstrapping', 'socio-technical transitions']),
-        concept_categories: JSON.stringify(['complex systems science']),
-        concept_density: 0.75
+        concept_ids: [conceptId('exaptive bootstrapping'), conceptId('socio-technical transitions')],
+        category_ids: [conceptId('complex systems science')]
       },
       
       // 🟡 Medium Impact: Common technical terms
@@ -94,9 +94,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-medium-1',
         loc: '{}',
         vector: createSimpleEmbedding('REST API interface HTTP'),
-        concepts: JSON.stringify(['rest api', 'api design', 'http methods']),
-        concept_categories: JSON.stringify(['web development', 'software architecture']),
-        concept_density: 0.65
+        concept_ids: [conceptId('rest api'), conceptId('api design'), conceptId('http methods')],
+        category_ids: [conceptId('web development'), conceptId('software architecture')]
       },
       {
         id: 'chunk-medium-2',
@@ -105,9 +104,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-medium-2',
         loc: '{}',
         vector: createSimpleEmbedding('repository pattern data access'),
-        concepts: JSON.stringify(['repository pattern', 'design pattern', 'data access']),
-        concept_categories: JSON.stringify(['software design', 'architecture patterns']),
-        concept_density: 0.68
+        concept_ids: [conceptId('repository pattern'), conceptId('design pattern'), conceptId('data access')],
+        category_ids: [conceptId('software design'), conceptId('architecture patterns')]
       },
       {
         id: 'chunk-medium-3',
@@ -116,9 +114,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-medium-3',
         loc: '{}',
         vector: createSimpleEmbedding('dependency injection loose coupling'),
-        concepts: JSON.stringify(['dependency injection', 'loose coupling', 'solid principles']),
-        concept_categories: JSON.stringify(['software design', 'best practices']),
-        concept_density: 0.72
+        concept_ids: [conceptId('dependency injection'), conceptId('loose coupling'), conceptId('solid principles')],
+        category_ids: [conceptId('software design'), conceptId('best practices')]
       },
       {
         id: 'chunk-medium-4',
@@ -127,9 +124,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-medium-4',
         loc: '{}',
         vector: createSimpleEmbedding('dependency injection testability'),
-        concepts: JSON.stringify(['dependency injection', 'testability', 'unit testing']),
-        concept_categories: JSON.stringify(['software testing']),
-        concept_density: 0.70
+        concept_ids: [conceptId('dependency injection'), conceptId('testability'), conceptId('unit testing')],
+        category_ids: [conceptId('software testing')]
       },
       {
         id: 'chunk-medium-5',
@@ -138,9 +134,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-medium-5',
         loc: '{}',
         vector: createSimpleEmbedding('API interface contract components'),
-        concepts: JSON.stringify(['api interface', 'software contract', 'component design']),
-        concept_categories: JSON.stringify(['software architecture']),
-        concept_density: 0.63
+        concept_ids: [conceptId('api interface'), conceptId('software contract'), conceptId('component design')],
+        category_ids: [conceptId('software architecture')]
       },
       
       // 🟢 Low Impact: Very specific terms
@@ -151,9 +146,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-low-1',
         loc: '{}',
         vector: createSimpleEmbedding('React.useState hook state management'),
-        concepts: JSON.stringify(['react.usestate', 'react hooks', 'state management']),
-        concept_categories: JSON.stringify(['react', 'frontend development']),
-        concept_density: 0.55
+        concept_ids: [conceptId('react.usestate'), conceptId('react hooks'), conceptId('state management')],
+        category_ids: [conceptId('react'), conceptId('frontend development')]
       },
       {
         id: 'chunk-low-2',
@@ -162,9 +156,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-low-2',
         loc: '{}',
         vector: createSimpleEmbedding('PostgreSQL transaction isolation'),
-        concepts: JSON.stringify(['postgresql transaction isolation', 'read committed', 'serializable']),
-        concept_categories: JSON.stringify(['database', 'postgresql']),
-        concept_density: 0.58
+        concept_ids: [conceptId('postgresql transaction isolation'), conceptId('read committed'), conceptId('serializable')],
+        category_ids: [conceptId('database'), conceptId('postgresql')]
       },
       {
         id: 'chunk-low-3',
@@ -173,9 +166,8 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-low-3',
         loc: '{}',
         vector: createSimpleEmbedding('TypeScript strict mode compiler options'),
-        concepts: JSON.stringify(['typescript.compileroptions.strict', 'strict type checking', 'typescript configuration']),
-        concept_categories: JSON.stringify(['typescript', 'configuration']),
-        concept_density: 0.52
+        concept_ids: [conceptId('typescript.compileroptions.strict'), conceptId('strict type checking'), conceptId('typescript configuration')],
+        category_ids: [conceptId('typescript'), conceptId('configuration')]
       },
       {
         id: 'chunk-low-4',
@@ -184,85 +176,94 @@ describe('Concept Search Regression Tests', () => {
         hash: 'hash-low-4',
         loc: '{}',
         vector: createSimpleEmbedding('React.useState multiple state variables'),
-        concepts: JSON.stringify(['react.usestate', 'state management', 'react patterns']),
-        concept_categories: JSON.stringify(['react']),
-        concept_density: 0.54
+        concept_ids: [conceptId('react.usestate'), conceptId('state management'), conceptId('react patterns')],
+        category_ids: [conceptId('react')]
       }
     ];
     
     const testConcepts = [
       // 🔴 High Impact: Abstract/theoretical
       {
+        id: conceptId('exaptive bootstrapping'),
         concept: 'exaptive bootstrapping',
         catalog_ids: [12345678],
-        related_concept_ids: [],
+        related_concept_ids: [0],
         vector: createSimpleEmbedding('exaptive bootstrapping'),
         weight: 1.0,
       },
       {
+        id: conceptId('ideality index'),
         concept: 'ideality index',
         catalog_ids: [12345678],
-        related_concept_ids: [],
+        related_concept_ids: [0],
         vector: createSimpleEmbedding('ideality index'),
         weight: 0.8,
       },
       {
+        id: conceptId('dialectical thinking'),
         concept: 'dialectical thinking',
         catalog_ids: [12345678],
-        related_concept_ids: [],
+        related_concept_ids: [0],
         vector: createSimpleEmbedding('dialectical thinking'),
         weight: 0.85,
       },
       
       // 🟡 Medium Impact: Common technical terms
       {
+        id: conceptId('rest api'),
         concept: 'rest api',
         catalog_ids: [12345678],
-        related_concept_ids: [],
+        related_concept_ids: [0],
         vector: createSimpleEmbedding('rest api'),
         weight: 0.75,
       },
       {
+        id: conceptId('repository pattern'),
         concept: 'repository pattern',
         catalog_ids: [12345678],
-        related_concept_ids: [],
+        related_concept_ids: [0],
         vector: createSimpleEmbedding('repository pattern'),
         weight: 0.78,
       },
       {
+        id: conceptId('dependency injection'),
         concept: 'dependency injection',
         catalog_ids: [12345678],
-        related_concept_ids: [],
+        related_concept_ids: [0],
         vector: createSimpleEmbedding('dependency injection'),
         weight: 0.82,
       },
       {
+        id: conceptId('api interface'),
         concept: 'api interface',
         catalog_ids: [12345678],
-        related_concept_ids: [],
+        related_concept_ids: [0],
         vector: createSimpleEmbedding('api interface'),
         weight: 0.70,
       },
       
       // 🟢 Low Impact: Very specific terms
       {
+        id: conceptId('react.usestate'),
         concept: 'react.usestate',
         catalog_ids: [12345678],
-        related_concept_ids: [],
+        related_concept_ids: [0],
         vector: createSimpleEmbedding('react.usestate'),
         weight: 0.65,
       },
       {
+        id: conceptId('postgresql transaction isolation'),
         concept: 'postgresql transaction isolation',
         catalog_ids: [12345678],
-        related_concept_ids: [],
+        related_concept_ids: [0],
         vector: createSimpleEmbedding('postgresql transaction isolation'),
         weight: 0.60,
       },
       {
+        id: conceptId('typescript.compileroptions.strict'),
         concept: 'typescript.compileroptions.strict',
         catalog_ids: [12345678],
-        related_concept_ids: [],
+        related_concept_ids: [0],
         vector: createSimpleEmbedding('typescript.compileroptions.strict'),
         weight: 0.58,
       }
