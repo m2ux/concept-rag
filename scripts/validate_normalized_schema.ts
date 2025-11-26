@@ -17,6 +17,16 @@ interface ValidationResult {
   details?: string;
 }
 
+/**
+ * Check if value is an array or Arrow Vector (which LanceDB returns for array columns)
+ */
+function isArrayLike(value: any): boolean {
+  if (Array.isArray(value)) return true;
+  // Check for Arrow Vector (has toArray method)
+  if (value && typeof value === 'object' && 'toArray' in value) return true;
+  return false;
+}
+
 async function validateNormalizedSchema(dbPath: string) {
   console.log('\n📋 SCHEMA VALIDATION: Normalized Structure');
   console.log('='.repeat(70));
@@ -45,9 +55,9 @@ async function validateNormalizedSchema(dbPath: string) {
       results.push({ check: 'catalog.hash exists', passed: 'hash' in catalogSample });
       results.push({ check: 'catalog.vector exists', passed: 'vector' in catalogSample });
       
-      // Category IDs should be array
+      // Category IDs should be array (or Arrow Vector)
       if ('category_ids' in catalogSample) {
-        const isArray = Array.isArray(catalogSample.category_ids);
+        const isArray = isArrayLike(catalogSample.category_ids);
         results.push({ 
           check: 'catalog.category_ids is array', 
           passed: isArray,
@@ -99,9 +109,9 @@ async function validateNormalizedSchema(dbPath: string) {
       results.push({ check: 'chunks.hash exists', passed: 'hash' in chunkSample });
       results.push({ check: 'chunks.vector exists', passed: 'vector' in chunkSample });
       
-      // concept_ids should be array
+      // concept_ids should be array (or Arrow Vector)
       if ('concept_ids' in chunkSample) {
-        const isArray = Array.isArray(chunkSample.concept_ids);
+        const isArray = isArrayLike(chunkSample.concept_ids);
         results.push({ 
           check: 'chunks.concept_ids is array', 
           passed: isArray,
@@ -109,9 +119,9 @@ async function validateNormalizedSchema(dbPath: string) {
         });
       }
       
-      // category_ids should be array
+      // category_ids should be array (or Arrow Vector)
       if ('category_ids' in chunkSample) {
-        const isArray = Array.isArray(chunkSample.category_ids);
+        const isArray = isArrayLike(chunkSample.category_ids);
         results.push({ 
           check: 'chunks.category_ids is array', 
           passed: isArray,
@@ -157,9 +167,9 @@ async function validateNormalizedSchema(dbPath: string) {
       results.push({ check: 'concepts.concept exists', passed: 'concept' in conceptSample });
       results.push({ check: 'concepts.vector exists', passed: 'vector' in conceptSample });
       
-      // catalog_ids should be array
+      // catalog_ids should be array (or Arrow Vector)
       if ('catalog_ids' in conceptSample) {
-        const isArray = Array.isArray(conceptSample.catalog_ids);
+        const isArray = isArrayLike(conceptSample.catalog_ids);
         results.push({ 
           check: 'concepts.catalog_ids is array', 
           passed: isArray,
@@ -167,9 +177,9 @@ async function validateNormalizedSchema(dbPath: string) {
         });
       }
       
-      // related_concept_ids should be array
+      // related_concept_ids should be array (or Arrow Vector)
       if ('related_concept_ids' in conceptSample) {
-        const isArray = Array.isArray(conceptSample.related_concept_ids);
+        const isArray = isArrayLike(conceptSample.related_concept_ids);
         results.push({ 
           check: 'concepts.related_concept_ids is array', 
           passed: isArray,
