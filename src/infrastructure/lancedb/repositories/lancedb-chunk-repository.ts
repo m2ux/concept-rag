@@ -159,23 +159,35 @@ export class LanceDBChunkRepository implements ChunkRepository {
     const vectorField = detectVectorField(row);
     const embeddings = vectorField ? row[vectorField] : undefined;
     
-    // Parse concept_ids (native array in normalized schema, JSON string in legacy)
+    // Parse concept_ids (native array in normalized schema, JSON string in legacy, or Arrow Vector)
     let conceptIds: number[] = [];
     if (row.concept_ids) {
-      conceptIds = Array.isArray(row.concept_ids) 
-        ? row.concept_ids 
-        : parseJsonField(row.concept_ids);
+      if (Array.isArray(row.concept_ids)) {
+        conceptIds = row.concept_ids;
+      } else if (typeof row.concept_ids === 'object' && row.concept_ids !== null && 'toArray' in row.concept_ids) {
+        // Arrow Vector - convert to JavaScript array
+        conceptIds = Array.from(row.concept_ids.toArray());
+      } else if (typeof row.concept_ids === 'string') {
+        // JSON string
+        conceptIds = parseJsonField(row.concept_ids);
+      }
     }
     
     // Resolve concepts via cache (convert numeric IDs to strings for cache lookup)
     const concepts = this.conceptIdCache.getNames(conceptIds.map(id => String(id)));
     
-    // Parse category_ids (native array in normalized schema, JSON string in legacy)
+    // Parse category_ids (native array in normalized schema, JSON string in legacy, or Arrow Vector)
     let categoryIds: number[] = [];
     if (row.category_ids) {
-      categoryIds = Array.isArray(row.category_ids)
-        ? row.category_ids
-        : parseJsonField(row.category_ids);
+      if (Array.isArray(row.category_ids)) {
+        categoryIds = row.category_ids;
+      } else if (typeof row.category_ids === 'object' && row.category_ids !== null && 'toArray' in row.category_ids) {
+        // Arrow Vector - convert to JavaScript array
+        categoryIds = Array.from(row.category_ids.toArray());
+      } else if (typeof row.category_ids === 'string') {
+        // JSON string
+        categoryIds = parseJsonField(row.category_ids);
+      }
     }
     
     return {
