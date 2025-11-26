@@ -1,0 +1,113 @@
+Mathematical Symbols Test Document
+==================================
+
+Test document for mathematical symbol preservation in PDF loaders
+
+
+1. Basic ASCII Mathematical Symbols
+-----------------------------------
+Basic operators: + - * / = < > ^ _ ~ | \ % @
+Parentheses: ( ) [ ] { }
+Comparison: < > <= >= == !=
+Expressions: 2 + 2 = 4, 5 - 3 = 2, 3 * 4 = 12, 8 / 2 = 4
+Exponents: x^2, y^3, z^n
+Subscripts: x_1, x_2, x_n
+
+2. Extended Mathematical Operators (Unicode)
+--------------------------------------------
+Plus-minus: ±
+Multiplication: ×
+Division: ÷
+Not equal: ≠
+Less/greater or equal: ≤ ≥
+Approximately equal: ≈
+Equivalent: ≡
+Proportional: ∝
+Infinity: ∞
+
+3. Greek Letters (Mathematical)
+-------------------------------
+Lowercase: α β γ δ ε ζ η θ ι κ λ μ ν ξ ο π ρ σ τ υ φ χ ψ ω
+Uppercase: Α Β Γ Δ Ε Ζ Η Θ Ι Κ Λ Μ Ν Ξ Ο Π Ρ Σ Τ Υ Φ Χ Ψ Ω
+
+Common usage:
+- α (alpha): angles, coefficients
+- β (beta): angles, coefficients
+- γ (gamma): Euler's constant
+- δ (delta): change, difference
+- ε (epsilon): small quantity
+- π (pi): 3.14159...
+- σ (sigma): standard deviation
+- Σ (Sigma): summation
+- Δ (Delta): change, difference
+- Π (Pi): product
+
+4. Calculus and Analysis Symbols
+--------------------------------
+Integral: ∫ f(x) dx
+Double integral: ∬
+Triple integral: ∭
+Contour integral: ∮
+Summation: ∑ aᵢ
+Product: ∏ bᵢ
+Partial derivative: ∂f/∂x
+Nabla/gradient: ∇f
+Square root: √x, √2, √π
+Nth root: ∛x, ∜x
+Infinity: ∞
+Limit: lim (x→∞)
+
+5. Logic Symbols
+----------------
+Universal quantifier: ∀x
+Existential quantifier: ∃x
+Logical AND: ∧
+Logical OR: ∨
+Logical NOT: ¬
+Implies: ⇒
+If and only if: ⇔
+Therefore: ∴
+Because: ∵
+True: ⊤
+False: ⊥
+
+6. Set Theory Symbols
+---------------------
+Element of: x ∈ S
+Not element of: x ∉ S
+Subset: A ⊂ B
+Proper subset: A ⊊ B
+Superset: B ⊃ A
+Subset or equal: A ⊆ B
+Superset or equal: B ⊇ A
+Union: A ∪ B
+Intersection: A ∩ B
+Empty set: ∅
+Set difference: A \ B
+Complement: Aᶜ
+Power set: P(A)
+Cardinality: |A|
+
+7. Complex Mathematical Expressions
+-----------------------------------
+Quadratic formula: x = (-b ± √(b² - 4ac)) / 2a
+Euler's identity: e^(iπ) + 1 = 0
+Pythagorean theorem: a² + b² = c²
+Area of circle: A = πr²
+Maxwell's equations:
+  ∇ · E = ρ/ε₀
+  ∇ · B = 0
+  ∇ × E = -∂B/∂t
+  ∇ × B = μ₀J + μ₀ε₀∂E/∂t
+
+8. Real Number Sets
+-------------------
+Natural numbers: ℕ = {0, 1, 2, 3, ...}
+Integers: ℤ = {..., -2, -1, 0, 1, 2, ...}
+Rational numbers: ℚ
+Real numbers: ℝ
+Complex numbers: ℂ
+Prime numbers: ℙ
+
+
+End of Test Document
