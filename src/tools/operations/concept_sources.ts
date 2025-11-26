@@ -4,19 +4,27 @@ import { InputValidator } from "../../domain/services/validation/index.js";
 import { isErr } from "../../domain/functional/index.js";
 
 export interface ConceptSourcesParams extends ToolParams {
-  concept: string;
+  concept: string | string[];
   include_metadata?: boolean;
 }
 
 /**
  * MCP tool for concept source attribution.
  * 
- * This tool finds all documents (sources) where a specific concept appears.
- * Use it to understand where a concept is discussed across your library
+ * This tool finds all documents (sources) where one or more concepts appear.
+ * Use it to understand where concepts are discussed across your library
  * and to get source attribution for research or citation purposes.
  * 
- * Example: "test driven development" might appear in 3 books, so this tool
- * returns all 3 sources with their metadata.
+ * **Single concept example:**
+ * Input: "test driven development"
+ * Returns: All sources containing that concept
+ * 
+ * **Multiple concepts example:**
+ * Input: ["test driven development", "dependency injection"]
+ * Returns: Union of all sources containing ANY of the concepts, with
+ * `concept_indices` showing which input concepts each source matches.
+ * 
+ * Results are sorted by number of matching concepts (most matches first).
  * 
  * Business logic is in ConceptSourcesService for testability and reusability.
  */
@@ -37,20 +45,26 @@ USE THIS TOOL WHEN:
 - Finding source attribution for research or citation purposes
 - Understanding concept coverage across your document library
 - Answering questions like "Which books mention X?" or "Where is Y discussed?"
+- Finding documents that cover MULTIPLE concepts (pass an array)
 
 DO NOT USE for:
 - Finding specific text passages about a concept (use concept_search instead)
 - General keyword search (use broad_chunks_search instead)
 - Finding documents by title (use catalog_search instead)
 
-RETURNS: List of source documents with titles, summaries (optional), and concept metadata including related concepts and document categories. Shows the total count of sources where the concept appears.`;
+RETURNS: List of source documents with titles, summaries (optional), and concept metadata including related concepts and document categories. Shows the total count of sources where the concept appears.
+
+When multiple concepts are provided, returns the union of all sources. Each source includes a \`concept_indices\` array indicating which input concepts (by index) that source matches. Sources matching more concepts are sorted first.`;
 
   inputSchema = {
     type: "object" as const,
     properties: {
       concept: {
-        type: "string",
-        description: "The concept to find sources for (e.g., 'test driven development', 'machine learning', 'dependency injection')",
+        oneOf: [
+          { type: "string" },
+          { type: "array", items: { type: "string" } }
+        ],
+        description: "The concept(s) to find sources for. Can be a single concept string or an array of concepts. When multiple concepts are provided, returns the union of all sources.",
       },
       include_metadata: {
         type: "boolean",
@@ -62,21 +76,21 @@ RETURNS: List of source documents with titles, summaries (optional), and concept
   };
 
   async execute(params: ConceptSourcesParams) {
-    // Validate input
-    try {
-      this.validator.validateConceptSearch(params);
-    } catch (error: any) {
-      console.error(`❌ Validation failed: ${error.message}`);
+    // Normalize concept to array for logging
+    const concepts = Array.isArray(params.concept) ? params.concept : [params.concept];
+    
+    // Basic validation - at least one concept required
+    if (concepts.length === 0 || concepts.every(c => !c || c.trim() === '')) {
+      console.error(`❌ Validation failed: No concepts provided`);
       return {
         isError: true,
         content: [{
           type: "text" as const,
           text: JSON.stringify({
             error: {
-              code: error.code || 'VALIDATION_ERROR',
-              message: error.message,
-              field: error.field,
-              context: error.context
+              code: 'VALIDATION_ERROR',
+              message: 'At least one concept is required',
+              field: 'concept'
             },
             timestamp: new Date().toISOString()
           })
@@ -84,7 +98,7 @@ RETURNS: List of source documents with titles, summaries (optional), and concept
       };
     }
     
-    console.error(`🔍 Finding sources for concept: "${params.concept}"`);
+    console.error(`🔍 Finding sources for concept(s): "${concepts.join('", "')}"`);
     
     // Delegate to service for business logic
     const result = await this.conceptSourcesService.getConceptSources({
@@ -98,7 +112,7 @@ RETURNS: List of source documents with titles, summaries (optional), and concept
       const errorMessage = 
         error.type === 'validation' ? error.message :
         error.type === 'database' ? error.message :
-        error.type === 'concept_not_found' ? `Concept not found: "${error.concept}". Try a different concept name or check spelling.` :
+        error.type === 'concept_not_found' ? `No concepts found: "${error.concept}". Try different concept names or check spelling.` :
         error.type === 'unknown' ? error.message :
         'An unknown error occurred';
       
@@ -121,7 +135,7 @@ RETURNS: List of source documents with titles, summaries (optional), and concept
     
     // @ts-expect-error - Type narrowing limitation
     const sourcesResult = result.value;
-    console.error(`✅ Found ${sourcesResult.sourceCount} source(s) for concept "${params.concept}"`);
+    console.error(`✅ Found ${sourcesResult.sourceCount} unique source(s) for ${sourcesResult.foundConcepts.length} concept(s)`);
     
     // Format as MCP response
     return this.formatMCPResponse(sourcesResult);
@@ -146,6 +160,11 @@ RETURNS: List of source documents with titles, summaries (optional), and concept
         formatted.year = source.year;
       }
       
+      // Show concept indices for attribution (references concepts_searched array)
+      if (source.conceptIndices?.length > 0) {
+        formatted.concept_indices = source.conceptIndices;
+      }
+      
       formatted.source_path = source.source;
       
       if (source.summary) {
@@ -165,23 +184,15 @@ RETURNS: List of source documents with titles, summaries (optional), and concept
     
     // Build response object
     const response: any = {
-      concept: result.concept,
+      concepts_searched: result.concepts,
+      concepts_found: result.foundConcepts,
       source_count: result.sourceCount,
       sources: formattedSources
     };
     
-    // Add concept metadata if available
-    if (result.conceptMetadata) {
-      response.concept_metadata = {
-        category: result.conceptMetadata.category,
-        type: result.conceptMetadata.conceptType,
-        weight: result.conceptMetadata.weight.toFixed(3),
-        chunk_count: result.conceptMetadata.chunkCount
-      };
-      
-      if (result.conceptMetadata.relatedConcepts?.length > 0) {
-        response.related_concepts = result.conceptMetadata.relatedConcepts;
-      }
+    // Include not found concepts if any
+    if (result.notFoundConcepts?.length > 0) {
+      response.concepts_not_found = result.notFoundConcepts;
     }
     
     return {
