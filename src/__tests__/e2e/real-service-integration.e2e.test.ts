@@ -197,6 +197,7 @@ describe('E2E: Real Service Resilience Integration', () => {
       const searchService = new ConceptualHybridSearchService(
         embeddingService,
         mockQueryExpander as any,
+        undefined, // no cache
         resilientExecutor
       );
       

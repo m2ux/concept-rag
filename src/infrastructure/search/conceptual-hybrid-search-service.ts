@@ -168,21 +168,6 @@ export class ConceptualHybridSearchService implements HybridSearchService {
   
   // Helper methods
   
-  private parseConceptsField(field: any): string[] | undefined {
-    if (Array.isArray(field)) {
-      return field;
-    }
-    if (typeof field === 'string') {
-      try {
-        const parsed = JSON.parse(field);
-        return Array.isArray(parsed) ? parsed : undefined;
-      } catch (e) {
-        return undefined;
-      }
-    }
-    return undefined;
-  }
-  
   private printQueryExpansion(expanded: ExpandedQuery): void {
     console.error('\n🔍 Query Expansion:');
     console.error('  Original:', expanded.original_terms.join(', '));
