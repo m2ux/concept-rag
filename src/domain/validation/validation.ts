@@ -280,7 +280,7 @@ export class CommonValidations {
    * Custom validation with predicate
    */
   static custom<T>(
-    fieldName: string,
+    _fieldName: string,
     predicate: (value: T) => boolean,
     errorMessage: string
   ): ValidationRule<T> {

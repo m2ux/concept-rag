@@ -4,7 +4,7 @@ import { ConceptRepository } from '../../../domain/interfaces/repositories/conce
 import { EmbeddingService } from '../../../domain/interfaces/services/embedding-service.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { Chunk, SearchQuery, SearchResult } from '../../../domain/models/index.js';
-import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } from '../../../domain/exceptions.js';
+import { ConceptNotFoundError, InvalidEmbeddingsError } from '../../../domain/exceptions.js';
 import { DatabaseError } from '../../../domain/exceptions/index.js';
 import { parseJsonField } from '../utils/field-parsers.js';
 import { validateChunkRow, detectVectorField } from '../utils/schema-validators.js';

@@ -42,7 +42,7 @@ export class ConceptExtractor {
             
             if (response.ok) {
                 const data = await response.json();
-                const { limit_remaining, usage_daily } = data.data;
+                const { limit_remaining } = data.data;
                 
                 // Only show warning if credits are low
                 if (limit_remaining !== null && limit_remaining < 1) {

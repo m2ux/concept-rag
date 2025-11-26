@@ -1,13 +1,13 @@
 import * as lancedb from "@lancedb/lancedb";
 import { ConceptRepository } from '../../../domain/interfaces/repositories/concept-repository.js';
 import { Concept } from '../../../domain/models/index.js';
-import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } from '../../../domain/exceptions.js';
-import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
+import { ConceptNotFoundError, InvalidEmbeddingsError } from '../../../domain/exceptions.js';
+import { DatabaseError } from '../../../domain/exceptions/index.js';
 import { parseJsonField, escapeSqlString } from '../utils/field-parsers.js';
 import { validateConceptRow, detectVectorField } from '../utils/schema-validators.js';
 // @ts-expect-error - Type narrowing limitation
 import type { Option } from "../../../../__tests__/test-helpers/../../domain/functional/index.js";
-import { Some, None, fromNullable } from '../../../domain/functional/option.js';
+import { Some, None } from '../../../domain/functional/option.js';
 
 /**
  * LanceDB implementation of ConceptRepository

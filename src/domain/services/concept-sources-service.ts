@@ -13,7 +13,6 @@
 
 import { ConceptRepository } from '../interfaces/repositories/concept-repository.js';
 import { CatalogRepository } from '../interfaces/repositories/catalog-repository.js';
-import { SearchResult } from '../models/index.js';
 import { Result, Ok, Err } from '../functional/result.js';
 import { isSome } from '../functional/option.js';
 import { InputValidator } from './validation/InputValidator.js';

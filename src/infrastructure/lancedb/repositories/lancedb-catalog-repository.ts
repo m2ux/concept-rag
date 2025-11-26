@@ -3,10 +3,10 @@ import { CatalogRepository } from '../../../domain/interfaces/repositories/catal
 import { SearchQuery, SearchResult } from '../../../domain/models/index.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
-import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
+import { DatabaseError } from '../../../domain/exceptions/index.js';
 // @ts-expect-error - Type narrowing limitation
 import type { Option } from "../../../../__tests__/test-helpers/../../domain/functional/index.js";
-import { fromNullable, Some, None, isSome } from '../../../domain/functional/option.js';
+import { Some, None } from '../../../domain/functional/option.js';
 import { hashToId } from '../../utils/hash.js';
 
 /**

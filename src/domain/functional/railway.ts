@@ -7,7 +7,7 @@
  * success track until an error occurs, then switch to the failure track.
  */
 
-import { Result, Ok, Err, isOk, flatMap, map } from './result.js';
+import { Result, Ok, Err, isOk, flatMap } from './result.js';
 
 /**
  * Compose two Result-returning functions (railway composition)
@@ -175,7 +175,7 @@ export function tee<T, E>(
  * Returns a function that takes a value and returns a Result
  */
 export function teeErr<T, E>(
-  fn: (error: E) => void
+  _fn: (error: E) => void
 ): (value: T) => Result<T, E> {
   return (value: T) => {
     // This should never be called in a successful pipeline

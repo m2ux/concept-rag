@@ -22,7 +22,7 @@ export class DocumentConceptsExtractTool extends BaseTool<DocumentConceptsExtrac
   
   constructor(
     private catalogRepo: CatalogRepository,
-    private chunkRepo?: ChunkRepository,
+    private _chunkRepo?: ChunkRepository,
     private conceptRepo?: ConceptRepository,
     private conceptIdCache?: ConceptIdCache,
     private categoryIdCache?: CategoryIdCache

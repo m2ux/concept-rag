@@ -22,7 +22,6 @@
  * ```
  */
 
-import type { Concept } from '../../domain/models/concept.js';
 import type { IConceptIdCache, ConceptRepositoryForCache } from '../../domain/interfaces/caches/concept-id-cache.js';
 
 /**

@@ -45,6 +45,9 @@ export interface BulkheadMetrics {
   
   /** Total number of operations that failed */
   totalFailures: number;
+  
+  /** Current utilization ratio (active / maxConcurrent), 0-1 */
+  utilization: number;
 }
 
 /**
@@ -218,6 +221,9 @@ export class Bulkhead {
       totalExecuted: this.totalExecuted,
       totalSuccesses: this.totalSuccesses,
       totalFailures: this.totalFailures,
+      utilization: this.config.maxConcurrent > 0 
+        ? this.activeRequests / this.config.maxConcurrent 
+        : 0,
     };
   }
   
