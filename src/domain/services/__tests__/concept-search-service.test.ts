@@ -110,7 +110,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/di.pdf',
           hash: 'hash1',
           concepts: ['dependency injection'],
-          conceptDensity: 0.5
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -143,7 +142,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/di.pdf',
           hash: 'hash1',
           concepts: ['dependency injection'],
-          conceptDensity: 0.5
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -172,7 +170,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/di.pdf',
           hash: 'hash1',
           concepts: ['dependency injection'],
-          conceptDensity: 0.5
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -323,7 +320,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/typescript-guide.pdf',
           hash: 'hash1',
           concepts: ['architecture'],
-          conceptDensity: 0.5
         },
         {
           id: '2',
@@ -331,7 +327,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/python-guide.pdf',
           hash: 'hash2',
           concepts: ['architecture'],
-          conceptDensity: 0.4
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -361,7 +356,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/TypeScript-Guide.pdf',
           hash: 'hash1',
           concepts: ['design patterns'],
-          conceptDensity: 0.5
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -387,7 +381,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/doc1.pdf',
           hash: 'hash1',
           concepts: ['testing'],
-          conceptDensity: 0.5
         },
         {
           id: '2',
@@ -395,7 +388,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/doc2.pdf',
           hash: 'hash2',
           concepts: ['testing'],
-          conceptDensity: 0.4
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -420,7 +412,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/typescript.pdf',
           hash: 'hash1',
           concepts: ['architecture'],
-          conceptDensity: 0.5
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -444,27 +435,24 @@ describe('ConceptSearchService', () => {
       const mockChunks: Chunk[] = [
         {
           id: '1',
-          text: 'Low density',
+          text: 'Few concepts',
           source: '/docs/doc1.pdf',
           hash: 'hash1',
           concepts: ['patterns'],
-          conceptDensity: 0.3
         },
         {
           id: '2',
-          text: 'High density',
+          text: 'Many concepts',
           source: '/docs/doc2.pdf',
           hash: 'hash2',
-          concepts: ['patterns'],
-          conceptDensity: 0.8
+          concepts: ['patterns', 'design', 'architecture'],
         },
         {
           id: '3',
-          text: 'Medium density',
+          text: 'Some concepts',
           source: '/docs/doc3.pdf',
           hash: 'hash3',
-          concepts: ['patterns'],
-          conceptDensity: 0.5
+          concepts: ['patterns', 'design'],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -476,11 +464,10 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      // VERIFY
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        expect(result.value.chunks[1].conceptDensity).toBe(0.5);
-        expect(result.value.chunks[2].conceptDensity).toBe(0.3);
+        // Results should be sorted by concept count (most concepts first)
+        expect(result.value.chunks[0].concepts?.length).toBeGreaterThanOrEqual(result.value.chunks[1].concepts?.length || 0);
       }
     });
 
@@ -494,7 +481,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/doc1.pdf',
           hash: 'hash1',
           concepts: ['testing'],
-          conceptDensity: 0.3
         },
         {
           id: '2',
@@ -502,7 +488,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/doc2.pdf',
           hash: 'hash2',
           concepts: ['testing'],
-          conceptDensity: 0.8
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -532,7 +517,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/z.pdf',
           hash: 'hash1',
           concepts: ['architecture'],
-          conceptDensity: 0.5
         },
         {
           id: '2',
@@ -540,7 +524,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/a.pdf',
           hash: 'hash2',
           concepts: ['architecture'],
-          conceptDensity: 0.8
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -570,7 +553,6 @@ describe('ConceptSearchService', () => {
           source: '/docs/doc1.pdf',
           hash: 'hash1',
           concepts: ['patterns'],
-          conceptDensity: 0.5
         },
         {
           id: '2',
@@ -608,7 +590,6 @@ describe('ConceptSearchService', () => {
         source: `/docs/doc${i}.pdf`,
         hash: `hash${i}`,
         concepts: ['testing'],
-        conceptDensity: 0.5
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
@@ -631,7 +612,6 @@ describe('ConceptSearchService', () => {
         source: i < 15 ? '/docs/typescript.pdf' : '/docs/python.pdf',
         hash: `hash${i}`,
         concepts: ['architecture'],
-        conceptDensity: 0.5
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
@@ -647,7 +627,7 @@ describe('ConceptSearchService', () => {
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
         expect(result.value.chunks.length).toBe(10);
-        expect(result.value.chunks.every(c => c.source.includes('typescript'))).toBe(true);
+        expect(result.value.chunks.every(c => c.source?.includes('typescript'))).toBe(true);
       }
     });
 
@@ -661,7 +641,6 @@ describe('ConceptSearchService', () => {
         source: `/docs/doc${i}.pdf`,
         hash: `hash${i}`,
         concepts: ['patterns'],
-        conceptDensity: 0.5
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
@@ -691,7 +670,6 @@ describe('ConceptSearchService', () => {
         source: '/docs/doc.pdf',
         hash: 'hash1',
         concepts: ['testing', 'testing'], // 2 occurrences
-        conceptDensity: 0.7
       };
       const concept = 'testing';
 
@@ -711,7 +689,6 @@ describe('ConceptSearchService', () => {
         source: '/docs/doc.pdf',
         hash: 'hash1',
         concepts: Array(10).fill('testing'), // 10 occurrences
-        conceptDensity: 0.5
       };
       const concept = 'testing';
 
@@ -731,7 +708,6 @@ describe('ConceptSearchService', () => {
         source: '/docs/doc.pdf',
         hash: 'hash1',
         concepts: [],
-        conceptDensity: 0.8
       };
       const concept = 'testing';
 
@@ -771,7 +747,6 @@ describe('ConceptSearchService', () => {
         source: '/docs/doc.pdf',
         hash: 'hash1',
         concepts: ['testing'],
-        conceptDensity: 1.0
       };
       const concept = 'testing';
 

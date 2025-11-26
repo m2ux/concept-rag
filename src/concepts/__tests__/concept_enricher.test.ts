@@ -69,13 +69,10 @@ describe('ConceptEnricher', () => {
       const concepts: ConceptRecord[] = [
         {
           concept: 'architecture',
-          concept_type: 'thematic',
-          category: 'software engineering',
-          sources: ['/docs/arch.pdf'],
+          catalog_ids: [12345678],
           related_concepts: [],
           embeddings: [0.1, 0.2, 0.3],
-          weight: 10,
-          enrichment_source: 'corpus'
+          weight: 10
         }
       ];
       
@@ -99,7 +96,6 @@ describe('ConceptEnricher', () => {
       expect(enriched[0].synonyms).toEqual(['architecture', 'design', 'structure', 'blueprint', 'plan']);
       expect(enriched[0].broader_terms).toEqual(['plan', 'planning']);
       expect(enriched[0].narrower_terms).toEqual(['software architecture', 'system architecture']);
-      expect(enriched[0].enrichment_source).toBe('hybrid'); // Changed from 'corpus' to 'hybrid'
     });
 
     it('should limit synonyms to top 5', async () => {
@@ -107,13 +103,10 @@ describe('ConceptEnricher', () => {
       const concepts: ConceptRecord[] = [
         {
           concept: 'testing',
-          concept_type: 'terminology',
-          category: 'software engineering',
-          sources: [],
+          catalog_ids: [],
           related_concepts: [],
           embeddings: [],
-          weight: 5,
-          enrichment_source: 'corpus'
+          weight: 5
         }
       ];
       
@@ -143,13 +136,10 @@ describe('ConceptEnricher', () => {
       const concepts: ConceptRecord[] = [
         {
           concept: 'pattern',
-          concept_type: 'thematic',
-          category: 'design',
-          sources: [],
+          catalog_ids: [],
           related_concepts: [],
           embeddings: [],
-          weight: 8,
-          enrichment_source: 'corpus'
+          weight: 8
         }
       ];
       
@@ -179,13 +169,10 @@ describe('ConceptEnricher', () => {
       const concepts: ConceptRecord[] = [
         {
           concept: 'design',
-          concept_type: 'thematic',
-          category: 'engineering',
-          sources: [],
+          catalog_ids: [],
           related_concepts: [],
           embeddings: [],
-          weight: 12,
-          enrichment_source: 'corpus'
+          weight: 12
         }
       ];
       
@@ -210,88 +197,15 @@ describe('ConceptEnricher', () => {
       expect(enriched[0].narrower_terms).toEqual(['hypo1', 'hypo2', 'hypo3', 'hypo4', 'hypo5']);
     });
 
-    it('should update enrichment_source from corpus to hybrid', async () => {
-      // SETUP
-      const concepts: ConceptRecord[] = [
-        {
-          concept: 'architecture',
-          concept_type: 'thematic',
-          category: 'engineering',
-          sources: [],
-          related_concepts: [],
-          embeddings: [],
-          weight: 10,
-          enrichment_source: 'corpus'
-        }
-      ];
-      
-      const mockSynsets: WordNetSynset[] = [
-        {
-          word: 'architecture',
-          synset_name: 'architecture.n.01',
-          synonyms: ['syn1'],
-          hypernyms: [],
-          hyponyms: [],
-          meronyms: [],
-          definition: 'Definition'
-        }
-      ];
-      mockWordNet.setSynsets('architecture', mockSynsets);
-
-      // EXERCISE
-      const enriched = await enricher.enrichConcepts(concepts);
-
-      // VERIFY
-      expect(enriched[0].enrichment_source).toBe('hybrid');
-    });
-
-    it('should update enrichment_source from wordnet to wordnet (no change)', async () => {
-      // SETUP
-      const concepts: ConceptRecord[] = [
-        {
-          concept: 'architecture',
-          concept_type: 'thematic',
-          category: 'engineering',
-          sources: [],
-          related_concepts: [],
-          embeddings: [],
-          weight: 10,
-          enrichment_source: 'wordnet'
-        }
-      ];
-      
-      const mockSynsets: WordNetSynset[] = [
-        {
-          word: 'architecture',
-          synset_name: 'architecture.n.01',
-          synonyms: ['syn1'],
-          hypernyms: [],
-          hyponyms: [],
-          meronyms: [],
-          definition: 'Definition'
-        }
-      ];
-      mockWordNet.setSynsets('architecture', mockSynsets);
-
-      // EXERCISE
-      const enriched = await enricher.enrichConcepts(concepts);
-
-      // VERIFY
-      expect(enriched[0].enrichment_source).toBe('wordnet');
-    });
-
     it('should handle concepts not found in WordNet', async () => {
       // SETUP
       const concepts: ConceptRecord[] = [
         {
           concept: 'nonexistent concept',
-          concept_type: 'terminology',
-          category: 'unknown',
-          sources: [],
+          catalog_ids: [],
           related_concepts: [],
           embeddings: [],
-          weight: 1,
-          enrichment_source: 'corpus'
+          weight: 1
         }
       ];
       // No synsets set for this concept
@@ -303,7 +217,6 @@ describe('ConceptEnricher', () => {
       expect(enriched[0].synonyms).toBeUndefined();
       expect(enriched[0].broader_terms).toBeUndefined();
       expect(enriched[0].narrower_terms).toBeUndefined();
-      expect(enriched[0].enrichment_source).toBe('corpus'); // Unchanged
     });
 
     it('should handle errors gracefully and continue processing', async () => {
@@ -311,23 +224,17 @@ describe('ConceptEnricher', () => {
       const concepts: ConceptRecord[] = [
         {
           concept: 'error concept',
-          concept_type: 'thematic',
-          category: 'test',
-          sources: [],
+          catalog_ids: [],
           related_concepts: [],
           embeddings: [],
-          weight: 1,
-          enrichment_source: 'corpus'
+          weight: 1
         },
         {
           concept: 'valid concept',
-          concept_type: 'thematic',
-          category: 'test',
-          sources: [],
+          catalog_ids: [],
           related_concepts: [],
           embeddings: [],
-          weight: 1,
-          enrichment_source: 'corpus'
+          weight: 1
         }
       ];
       
@@ -370,23 +277,17 @@ describe('ConceptEnricher', () => {
       const concepts: ConceptRecord[] = [
         {
           concept: 'architecture',
-          concept_type: 'thematic',
-          category: 'engineering',
-          sources: [],
+          catalog_ids: [],
           related_concepts: [],
           embeddings: [],
-          weight: 10,
-          enrichment_source: 'corpus'
+          weight: 10
         },
         {
           concept: 'design',
-          concept_type: 'thematic',
-          category: 'engineering',
-          sources: [],
+          catalog_ids: [],
           related_concepts: [],
           embeddings: [],
-          weight: 8,
-          enrichment_source: 'corpus'
+          weight: 8
         }
       ];
       
@@ -424,13 +325,10 @@ describe('ConceptEnricher', () => {
       const concepts: ConceptRecord[] = [
         {
           concept: 'test',
-          concept_type: 'terminology',
-          category: 'test',
-          sources: [],
+          catalog_ids: [],
           related_concepts: [],
           embeddings: [],
-          weight: 1,
-          enrichment_source: 'corpus'
+          weight: 1
         }
       ];
       mockWordNet.setSynsets('test', []);
@@ -459,13 +357,10 @@ describe('ConceptEnricher', () => {
       // SETUP
       const concept: ConceptRecord = {
         concept: 'architecture',
-        concept_type: 'thematic',
-        category: 'engineering',
-        sources: [],
+        catalog_ids: [],
         related_concepts: [],
         embeddings: [],
-        weight: 10,
-        enrichment_source: 'corpus'
+        weight: 10
       };
       
       const mockSynsets: WordNetSynset[] = [
@@ -488,20 +383,16 @@ describe('ConceptEnricher', () => {
       expect(enriched.synonyms).toEqual(['syn1', 'syn2']);
       expect(enriched.broader_terms).toEqual(['hyper1']);
       expect(enriched.narrower_terms).toEqual(['hypo1', 'hypo2']);
-      expect(enriched.enrichment_source).toBe('hybrid');
     });
 
     it('should handle concept not found in WordNet', async () => {
       // SETUP
       const concept: ConceptRecord = {
         concept: 'nonexistent',
-        concept_type: 'terminology',
-        category: 'unknown',
-        sources: [],
+        catalog_ids: [],
         related_concepts: [],
         embeddings: [],
-        weight: 1,
-        enrichment_source: 'corpus'
+        weight: 1
       };
 
       // EXERCISE
@@ -509,20 +400,16 @@ describe('ConceptEnricher', () => {
 
       // VERIFY
       expect(enriched.synonyms).toBeUndefined();
-      expect(enriched.enrichment_source).toBe('corpus');
     });
 
     it('should handle errors gracefully', async () => {
       // SETUP
       const concept: ConceptRecord = {
         concept: 'error concept',
-        concept_type: 'thematic',
-        category: 'test',
-        sources: [],
+        catalog_ids: [],
         related_concepts: [],
         embeddings: [],
-        weight: 1,
-        enrichment_source: 'corpus'
+        weight: 1
       };
       
       // Make getSynsets throw
@@ -536,20 +423,16 @@ describe('ConceptEnricher', () => {
       // VERIFY
       // Should return concept unchanged (error handled)
       expect(enriched.synonyms).toBeUndefined();
-      expect(enriched.enrichment_source).toBe('corpus');
     });
 
     it('should limit synonyms to top 5', async () => {
       // SETUP
       const concept: ConceptRecord = {
         concept: 'test',
-        concept_type: 'terminology',
-        category: 'test',
-        sources: [],
+        catalog_ids: [],
         related_concepts: [],
         embeddings: [],
-        weight: 1,
-        enrichment_source: 'corpus'
+        weight: 1
       };
       
       const mockSynsets: WordNetSynset[] = [
@@ -570,39 +453,6 @@ describe('ConceptEnricher', () => {
 
       // VERIFY
       expect(enriched.synonyms?.length).toBe(5);
-    });
-
-    it('should update enrichment_source correctly', async () => {
-      // SETUP
-      const concept: ConceptRecord = {
-        concept: 'test',
-        concept_type: 'terminology',
-        category: 'test',
-        sources: [],
-        related_concepts: [],
-        embeddings: [],
-        weight: 1,
-        enrichment_source: 'wordnet'
-      };
-      
-      const mockSynsets: WordNetSynset[] = [
-        {
-          word: 'test',
-          synset_name: 'test.n.01',
-          synonyms: ['syn1'],
-          hypernyms: [],
-          hyponyms: [],
-          meronyms: [],
-          definition: 'Test'
-        }
-      ];
-      mockWordNet.setSynsets('test', mockSynsets);
-
-      // EXERCISE
-      const enriched = await enricher.enrichSingleConcept(concept);
-
-      // VERIFY
-      expect(enriched.enrichment_source).toBe('wordnet'); // wordnet -> wordnet (not hybrid)
     });
   });
 });

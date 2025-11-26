@@ -27,13 +27,6 @@ export class ConceptChunkMatcher {
             }
         }
         
-        // Check related concepts (lighter matching)
-        for (const related of documentConcepts.related_concepts || []) {
-            if (this.conceptMatchesText(related, chunkLower, 0.65)) {
-                matchedConcepts.add(related);
-            }
-        }
-        
         // Add relevant categories if concepts match
         if (matchedConcepts.size > 0) {
             documentConcepts.categories.forEach(cat => matchedCategories.add(cat));
@@ -67,9 +60,7 @@ export class ConceptChunkMatcher {
         return {
             text: chunk.pageContent,
             source: chunk.metadata.source || '',
-            concepts: matched.concepts,
-            concept_categories: matched.categories,
-            concept_density: matched.density
+            concepts: matched.concepts
         };
     }
     
@@ -190,12 +181,10 @@ export class ConceptChunkMatcher {
         totalChunks: number;
         chunksWithConcepts: number;
         avgConceptsPerChunk: number;
-        avgDensity: number;
         topConcepts: Array<{ concept: string; count: number }>;
     } {
         const conceptCounts = new Map<string, number>();
         let totalConcepts = 0;
-        let totalDensity = 0;
         let chunksWithConcepts = 0;
         
         for (const chunk of chunks) {
@@ -204,7 +193,6 @@ export class ConceptChunkMatcher {
             }
             
             totalConcepts += chunk.concepts.length;
-            totalDensity += chunk.concept_density;
             
             for (const concept of chunk.concepts) {
                 conceptCounts.set(concept, (conceptCounts.get(concept) || 0) + 1);
@@ -221,7 +209,6 @@ export class ConceptChunkMatcher {
             totalChunks: chunks.length,
             chunksWithConcepts,
             avgConceptsPerChunk: chunks.length > 0 ? totalConcepts / chunks.length : 0,
-            avgDensity: chunks.length > 0 ? totalDensity / chunks.length : 0,
             topConcepts
         };
     }

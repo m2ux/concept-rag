@@ -89,8 +89,7 @@ export async function listConceptsInCategory(
         concepts.push({
           id: conceptId,
           name: concept.concept,
-          type: concept.conceptType,
-          documentCount: concept.sources?.length || 0,
+          documentCount: concept.catalogIds?.length || 0,
           weight: concept.weight || 0
         });
       }

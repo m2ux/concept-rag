@@ -28,10 +28,6 @@ export class ConceptEnricher {
                     concept.broader_terms = mainSynset.hypernyms.slice(0, 3);  // Top 3 broader terms
                     concept.narrower_terms = mainSynset.hyponyms.slice(0, 5);  // Top 5 narrower terms
                     
-                    // Update enrichment source
-                    concept.enrichment_source = 
-                        concept.enrichment_source === 'corpus' ? 'hybrid' : 'wordnet';
-                    
                     enriched++;
                 } else {
                     notFound++;
@@ -62,8 +58,6 @@ export class ConceptEnricher {
                 concept.synonyms = mainSynset.synonyms.slice(0, 5);
                 concept.broader_terms = mainSynset.hypernyms.slice(0, 3);
                 concept.narrower_terms = mainSynset.hyponyms.slice(0, 5);
-                concept.enrichment_source = 
-                    concept.enrichment_source === 'corpus' ? 'hybrid' : 'wordnet';
             }
         } catch (e: any) {
             console.debug(`Error enriching concept "${concept.concept}":`, e.message);

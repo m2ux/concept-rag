@@ -1,29 +1,32 @@
 // Shared types for conceptual search system
 
-// Type of concept for differentiated search behavior
+/**
+ * @deprecated ConceptType was never meaningfully implemented.
+ * Kept for backward compatibility.
+ */
 export type ConceptType = 'thematic' | 'terminology';
 
-// Concept extracted from corpus
+/**
+ * Concept record for building the concept index.
+ */
 export interface ConceptRecord {
-    concept: string;                    // "concurrent programming"
-    concept_type: ConceptType;          // thematic (abstract) or terminology (specific)
-    category: string;                   // "Software Engineering"
-    sources: string[];                  // Documents containing this
-    related_concepts: string[];         // Related terms from corpus
-    synonyms?: string[];                // From WordNet
-    broader_terms?: string[];           // From WordNet (hypernyms)
-    narrower_terms?: string[];          // From WordNet (hyponyms)
-    embeddings: number[];              // Vector representation
-    weight: number;                     // Importance (document count)
-    chunk_count?: number;               // Number of chunks containing this concept
-    enrichment_source: 'corpus' | 'wordnet' | 'hybrid';
+    concept: string;
+    catalog_ids: number[];
+    related_concept_ids?: number[];
+    related_concepts?: string[];
+    synonyms?: string[];
+    broader_terms?: string[];
+    narrower_terms?: string[];
+    embeddings: number[];
+    weight: number;
 }
 
-// Concept metadata stored in catalog
+/**
+ * Concept metadata returned by LLM extraction.
+ */
 export interface ConceptMetadata {
-    primary_concepts: string[];         // All important concepts, methods, ideas
-    categories: string[];               // 2-3 domains
-    related_concepts: string[];         // 3-5 related topics
+    primary_concepts: string[];
+    categories: string[];
 }
 
 // Search result with concept scoring
@@ -68,14 +71,17 @@ export interface ExpandedQuery {
     weights: Map<string, number>;      // Term importance weights
 }
 
-// Chunk with concept metadata attached
+/**
+ * Chunk with concept metadata attached.
+ */
 export interface ChunkWithConcepts {
     text: string;
     source: string;
-    concepts: string[];                 // Matched concepts for this chunk
-    concept_categories: string[];       // Related categories
-    concept_density: number;            // Conceptual richness score
-    metadata?: any;                     // Original metadata
+    catalog_id?: number;
+    concepts: string[];
+    concept_ids?: number[];
+    category_ids?: number[];
+    metadata?: any;
 }
 
 

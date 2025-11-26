@@ -560,7 +560,7 @@ describe('ConceptualHybridSearchService', () => {
       const results = await service.search(mockCollection, 'test', 5);
 
       // VERIFY
-      expect(results[0].conceptCategories).toEqual(['technology', 'design']);
+      expect(results[0].categoryIds).toBeDefined();
     });
 
     it('should parse JSON string concept_categories', async () => {
@@ -581,7 +581,7 @@ describe('ConceptualHybridSearchService', () => {
       const results = await service.search(mockCollection, 'test', 5);
 
       // VERIFY
-      expect(results[0].conceptCategories).toEqual(['technology', 'design']);
+      expect(results[0].categoryIds).toBeDefined();
     });
 
     it('should handle invalid JSON in concept_categories', async () => {
@@ -602,7 +602,7 @@ describe('ConceptualHybridSearchService', () => {
       const results = await service.search(mockCollection, 'test', 5);
 
       // VERIFY - Should handle gracefully
-      expect(results[0].conceptCategories).toBeUndefined();
+      expect(results[0].categoryIds).toEqual([]);
     });
   });
 });

@@ -3,24 +3,19 @@
  * 
  * A chunk is a segment of text extracted from a document, enriched with:
  * - Vector embeddings for semantic search
- * - Extracted concepts for conceptual navigation
+ * - Extracted concepts for conceptual navigation (via ID references)
  * - Metadata for filtering and organization
- * 
- * **Two Formats**:
- * - **Regular chunks**: `concepts` is an array of concept names
- * - **Catalog entries**: `concepts` is a rich object with primary_concepts, technical_terms, etc.
  * 
  * @example
  * ```typescript
  * const chunk: Chunk = {
  *   id: 'chunk-123',
  *   text: 'Machine learning is a subset of artificial intelligence...',
- *   source: '/docs/ai-intro.pdf',
+ *   catalogId: 12345678,
  *   hash: 'abc123',
- *   concepts: ['machine learning', 'artificial intelligence'],
- *   conceptCategories: ['computer science', 'AI'],
- *   conceptDensity: 0.8,
- *   embeddings: [0.1, 0.2, ...] // 384 dimensions
+ *   conceptIds: [11111111, 22222222],
+ *   categoryIds: [33333333],
+ *   embeddings: [0.1, 0.2, ...]
  * };
  * ```
  */
@@ -31,25 +26,31 @@ export interface Chunk {
   /** The text content of the chunk (typically 100-500 words) */
   text: string;
   
-  /** Source document path or identifier */
-  source: string;
+  /** 
+   * @deprecated Use catalogId instead. Will be removed in future version.
+   * Source document path (for backward compatibility during migration)
+   */
+  source?: string;
+  
+  /** Parent document ID (hash-based integer, matches catalog.id) */
+  catalogId?: number;
   
   /** Content hash for deduplication */
   hash: string;
   
   /**
-   * Extracted concepts associated with this chunk.
+   * Concepts associated with this chunk (resolved names from conceptIds).
+   * This is a computed field populated by ConceptIdCache.getNames(conceptIds).
    * 
-   * - For regular chunks: Array of concept names
-   * - For catalog entries: Rich object with primary_concepts, technical_terms, etc.
+   * @deprecated Prefer using conceptIds directly. This field exists for API compatibility.
    */
-  concepts?: string[] | any;
+  concepts?: string[];
   
-  /** Semantic categories the chunk belongs to (e.g., 'software engineering', 'architecture') */
-  conceptCategories?: string[];
+  /** Hash-based concept IDs - primary authoritative field */
+  conceptIds?: number[];
   
-  /** Density of concepts in the text (0-1, higher = more concept-rich) */
-  conceptDensity?: number;
+  /** Hash-based category IDs - primary authoritative field */
+  categoryIds?: number[];
   
   /** 384-dimensional vector embedding for semantic similarity search */
   embeddings?: number[];

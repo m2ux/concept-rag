@@ -26,7 +26,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['dependency injection'],
         categories: ['software engineering'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -43,7 +42,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['dependency injection', 'design patterns'],
         categories: ['software engineering'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -61,7 +59,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['microservices', 'distributed systems'],
         categories: ['architecture'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -73,21 +70,19 @@ describe('ConceptChunkMatcher', () => {
       expect(result.density).toBe(0);
     });
 
-    it('should match related concepts with lower threshold', () => {
+    it('should return empty for unrelated concepts', () => {
       // SETUP
       const chunkText = 'This discusses architectural patterns';
       const documentConcepts: ConceptMetadata = {
-        primary_concepts: [],
-        categories: ['architecture'],
-        related_concepts: ['design patterns'] // Related concepts use 0.65 threshold
+        primary_concepts: ['microservices'],
+        categories: ['architecture']
       };
 
       // EXERCISE
       const result = matcher.matchConceptsToChunk(chunkText, documentConcepts);
 
       // VERIFY
-      // Should match if similarity >= 0.65
-      expect(result.concepts.length).toBeGreaterThanOrEqual(0);
+      expect(result.concepts.length).toBe(0);
     });
 
     it('should include categories when concepts match', () => {
@@ -96,7 +91,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['dependency injection'],
         categories: ['software engineering', 'design patterns'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -113,7 +107,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['microservices'],
         categories: ['architecture'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -129,7 +122,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['dependency injection', 'design patterns'],
         categories: ['software engineering'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -146,7 +138,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: [],
         categories: ['category'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -163,7 +154,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: undefined as any,
         categories: [],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -179,7 +169,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['dependency injection'],
         categories: ['software engineering'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -195,7 +184,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['dependency injection'],
         categories: ['software engineering'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -217,7 +205,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['dependency injection'],
         categories: ['software engineering'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -227,8 +214,6 @@ describe('ConceptChunkMatcher', () => {
       expect(enriched.text).toBe(chunk.pageContent);
       expect(enriched.source).toBe('/docs/di.pdf');
       expect(enriched.concepts).toBeDefined();
-      expect(enriched.concept_categories).toBeDefined();
-      expect(enriched.concept_density).toBeDefined();
     });
 
     it('should handle chunk without source metadata', () => {
@@ -240,7 +225,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: [],
         categories: [],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -260,7 +244,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['test'],
         categories: [],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -287,7 +270,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['dependency injection', 'design patterns'],
         categories: ['software engineering'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -305,7 +287,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: [],
         categories: [],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -330,7 +311,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['dependency injection'],
         categories: ['category'],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -349,23 +329,17 @@ describe('ConceptChunkMatcher', () => {
         {
           text: 'Chunk 1',
           source: '/test1.pdf',
-          concepts: ['concept1', 'concept2'],
-          concept_categories: ['category1'],
-          concept_density: 0.5
+          concepts: ['concept1', 'concept2']
         },
         {
           text: 'Chunk 2',
           source: '/test2.pdf',
-          concepts: ['concept1'],
-          concept_categories: ['category1'],
-          concept_density: 0.3
+          concepts: ['concept1']
         },
         {
           text: 'Chunk 3',
           source: '/test3.pdf',
-          concepts: [],
-          concept_categories: [],
-          concept_density: 0.0
+          concepts: []
         }
       ];
 
@@ -376,7 +350,6 @@ describe('ConceptChunkMatcher', () => {
       expect(stats.totalChunks).toBe(3);
       expect(stats.chunksWithConcepts).toBe(2);
       expect(stats.avgConceptsPerChunk).toBeCloseTo(1.0, 1); // (2+1+0)/3 = 1.0
-      expect(stats.avgDensity).toBeCloseTo(0.267, 2); // (0.5+0.3+0.0)/3 ≈ 0.267
     });
 
     it('should identify top concepts', () => {
@@ -385,23 +358,17 @@ describe('ConceptChunkMatcher', () => {
         {
           text: 'Chunk 1',
           source: '/test1.pdf',
-          concepts: ['concept1', 'concept2'],
-          concept_categories: [],
-          concept_density: 0.5
+          concepts: ['concept1', 'concept2']
         },
         {
           text: 'Chunk 2',
           source: '/test2.pdf',
-          concepts: ['concept1', 'concept1'], // concept1 appears twice
-          concept_categories: [],
-          concept_density: 0.3
+          concepts: ['concept1', 'concept1'] // concept1 appears twice
         },
         {
           text: 'Chunk 3',
           source: '/test3.pdf',
-          concepts: ['concept2'],
-          concept_categories: [],
-          concept_density: 0.2
+          concepts: ['concept2']
         }
       ];
 
@@ -421,9 +388,7 @@ describe('ConceptChunkMatcher', () => {
       const enrichedChunks = Array.from({ length: 20 }, (_, i) => ({
         text: `Chunk ${i}`,
         source: `/test${i}.pdf`,
-        concepts: [`concept${i}`],
-        concept_categories: [],
-        concept_density: 0.5
+        concepts: [`concept${i}`]
       }));
 
       // EXERCISE
@@ -444,7 +409,6 @@ describe('ConceptChunkMatcher', () => {
       expect(stats.totalChunks).toBe(0);
       expect(stats.chunksWithConcepts).toBe(0);
       expect(stats.avgConceptsPerChunk).toBe(0);
-      expect(stats.avgDensity).toBe(0);
       expect(stats.topConcepts).toEqual([]);
     });
 
@@ -454,16 +418,12 @@ describe('ConceptChunkMatcher', () => {
         {
           text: 'Chunk 1',
           source: '/test1.pdf',
-          concepts: ['a', 'b', 'c'],
-          concept_categories: [],
-          concept_density: 0.5
+          concepts: ['a', 'b', 'c']
         },
         {
           text: 'Chunk 2',
           source: '/test2.pdf',
-          concepts: ['d', 'e'],
-          concept_categories: [],
-          concept_density: 0.3
+          concepts: ['d', 'e']
         }
       ];
 
@@ -474,33 +434,6 @@ describe('ConceptChunkMatcher', () => {
       // (3 + 2) / 2 = 2.5
       expect(stats.avgConceptsPerChunk).toBe(2.5);
     });
-
-    it('should calculate average density correctly', () => {
-      // SETUP
-      const enrichedChunks = [
-        {
-          text: 'Chunk 1',
-          source: '/test1.pdf',
-          concepts: ['concept1'],
-          concept_categories: [],
-          concept_density: 0.8
-        },
-        {
-          text: 'Chunk 2',
-          source: '/test2.pdf',
-          concepts: ['concept2'],
-          concept_categories: [],
-          concept_density: 0.4
-        }
-      ];
-
-      // EXERCISE
-      const stats = matcher.getMatchingStats(enrichedChunks);
-
-      // VERIFY
-      // (0.8 + 0.4) / 2 = 0.6
-      expect(stats.avgDensity).toBeCloseTo(0.6, 10);
-    });
   });
 
   describe('fuzzy matching behavior', () => {
@@ -510,7 +443,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['testing'],
         categories: [],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -527,7 +459,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['C++'],
         categories: [],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -544,7 +475,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['architecture'],
         categories: [],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -563,7 +493,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: [],
         categories: [],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -579,7 +508,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['dependency injection', 'design patterns'],
         categories: [],
-        related_concepts: []
       };
 
       // EXERCISE
@@ -597,7 +525,6 @@ describe('ConceptChunkMatcher', () => {
       const documentConcepts: ConceptMetadata = {
         primary_concepts: ['one concept', 'first concept', 'second concept', 'third concept'],
         categories: [],
-        related_concepts: []
       };
 
       // EXERCISE

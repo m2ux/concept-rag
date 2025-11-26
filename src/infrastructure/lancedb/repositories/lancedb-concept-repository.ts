@@ -176,19 +176,39 @@ export class LanceDBConceptRepository implements ConceptRepository {
     const vectorField = detectVectorField(row);
     const embeddings = vectorField ? row[vectorField] : [];
     
+    // Parse catalog_ids (native array or JSON string)
+    let catalogIds: number[] = [];
+    if (row.catalog_ids) {
+      catalogIds = Array.isArray(row.catalog_ids)
+        ? row.catalog_ids
+        : parseJsonField(row.catalog_ids);
+    }
+    
+    // Parse related_concept_ids (native array or JSON string)
+    let relatedConceptIds: number[] = [];
+    if (row.related_concept_ids) {
+      relatedConceptIds = Array.isArray(row.related_concept_ids)
+        ? row.related_concept_ids
+        : parseJsonField(row.related_concept_ids);
+    }
+    
+    // Parse WordNet fields (native arrays or JSON strings)
+    const parseArrayField = (value: any): string[] => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      return parseJsonField(value);
+    };
+    
     return {
       concept: row.concept || '',
-      conceptType: row.concept_type || 'thematic',
-      category: row.category || '',
-      sources: parseJsonField(row.sources),
-      relatedConcepts: parseJsonField(row.related_concepts),
-      synonyms: parseJsonField(row.synonyms),
-      broaderTerms: parseJsonField(row.broader_terms),
-      narrowerTerms: parseJsonField(row.narrower_terms),
-      embeddings,  // Now uses detected vector field
-      weight: row.weight || 0,
-      chunkCount: row.chunk_count || 0,
-      enrichmentSource: row.enrichment_source || 'corpus'
+      catalogIds,
+      relatedConceptIds,
+      relatedConcepts: parseArrayField(row.related_concepts),
+      synonyms: parseArrayField(row.synonyms),
+      broaderTerms: parseArrayField(row.broader_terms),
+      narrowerTerms: parseArrayField(row.narrower_terms),
+      embeddings,
+      weight: row.weight || 0
     };
   }
 }

@@ -32,7 +32,7 @@ describe('SourceConceptsTool', () => {
     it('should find all sources for a single concept', async () => {
       const testConcept = createTestConcept({
         concept: 'test driven development',
-        sources: ['/books/clean-code.pdf', '/books/tdd-by-example.pdf']
+        catalogIds: [12345678, 23456789]
       });
       conceptRepo.addConcept(testConcept);
       
@@ -60,11 +60,11 @@ describe('SourceConceptsTool', () => {
       // Setup: Two concepts with overlapping sources
       const concept1 = createTestConcept({
         concept: 'tdd',
-        sources: ['/books/book-a.pdf', '/books/book-b.pdf']
+        catalogIds: [12345678, 23456789]
       });
       const concept2 = createTestConcept({
         concept: 'di',
-        sources: ['/books/book-b.pdf', '/books/book-c.pdf']
+        catalogIds: [12345678, 23456789]
       });
       conceptRepo.addConcept(concept1);
       conceptRepo.addConcept(concept2);
@@ -94,11 +94,11 @@ describe('SourceConceptsTool', () => {
     it('should sort by number of matching concepts (most first)', async () => {
       const concept1 = createTestConcept({
         concept: 'concept1',
-        sources: ['/books/matches-both.pdf', '/books/matches-one.pdf']
+        catalogIds: [12345678, 23456789]
       });
       const concept2 = createTestConcept({
         concept: 'concept2',
-        sources: ['/books/matches-both.pdf']
+        catalogIds: [12345678]
       });
       conceptRepo.addConcept(concept1);
       conceptRepo.addConcept(concept2);
@@ -114,7 +114,7 @@ describe('SourceConceptsTool', () => {
     it('should handle partial matches (some concepts not found)', async () => {
       const testConcept = createTestConcept({
         concept: 'exists',
-        sources: ['/books/book.pdf']
+        catalogIds: [12345678]
       });
       conceptRepo.addConcept(testConcept);
       

@@ -24,8 +24,8 @@ export function createTestChunk(overrides?: Partial<Chunk>): Chunk {
     source: '/test/documents/test-document.pdf',
     hash: 'abc123def456',
     concepts: ['innovation', 'creativity', 'software development'],
-    conceptCategories: ['business', 'technology', 'design'],
-    conceptDensity: 0.75,
+    conceptIds: [123456, 234567, 345678],
+    categoryIds: [111111, 222222, 333333],
     ...overrides
   };
 }
@@ -39,17 +39,14 @@ export function createTestChunk(overrides?: Partial<Chunk>): Chunk {
 export function createTestConcept(overrides?: Partial<Concept>): Concept {
   return {
     concept: 'innovation',
-    conceptType: 'thematic',
-    category: 'business',
-    sources: ['/test/documents/test-document.pdf'],
+    catalogIds: [12345678, 87654321],
+    relatedConceptIds: [11111111, 22222222, 33333333],
     relatedConcepts: ['creativity', 'disruption', 'change'],
     synonyms: ['novelty', 'originality'],
     broaderTerms: ['change', 'transformation'],
     narrowerTerms: ['breakthrough', 'invention'],
     embeddings: createTestEmbedding(),
     weight: 1.0,
-    chunkCount: 15,
-    enrichmentSource: 'corpus',
     ...overrides
   };
 }

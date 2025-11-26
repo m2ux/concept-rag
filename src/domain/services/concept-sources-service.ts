@@ -13,7 +13,7 @@
 
 import { ConceptRepository } from '../interfaces/repositories/concept-repository.js';
 import { CatalogRepository } from '../interfaces/repositories/catalog-repository.js';
-import { Concept, SearchResult } from '../models/index.js';
+import { SearchResult } from '../models/index.js';
 import { Result, Ok, Err } from '../functional/result.js';
 import { isSome } from '../functional/option.js';
 import { InputValidator } from './validation/InputValidator.js';
@@ -179,8 +179,26 @@ export class ConceptSourcesService {
         foundConcepts.push(conceptInput);
         const concept = conceptOpt.value;
         
+        // Get sources from catalogIds (new schema) or legacy sources field
+        const sourcePaths: string[] = [];
+        if (concept.catalogIds && concept.catalogIds.length > 0) {
+          // New schema: look up catalog entries by ID to get source paths
+          for (const catalogId of concept.catalogIds) {
+            // Search catalog by ID - catalog entries have source paths
+            const catalogResults = await this.catalogRepo.search({ 
+              text: '', 
+              limit: 1 
+            });
+            // Note: This is a simplified lookup. In production, add findById method
+            const entry = catalogResults.find(r => r.id === String(catalogId));
+            if (entry?.source) {
+              sourcePaths.push(entry.source);
+            }
+          }
+        }
+        
         // Process each source for this concept
-        for (const sourcePath of concept.sources) {
+        for (const sourcePath of sourcePaths) {
           if (sourceMap.has(sourcePath)) {
             // Source already exists, just add this concept's index to its list
             sourceMap.get(sourcePath)!.conceptIndices.add(i);

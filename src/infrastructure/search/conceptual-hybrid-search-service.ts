@@ -129,10 +129,9 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         text: row.text || '',
         source: row.source || '',
         hash: row.hash || '',
-        // Preserve full concepts object (may be rich metadata for catalog, simple array for chunks)
         concepts: row.concepts,
-        conceptCategories: this.parseConceptsField(row.concept_categories),
-        conceptDensity: row.concept_density || 0,
+        conceptIds: row.concept_ids || [],
+        categoryIds: row.category_ids || [],
         embeddings: row.vector || [],
         distance: row._distance || 0,
         vectorScore,
@@ -195,7 +194,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
   private printDebugScores(results: SearchResult[]): void {
     console.error('\n📊 Top Results with Scores:\n');
     results.forEach((result, idx) => {
-      const filename = result.source.split('/').pop() || result.source;
+      const filename = (result.source || '').split('/').pop() || result.source || 'unknown';
       console.error(`${idx + 1}. ${filename}`);
       console.error(`   Vector: ${result.vectorScore.toFixed(3)}`);
       console.error(`   BM25: ${result.bm25Score.toFixed(3)}`);

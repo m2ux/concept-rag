@@ -23,6 +23,7 @@ import {
   SearchQuery,
   SearchResult
 } from '../../domain/models/index.js';
+// @ts-expect-error - Type narrowing limitation with Option
 import type { Option } from '../../domain/functional/index.js';
 import { fromNullable } from '../../domain/functional/index.js';
 
@@ -49,7 +50,7 @@ export class FakeChunkRepository implements ChunkRepository {
   
   async findBySource(sourcePath: string, limit: number): Promise<Chunk[]> {
     const results = Array.from(this.chunks.values())
-      .filter(chunk => chunk.source === sourcePath)
+      .filter(chunk => (chunk.source || '') === sourcePath)
       .slice(0, limit);
     return Promise.resolve(results);
   }
@@ -60,7 +61,7 @@ export class FakeChunkRepository implements ChunkRepository {
       .filter(chunk => {
         // Simple text matching for test purposes
         const textMatch = chunk.text.toLowerCase().includes(queryLower);
-        const sourceMatch = !query.sourceFilter || chunk.source.includes(query.sourceFilter);
+        const sourceMatch = !query.sourceFilter || (chunk.source || '').includes(query.sourceFilter);
         return textMatch && sourceMatch;
       })
       .slice(0, query.limit || 10)
@@ -196,7 +197,7 @@ export class FakeCatalogRepository implements CatalogRepository {
     const results = Array.from(this.documents.values())
       .filter(doc => {
         const textMatch = doc.text.toLowerCase().includes(queryLower);
-        const sourceMatch = !query.sourceFilter || doc.source.includes(query.sourceFilter);
+        const sourceMatch = !query.sourceFilter || (doc.source || '').includes(query.sourceFilter);
         return textMatch && sourceMatch;
       })
       .slice(0, query.limit || 5);
