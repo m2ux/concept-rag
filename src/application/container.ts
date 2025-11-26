@@ -8,13 +8,15 @@ import { QueryExpander } from '../concepts/query_expander.js';
 import { 
   ConceptSearchService, 
   CatalogSearchService, 
-  ChunkSearchService 
+  ChunkSearchService,
+  ConceptSourcesService
 } from '../domain/services/index.js';
 import { ConceptSearchTool } from '../tools/operations/concept_search.js';
 import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_catalog_search.js';
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
 import { ConceptualBroadChunksSearchTool } from '../tools/operations/conceptual_broad_chunks_search.js';
 import { DocumentConceptsExtractTool } from '../tools/operations/document_concepts_extract.js';
+import { ConceptSourcesTool } from '../tools/operations/concept_sources.js';
 import { CategorySearchTool } from '../tools/operations/category-search-tool.js';
 import { ListCategoriesTool } from '../tools/operations/list-categories-tool.js';
 import { ListConceptsInCategoryTool } from '../tools/operations/list-concepts-in-category-tool.js';
@@ -170,6 +172,7 @@ export class ApplicationContainer {
     const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);
     const catalogSearchService = new CatalogSearchService(catalogRepo);
     const chunkSearchService = new ChunkSearchService(chunkRepo);
+    const conceptSourcesService = new ConceptSourcesService(conceptRepo, catalogRepo);
     
     // 7. Create tools (with domain services)
     this.tools.set('concept_search', new ConceptSearchTool(conceptSearchService));
@@ -177,6 +180,7 @@ export class ApplicationContainer {
     this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService));
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));
     this.tools.set('extract_concepts', new DocumentConceptsExtractTool(catalogRepo));
+    this.tools.set('concept_sources', new ConceptSourcesTool(conceptSourcesService));
     
     // 7a. Register category tools if categories table exists
     if (categoriesTable && this.categoryIdCache) {
@@ -194,6 +198,7 @@ export class ApplicationContainer {
    * 
    * Available tools:
    * - `concept_search`: Find chunks by concept name
+   * - `concept_sources`: Find all documents where a concept appears (source attribution)
    * - `catalog_search`: Search document summaries
    * - `chunks_search`: Search within a specific document
    * - `broad_chunks_search`: Search all chunks with hybrid ranking
