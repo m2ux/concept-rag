@@ -101,7 +101,8 @@ export class LanceDBCatalogRepository implements CatalogRepository {
   async findByCategory(categoryId: number): Promise<SearchResult[]> {
     try {
       // Query all catalog entries and filter by category_ids
-      const allDocs = await this.catalogTable.query().toArray();
+      // Note: LanceDB query() has default limit of 10, so we need explicit high limit
+      const allDocs = await this.catalogTable.query().limit(10000).toArray();
       
       const matches = allDocs.filter((doc: any) => {
         if (!doc.category_ids) return false;
