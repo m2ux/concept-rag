@@ -123,6 +123,16 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         wordnetScore
       });
       
+      // Parse array fields (may be Arrow Vectors from LanceDB)
+      const parseArrayField = (value: any): number[] => {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'object' && 'toArray' in value) {
+          return Array.from(value.toArray());
+        }
+        return [];
+      };
+      
       // Build enriched search result
       const result: SearchResult = {
         id: row.id || '',
@@ -130,8 +140,8 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         source: row.source || '',
         hash: row.hash || '',
         concepts: row.concepts,
-        conceptIds: row.concept_ids || [],
-        categoryIds: row.category_ids || [],
+        conceptIds: parseArrayField(row.concept_ids),
+        categoryIds: parseArrayField(row.category_ids),
         embeddings: row.vector || [],
         distance: row._distance || 0,
         vectorScore,
