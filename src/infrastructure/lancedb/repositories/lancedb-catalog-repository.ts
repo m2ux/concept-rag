@@ -7,6 +7,7 @@ import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/i
 // @ts-expect-error - Type narrowing limitation
 import type { Option } from "../../../../__tests__/test-helpers/../../domain/functional/index.js";
 import { fromNullable, Some, None, isSome } from '../../../domain/functional/option.js';
+import { hashToId } from '../../utils/hash.js';
 
 /**
  * LanceDB implementation of CatalogRepository
@@ -57,32 +58,35 @@ export class LanceDBCatalogRepository implements CatalogRepository {
   
   /**
    * Find a catalog entry by source path.
+   * Uses hash-based ID lookup for reliability with special characters.
    * @param source - Source document path
-   * @returns Search result if found, null otherwise
+   * @returns Some(result) if found, None otherwise
    * @throws {DatabaseError} If database query fails
    */
   async findBySource(source: string): Promise<Option<SearchResult>> {
     try {
-      // Use hybrid search with source as query (benefits from title matching)
-      const collection = new SearchableCollectionAdapter(this.catalogTable, 'catalog');
+      // Use hash-based ID lookup (more reliable than string matching with special chars)
+      const sourceId = hashToId(source);
       
-      const results = await this.hybridSearchService.search(
-        collection,
-        source,
-        10,
-        false
-      );
+      const results = await this.catalogTable
+        .query()
+        .where(`id = ${sourceId}`)
+        .limit(1)
+        .toArray();
       
-      // Find exact source match
-      for (const result of results) {
-        // @ts-expect-error - Type narrowing limitation
-        if (isSome(result.source) && result.source.value.toLowerCase() === source.toLowerCase()) {
-          return Some(result);
+      // If hash lookup fails, try loading all and filtering (fallback for legacy data)
+      if (results.length === 0) {
+        const allDocs = await this.catalogTable.query().limit(10000).toArray();
+        const matchingDoc = allDocs.find((doc: any) => doc.source === source);
+        
+        if (!matchingDoc) {
+          return None();
         }
+        
+        return Some(this.docToSearchResult(matchingDoc));
       }
       
-      // If no exact match, return best match if it's close
-      return results.length > 0 ? Some(results[0]) : None();
+      return Some(this.docToSearchResult(results[0]));
     } catch (error) {
       throw new DatabaseError(
         `Failed to find catalog entry for source "${source}"`,
@@ -90,6 +94,27 @@ export class LanceDBCatalogRepository implements CatalogRepository {
         error as Error
       );
     }
+  }
+  
+  /**
+   * Convert a raw document row to SearchResult format.
+   */
+  private docToSearchResult(doc: any): SearchResult {
+    return {
+      id: doc.id,
+      text: doc.text,
+      source: doc.source,
+      hash: doc.hash,
+      concepts: this.parseConceptsField(doc),
+      embeddings: doc.vector || [],
+      distance: 0,
+      hybridScore: 1.0,
+      vectorScore: 0,
+      bm25Score: 0,
+      titleScore: 1.0,
+      conceptScore: 0,
+      wordnetScore: 0
+    };
   }
   
   /**
