@@ -251,7 +251,7 @@ describe('LanceDBCatalogRepository - Integration Tests', () => {
       });
       
       // Find the TypeScript document
-      const tsDoc = results.find(r => r.source.includes('typescript'));
+      const tsDoc = results.find(r => r.source?.includes('typescript'));
       
       if (tsDoc) {
         expect(tsDoc.titleScore).toBeGreaterThan(0);

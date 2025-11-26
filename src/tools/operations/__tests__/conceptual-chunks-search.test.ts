@@ -92,7 +92,7 @@ describe('ConceptualChunksSearchTool', () => {
         source: '/test/doc.pdf',
         text: 'Test chunk',
         concepts: ['testing', 'unit tests'],
-        conceptCategories: ['software engineering']
+        categoryIds: [123456]
       });
       chunkRepo.addChunk(testChunk);
       

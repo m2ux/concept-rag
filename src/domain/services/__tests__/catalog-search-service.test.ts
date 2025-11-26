@@ -72,10 +72,7 @@ describe('CatalogSearchService', () => {
           conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.72,
-          concepts: {
-            primary_concepts: ['architecture', 'design'],
-            categories: ['software engineering']
-          }
+          concepts: ['architecture', 'design']
         }
       ];
       mockRepo.setSearchResults(mockResults);
@@ -109,10 +106,7 @@ describe('CatalogSearchService', () => {
           conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.67,
-          concepts: {
-            primary_concepts: [],
-            categories: []
-          }
+          concepts: []
         },
         {
           id: '2',
@@ -126,10 +120,7 @@ describe('CatalogSearchService', () => {
           conceptScore: 0.5,
           wordnetScore: 0.3,
           hybridScore: 0.58,
-          concepts: {
-            primary_concepts: [],
-            categories: []
-          }
+          concepts: []
         }
       ];
       mockRepo.setSearchResults(mockResults);
@@ -212,10 +203,7 @@ describe('CatalogSearchService', () => {
         conceptScore: 0.6,
         wordnetScore: 0.4,
         hybridScore: 0.67,
-        concepts: {
-          primary_concepts: [],
-          categories: []
-        }
+        concepts: []
       }));
       mockRepo.setSearchResults(mockResults);
 
@@ -246,10 +234,7 @@ describe('CatalogSearchService', () => {
         conceptScore: 0.6,
         wordnetScore: 0.4,
         hybridScore: 0.67,
-        concepts: {
-          primary_concepts: [],
-          categories: []
-        }
+        concepts: []
       }));
       mockRepo.setSearchResults(mockResults);
 

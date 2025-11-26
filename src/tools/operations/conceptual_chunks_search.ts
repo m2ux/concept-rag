@@ -121,10 +121,10 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
     // @ts-expect-error - Type narrowing limitation
     const formattedResults = result.value.map((r: Chunk) => ({
       text: r.text,
-      source: r.source,
-      concept_density: r.conceptDensity,
+      source: r.source || '',
       concepts: r.concepts || [],
-      categories: r.conceptCategories || []
+      concept_ids: r.conceptIds || [],
+      category_ids: r.categoryIds || []
     }));
     
     return {

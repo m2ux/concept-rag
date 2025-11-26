@@ -31,7 +31,7 @@ describe('ConceptSourcesTool', () => {
     it('should return sources for a single concept', async () => {
       const testConcept = createTestConcept({
         concept: 'tdd',
-        sources: ['/books/book-a.pdf', '/books/book-b.pdf']
+        catalogIds: [12345678, 23456789]
       });
       conceptRepo.addConcept(testConcept);
       
@@ -61,11 +61,11 @@ describe('ConceptSourcesTool', () => {
     it('should return separate source arrays for each concept', async () => {
       const concept1 = createTestConcept({
         concept: 'tdd',
-        sources: ['/books/book-a.pdf', '/books/book-b.pdf']
+        catalogIds: [12345678, 23456789]
       });
       const concept2 = createTestConcept({
         concept: 'di',
-        sources: ['/books/book-b.pdf', '/books/book-c.pdf', '/books/book-d.pdf']
+        catalogIds: [12345678, 23456789, 34567890]
       });
       conceptRepo.addConcept(concept1);
       conceptRepo.addConcept(concept2);
@@ -88,15 +88,15 @@ describe('ConceptSourcesTool', () => {
     it('should maintain position correspondence with input', async () => {
       const concept1 = createTestConcept({
         concept: 'first',
-        sources: ['/books/first.pdf']
+        catalogIds: [12345678]
       });
       const concept2 = createTestConcept({
         concept: 'second',
-        sources: ['/books/second.pdf']
+        catalogIds: [12345678]
       });
       const concept3 = createTestConcept({
         concept: 'third',
-        sources: ['/books/third.pdf']
+        catalogIds: [12345678]
       });
       conceptRepo.addConcept(concept1);
       conceptRepo.addConcept(concept2);
@@ -118,7 +118,7 @@ describe('ConceptSourcesTool', () => {
     it('should return empty array for not found concepts at correct position', async () => {
       const testConcept = createTestConcept({
         concept: 'exists',
-        sources: ['/books/exists.pdf']
+        catalogIds: [12345678]
       });
       conceptRepo.addConcept(testConcept);
       
@@ -134,7 +134,7 @@ describe('ConceptSourcesTool', () => {
     it('should include source metadata (title, author, year)', async () => {
       const testConcept = createTestConcept({
         concept: 'test',
-        sources: ['/books/Clean Code -- Robert Martin -- 2008 -- Publisher.pdf']
+        catalogIds: [12345678]
       });
       conceptRepo.addConcept(testConcept);
       

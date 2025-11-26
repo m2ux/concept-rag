@@ -36,13 +36,12 @@ describe('ConceptSearchTool', () => {
   describe('execute', () => {
     it('should find chunks by concept name', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'innovation', chunkCount: 3 });
       const testChunks = [
         createTestChunk({ id: 'chunk-1', concepts: ['innovation'], text: 'Text about innovation' }),
         createTestChunk({ id: 'chunk-2', concepts: ['innovation'], text: 'More innovation content' }),
         createTestChunk({ id: 'chunk-3', concepts: ['innovation'], text: 'Innovation everywhere' })
       ];
-      
+      const testConcept = createTestConcept({ concept: 'innovation' });
       conceptRepo.addConcept(testConcept);
       testChunks.forEach(chunk => chunkRepo.addChunk(chunk));
       
@@ -63,7 +62,6 @@ describe('ConceptSearchTool', () => {
     
     it('should respect limit parameter', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'testing', chunkCount: 10 });
       const testChunks = Array.from({ length: 10 }, (_, i) =>
         createTestChunk({
           id: `chunk-${i}`,
@@ -71,7 +69,7 @@ describe('ConceptSearchTool', () => {
           text: `Test chunk ${i}`
         })
       );
-      
+      const testConcept = createTestConcept({ concept: 'innovation' });
       conceptRepo.addConcept(testConcept);
       testChunks.forEach(chunk => chunkRepo.addChunk(chunk));
       
@@ -97,7 +95,7 @@ describe('ConceptSearchTool', () => {
     
     it('should handle concept with no matching chunks', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'orphan', chunkCount: 0 });
+      const testConcept = createTestConcept({ concept: 'innovation' });
       conceptRepo.addConcept(testConcept);
       // No chunks added
       

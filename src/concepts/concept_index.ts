@@ -4,17 +4,33 @@ import { ConceptRecord, ConceptMetadata } from "./types.js";
 import { createSimpleEmbedding } from "../lancedb/hybrid_search_client.js";
 import { hashToId } from "../infrastructure/utils/hash.js";
 
+/**
+ * Builds the concept index from document metadata.
+ */
 export class ConceptIndexBuilder {
     
-    // Build concept index from documents with metadata
-    // Now also accepts chunks to calculate chunk_count
+    // Build source path to catalog ID mapping
+    private sourceToIdMap = new Map<string, number>();
+    
+    /**
+     * Build concept index from documents with metadata.
+     */
     async buildConceptIndex(
         documents: Document[],
-        chunks?: Document[]
+        _chunks?: Document[]
     ): Promise<ConceptRecord[]> {
         const conceptMap = new Map<string, ConceptRecord>();
         
         console.log('📊 Building concept index from document metadata...');
+        
+        // Build source to ID mapping for catalog_ids
+        this.sourceToIdMap.clear();
+        for (const doc of documents) {
+            const source = doc.metadata.source;
+            if (source) {
+                this.sourceToIdMap.set(source, hashToId(source));
+            }
+        }
         
         for (const doc of documents) {
             const metadata = doc.metadata.concepts as ConceptMetadata;
@@ -24,16 +40,14 @@ export class ConceptIndexBuilder {
             }
             
             const source = doc.metadata.source;
+            const catalogId = this.sourceToIdMap.get(source) || hashToId(source);
             
-            // Process primary concepts (all concepts)
+            // Process primary concepts
             for (const concept of metadata.primary_concepts || []) {
                 this.addOrUpdateConcept(
                     conceptMap, 
                     concept,
-                    'thematic',  // All concepts are thematic
-                    source,
-                    metadata.categories[0] || 'General',
-                    metadata.related_concepts || [],
+                    catalogId,
                     1.0  // Standard weight
                 );
             }
@@ -41,24 +55,22 @@ export class ConceptIndexBuilder {
         
         console.log(`  ✅ Extracted ${conceptMap.size} unique concepts`);
         
-        // Build co-occurrence relationships
+        // Build co-occurrence relationships (populates related_concepts)
         this.enrichWithCoOccurrence(conceptMap, documents);
         
-        // ENHANCED: Calculate chunk_count if chunks are provided
-        if (chunks && chunks.length > 0) {
-            this.calculateChunkCounts(conceptMap, chunks);
-        }
+        // Convert related_concepts strings to related_concept_ids
+        this.resolveRelatedConceptIds(conceptMap);
         
         return Array.from(conceptMap.values());
     }
     
+    /**
+     * Add or update a concept in the map.
+     */
     private addOrUpdateConcept(
         map: Map<string, ConceptRecord>,
         concept: string,
-        conceptType: 'thematic' | 'terminology',
-        source: string,
-        category: string,
-        relatedConcepts: string[],
+        catalogId: number,
         weight: number = 1.0
     ) {
         const key = concept.toLowerCase().trim();
@@ -68,35 +80,48 @@ export class ConceptIndexBuilder {
         if (!map.has(key)) {
             map.set(key, {
                 concept: key,
-                concept_type: conceptType,  // Store type for differentiated search
-                category,
-                sources: [],
-                related_concepts: [...relatedConcepts.map(c => c.toLowerCase().trim())],
+                catalog_ids: [],
+                related_concepts: [],
+                related_concept_ids: [],
                 embeddings: createSimpleEmbedding(concept),
-                weight: 0,
-                chunk_count: 0,  // ENHANCED: Initialize chunk count
-                enrichment_source: 'corpus'
+                weight: 0
             });
         }
         
         const record = map.get(key)!;
         
-        // Add source if not already present
-        if (!record.sources.includes(source)) {
-            record.sources.push(source);
+        // Add catalog_id if not already present
+        if (!record.catalog_ids.includes(catalogId)) {
+            record.catalog_ids.push(catalogId);
             record.weight += weight;
         }
+    }
+    
+    /**
+     * Convert related_concepts strings to related_concept_ids.
+     * Call after co-occurrence enrichment.
+     */
+    private resolveRelatedConceptIds(conceptMap: Map<string, ConceptRecord>) {
+        // Build concept name to ID mapping
+        const conceptToId = new Map<string, number>();
+        for (const [key, _record] of conceptMap) {
+            conceptToId.set(key, hashToId(key));
+        }
         
-        // Merge related concepts (avoid duplicates)
-        for (const related of relatedConcepts) {
-            const relatedKey = related.toLowerCase().trim();
-            if (relatedKey && !record.related_concepts.includes(relatedKey)) {
-                record.related_concepts.push(relatedKey);
+        // Resolve related_concepts to IDs
+        for (const [_key, record] of conceptMap) {
+            if (record.related_concepts && record.related_concepts.length > 0) {
+                record.related_concept_ids = record.related_concepts
+                    .map(name => conceptToId.get(name.toLowerCase().trim()))
+                    .filter((id): id is number => id !== undefined);
             }
         }
     }
     
-    // Find concepts that co-occur frequently
+    /**
+     * Find concepts that co-occur frequently across documents.
+     * Populates related_concepts field with co-occurring terms.
+     */
     private enrichWithCoOccurrence(
         conceptMap: Map<string, ConceptRecord>,
         documents: Document[]
@@ -152,6 +177,11 @@ export class ConceptIndexBuilder {
                 .slice(0, 5)                  // Top 5
                 .map(([term, _]) => term);
             
+            // Initialize related_concepts if needed
+            if (!record.related_concepts) {
+                record.related_concepts = [];
+            }
+            
             // Add to related concepts (avoiding duplicates)
             let added = 0;
             for (const related of topRelated) {
@@ -167,41 +197,9 @@ export class ConceptIndexBuilder {
         console.log(`  ✅ Enriched ${enrichedCount} concepts with co-occurrence data`);
     }
     
-    // ENHANCED: Calculate how many chunks reference each concept
-    private calculateChunkCounts(
-        conceptMap: Map<string, ConceptRecord>,
-        chunks: Document[]
-    ) {
-        console.log('  📊 Calculating chunk counts for concepts...');
-        
-        const chunkCounts = new Map<string, number>();
-        
-        // Count chunks for each concept
-        for (const chunk of chunks) {
-            const chunkConcepts = chunk.metadata.concepts as string[] || [];
-            
-            for (const concept of chunkConcepts) {
-                const key = concept.toLowerCase().trim();
-                if (key) {
-                    chunkCounts.set(key, (chunkCounts.get(key) || 0) + 1);
-                }
-            }
-        }
-        
-        // Update concept records with chunk counts
-        let updatedCount = 0;
-        for (const [concept, count] of chunkCounts.entries()) {
-            const record = conceptMap.get(concept);
-            if (record) {
-                record.chunk_count = count;
-                updatedCount++;
-            }
-        }
-        
-        console.log(`  ✅ Updated ${updatedCount} concepts with chunk counts`);
-    }
-    
-    // Create LanceDB table for concepts
+    /**
+     * Create LanceDB table for concepts.
+     */
     async createConceptTable(
         db: lancedb.Connection,
         concepts: ConceptRecord[],
@@ -213,24 +211,15 @@ export class ConceptIndexBuilder {
             // Generate hash-based integer ID from concept name (stable across rebuilds)
             const conceptId = hashToId(concept.concept);
             
-            // Build catalog_ids as hash-based integers from source paths (stable across rebuilds)
-            // Hash the source path itself for stability, not the sequential catalog ID
-            const catalogIds: number[] = concept.sources.map(source => hashToId(source));
-            
             return {
                 id: conceptId,  // Hash-based integer ID (stable)
                 concept: concept.concept,
-                concept_type: concept.concept_type,  // Include type for filtering
-                category: concept.category,  // OLD: backward compatibility (kept but not used)
-                sources: JSON.stringify(concept.sources),  // OLD: backward compatibility
-                catalog_ids: JSON.stringify(catalogIds),  // NEW: hash-based integer catalog IDs
-                related_concepts: JSON.stringify(concept.related_concepts),
-                synonyms: JSON.stringify(concept.synonyms || []),
-                broader_terms: JSON.stringify(concept.broader_terms || []),
-                narrower_terms: JSON.stringify(concept.narrower_terms || []),
+                catalog_ids: concept.catalog_ids,  // Native array of hash-based IDs
+                related_concept_ids: concept.related_concept_ids || [],  // Native array of hash-based IDs
+                synonyms: concept.synonyms || [],  // Native array
+                broader_terms: concept.broader_terms || [],  // Native array
+                narrower_terms: concept.narrower_terms || [],  // Native array
                 weight: concept.weight,
-                chunk_count: concept.chunk_count,  // ENHANCED: Include chunk count
-                enrichment_source: concept.enrichment_source,
                 vector: concept.embeddings
             };
         });

@@ -28,13 +28,9 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document about testing',
-        concepts: JSON.stringify({
-          primary_concepts: ['testing', 'quality assurance'],
-          technical_terms: ['unit test', 'integration test'],
-          related_concepts: ['test-driven development'],
-          categories: ['software engineering'],
-          summary: 'Document about testing practices'
-        })
+        concepts: ['testing', 'quality assurance', 'unit test', 'integration test'],
+        conceptIds: [11111111, 22222222, 33333333, 44444444],
+        categoryIds: [55555555]
       });
       catalogRepo.addDocument(testDoc);
       
@@ -93,13 +89,9 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document about testing',
-        concepts: JSON.stringify({
-          primary_concepts: ['testing'],
-          technical_terms: ['unit test'],
-          related_concepts: ['tdd'],
-          categories: ['software engineering'],
-          summary: 'Test document'
-        })
+        concepts: ['testing', 'unit test', 'tdd'],
+        conceptIds: [11111111, 22222222, 33333333],
+        categoryIds: [44444444]
       });
       catalogRepo.addDocument(testDoc);
       
@@ -122,11 +114,9 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document',
-        concepts: JSON.stringify({
-          primary_concepts: ['testing'],
-          categories: ['software'],
-          summary: 'Test summary'
-        })
+        concepts: ['testing'],
+        conceptIds: [11111111],
+        categoryIds: [22222222]
       });
       catalogRepo.addDocument(testDoc);
       

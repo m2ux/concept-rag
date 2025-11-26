@@ -77,10 +77,7 @@ describe('ChunkSearchService', () => {
           conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.67,
-          concepts: {
-            primary_concepts: ['architecture'],
-            categories: ['software engineering']
-          }
+          concepts: ['architecture']
         }
       ];
       mockRepo.setSearchResults(mockResults);
@@ -114,10 +111,7 @@ describe('ChunkSearchService', () => {
           conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.67,
-          concepts: {
-            primary_concepts: [],
-            categories: []
-          }
+          concepts: []
         }
       ];
       mockRepo.setSearchResults(mockResults);
@@ -199,10 +193,7 @@ describe('ChunkSearchService', () => {
         conceptScore: 0.6,
         wordnetScore: 0.4,
         hybridScore: 0.67,
-        concepts: {
-          primary_concepts: [],
-          categories: []
-        }
+        concepts: []
       }));
       mockRepo.setSearchResults(mockResults);
 
@@ -228,7 +219,6 @@ describe('ChunkSearchService', () => {
           source: sourcePath,
           hash: 'hash1',
           concepts: ['architecture'],
-          conceptDensity: 0.5
         },
         {
           id: '2',
@@ -236,7 +226,6 @@ describe('ChunkSearchService', () => {
           source: sourcePath,
           hash: 'hash2',
           concepts: ['design'],
-          conceptDensity: 0.4
         }
       ];
       mockRepo.setSourceChunks(sourcePath, mockChunks);
@@ -265,7 +254,6 @@ describe('ChunkSearchService', () => {
         source: sourcePath,
         hash: `hash${i}`,
         concepts: [],
-        conceptDensity: 0.3
       }));
       mockRepo.setSourceChunks(sourcePath, mockChunks);
 
@@ -326,7 +314,6 @@ describe('ChunkSearchService', () => {
           source: sourcePath,
           hash: 'hash1',
           concepts: [],
-          conceptDensity: 0.3
         }
       ];
       mockRepo.setSourceChunks(sourcePath, mockChunks);
@@ -357,7 +344,6 @@ describe('ChunkSearchService', () => {
           source: source1,
           hash: 'hash1',
           concepts: [],
-          conceptDensity: 0.3
         }
       ];
       const chunks2: Chunk[] = [
@@ -367,7 +353,6 @@ describe('ChunkSearchService', () => {
           source: source2,
           hash: 'hash2',
           concepts: [],
-          conceptDensity: 0.3
         }
       ];
       mockRepo.setSourceChunks(source1, chunks1);

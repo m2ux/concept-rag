@@ -83,8 +83,8 @@ export class LanceDBChunkRepository implements ChunkRepository {
         }
       }
       
-      // Sort by concept density (most concept-rich first)
-      matches.sort((a, b) => (b.conceptDensity || 0) - (a.conceptDensity || 0));
+      // Sort by concept count (most concept-rich first)
+      matches.sort((a, b) => (b.concepts?.length || 0) - (a.concepts?.length || 0));
       
       return matches.slice(0, limit);
     } catch (error) {
@@ -151,36 +151,42 @@ export class LanceDBChunkRepository implements ChunkRepository {
     });
   }
   
+  /**
+   * Map a database row to a Chunk domain model.
+   */
   private mapRowToChunk(row: any): Chunk {
     // Detect which field contains the vector (handles 'vector' vs 'embeddings' naming)
     const vectorField = detectVectorField(row);
     const embeddings = vectorField ? row[vectorField] : undefined;
     
-    // Resolve concepts: prefer new format (concept_ids) over old format (concepts)
-    let concepts: string[] = [];
+    // Parse concept_ids (native array in normalized schema, JSON string in legacy)
+    let conceptIds: number[] = [];
     if (row.concept_ids) {
-      // NEW FORMAT: Use concept IDs and resolve to names via cache
-      try {
-        const conceptIds = parseJsonField(row.concept_ids);
-        concepts = this.conceptIdCache.getNames(conceptIds);
-      } catch (error) {
-        console.warn('[ChunkRepository] Failed to parse concept_ids, falling back to concepts:', error);
-        // Fallback to old format
-        concepts = parseJsonField(row.concepts);
-      }
-    } else {
-      // OLD FORMAT: Use concept names directly
-      concepts = parseJsonField(row.concepts);
+      conceptIds = Array.isArray(row.concept_ids) 
+        ? row.concept_ids 
+        : parseJsonField(row.concept_ids);
+    }
+    
+    // Resolve concepts via cache (convert numeric IDs to strings for cache lookup)
+    const concepts = this.conceptIdCache.getNames(conceptIds.map(id => String(id)));
+    
+    // Parse category_ids (native array in normalized schema, JSON string in legacy)
+    let categoryIds: number[] = [];
+    if (row.category_ids) {
+      categoryIds = Array.isArray(row.category_ids)
+        ? row.category_ids
+        : parseJsonField(row.category_ids);
     }
     
     return {
       id: row.id || '',
       text: row.text || '',
       source: row.source || '',
+      catalogId: row.catalog_id,
       hash: row.hash || '',
-      concepts,
-      conceptCategories: parseJsonField(row.concept_categories),
-      conceptDensity: row.concept_density || 0,
+      concepts,  // Resolved from conceptIds for API compatibility
+      conceptIds,
+      categoryIds,
       embeddings  // May be undefined if no vector field found
     };
   }

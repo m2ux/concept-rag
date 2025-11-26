@@ -131,15 +131,13 @@ export class ConceptExtractor {
             const concepts = JSON.parse(jsonText);
             
             // Ensure arrays and filter out non-strings
+            // Note: related_concepts removed from extraction output (derived from concepts table)
             return {
                 primary_concepts: Array.isArray(concepts.primary_concepts) 
                     ? concepts.primary_concepts.filter((c: any) => typeof c === 'string' && c.trim()) 
                     : [],
                 categories: Array.isArray(concepts.categories) 
                     ? concepts.categories.filter((c: any) => typeof c === 'string' && c.trim()) 
-                    : [],
-                related_concepts: Array.isArray(concepts.related_concepts) 
-                    ? concepts.related_concepts.filter((c: any) => typeof c === 'string' && c.trim()) 
                     : []
             };
         } catch (error: any) {
@@ -158,8 +156,7 @@ export class ConceptExtractor {
             
             return {
                 primary_concepts: [],
-                categories: [],
-                related_concepts: []
+                categories: []
             };
         }
     }
@@ -330,7 +327,6 @@ export class ConceptExtractor {
     private mergeConceptExtractions(extractions: ConceptMetadata[]): ConceptMetadata {
         const mergedConcepts = new Set<string>();
         const mergedCategories = new Set<string>();
-        const mergedRelated = new Set<string>();
         
         for (const extraction of extractions) {
             // Type guard to ensure we only process strings
@@ -344,19 +340,14 @@ export class ConceptExtractor {
                     mergedCategories.add(c);
                 }
             });
-            extraction.related_concepts.forEach(c => {
-                if (typeof c === 'string' && c.trim()) {
-                    mergedRelated.add(c.toLowerCase());
-                }
-            });
+            // Note: related_concepts no longer extracted (derived from concepts table)
         }
         
         console.log(`  ✅ Merged: ${mergedConcepts.size} unique concepts from ${extractions.length} chunks`);
         
         return {
             primary_concepts: Array.from(mergedConcepts),
-            categories: Array.from(mergedCategories).slice(0, 7),
-            related_concepts: Array.from(mergedRelated).slice(0, 50)
+            categories: Array.from(mergedCategories).slice(0, 7)
         };
     }
     
@@ -446,9 +437,7 @@ export class ConceptExtractor {
             if (!concepts.categories) {
                 concepts.categories = ['General'];
             }
-            if (!concepts.related_concepts) {
-                concepts.related_concepts = [];
-            }
+            // Note: related_concepts no longer stored in extraction result
             
             
             return concepts as ConceptMetadata;
@@ -457,8 +446,7 @@ export class ConceptExtractor {
             // Return empty structure as fallback
             return {
                 primary_concepts: [],
-                categories: ['General'],
-                related_concepts: []
+                categories: ['General']
             };
         }
     }

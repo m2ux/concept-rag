@@ -194,117 +194,77 @@ describe('Concept Search Regression Tests', () => {
       // 🔴 High Impact: Abstract/theoretical
       {
         concept: 'exaptive bootstrapping',
-        concept_type: 'thematic',
-        category: 'complex systems science',
-        sources: JSON.stringify(['/test/complexity-innovation.pdf']),
-        related_concepts: JSON.stringify(['innovation', 'agent-artifact space', 'socio-technical transitions']),
+        catalog_ids: [12345678],
+        related_concept_ids: [],
         vector: createSimpleEmbedding('exaptive bootstrapping'),
         weight: 1.0,
-        chunk_count: 2,
-        enrichment_source: 'corpus'
       },
       {
         concept: 'ideality index',
-        concept_type: 'thematic',
-        category: 'innovation methodology',
-        sources: JSON.stringify(['/test/triz-methodology.pdf']),
-        related_concepts: JSON.stringify(['triz methodology', 'technical system evolution']),
+        catalog_ids: [12345678],
+        related_concept_ids: [],
         vector: createSimpleEmbedding('ideality index'),
         weight: 0.8,
-        chunk_count: 1,
-        enrichment_source: 'corpus'
       },
       {
         concept: 'dialectical thinking',
-        concept_type: 'thematic',
-        category: 'philosophy',
-        sources: JSON.stringify(['/test/philosophy-dialectics.pdf']),
-        related_concepts: JSON.stringify(['contradiction resolution', 'synthesis']),
+        catalog_ids: [12345678],
+        related_concept_ids: [],
         vector: createSimpleEmbedding('dialectical thinking'),
         weight: 0.85,
-        chunk_count: 1,
-        enrichment_source: 'corpus'
       },
       
       // 🟡 Medium Impact: Common technical terms
       {
         concept: 'rest api',
-        concept_type: 'terminology',
-        category: 'web development',
-        sources: JSON.stringify(['/test/web-architecture.pdf']),
-        related_concepts: JSON.stringify(['api design', 'http methods']),
+        catalog_ids: [12345678],
+        related_concept_ids: [],
         vector: createSimpleEmbedding('rest api'),
         weight: 0.75,
-        chunk_count: 1,
-        enrichment_source: 'corpus'
       },
       {
         concept: 'repository pattern',
-        concept_type: 'terminology',
-        category: 'software design',
-        sources: JSON.stringify(['/test/design-patterns.pdf']),
-        related_concepts: JSON.stringify(['design pattern', 'data access']),
+        catalog_ids: [12345678],
+        related_concept_ids: [],
         vector: createSimpleEmbedding('repository pattern'),
         weight: 0.78,
-        chunk_count: 1,
-        enrichment_source: 'corpus'
       },
       {
         concept: 'dependency injection',
-        concept_type: 'terminology',
-        category: 'software design',
-        sources: JSON.stringify(['/test/solid-principles.pdf', '/test/testing-strategies.pdf']),
-        related_concepts: JSON.stringify(['loose coupling', 'solid principles', 'testability']),
+        catalog_ids: [12345678],
+        related_concept_ids: [],
         vector: createSimpleEmbedding('dependency injection'),
         weight: 0.82,
-        chunk_count: 2,
-        enrichment_source: 'corpus'
       },
       {
         concept: 'api interface',
-        concept_type: 'terminology',
-        category: 'software architecture',
-        sources: JSON.stringify(['/test/interface-design.pdf']),
-        related_concepts: JSON.stringify(['software contract', 'component design']),
+        catalog_ids: [12345678],
+        related_concept_ids: [],
         vector: createSimpleEmbedding('api interface'),
         weight: 0.70,
-        chunk_count: 1,
-        enrichment_source: 'corpus'
       },
       
       // 🟢 Low Impact: Very specific terms
       {
         concept: 'react.usestate',
-        concept_type: 'terminology',
-        category: 'react',
-        sources: JSON.stringify(['/test/react-hooks.pdf', '/test/react-patterns.pdf']),
-        related_concepts: JSON.stringify(['react hooks', 'state management']),
+        catalog_ids: [12345678],
+        related_concept_ids: [],
         vector: createSimpleEmbedding('react.usestate'),
         weight: 0.65,
-        chunk_count: 2,
-        enrichment_source: 'corpus'
       },
       {
         concept: 'postgresql transaction isolation',
-        concept_type: 'terminology',
-        category: 'database',
-        sources: JSON.stringify(['/test/postgres-transactions.pdf']),
-        related_concepts: JSON.stringify(['read committed', 'serializable']),
+        catalog_ids: [12345678],
+        related_concept_ids: [],
         vector: createSimpleEmbedding('postgresql transaction isolation'),
         weight: 0.60,
-        chunk_count: 1,
-        enrichment_source: 'corpus'
       },
       {
         concept: 'typescript.compileroptions.strict',
-        concept_type: 'terminology',
-        category: 'typescript',
-        sources: JSON.stringify(['/test/typescript-config.pdf']),
-        related_concepts: JSON.stringify(['strict type checking', 'typescript configuration']),
+        catalog_ids: [12345678],
+        related_concept_ids: [],
         vector: createSimpleEmbedding('typescript.compileroptions.strict'),
         weight: 0.58,
-        chunk_count: 1,
-        enrichment_source: 'corpus'
       }
     ];
     
@@ -505,14 +465,14 @@ describe('Concept Search Regression Tests', () => {
       }
     });
     
-    it('should sort results by concept density', async () => {
+    it('should sort results by concept count', async () => {
       const results = await chunkRepo.findByConceptName('exaptive bootstrapping', 10);
       
       expect(results.length).toBeGreaterThan(1);
       
-      // Verify results are sorted by concept density (descending)
+      // Verify results are sorted by concept count (descending)
       for (let i = 0; i < results.length - 1; i++) {
-        expect(results[i].conceptDensity).toBeGreaterThanOrEqual(results[i + 1].conceptDensity!);
+        expect(results[i].concepts?.length || 0).toBeGreaterThanOrEqual(results[i + 1].concepts?.length || 0);
       }
     });
   });

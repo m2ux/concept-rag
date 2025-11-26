@@ -265,16 +265,15 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       expect(chunk.source).toBeDefined();
       expect(typeof chunk.source).toBe('string');
       
-      // Array fields (JSON deserialized)
+      // Array fields (native arrays)
       expect(chunk.concepts).toBeDefined();
       expect(Array.isArray(chunk.concepts)).toBe(true);
       
-      expect(chunk.conceptCategories).toBeDefined();
-      expect(Array.isArray(chunk.conceptCategories)).toBe(true);
+      expect(chunk.conceptIds).toBeDefined();
+      expect(Array.isArray(chunk.conceptIds)).toBe(true);
       
-      // Number fields
-      expect(chunk.conceptDensity).toBeDefined();
-      expect(typeof chunk.conceptDensity).toBe('number');
+      expect(chunk.categoryIds).toBeDefined();
+      expect(Array.isArray(chunk.categoryIds)).toBe(true);
       
       // embeddings is optional, but if present should be array of correct dimension
       if (chunk.embeddings) {
@@ -294,13 +293,13 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       const chunks = await chunkRepo.findBySource(sourcePath, 1);
       const chunk = chunks[0];
       
-      // ASSERT: JSON fields should be deserialized to arrays
+      // ASSERT: Array fields should be native arrays
       expect(Array.isArray(chunk.concepts)).toBe(true);
       expect(chunk.concepts!.length).toBeGreaterThan(0);
       expect(chunk.concepts).toContain('solid principles');
       
-      expect(Array.isArray(chunk.conceptCategories)).toBe(true);
-      expect(chunk.conceptCategories!.length).toBeGreaterThan(0);
+      // ID-based fields should also be arrays
+      expect(Array.isArray(chunk.conceptIds)).toBe(true);
     });
   });
   
