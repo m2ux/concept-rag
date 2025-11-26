@@ -662,14 +662,14 @@ describe('ConceptSearchService', () => {
   });
 
   describe('calculateRelevance', () => {
-    it('should calculate relevance from density and occurrences', () => {
-      // SETUP
+    it('should calculate relevance from concept count and text length', () => {
+      // SETUP - Short text with concepts scores high on density (capped at 1)
       const chunk: Chunk = {
         id: '1',
         text: 'Chunk with concept',
         source: '/docs/doc.pdf',
         hash: 'hash1',
-        concepts: ['testing', 'testing'], // 2 occurrences
+        concepts: ['testing', 'other'], // 2 concepts
       };
       const concept = 'testing';
 
@@ -677,18 +677,19 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // density * 0.5 + concept match 0.3 = 0.7 * 0.5 + 0.3 = 0.65
-      expect(relevance).toBeCloseTo(0.65, 2);
+      // Short text (18 chars), 2 concepts: normalizedDensity = min(2 / (18/500), 1) = 1
+      // score = 1 * 0.5 + 0.3 (concept match) = 0.8 (no text length bonus)
+      expect(relevance).toBeCloseTo(0.8, 2);
     });
 
     it('should include concept match bonus', () => {
-      // SETUP
+      // SETUP - Longer text with many concepts
       const chunk: Chunk = {
         id: '1',
-        text: 'Chunk with many occurrences',
+        text: 'A'.repeat(300), // 300 chars (qualifies for text length bonus)
         source: '/docs/doc.pdf',
         hash: 'hash1',
-        concepts: Array(10).fill('testing'), // 10 occurrences
+        concepts: ['testing', 'other', 'third'], // 3 concepts
       };
       const concept = 'testing';
 
@@ -696,15 +697,16 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // density * 0.5 + concept match 0.3 = 0.5 * 0.5 + 0.3 = 0.55
-      expect(relevance).toBeCloseTo(0.55, 2);
+      // 300 chars, 3 concepts: normalizedDensity = min(3 / (300/500), 1) = min(5, 1) = 1
+      // score = 1 * 0.5 + 0.3 (concept match) + 0.2 (text length bonus) = 1.0
+      expect(relevance).toBeCloseTo(1.0, 2);
     });
 
-    it('should handle chunks with no occurrences', () => {
+    it('should handle chunks with no concepts', () => {
       // SETUP
       const chunk: Chunk = {
         id: '1',
-        text: 'Chunk without concept',
+        text: 'A'.repeat(300), // 300 chars
         source: '/docs/doc.pdf',
         hash: 'hash1',
         concepts: [],
@@ -715,19 +717,19 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // density * 0.5 only = 0.8 * 0.5 = 0.4
-      expect(relevance).toBeCloseTo(0.4, 2);
+      // 0 concepts: normalizedDensity = 0, no concept match
+      // score = 0 + 0 + 0.2 (text length bonus) = 0.2
+      expect(relevance).toBeCloseTo(0.2, 2);
     });
 
-    it('should handle chunks with null density', () => {
+    it('should handle short chunks with no concepts', () => {
       // SETUP
       const chunk: Chunk = {
         id: '1',
-        text: 'Chunk',
+        text: 'Short',
         source: '/docs/doc.pdf',
         hash: 'hash1',
         concepts: ['testing'],
-        // conceptDensity is undefined
       };
       const concept = 'testing';
 
@@ -735,8 +737,9 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // 0 * 0.5 + concept match 0.3 = 0.3
-      expect(relevance).toBeCloseTo(0.3, 2);
+      // Short text (5 chars), 1 concept: normalizedDensity = min(1 / (5/500), 1) = 1
+      // score = 1 * 0.5 + 0.3 (concept match) = 0.8 (no text length bonus)
+      expect(relevance).toBeCloseTo(0.8, 2);
     });
 
     it('should return value in 0-1 range', () => {

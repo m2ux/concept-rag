@@ -102,13 +102,29 @@ OUTPUT FORMATS:
       if (doc.conceptIds && doc.conceptIds.length > 0 && this.conceptIdCache) {
         // New format: resolve from IDs (convert to strings for cache lookup)
         primaryConcepts = this.conceptIdCache.getNames(doc.conceptIds.map(id => String(id)));
-      } else if (doc.concepts) {
-        // Legacy format: parse JSON blob
-        const parsed = typeof doc.concepts === 'string' 
-          ? JSON.parse(doc.concepts) 
-          : doc.concepts;
-        primaryConcepts = parsed.primary_concepts || [];
-        relatedConcepts = parsed.related_concepts || [];
+      }
+      
+      // Fall back to concepts field if no primaryConcepts resolved
+      if (primaryConcepts.length === 0 && doc.concepts) {
+        const conceptsField = doc.concepts as any;
+        if (Array.isArray(conceptsField)) {
+          // Direct array of concept names
+          primaryConcepts = conceptsField;
+        } else if (typeof conceptsField === 'string') {
+          // JSON blob format (legacy)
+          try {
+            const parsed = JSON.parse(conceptsField);
+            primaryConcepts = parsed.primary_concepts || [];
+            relatedConcepts = parsed.related_concepts || [];
+          } catch {
+            // Not valid JSON, might be a single concept name
+            primaryConcepts = [conceptsField];
+          }
+        } else if (typeof conceptsField === 'object' && conceptsField !== null) {
+          // Object format
+          primaryConcepts = conceptsField.primary_concepts || [];
+          relatedConcepts = conceptsField.related_concepts || [];
+        }
       }
       
       // Get categories from categoryIds or legacy field
