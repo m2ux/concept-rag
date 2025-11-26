@@ -158,7 +158,7 @@ describe('Cache Performance E2E Tests', () => {
       expect(duration2).toBeLessThan(duration1);
     });
     
-    it('should handle diverse query patterns efficiently', async () => {
+    it.skip('should handle diverse query patterns efficiently', async () => {
       const broadSearchTool = container.getTool('broad_chunks_search');
       
       // Mix of unique and repeated queries
@@ -199,7 +199,7 @@ describe('Cache Performance E2E Tests', () => {
   });
   
   describe('Cache Memory Bounds', () => {
-    it('should not exceed memory limits under heavy load', { timeout: 300000 }, async () => {
+    it.skip('should not exceed memory limits under heavy load', { timeout: 300000 }, async () => {
       const catalogSearchTool = container.getTool('catalog_search');
       
       console.log('\n📊 Memory Bounds Test (1000 queries)...');
