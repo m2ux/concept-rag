@@ -159,10 +159,8 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
     if (isSome(result.conceptMetadata)) {
         const metadata = result.conceptMetadata.value;
         response.concept_metadata = {
-        category: metadata.category,
         weight: metadata.weight,
-        chunk_count: metadata.chunkCount,
-        sources_count: metadata.sources.length
+        sources_count: metadata.catalogIds?.length || 0
         };
         
       // Add related concepts

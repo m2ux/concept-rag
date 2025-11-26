@@ -477,17 +477,17 @@ describe('ConceptSearchService', () => {
       const mockChunks: Chunk[] = [
         {
           id: '1',
-          text: 'Chunk with lower density',
+          text: 'Short chunk', // Short text, fewer concepts = lower relevance
           source: '/docs/doc1.pdf',
           hash: 'hash1',
           concepts: ['testing'],
         },
         {
           id: '2',
-          text: 'Chunk with higher density',
+          text: 'A'.repeat(300), // Long text (qualifies for text length bonus) + more concepts
           source: '/docs/doc2.pdf',
           hash: 'hash2',
-          concepts: ['testing'],
+          concepts: ['testing', 'software', 'development'], // More concepts
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -502,7 +502,7 @@ describe('ConceptSearchService', () => {
       // VERIFY
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        // Chunk 2 has higher relevance (0.8*0.5+0.3=0.7) vs chunk 1 (0.3*0.5+0.3=0.45)
+        // Chunk 2 has higher relevance due to text length bonus and concept match
         expect(result.value.chunks[0].id).toBe('2');
       }
     });

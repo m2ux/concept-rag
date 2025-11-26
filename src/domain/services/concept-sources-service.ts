@@ -182,13 +182,13 @@ export class ConceptSourcesService {
         const sourcePaths: string[] = [];
         if (concept.catalogIds && concept.catalogIds.length > 0) {
           // New schema: look up catalog entries by ID to get source paths
+          // Get all catalog entries to find by ID (ideally would use findById)
+          const catalogResults = await this.catalogRepo.search({ 
+            text: '', 
+            limit: 1000 // Get enough entries to find by ID
+          });
+          
           for (const catalogId of concept.catalogIds) {
-            // Search catalog by ID - catalog entries have source paths
-            const catalogResults = await this.catalogRepo.search({ 
-              text: '', 
-              limit: 1 
-            });
-            // Note: This is a simplified lookup. In production, add findById method
             const entry = catalogResults.find(r => r.id === String(catalogId));
             if (entry?.source) {
               sourcePaths.push(entry.source);

@@ -92,6 +92,7 @@ describe('ConceptualChunksSearchTool', () => {
         source: '/test/doc.pdf',
         text: 'Test chunk',
         concepts: ['testing', 'unit tests'],
+        conceptIds: [111111, 222222],
         categoryIds: [123456]
       });
       chunkRepo.addChunk(testChunk);
@@ -106,7 +107,7 @@ describe('ConceptualChunksSearchTool', () => {
       const parsedContent = JSON.parse(result.content[0].text);
       expect(parsedContent[0].concepts).toBeDefined();
       expect(Array.isArray(parsedContent[0].concepts)).toBe(true);
-      expect(parsedContent[0].categories).toBeDefined();
+      // Note: categories are no longer returned directly - schema normalized to use categoryIds
     });
     
     it('should handle empty results', async () => {

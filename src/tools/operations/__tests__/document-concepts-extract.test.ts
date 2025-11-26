@@ -64,24 +64,24 @@ describe('DocumentConceptsExtractTool', () => {
       expect(parsedContent.error.message).toContain('not found');
     });
     
-    it('should return error when document has no concepts', async () => {
+    it('should return empty concepts when document has no concepts', async () => {
       // SETUP
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document without concepts',
-        concepts: undefined
+        concepts: undefined,
+        conceptIds: undefined
       });
       catalogRepo.addDocument(testDoc);
       
       // EXERCISE
       const result = await tool.execute({ document_query: 'doc' });
       
-      // VERIFY
-      expect(result.isError).toBe(true);
+      // VERIFY - Document exists but has no concepts, which is a valid state
+      expect(result.isError).toBe(false);
       const parsedContent = JSON.parse(result.content[0].text);
-      // Now returns structured error object
-      expect(parsedContent.error).toBeDefined();
-      expect(parsedContent.error.message).toContain('not found');
+      expect(parsedContent.primary_concepts).toEqual([]);
+      expect(parsedContent.total_concepts).toBe(0);
     });
     
     it('should format output as markdown when format is markdown', async () => {
