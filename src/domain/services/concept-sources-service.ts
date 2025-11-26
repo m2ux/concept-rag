@@ -22,8 +22,8 @@ import { InputValidator } from './validation/InputValidator.js';
  * Parameters for concept sources lookup.
  */
 export interface ConceptSourcesParams {
-  /** Concept name to find sources for */
-  concept: string;
+  /** Concept name(s) to find sources for - can be a single concept or array */
+  concept: string | string[];
   
   /** Include document metadata (title, summary) from catalog */
   includeMetadata?: boolean;
@@ -45,6 +45,9 @@ export interface SourceInfo {
   /** Publication year */
   year?: string;
   
+  /** Indices of the searched concepts that appear in this source (references concepts_searched array) */
+  conceptIndices?: number[];
+  
   /** Document summary (if includeMetadata is true and available) */
   summary?: string;
   
@@ -59,22 +62,19 @@ export interface SourceInfo {
  * Concept sources lookup result.
  */
 export interface ConceptSourcesResult {
-  /** The concept searched for */
-  concept: string;
+  /** The concept(s) searched for */
+  concepts: string[];
   
-  /** Concept metadata */
-  conceptMetadata?: {
-    category: string;
-    conceptType: 'thematic' | 'terminology';
-    weight: number;
-    chunkCount?: number;
-    relatedConcepts: string[];
-  };
+  /** Concepts that were found */
+  foundConcepts: string[];
   
-  /** Total number of sources */
+  /** Concepts that were not found */
+  notFoundConcepts: string[];
+  
+  /** Total number of unique sources */
   sourceCount: number;
   
-  /** Source documents with metadata */
+  /** Source documents with metadata (union of all matching sources) */
   sources: SourceInfo[];
 }
 
@@ -102,22 +102,30 @@ export class ConceptSourcesService {
   ) {}
   
   /**
-   * Find all sources (documents) that contain a specific concept.
+   * Find all sources (documents) that contain any of the given concepts.
+   * Returns the union (superset) of all sources across all concepts.
    * 
    * @param params - Lookup parameters
    * @returns Result containing sources or error
    * 
    * @example
    * ```typescript
+   * // Single concept
    * const result = await service.getConceptSources({
    *   concept: 'test driven development',
+   *   includeMetadata: true
+   * });
+   * 
+   * // Multiple concepts - returns union of all sources
+   * const result = await service.getConceptSources({
+   *   concept: ['test driven development', 'dependency injection', 'clean code'],
    *   includeMetadata: true
    * });
    * 
    * if (result.ok) {
    *   console.log(`Found in ${result.value.sourceCount} documents:`);
    *   result.value.sources.forEach(s => {
-   *     console.log(`- ${s.title}`);
+   *     console.log(`- ${s.title} (matches: ${s.matchingConcepts?.join(', ')})`);
    *   });
    * } else {
    *   console.error('Error:', result.error);
@@ -127,46 +135,89 @@ export class ConceptSourcesService {
   async getConceptSources(
     params: ConceptSourcesParams
   ): Promise<Result<ConceptSourcesResult, ConceptSourcesError>> {
-    // Validate parameters
-    try {
-      this.validator.validateConceptSearch(params);
-    } catch (error) {
-      return Err({
-        type: 'validation',
-        field: 'params',
-        message: error instanceof Error ? error.message : String(error)
-      });
+    // Normalize concept input to array
+    const conceptNames = Array.isArray(params.concept) 
+      ? params.concept 
+      : [params.concept];
+    
+    // Validate each concept
+    for (const concept of conceptNames) {
+      try {
+        this.validator.validateConceptSearch({ concept });
+      } catch (error) {
+        return Err({
+          type: 'validation',
+          field: 'concept',
+          message: error instanceof Error ? error.message : String(error)
+        });
+      }
     }
     
-    const conceptName = params.concept.toLowerCase().trim();
     const includeMetadata = params.includeMetadata ?? true;
     
     try {
-      // Look up the concept
-      const conceptOpt = await this.conceptRepo.findByName(conceptName);
+      // Track sources by path to avoid duplicates and merge matching concept indices
+      const sourceMap = new Map<string, { 
+        sourceInfo: SourceInfo; 
+        conceptIndices: Set<number>;
+      }>();
       
-      if (!isSome(conceptOpt)) {
+      const foundConcepts: string[] = [];
+      const notFoundConcepts: string[] = [];
+      
+      // Look up each concept (track index for attribution)
+      for (let i = 0; i < conceptNames.length; i++) {
+        const conceptInput = conceptNames[i];
+        const conceptName = conceptInput.toLowerCase().trim();
+        const conceptOpt = await this.conceptRepo.findByName(conceptName);
+        
+        if (!isSome(conceptOpt)) {
+          notFoundConcepts.push(conceptInput);
+          continue;
+        }
+        
+        foundConcepts.push(conceptInput);
+        const concept = conceptOpt.value;
+        
+        // Process each source for this concept
+        for (const sourcePath of concept.sources) {
+          if (sourceMap.has(sourcePath)) {
+            // Source already exists, just add this concept's index to its list
+            sourceMap.get(sourcePath)!.conceptIndices.add(i);
+          } else {
+            // New source - create entry
+            const parsedInfo = this.parseFilename(sourcePath);
+            const sourceInfo: SourceInfo = {
+              source: sourcePath,
+              title: parsedInfo.title,
+              author: parsedInfo.author,
+              year: parsedInfo.year
+            };
+            
+            sourceMap.set(sourcePath, {
+              sourceInfo,
+              conceptIndices: new Set([i])
+            });
+          }
+        }
+      }
+      
+      // If no concepts were found at all, return error
+      if (foundConcepts.length === 0) {
         return Err({
           type: 'concept_not_found',
-          concept: params.concept
+          concept: conceptNames.join(', ')
         });
       }
       
-      const concept = conceptOpt.value;
-      
-      // Build source information
+      // Enrich sources with catalog metadata if requested
       const sources: SourceInfo[] = [];
       
-      for (const sourcePath of concept.sources) {
-        const parsedInfo = this.parseFilename(sourcePath);
-        const sourceInfo: SourceInfo = {
-          source: sourcePath,
-          title: parsedInfo.title,
-          author: parsedInfo.author,
-          year: parsedInfo.year
-        };
+      for (const [sourcePath, { sourceInfo, conceptIndices }] of sourceMap) {
+        // Add concept indices to source info (sorted for consistency)
+        sourceInfo.conceptIndices = Array.from(conceptIndices).sort((a, b) => a - b);
         
-        // Optionally enrich with catalog metadata (graceful degradation if not found)
+        // Optionally enrich with catalog metadata
         if (includeMetadata) {
           try {
             const catalogEntry = await this.catalogRepo.findBySource(sourcePath);
@@ -193,7 +244,6 @@ export class ConceptSourcesService {
                 sourceInfo.categories = concepts.categories?.slice(0, 5);
               }
             }
-            // If not found, continue without metadata - source still returned with path-based title
           } catch (catalogError) {
             // Log but don't fail - catalog metadata is optional enrichment
             console.error(`⚠️  Could not fetch catalog metadata for "${sourcePath}": ${catalogError instanceof Error ? catalogError.message : catalogError}`);
@@ -203,15 +253,18 @@ export class ConceptSourcesService {
         sources.push(sourceInfo);
       }
       
+      // Sort sources by number of matching concepts (descending), then by title
+      sources.sort((a, b) => {
+        const aCount = a.conceptIndices?.length || 0;
+        const bCount = b.conceptIndices?.length || 0;
+        if (bCount !== aCount) return bCount - aCount;
+        return a.title.localeCompare(b.title);
+      });
+      
       return Ok({
-        concept: params.concept,
-        conceptMetadata: {
-          category: concept.category,
-          conceptType: concept.conceptType,
-          weight: concept.weight,
-          chunkCount: concept.chunkCount,
-          relatedConcepts: concept.relatedConcepts.slice(0, 10)
-        },
+        concepts: conceptNames,
+        foundConcepts,
+        notFoundConcepts,
         sourceCount: sources.length,
         sources
       });
