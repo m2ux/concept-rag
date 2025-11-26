@@ -63,4 +63,3 @@ export class DegradedModeError extends ConceptRAGError {
   }
 }
 
-
