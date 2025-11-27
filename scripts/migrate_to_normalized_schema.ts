@@ -144,16 +144,33 @@ async function migrateToNormalizedSchema(dbPath: string): Promise<boolean> {
       console.log('\n📝 Phase 2: Migrating chunks table...');
       
       const chunksTable = await db.openTable('chunks');
-      const chunkRows = await chunksTable.query().limit(500000).toArray();
+      const chunkRows = await chunksTable.query().limit(1000000).toArray();
       stats.chunks.before = chunkRows.length;
       console.log(`  Found ${chunkRows.length} chunks`);
       
       const migratedChunks = chunkRows.map(row => {
-        // Resolve source path to catalog_id
-        const catalogId = sourceToId.get(row.source) || hashToId(row.source || '');
+        // Resolve source path to catalog_id - ensure it's always a valid number
+        let catalogId = sourceToId.get(row.source);
+        if (catalogId === undefined || catalogId === null) {
+          catalogId = row.source ? hashToId(row.source) : 0;
+        }
+        // Ensure it's a number (not NaN or undefined)
+        if (typeof catalogId !== 'number' || isNaN(catalogId)) {
+          catalogId = 0;
+        }
         
-        // Parse concept_ids - ensure non-empty for Arrow schema inference
+        // Parse concept_ids - check both concept_ids (new) and concepts (legacy)
         let conceptIds = parseArrayField<number>(row.concept_ids);
+        if (conceptIds.length === 0 || (conceptIds.length === 1 && conceptIds[0] === 0)) {
+          // Try to convert from legacy concepts field (array of concept names)
+          const conceptNames = parseArrayField<string>(row.concepts);
+          if (conceptNames.length > 0) {
+            conceptIds = conceptNames
+              .map(name => conceptNameToId.get(name.toLowerCase().trim()))
+              .filter((id): id is number => id !== undefined && id !== null);
+          }
+        }
+        // Ensure non-empty for Arrow schema inference
         if (conceptIds.length === 0) {
           conceptIds = [0]; // Placeholder, will be filtered out in queries
         }
@@ -167,13 +184,13 @@ async function migrateToNormalizedSchema(dbPath: string): Promise<boolean> {
         return {
           id: row.id || '',
           source: row.source || '',  // Keep for backward compatibility
-          catalog_id: catalogId,
+          catalog_id: Number(catalogId),  // Explicit number conversion
           hash: row.hash || '',
           text: row.text || '',
           vector: toNativeArray(row.vector),
           concept_ids: conceptIds,
           category_ids: categoryIds,
-          chunk_index: row.chunk_index || 0,
+          chunk_index: typeof row.chunk_index === 'number' ? row.chunk_index : 0,
           loc: row.loc || '{}'
           // REMOVED: concepts, concept_categories, concept_density
         };
