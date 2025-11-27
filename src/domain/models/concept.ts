@@ -26,6 +26,9 @@ export interface Concept {
   /** The concept name (e.g., 'dependency injection', 'REST API') */
   concept: string;
   
+  /** LLM-generated one-sentence summary of the concept */
+  summary?: string;
+  
   /** 
    * Document catalog IDs where this concept appears (hash-based integers).
    * Primary authoritative field for document references.

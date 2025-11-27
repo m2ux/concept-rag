@@ -211,14 +211,22 @@ export class ConceptIndexBuilder {
             // Generate hash-based integer ID from concept name (stable across rebuilds)
             const conceptId = hashToId(concept.concept);
             
+            // Ensure array fields have at least one element for LanceDB type inference
+            // Empty arrays cause "Cannot infer list vector from empty array" errors
+            const ensureNonEmpty = <T>(arr: T[] | undefined, placeholder: T): T[] => {
+                if (!arr || arr.length === 0) return [placeholder];
+                return arr;
+            };
+            
             return {
                 id: conceptId,  // Hash-based integer ID (stable)
                 concept: concept.concept,
-                catalog_ids: concept.catalog_ids,  // Native array of hash-based IDs
-                related_concept_ids: concept.related_concept_ids || [],  // Native array of hash-based IDs
-                synonyms: concept.synonyms || [],  // Native array
-                broader_terms: concept.broader_terms || [],  // Native array
-                narrower_terms: concept.narrower_terms || [],  // Native array
+                summary: concept.summary || '',  // LLM-generated summary
+                catalog_ids: ensureNonEmpty(concept.catalog_ids, 0),  // Native array of hash-based IDs
+                related_concept_ids: ensureNonEmpty(concept.related_concept_ids, 0),  // Native array of hash-based IDs
+                synonyms: ensureNonEmpty(concept.synonyms, ''),  // Native array
+                broader_terms: ensureNonEmpty(concept.broader_terms, ''),  // Native array
+                narrower_terms: ensureNonEmpty(concept.narrower_terms, ''),  // Native array
                 weight: concept.weight,
                 vector: concept.embeddings
             };

@@ -51,9 +51,16 @@ async function validateNormalizedSchema(dbPath: string) {
       
       // Required fields
       results.push({ check: 'catalog.id exists', passed: 'id' in catalogSample });
-      results.push({ check: 'catalog.text exists', passed: 'text' in catalogSample });
+      results.push({ check: 'catalog.summary exists', passed: 'summary' in catalogSample });
       results.push({ check: 'catalog.hash exists', passed: 'hash' in catalogSample });
       results.push({ check: 'catalog.vector exists', passed: 'vector' in catalogSample });
+      
+      // Text field should be renamed to summary
+      results.push({ 
+        check: 'catalog.text removed (renamed to summary)', 
+        passed: !('text' in catalogSample),
+        details: 'text' in catalogSample ? 'Field still exists (should be renamed to summary)' : undefined
+      });
       
       // Category IDs should be array (or Arrow Vector)
       if ('category_ids' in catalogSample) {
@@ -165,6 +172,7 @@ async function validateNormalizedSchema(dbPath: string) {
       // Required fields
       results.push({ check: 'concepts.id exists', passed: 'id' in conceptSample });
       results.push({ check: 'concepts.concept exists', passed: 'concept' in conceptSample });
+      results.push({ check: 'concepts.summary exists', passed: 'summary' in conceptSample });
       results.push({ check: 'concepts.vector exists', passed: 'vector' in conceptSample });
       
       // catalog_ids should be array (or Arrow Vector)
@@ -223,6 +231,26 @@ async function validateNormalizedSchema(dbPath: string) {
     }
   } else {
     results.push({ check: 'concepts table exists', passed: false });
+  }
+  
+  // ========== CATEGORIES CHECKS ==========
+  if (tableNames.includes('categories')) {
+    console.log('\n📁 Validating categories table...');
+    const categories = await db.openTable('categories');
+    const categorySample = (await categories.query().limit(1).toArray())[0];
+    
+    if (categorySample) {
+      const categoryFields = Object.keys(categorySample);
+      console.log(`  Fields: ${categoryFields.join(', ')}`);
+      
+      // Required fields
+      results.push({ check: 'categories.id exists', passed: 'id' in categorySample });
+      results.push({ check: 'categories.category exists', passed: 'category' in categorySample });
+      results.push({ check: 'categories.summary exists', passed: 'summary' in categorySample });
+      results.push({ check: 'categories.vector exists', passed: 'vector' in categorySample });
+    } else {
+      results.push({ check: 'categories has data', passed: false, details: 'Table is empty' });
+    }
   }
   
   // ========== REPORT ==========

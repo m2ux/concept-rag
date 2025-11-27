@@ -169,7 +169,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
         conceptIds = Array.from(row.concept_ids.toArray());
       } else if (typeof row.concept_ids === 'string') {
         // JSON string
-        conceptIds = parseJsonField(row.concept_ids);
+        conceptIds = parseJsonField<number>(row.concept_ids);
       }
     }
     
@@ -186,7 +186,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
         categoryIds = Array.from(row.category_ids.toArray());
       } else if (typeof row.category_ids === 'string') {
         // JSON string
-        categoryIds = parseJsonField(row.category_ids);
+        categoryIds = parseJsonField<number>(row.category_ids);
       }
     }
     
