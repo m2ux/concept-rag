@@ -42,7 +42,7 @@ USE THIS TOOL WHEN:
 
 DO NOT USE for:
 - Searching for information (use catalog_search, chunks_search, or broad_chunks_search)
-- Finding where a concept is discussed (use concept_search)
+- Finding where a concept is discussed (use concept_chunks)
 - General document discovery (use catalog_search)
 
 RETURNS: Complete concept inventory (typically 80-150+ concepts) organized by type: primary_concepts, technical_terms, related_concepts. Also includes categories and document summary if requested.

@@ -10,7 +10,7 @@ export interface ConceptSearchParams extends ToolParams {
 }
 
 /**
- * MCP tool for concept search.
+ * MCP tool for finding chunks by concept.
  * 
  * This is a thin adapter that:
  * - Validates MCP parameters
@@ -19,7 +19,7 @@ export interface ConceptSearchParams extends ToolParams {
  * 
  * Business logic is in ConceptSearchService for testability and reusability.
  */
-export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
+export class ConceptChunksTool extends BaseTool<ConceptSearchParams> {
   private validator = new InputValidator();
   
   constructor(
@@ -28,7 +28,7 @@ export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
     super();
   }
   
-  name = "concept_search";
+  name = "concept_chunks";
   description = `Find all chunks tagged with a specific concept from the concept-enriched index. 
   
 USE THIS TOOL WHEN:

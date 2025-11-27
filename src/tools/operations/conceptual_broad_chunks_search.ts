@@ -35,7 +35,7 @@ USE THIS TOOL WHEN:
 DO NOT USE for:
 - Finding documents by title or getting document overviews (use catalog_search instead)
 - Searching within a single known document (use chunks_search instead)
-- Finding semantically-tagged concept discussions (use concept_search for higher precision)
+- Finding semantically-tagged concept discussions (use concept_chunks for higher precision)
 
 RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, concept, and WordNet scores. May include false positives based on keyword matches.`;
   inputSchema = {

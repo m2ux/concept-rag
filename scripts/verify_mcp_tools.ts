@@ -108,7 +108,7 @@ async function verifyMCPTools() {
     failed++;
   }
 
-  // Test findByConceptName (critical for concept_search tool)
+  // Test findByConceptName (critical for concept_chunks tool)
   console.log('\n🔎 Testing findByConceptName...');
   try {
     // Get a concept that exists

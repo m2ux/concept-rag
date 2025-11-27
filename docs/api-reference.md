@@ -11,7 +11,7 @@ Concept-RAG provides **10 MCP tools** organized into four categories:
 | Category | Tools | Purpose |
 |----------|-------|---------|
 | **Document Discovery** | `catalog_search` | Find documents by title, author, topic |
-| **Content Search** | `broad_chunks_search`, `chunks_search`, `concept_search` | Search within document content |
+| **Content Search** | `broad_chunks_search`, `chunks_search`, `concept_chunks` | Search within document content |
 | **Concept Analysis** | `extract_concepts`, `source_concepts`, `concept_sources` | Analyze and track concepts |
 | **Category Browsing** | `category_search`, `list_categories`, `list_concepts_in_category` | Browse by domain/category |
 
@@ -124,7 +124,7 @@ Search within a single known document using hybrid search.
 
 ---
 
-### `concept_search`
+### `concept_chunks`
 
 Find all chunks tagged with a specific concept from the concept-enriched index.
 
@@ -390,7 +390,7 @@ What do you want to find?
 ├── Content (specific passages)
 │   ├── Across all documents → broad_chunks_search
 │   ├── Within one document → chunks_search
-│   └── By concept tag → concept_search
+│   └── By concept tag → concept_chunks
 │
 ├── Concept Analysis
 │   ├── All concepts from a document → extract_concepts
@@ -423,7 +423,7 @@ extract_concepts → understand document's conceptual structure
 
 **3. Track a Concept**
 ```
-concept_search → find where concept is discussed
+concept_chunks → find where concept is discussed
     ↓
 source_concepts → get source attribution
 ```
@@ -469,7 +469,7 @@ All tools return structured error responses:
 | `catalog_search` | 50-200ms |
 | `broad_chunks_search` | 100-500ms |
 | `chunks_search` | 50-150ms |
-| `concept_search` | 50-200ms |
+| `concept_chunks` | 50-200ms |
 | `extract_concepts` | 100-300ms |
 | `category_search` | 30-130ms |
 | `list_categories` | 10-50ms |

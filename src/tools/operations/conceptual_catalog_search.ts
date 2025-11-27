@@ -34,7 +34,7 @@ USE THIS TOOL WHEN:
 DO NOT USE for:
 - Listing all documents (use list_categories then category_search instead)
 - Finding specific information within documents (use broad_chunks_search or chunks_search)
-- Tracking specific concept usage across chunks (use concept_search)
+- Tracking specific concept usage across chunks (use concept_chunks)
 
 RETURNS: Top 10 documents with text previews, hybrid scores (including strong title matching bonus), matched concepts, and query expansion details.`;
   inputSchema = {

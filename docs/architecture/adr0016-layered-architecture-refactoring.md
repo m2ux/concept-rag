@@ -228,7 +228,7 @@ Simpler three-layer (Presentation/Business/Data).
 1. Create domain models and interfaces
 2. Implement LanceDB repositories
 3. Create ApplicationContainer
-4. Migrate pilot tool (ConceptSearchTool)
+4. Migrate pilot tool (ConceptChunksTool)
 5. Migrate remaining tools
 6. Eliminate global state
 7. Fix performance (O(n) → O(log n))
@@ -252,7 +252,7 @@ Simpler three-layer (Presentation/Business/Data).
 - Constructor injection pattern
 
 **3. Pilot Migration:** [Source: `02-implementation-plan.md`, line 24]
-- ConceptSearchTool migrated first
+- ConceptChunksTool migrated first
 - Validated approach before migrating all tools
 - Risk mitigation strategy
 

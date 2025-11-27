@@ -47,7 +47,7 @@ USE THIS TOOL WHEN:
 
 DO NOT USE for:
 - Getting a merged/union list of all sources (use source_concepts instead)
-- Finding specific text passages (use concept_search instead)
+- Finding specific text passages (use concept_chunks instead)
 - Finding documents by title (use catalog_search instead)
 
 RETURNS: Array where results[i] contains sources for concepts_searched[i]. Each concept may have 0 or more sources. Sources include title, author, year, and source_path.`;

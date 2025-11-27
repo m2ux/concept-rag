@@ -17,7 +17,7 @@ The initial architecture used only two tables: catalog (document summaries) and 
 **Decision Drivers:**
 * 37,000+ concepts across 165 documents need efficient storage [Source: production database stats]
 * Concepts are shared across multiple documents [Observation: cross-document concepts]
-* Need for concept-based search ("find all documents about X concept") [Use case: concept_search tool]
+* Need for concept-based search ("find all documents about X concept") [Use case: concept_chunks tool]
 * Avoid duplication (same concept appears in many documents) [Efficiency: normalization]
 * Enable concept graph (concept relationships) [Feature: related concepts]
 * Fast lookups by concept name [Performance: indexed access]
@@ -100,7 +100,7 @@ Chunks (N) ──< (N) Concepts      // Chunks tagged with concepts
 **Positive:**
 * **Storage efficiency:** Concepts deduplicated (single storage per unique concept) [Benefit: normalization]
 * **Fast concept lookup:** Direct table query by concept name [Performance: indexed]
-* **Cross-document search:** "Find all docs with concept X" is simple query [Feature: concept_search]
+* **Cross-document search:** "Find all docs with concept X" is simple query [Feature: concept_chunks]
 * **Concept graph:** Relationships stored centrally [Feature: related_concepts field]
 * **Statistics:** Easy to compute concept frequency, co-occurrence [Analytics: weight field]
 * **Scalability:** 37K concepts in production, sub-second lookups [Source: production stats]

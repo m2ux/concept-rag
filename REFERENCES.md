@@ -153,7 +153,7 @@ This approach keeps code comments focused on *what* and *why* specific to this c
 Inspired by this project's recursive self-improvement, you can use concept-rag to inform your own software design:
 
 1. **Index your library** - Load software design and architecture books into the concept-rag database
-2. **Search during design** - Use `concept_search` to find patterns relevant to your current problem (e.g., "how to handle domain exceptions", "repository pattern implementation")
+2. **Search during design** - Use `concept_chunks` to find patterns relevant to your current problem (e.g., "how to handle domain exceptions", "repository pattern implementation")
 3. **Explore relationships** - Use `broad_chunks_search` to discover related concepts and deepen understanding
 4. **Document sources** - Reference the books and concepts that informed your decisions (as done in this REFERENCES.md)
 
