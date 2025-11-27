@@ -13,11 +13,11 @@ import { ConceptualHybridSearchService } from '../src/infrastructure/search/conc
 import { QueryExpander } from '../src/concepts/query_expander.js';
 
 const TEST_CONCEPTS = [
-  'strategy',                    // Design Patterns - Strategy pattern
-  'strategy versus tactics',     // Art of War - should show Art of War
-  'strategic planning',          // Art of War - another strategy concept
-  'design patterns',             // Clean Architecture
-  'principle of deception'       // Art of War - 9 pages
+  'military strategy (principles of war)',  // Art of War - domain-specific
+  'strategy pattern',                        // Design Patterns - domain-specific
+  'five-factor strategy framework (moral law, heaven, earth, commander, method and discipline)',
+  'design patterns',
+  'feedback loops (balancing and reinforcing)'
 ];
 
 async function main() {
