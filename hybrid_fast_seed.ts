@@ -1058,6 +1058,10 @@ async function createLanceTableWithSimpleEmbeddings(
         } else {
             baseData.text = doc.pageContent;
             baseData.loc = JSON.stringify(doc.metadata.loc || {});
+            // ALWAYS include concept_ids and category_ids for chunks schema (LanceDB needs consistent schema)
+            // Use placeholder [0] for empty arrays to enable LanceDB type inference
+            baseData.concept_ids = [0];  // Will be overwritten below if concepts exist
+            baseData.category_ids = [0]; // Will be overwritten below if categories exist
         }
         
         // Add reserved bibliographic fields for catalog entries
@@ -1089,12 +1093,11 @@ async function createLanceTableWithSimpleEmbeddings(
             // Only add concept_ids to chunks, NOT catalog (concepts are derived from chunks)
             if (!isCatalog) {
                 let conceptNames: string[] = [];
-                if (typeof doc.metadata.concepts === 'object') {
-                    if (doc.metadata.concepts.primary_concepts) {
-                        conceptNames = doc.metadata.concepts.primary_concepts;
-                    }
-                } else if (Array.isArray(doc.metadata.concepts)) {
+                // Check Array.isArray FIRST since arrays are also objects
+                if (Array.isArray(doc.metadata.concepts)) {
                     conceptNames = doc.metadata.concepts;
+                } else if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.primary_concepts) {
+                    conceptNames = doc.metadata.concepts.primary_concepts;
                 }
                 
                 if (conceptNames.length > 0) {
@@ -1545,6 +1548,44 @@ async function rebuildConceptIndexFromExistingData(
     const conceptRecords = await conceptBuilder.buildConceptIndex(catalogDocs, allChunks);
     
     console.log(`  ✅ Built ${conceptRecords.length} unique concept records`);
+    
+    // Build chunk_ids for each concept (reverse mapping from chunks → concepts)
+    console.log("  🔗 Building concept → chunk_ids mapping...");
+    const conceptToChunkIds = new Map<number, number[]>();
+    
+    for (const chunk of allChunkRecords) {
+        const chunkId = chunk.id;
+        let conceptIds: number[] = [];
+        
+        // Parse concept_ids (native array or JSON string or Arrow Vector)
+        if (chunk.concept_ids) {
+            if (Array.isArray(chunk.concept_ids)) {
+                conceptIds = chunk.concept_ids;
+            } else if (typeof chunk.concept_ids === 'object' && 'toArray' in chunk.concept_ids) {
+                conceptIds = Array.from(chunk.concept_ids.toArray());
+            } else if (typeof chunk.concept_ids === 'string') {
+                try { conceptIds = JSON.parse(chunk.concept_ids); } catch (e) {}
+            }
+        }
+        
+        // Add this chunk to each concept's chunk_ids
+        for (const conceptId of conceptIds) {
+            if (!conceptToChunkIds.has(conceptId)) {
+                conceptToChunkIds.set(conceptId, []);
+            }
+            conceptToChunkIds.get(conceptId)!.push(chunkId);
+        }
+    }
+    
+    // Add chunk_ids to concept records
+    for (const record of conceptRecords) {
+        const conceptId = hashToId(record.concept);
+        const chunkIds = conceptToChunkIds.get(conceptId) || [];
+        record.chunk_ids = chunkIds;
+    }
+    
+    const conceptsWithChunks = conceptRecords.filter(c => c.chunk_ids && c.chunk_ids.length > 0).length;
+    console.log(`  ✅ Mapped ${conceptsWithChunks} concepts to ${allChunkRecords.length} chunks`);
     
     // Generate summaries for concepts using LLM
     const conceptNames = conceptRecords.map(c => c.concept);
@@ -2047,6 +2088,52 @@ async function hybridFastSeed() {
         const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogRecords);
         
         console.log(`✅ Built ${conceptRecords.length} unique concept records`);
+        
+        // Build chunk_ids for each concept (reverse mapping from chunks → concepts)
+        console.log("🔗 Building concept → chunk_ids mapping...");
+        try {
+            const chunksTable = await db.openTable(defaults.CHUNKS_TABLE_NAME);
+            const allChunks = await chunksTable.query().limit(1000000).toArray();
+            
+            // Build concept_id → chunk_ids mapping
+            const conceptToChunkIds = new Map<number, number[]>();
+            
+            for (const chunk of allChunks) {
+                const chunkId = chunk.id;
+                let conceptIds: number[] = [];
+                
+                // Parse concept_ids (native array or JSON string or Arrow Vector)
+                if (chunk.concept_ids) {
+                    if (Array.isArray(chunk.concept_ids)) {
+                        conceptIds = chunk.concept_ids;
+                    } else if (typeof chunk.concept_ids === 'object' && 'toArray' in chunk.concept_ids) {
+                        conceptIds = Array.from(chunk.concept_ids.toArray());
+                    } else if (typeof chunk.concept_ids === 'string') {
+                        try { conceptIds = JSON.parse(chunk.concept_ids); } catch (e) {}
+                    }
+                }
+                
+                // Add this chunk to each concept's chunk_ids
+                for (const conceptId of conceptIds) {
+                    if (!conceptToChunkIds.has(conceptId)) {
+                        conceptToChunkIds.set(conceptId, []);
+                    }
+                    conceptToChunkIds.get(conceptId)!.push(chunkId);
+                }
+            }
+            
+            // Add chunk_ids to concept records
+            for (const record of conceptRecords) {
+                const conceptId = hashToId(record.concept);
+                const chunkIds = conceptToChunkIds.get(conceptId) || [];
+                record.chunk_ids = chunkIds;
+            }
+            
+            const conceptsWithChunks = conceptRecords.filter(c => c.chunk_ids && c.chunk_ids.length > 0).length;
+            console.log(`  ✅ Mapped ${conceptsWithChunks} concepts to ${allChunks.length} chunks`);
+        } catch (e: any) {
+            console.warn(`  ⚠️  Could not build chunk_ids mapping: ${e.message}`);
+        }
         
         // Generate summaries for concepts using LLM
         const conceptNames = conceptRecords.map(c => c.concept);

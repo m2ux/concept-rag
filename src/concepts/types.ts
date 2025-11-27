@@ -13,6 +13,7 @@ export interface ConceptRecord {
     concept: string;
     summary?: string;
     catalog_ids: number[];
+    chunk_ids?: number[];
     related_concept_ids?: number[];
     related_concepts?: string[];
     synonyms?: string[];

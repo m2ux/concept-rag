@@ -195,6 +195,17 @@ async function validateNormalizedSchema(dbPath: string) {
         });
       }
       
+      // chunk_ids should exist and be array (for fast concept → chunks lookups)
+      results.push({ check: 'concepts.chunk_ids exists', passed: 'chunk_ids' in conceptSample });
+      if ('chunk_ids' in conceptSample) {
+        const isArray = isArrayLike(conceptSample.chunk_ids);
+        results.push({ 
+          check: 'concepts.chunk_ids is array', 
+          passed: isArray,
+          details: isArray ? undefined : `Got type: ${typeof conceptSample.chunk_ids}`
+        });
+      }
+      
       // Deprecated fields should NOT exist
       results.push({ 
         check: 'concepts.sources removed', 
