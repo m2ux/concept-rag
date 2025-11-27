@@ -9,7 +9,6 @@ export interface ScoreComponents {
   vectorScore: number;
   bm25Score: number;
   titleScore: number;
-  conceptScore: number;
   wordnetScore: number;
 }
 
@@ -241,22 +240,23 @@ export function calculateWordNetBonus(
  * Calculate final hybrid score from component scores.
  * 
  * Applies weighted combination of all scoring signals:
- * - 25% Vector similarity (semantic understanding)
- * - 25% BM25 (keyword relevance)
- * - 20% Title matching (document relevance)
- * - 20% Concept matching (conceptual alignment)
- * - 10% WordNet (semantic enrichment)
+ * - 30% Vector similarity (semantic understanding)
+ * - 30% BM25 (keyword relevance)
+ * - 25% Title matching (document relevance)
+ * - 15% WordNet (semantic enrichment)
+ * 
+ * Note: Concept scoring was removed - use concept_search tool instead
+ * for concept-based discovery.
  * 
  * @param components - Individual score components
  * @returns Final hybrid score from 0.0 to 1.0
  */
 export function calculateHybridScore(components: ScoreComponents): number {
   return (
-    (components.vectorScore * 0.25) +
-    (components.bm25Score * 0.25) +
-    (components.titleScore * 0.20) +
-    (components.conceptScore * 0.20) +
-    (components.wordnetScore * 0.10)
+    (components.vectorScore * 0.30) +
+    (components.bm25Score * 0.30) +
+    (components.titleScore * 0.25) +
+    (components.wordnetScore * 0.15)
   );
 }
 
