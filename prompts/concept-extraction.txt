@@ -35,7 +35,19 @@ IMPORTANT RULES:
 - Concepts that unify multiple discussions
 - Book/chapter titles if they're conceptual (e.g., "innovation algorithm")
 
+⚠️ SPECIFICITY REQUIREMENTS:
+- Avoid generic single words that could be ambiguous across domains
+- Add domain context when a term is overloaded:
+  → "strategy" → "strategy pattern" (software) or "military strategy" (warfare)
+  → "factory" → "factory pattern" (software) or "factory automation" (manufacturing)
+  → "observer" → "observer pattern" (software) or "participant observation" (research)
+- Prefer "X pattern", "X principle", "X framework" over bare terms when applicable
+- If a concept is domain-specific, include enough context for disambiguation
+  → Good: "separation of concerns", "dependency injection", "feedback loops"
+  → Bad: "separation", "dependency", "feedback" (too generic)
+
 ❌ DO NOT EXTRACT:
+- Generic single words without domain context (e.g., "strategy", "pattern", "system")
 - Specific instances (e.g., "the 2015 study", "Company X's approach")  
 - Temporal phrases (e.g., "during the crisis", "in recent years")
 - Pure actions without conceptual content (e.g., "balancing three priorities")
@@ -48,6 +60,14 @@ Use standard academic/professional domain names:
 - Good: "innovation methodology", "systems engineering", "cognitive psychology"
 - Bad: "innovation", "systems", "psychology" (too broad)
 - Bad: "TRIZ su-field analysis" (too specific)
+
+RELATED CONCEPTS:
+Include concepts from adjacent domains that share semantic overlap:
+- If extracting "strategy pattern", related_concepts might include: 
+  "military strategy", "strategic planning", "behavioral patterns"
+- If extracting "feedback loops", related might include:
+  "control systems", "cybernetics", "reinforcement learning"
+- This enables cross-domain concept discovery and semantic linking
 
 Use lowercase. Output complete JSON with ALL fields fully populated.
 

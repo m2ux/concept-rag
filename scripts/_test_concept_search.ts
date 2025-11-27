@@ -13,9 +13,9 @@ import { ConceptualHybridSearchService } from '../src/infrastructure/search/conc
 import { QueryExpander } from '../src/concepts/query_expander.js';
 
 const TEST_CONCEPTS = [
-  'strategy',                    // Design Patterns - well matched
-  'nine situations framework',   // Art of War - 21 pages
-  'operational planning',        // Art of War - 12 pages
+  'strategy',                    // Design Patterns - Strategy pattern
+  'strategy versus tactics',     // Art of War - should show Art of War
+  'strategic planning',          // Art of War - another strategy concept
   'design patterns',             // Clean Architecture
   'principle of deception'       // Art of War - 9 pages
 ];
