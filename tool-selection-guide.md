@@ -118,13 +118,13 @@ START: User asks a question
 
 **What It Returns:**
 - Top 10 chunks ranked by hybrid score
-- Scoring breakdown: vector, BM25, concept, WordNet
+- Scoring breakdown: vector, BM25, title, WordNet
 - Matched concepts and expanded query terms
 - May include false positives from keyword matching
 
 **Technical Details:**
 - Hybrid search: vector similarity + BM25 keyword matching
-- Concept scoring contributes but chunks may have 0.000 concept scores
+- Title scoring for source path relevance
 - WordNet expansion for synonyms
 - Searches entire chunks table across all documents
 
@@ -683,16 +683,15 @@ list_concepts_in_category(category="distributed systems", sortBy="documentCount"
 - **hybrid**: Combined score from multiple signals
 - **vector**: Semantic similarity (0-1)
 - **bm25**: Keyword frequency/relevance (0-1)
-- **concept**: Concept match score (often 0.000)
+- **title**: Title/source path match (0-1)
 - **wordnet**: Synonym expansion score (0-1)
 - May include false positives
 
 ### catalog_search Scoring
 - **hybrid**: Combined score with title boost
-- **vector**: Semantic similarity (often negative, -0.4 to -0.6)
+- **vector**: Semantic similarity (0-1)
 - **bm25**: Keyword in summary (0-1)
-- **title**: Title match (0 or 10.000 - huge boost!)
-- **concept**: Usually 0.000
+- **title**: Title match (0-1, significant boost for matches)
 - **wordnet**: Synonym expansion (0-1)
 
 ### chunks_search Scoring
