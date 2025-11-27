@@ -17,7 +17,7 @@ const TEST_CONCEPTS = [
   'strategy pattern',                        // Design Patterns - domain-specific
   'five-factor strategy framework (moral law, heaven, earth, commander, method and discipline)',
   'design patterns',
-  'feedback loops (balancing and reinforcing)'
+  'reinforcing feedback loop (self‑amplifying / exponential feedback)'  // Thinking in Systems
 ];
 
 async function main() {

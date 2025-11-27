@@ -10,7 +10,7 @@
  * with lexical linking (related_ids - concepts sharing significant words).
  * 
  * Usage:
- *   npx tsx scripts/link_related_concepts.ts [--db <path>] [--dry-run] [--min-word-length 4]
+ *   npx tsx scripts/link_related_concepts.ts [--db <path>] [--dry-run] [--min-word-length 5]
  */
 
 import * as lancedb from '@lancedb/lancedb';
@@ -132,7 +132,7 @@ async function main() {
   const dbPathIdx = args.indexOf('--db');
   const dbPath = dbPathIdx >= 0 ? args[dbPathIdx + 1] : './test_db';
   const minLengthIdx = args.indexOf('--min-word-length');
-  const minWordLength = minLengthIdx >= 0 ? parseInt(args[minLengthIdx + 1]) : 4;
+  const minWordLength = minLengthIdx >= 0 ? parseInt(args[minLengthIdx + 1]) : 5;
   
   console.log(`📂 Database: ${dbPath}`);
   console.log(`📏 Min word length: ${minWordLength}`);

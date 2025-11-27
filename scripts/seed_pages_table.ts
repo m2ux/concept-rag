@@ -204,41 +204,35 @@ function buildPageMarkedContent(pages: Document[]): string {
   return sections.join('\n\n---\n\n');
 }
 
-function buildExtractionPrompt(markedContent: string, validConcepts: string[]): string {
-  // Provide the list of valid concepts from the concepts table
-  const conceptList = validConcepts.slice(0, 500).join(', '); // Limit to avoid token overflow
-  
+function buildExtractionPrompt(markedContent: string, _validConcepts?: string[]): string {
   return `You are analyzing a document divided into pages marked with [PAGE N].
 
-TASK: Identify which concepts from the VALID CONCEPTS LIST appear on which pages.
-
-VALID CONCEPTS (use ONLY these exact names):
-${conceptList}
+TASK: Extract significant concepts and indicate which page(s) each appears on.
 
 DOCUMENT:
 ${markedContent}
 
 INSTRUCTIONS:
-1. For each concept from the VALID CONCEPTS LIST that appears in the document:
-   - Use the EXACT concept name as provided (case-insensitive matching)
-   - List PAGE NUMBERS where it appears or is discussed
+1. Extract concepts at THREE levels:
+   - THEMATIC: Core themes and principles
+   - METHODOLOGICAL: Frameworks, approaches, theories
+   - TECHNICAL: Specific terms, techniques, methods
+
+2. For each concept, list PAGE NUMBERS where it appears or is discussed
    - Include pages where concept is implied, not just literally mentioned
+   - A concept may span multiple pages
 
-2. ONLY include concepts from the VALID CONCEPTS LIST above
-   - Do NOT invent new concept names
-   - If a concept isn't in the list, don't include it
-
-3. Rate confidence: "high" (explicit mention), "medium" (clear implication), "low" (inferred)
+4. Rate confidence: "high" (explicit mention), "medium" (clear implication), "low" (inferred)
 
 Return ONLY valid JSON:
 {
   "concepts": [
-    {"concept": "exact name from list", "type": "thematic|methodological|technical", "pages": [1,2,5], "confidence": "high"}
+    {"concept": "concept name", "type": "thematic|methodological|technical", "pages": [1,2,5], "confidence": "high"}
   ],
   "categories": ["domain1", "domain2"]
 }
 
-Be thorough - check each valid concept against each page.`;
+Extract 50-150 concepts. Be thorough with page numbers.`;
 }
 
 async function callLLM(prompt: string): Promise<string> {
@@ -282,12 +276,25 @@ function parseExtractionResult(response: string): ExtractionResult {
     if (match) jsonText = match[1].trim();
   }
   
-  const parsed = JSON.parse(jsonText);
+  // Try to find JSON object in response if not starting with {
+  if (!jsonText.startsWith('{')) {
+    const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      jsonText = jsonMatch[0];
+    }
+  }
   
-  return {
-    concepts: parsed.concepts || [],
-    categories: parsed.categories || []
-  };
+  try {
+    const parsed = JSON.parse(jsonText);
+    return {
+      concepts: parsed.concepts || [],
+      categories: parsed.categories || []
+    };
+  } catch (e) {
+    // Log first 200 chars of response for debugging
+    console.error(`     JSON parse error. Response preview: ${response.slice(0, 200)}...`);
+    throw e;
+  }
 }
 
 // ============================================================================
@@ -296,11 +303,10 @@ function parseExtractionResult(response: string): ExtractionResult {
 
 async function extractConceptsWithRetry(
   pages: Document[],
-  maxRetries: number,
-  validConcepts: string[]
+  maxRetries: number
 ): Promise<ExtractionResult> {
   const markedContent = buildPageMarkedContent(pages);
-  const prompt = buildExtractionPrompt(markedContent, validConcepts);
+  const prompt = buildExtractionPrompt(markedContent);
   
   let lastError: Error | null = null;
   
@@ -322,29 +328,77 @@ async function extractConceptsWithRetry(
   throw lastError;
 }
 
+interface NewConceptRecord {
+  id: number;
+  concept: string;
+  catalog_ids: number[];
+  chunk_ids: number[];
+  adjacent_ids: number[];
+  related_ids: number[];
+  synonyms: string[];
+  broader_terms: string[];
+  narrower_terms: string[];
+  summary: string;
+  weight: number;
+  vector: number[];
+}
+
+interface CreatePageRecordsResult {
+  pageRecords: PageRecord[];
+  newConcepts: NewConceptRecord[];
+}
+
 function createPageRecords(
   catalogId: number,
   pages: Document[],
   extractionResult: ExtractionResult,
   conceptNameToId: Map<string, number>
-): PageRecord[] {
+): CreatePageRecordsResult {
   const pageRecords: PageRecord[] = [];
+  const newConcepts: NewConceptRecord[] = [];
+  const newConceptNames = new Set<string>(); // Track to avoid duplicates
   
-  // Build page -> concepts map using ONLY IDs from concepts table
+  // Build page -> concepts map
   const pageConceptsMap = new Map<number, Set<number>>();
-  let matchedConcepts = 0;
-  let unmatchedConcepts = 0;
+  let existingCount = 0;
+  let newCount = 0;
   
   for (const concept of extractionResult.concepts) {
-    // Exact lookup by name (lowercase) to get ID from concepts table
-    const conceptId = conceptNameToId.get(concept.concept.toLowerCase().trim());
+    const conceptKey = concept.concept.toLowerCase().trim();
+    if (!conceptKey) continue;
+    
+    // Check if concept exists in table
+    let conceptId = conceptNameToId.get(conceptKey);
     
     if (conceptId === undefined) {
-      unmatchedConcepts++;
-      continue; // Skip - concept not in table, don't generate fake ID
+      // NEW CONCEPT - generate ID and queue for insertion to concepts table
+      conceptId = hashToId(conceptKey);
+      
+      // Only add once per document
+      if (!newConceptNames.has(conceptKey)) {
+        newConceptNames.add(conceptKey);
+        newConcepts.push({
+          id: conceptId,
+          concept: conceptKey,
+          catalog_ids: [catalogId],
+          chunk_ids: [0],
+          adjacent_ids: [0],
+          related_ids: [0],
+          synonyms: [''],
+          broader_terms: [''],
+          narrower_terms: [''],
+          summary: '',
+          weight: 1.0,
+          vector: generateSimpleEmbedding(conceptKey)
+        });
+        // Add to map so subsequent documents can reference it
+        conceptNameToId.set(conceptKey, conceptId);
+      }
+      newCount++;
+    } else {
+      existingCount++;
     }
     
-    matchedConcepts++;
     for (const pageNum of concept.pages) {
       if (!pageConceptsMap.has(pageNum)) {
         pageConceptsMap.set(pageNum, new Set());
@@ -353,7 +407,7 @@ function createPageRecords(
     }
   }
   
-  console.log(`   📊 Concept matching: ${matchedConcepts} matched, ${unmatchedConcepts} not in table`);
+  console.log(`   📊 Concepts: ${existingCount} existing, ${newCount} NEW → adding ${newConcepts.length} to concepts table`);
   
   // Create page records
   for (const page of pages) {
@@ -376,7 +430,7 @@ function createPageRecords(
     });
   }
   
-  return pageRecords;
+  return { pageRecords, newConcepts };
 }
 
 // ============================================================================
@@ -450,11 +504,15 @@ async function loadCatalogEntries(db: lancedb.Connection): Promise<CatalogEntry[
 // Main Processing
 // ============================================================================
 
+interface ProcessDocumentResult {
+  pageRecords: PageRecord[];
+  newConcepts: NewConceptRecord[];
+}
+
 async function processDocument(
   entry: CatalogEntry,
-  conceptNameToId: Map<string, number>,
-  validConcepts: string[]
-): Promise<PageRecord[]> {
+  conceptNameToId: Map<string, number>
+): Promise<ProcessDocumentResult> {
   const sourcePath = entry.source;
   const filename = path.basename(sourcePath);
   
@@ -472,16 +530,16 @@ async function processDocument(
   
   if (pages.length === 0) {
     console.log(`   ⚠️  No pages found, skipping`);
-    return [];
+    return { pageRecords: [], newConcepts: [] };
   }
   
-  // Extract concepts with page numbers (using ONLY valid concepts from table)
-  console.log(`   🤖 Extracting concepts (from ${validConcepts.length} valid concepts)...`);
-  const extractionResult = await extractConceptsWithRetry(pages, CONFIG.MAX_RETRIES, validConcepts);
+  // Extract concepts freely - LLM is the SOURCE of concepts
+  console.log(`   🤖 Extracting concepts (LLM free extraction)...`);
+  const extractionResult = await extractConceptsWithRetry(pages, CONFIG.MAX_RETRIES);
   console.log(`   ✅ Extracted ${extractionResult.concepts.length} concepts`);
   
-  // Create page records
-  const pageRecords = createPageRecords(
+  // Create page records AND collect new concepts for concepts table
+  const { pageRecords, newConcepts } = createPageRecords(
     entry.id,
     pages,
     extractionResult,
@@ -496,7 +554,7 @@ async function processDocument(
   ).length;
   console.log(`   📊 Pages with concepts: ${pagesWithConcepts}/${pageRecords.length}`);
   
-  return pageRecords;
+  return { pageRecords, newConcepts };
 }
 
 async function main() {
@@ -533,8 +591,15 @@ async function main() {
   
   // Load existing data
   const conceptNameToId = await loadConceptNameToIdMap(db);
-  const validConcepts = Array.from(conceptNameToId.keys()); // Get all concept names
   let catalogEntries = await loadCatalogEntries(db);
+  
+  // Open concepts table for adding new concepts
+  let conceptsTable: lancedb.Table | null = null;
+  try {
+    conceptsTable = await db.openTable('concepts');
+  } catch {
+    console.log('⚠️  No concepts table found - will create new concepts');
+  }
   
   console.log(`📚 Found ${catalogEntries.length} catalog entries`);
   
@@ -583,15 +648,19 @@ async function main() {
   const pagesTable = await ensurePagesTable(db);
   
   // Process in batches
-  let batchRecords: PageRecord[] = [];
+  let batchPageRecords: PageRecord[] = [];
+  let batchNewConcepts: NewConceptRecord[] = [];
   let processedInBatch = 0;
+  let totalNewConcepts = 0;
   
   for (let i = 0; i < toProcess.length; i++) {
     const entry = toProcess[i];
     
     try {
-      const pageRecords = await processDocument(entry, conceptNameToId, validConcepts);
-      batchRecords.push(...pageRecords);
+      const { pageRecords, newConcepts } = await processDocument(entry, conceptNameToId);
+      batchPageRecords.push(...pageRecords);
+      batchNewConcepts.push(...newConcepts);
+      totalNewConcepts += newConcepts.length;
       
       checkpoint.processedCatalogIds.push(entry.id);
       checkpoint.totalProcessed++;
@@ -606,10 +675,18 @@ async function main() {
     
     // Save batch and checkpoint
     if (processedInBatch >= batchSize || i === toProcess.length - 1) {
-      if (batchRecords.length > 0) {
-        console.log(`\n💾 Saving batch: ${batchRecords.length} page records...`);
-        await pagesTable.add(batchRecords);
-        batchRecords = [];
+      // Add new concepts to concepts table FIRST (they're the canonical source)
+      if (batchNewConcepts.length > 0 && conceptsTable) {
+        console.log(`\n💡 Adding ${batchNewConcepts.length} NEW concepts to concepts table...`);
+        await conceptsTable.add(batchNewConcepts);
+        batchNewConcepts = [];
+      }
+      
+      // Add page records (which reference concept IDs)
+      if (batchPageRecords.length > 0) {
+        console.log(`💾 Saving batch: ${batchPageRecords.length} page records...`);
+        await pagesTable.add(batchPageRecords);
+        batchPageRecords = [];
       }
       
       checkpoint.lastProcessedAt = new Date().toISOString();
@@ -625,9 +702,15 @@ async function main() {
   console.log('📊 SEEDING COMPLETE\n');
   console.log(`Total processed: ${checkpoint.totalProcessed}`);
   console.log(`Total failed: ${checkpoint.totalFailed}`);
+  console.log(`New concepts added: ${totalNewConcepts}`);
   
   const pagesCount = await pagesTable.countRows();
   console.log(`Pages table rows: ${pagesCount}`);
+  
+  if (conceptsTable) {
+    const conceptsCount = await conceptsTable.countRows();
+    console.log(`Concepts table rows: ${conceptsCount}`);
+  }
   
   if (checkpoint.failedSources.length > 0) {
     console.log('\n⚠️  Failed sources:');
