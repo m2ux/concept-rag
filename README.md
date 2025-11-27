@@ -15,24 +15,24 @@ A powerful RAG MCP server that enables LLMs to interact with local PDF/EPUB docu
 ---
 ## 📝 Available Tools
 
-The server provides **11 specialized MCP tools** organized into four categories:
+The server provides **10 specialized MCP tools** organized into four categories:
 
 ### Document Discovery
 | Tool | Description | Example Query |
 |------|-------------|---------------|
-| `catalog_search` | Find documents by title, author, topic | `"What documents do I have about architecture?"` |
+| `catalog_search` | Find documents by topic, title, or author (semantic search) | `"software architecture patterns"` |
 
 ### Content Search
 | Tool | Description | Example Query |
 |------|-------------|---------------|
-| `broad_chunks_search` | Cross-document search (phrases, keywords, questions) | `"How do organizations implement strategic planning?"` |
-| `chunks_search` | Search within a specific known document | `"dependency injection"` + source path |
+| `broad_chunks_search` | Cross-document search (phrases, keywords, topics) | `"implementing dependency injection"` |
+| `chunks_search` | Search within a specific known document | `"SOLID principles"` + source path |
 | `concept_search` | Find chunks tagged with a concept (high precision) | `"innovation"` → semantically-tagged results |
 
 ### Concept Analysis
 | Tool | Description | Example Query |
 |------|-------------|---------------|
-| `extract_concepts` | Export all concepts from a document | `"Extract concepts from Clean Architecture"` |
+| `extract_concepts` | Export all concepts from a document | `"Clean Architecture"` |
 | `source_concepts` | Find documents where concept(s) appear (union) | `["TDD", "BDD"]` → all docs with either |
 | `concept_sources` | Get per-concept source lists (separate arrays) | `["TDD", "BDD"]` → sources for each |
 
@@ -40,7 +40,7 @@ The server provides **11 specialized MCP tools** organized into four categories:
 | Tool | Description | Example Query |
 |------|-------------|---------------|
 | `category_search` | Browse documents by category/domain | `"software engineering"` |
-| `list_categories` | Discover available categories | `"What categories exist?"` |
+| `list_categories` | List all categories in your library | *(no query required)* |
 | `list_concepts_in_category` | Find concepts in a category | `"distributed systems"` |
 
 **📖 Full API documentation:** See [docs/api-reference.md](docs/api-reference.md) for complete parameter specs.
@@ -161,7 +161,7 @@ src/
 │   ├── query_expander.ts         # Query expansion
 │   └── summary_generator.ts      # LLM summary generation
 ├── wordnet/                      # WordNet integration
-└── tools/                        # MCP tools (11 operations)
+└── tools/                        # MCP tools (10 operations)
 ```
 
 ## 🏗️ Architecture
