@@ -11,8 +11,15 @@
 
 import { ConceptRepository } from '../interfaces/repositories/concept-repository.js';
 import { Result, Ok, Err } from '../functional/result.js';
-import { HybridSearchService } from '../interfaces/services/hybrid-search-service.js';
-import { calculateNameScore, calculateHybridScore } from '../../infrastructure/search/scoring-strategies.js';
+import { EmbeddingService } from '../interfaces/services/embedding-service.js';
+import { 
+  calculateVectorScore,
+  calculateWeightedBM25,
+  calculateNameScore, 
+  calculateWordNetBonus,
+  calculateHybridScore 
+} from '../../infrastructure/search/scoring-strategies.js';
+import { QueryExpander } from '../../concepts/query_expander.js';
 
 /**
  * Parameters for fuzzy concept search.
@@ -65,8 +72,11 @@ export interface FuzzyConceptSearchResult {
   /** BM25 keyword score */
   bm25Score: number;
   
-  /** Title/name matching score */
-  titleScore: number;
+  /** Name matching score (concept name vs query) */
+  nameScore: number;
+  
+  /** WordNet expansion score */
+  wordnetScore: number;
 }
 
 /**
@@ -81,13 +91,14 @@ export type FuzzySearchError =
 /**
  * Fuzzy concept search service with Result-based error handling.
  * 
- * Searches concept summaries using the same hybrid search mechanism
- * as catalog_search, providing semantic + keyword matching.
+ * Searches concept summaries using hybrid search with concept-specific
+ * scoring (name matching instead of title matching).
  */
 export class FuzzyConceptSearchService {
   constructor(
     private conceptRepo: ConceptRepository,
-    private hybridSearchService: HybridSearchService
+    private embeddingService: EmbeddingService,
+    private queryExpander: QueryExpander
   ) {}
   
   /**
@@ -114,7 +125,6 @@ export class FuzzyConceptSearchService {
     
     try {
       // Get the concepts table from repository
-      // We need to access the underlying table for hybrid search
       const conceptsTable = (this.conceptRepo as any).conceptsTable;
       
       if (!conceptsTable) {
@@ -124,23 +134,25 @@ export class FuzzyConceptSearchService {
         });
       }
       
-      // Create adapter for hybrid search
-      const { SearchableCollectionAdapter } = await import('../../infrastructure/lancedb/searchable-collection-adapter.js');
-      const collection = new SearchableCollectionAdapter(conceptsTable, 'concepts');
+      // Step 1: Expand query with WordNet synonyms
+      const expanded = await this.queryExpander.expandQuery(text);
       
-      // Perform hybrid search
-      const rawResults = await this.hybridSearchService.search(
-        collection,
-        text,
-        limit,
-        debug
-      );
+      if (debug) {
+        console.error('\n🔍 Query Expansion:');
+        console.error('  Original:', expanded.original_terms.join(', '));
+        console.error('  + Corpus:', expanded.corpus_terms.slice(0, 5).join(', '));
+        console.error('  + WordNet:', expanded.wordnet_terms.slice(0, 5).join(', '));
+      }
       
-      // Map results to ConceptSearchResult format
-      // Recalculate name-based scoring (instead of title-based)
-      const queryTerms = text.toLowerCase().split(/\s+/).filter(t => t.length > 0);
+      // Step 2: Generate query embedding and perform vector search
+      const queryVector = this.embeddingService.generateEmbedding(text);
+      const vectorResults = await conceptsTable
+        .vectorSearch(queryVector)
+        .limit(limit * 3)  // Get 3x results for reranking
+        .toArray();
       
-      const results: FuzzyConceptSearchResult[] = rawResults.map((row: any) => {
+      // Step 3: Score each result with concept-specific signals
+      const results: FuzzyConceptSearchResult[] = vectorResults.map((row: any) => {
         // Parse array fields (handle Arrow Vectors and JSON strings)
         const parseArrayField = (value: any): any[] => {
           if (!value) return [];
@@ -159,30 +171,40 @@ export class FuzzyConceptSearchService {
         const relatedConcepts = parseArrayField(row.related_concepts);
         const synonyms = parseArrayField(row.synonyms);
         
-        // Get concept name (may be in 'concept' or 'text' field depending on how LanceDB returns it)
+        // Get concept name and summary
         const conceptName = row.concept || '';
+        const summary = row.summary || '';
         
-        // Recalculate name score (replaces title score for concepts)
-        const nameScore = calculateNameScore(queryTerms, conceptName);
+        // Calculate individual scores using concept-specific fields
+        const vectorScore = calculateVectorScore(row._distance || 0);
         
-        // Recalculate hybrid score with name-based matching
-        const vectorScore = row.vectorScore || 0;
-        const bm25Score = row.bm25Score || 0;
-        const conceptScore = row.conceptScore || 0;
-        const wordnetScore = row.wordnetScore || 0;
+        // BM25: search in summary (the main text content for concepts)
+        const bm25Score = calculateWeightedBM25(
+          expanded.all_terms,
+          expanded.weights,
+          summary,  // Use summary instead of text
+          conceptName  // Use concept name instead of source
+        );
         
+        // Name score: boost concepts whose names match query
+        const nameScore = calculateNameScore(expanded.original_terms, conceptName);
+        
+        // WordNet: check if synonyms appear in summary
+        const wordnetScore = calculateWordNetBonus(expanded.wordnet_terms, summary);
+        
+        // Calculate hybrid score (name replaces title)
         const hybridScore = calculateHybridScore({
           vectorScore,
           bm25Score,
-          titleScore: nameScore,  // Use name score in place of title score
-          conceptScore,
+          titleScore: nameScore,  // Use name score in place of title
+          conceptScore: 0,  // Not applicable for concept search
           wordnetScore
         });
         
         return {
           id: row.id || 0,
           concept: conceptName,
-          summary: row.summary || row.text || '',
+          summary,
           documentCount: catalogIds.filter((id: number) => id !== 0).length,
           chunkCount: chunkIds.filter((id: number) => id !== 0).length,
           relatedConcepts,
@@ -191,14 +213,31 @@ export class FuzzyConceptSearchService {
           hybridScore,
           vectorScore,
           bm25Score,
-          titleScore: nameScore  // This is actually the name score
+          nameScore,
+          wordnetScore
         };
       });
       
-      // Re-sort by new hybrid score
+      // Step 4: Re-sort by hybrid score
       results.sort((a, b) => b.hybridScore - a.hybridScore);
       
-      return Ok(results);
+      // Step 5: Limit to requested size
+      const finalResults = results.slice(0, limit);
+      
+      if (debug) {
+        console.error('\n📊 Top Concept Results:\n');
+        finalResults.forEach((r, idx) => {
+          console.error(`${idx + 1}. ${r.concept}`);
+          console.error(`   Vector: ${r.vectorScore.toFixed(3)}`);
+          console.error(`   BM25: ${r.bm25Score.toFixed(3)}`);
+          console.error(`   Name: ${r.nameScore.toFixed(3)}`);
+          console.error(`   WordNet: ${r.wordnetScore.toFixed(3)}`);
+          console.error(`   ➜ Hybrid: ${r.hybridScore.toFixed(3)}`);
+          console.error();
+        });
+      }
+      
+      return Ok(finalResults);
     } catch (error) {
       if (error instanceof Error) {
         if (error.constructor.name === 'DatabaseError') {
@@ -216,4 +255,3 @@ export class FuzzyConceptSearchService {
     }
   }
 }
-

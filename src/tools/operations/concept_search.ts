@@ -129,7 +129,8 @@ RETURNS: Top 10 concepts with summaries, document/chunk counts, related concepts
         hybrid: r.hybridScore.toFixed(3),
         vector: r.vectorScore.toFixed(3),
         bm25: r.bm25Score.toFixed(3),
-        title: r.titleScore.toFixed(3)
+        name: r.nameScore.toFixed(3),
+        wordnet: r.wordnetScore.toFixed(3)
       }
     }));
     
