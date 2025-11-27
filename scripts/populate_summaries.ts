@@ -157,6 +157,7 @@ function toVectorArray(val: any): number[] {
 
 /**
  * Save concepts table with updated summaries (incremental save)
+ * Suppresses LanceDB warnings to avoid breaking progress bar
  */
 async function saveConceptsIncremental(
   db: any,
@@ -180,12 +181,21 @@ async function saveConceptsIncremental(
     };
   });
   
-  await db.dropTable('concepts');
-  await db.createTable('concepts', migratedConcepts, { mode: 'overwrite' });
+  // Suppress stderr temporarily to avoid LanceDB warnings breaking progress bar
+  const originalStderrWrite = process.stderr.write.bind(process.stderr);
+  process.stderr.write = () => true;
+  
+  try {
+    await db.dropTable('concepts');
+    await db.createTable('concepts', migratedConcepts, { mode: 'overwrite' });
+  } finally {
+    process.stderr.write = originalStderrWrite;
+  }
 }
 
 /**
  * Save categories table with updated summaries (incremental save)
+ * Suppresses LanceDB warnings to avoid breaking progress bar
  */
 async function saveCategoriesIncremental(
   db: any,
@@ -209,8 +219,16 @@ async function saveCategoriesIncremental(
     };
   });
   
-  await db.dropTable('categories');
-  await db.createTable('categories', migratedCategories, { mode: 'overwrite' });
+  // Suppress stderr temporarily to avoid LanceDB warnings breaking progress bar
+  const originalStderrWrite = process.stderr.write.bind(process.stderr);
+  process.stderr.write = () => true;
+  
+  try {
+    await db.dropTable('categories');
+    await db.createTable('categories', migratedCategories, { mode: 'overwrite' });
+  } finally {
+    process.stderr.write = originalStderrWrite;
+  }
 }
 
 async function populateSummaries(
