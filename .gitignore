@@ -313,3 +313,4 @@ cython_debug/
 .archive
 sample-docs
 logs
+.envrc
