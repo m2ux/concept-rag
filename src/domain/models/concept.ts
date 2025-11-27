@@ -34,6 +34,12 @@ export interface Concept {
    * Primary authoritative field for document references.
    */
   catalogIds?: number[];
+
+  /**
+   * Chunk IDs where this concept appears (hash-based integers).
+   * Enables fast concept → chunks lookups without scanning chunks table.
+   */
+  chunkIds?: number[];
   
   /** 
    * Related concept IDs (hash-based integers).

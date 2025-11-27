@@ -193,6 +193,9 @@ export class LanceDBConceptRepository implements ConceptRepository {
     // Parse catalog_ids (native array, Arrow Vector, or JSON string)
     const catalogIds = parseArrayField<number>(row.catalog_ids);
     
+    // Parse chunk_ids (native array, Arrow Vector, or JSON string)
+    const chunkIds = parseArrayField<number>(row.chunk_ids);
+    
     // Parse related_concept_ids (native array, Arrow Vector, or JSON string)
     const relatedConceptIds = parseArrayField<number>(row.related_concept_ids);
     
@@ -200,6 +203,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
       concept: row.concept || '',
       summary: row.summary || '',
       catalogIds,
+      chunkIds,
       relatedConceptIds,
       relatedConcepts: parseArrayField(row.related_concepts),
       synonyms: parseArrayField(row.synonyms),

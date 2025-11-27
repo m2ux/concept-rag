@@ -223,6 +223,7 @@ export class ConceptIndexBuilder {
                 concept: concept.concept,
                 summary: concept.summary || '',  // LLM-generated summary
                 catalog_ids: ensureNonEmpty(concept.catalog_ids, 0),  // Native array of hash-based IDs
+                chunk_ids: ensureNonEmpty(concept.chunk_ids, 0),  // Chunk IDs for fast lookups  // Native array of hash-based IDs
                 related_concept_ids: ensureNonEmpty(concept.related_concept_ids, 0),  // Native array of hash-based IDs
                 synonyms: ensureNonEmpty(concept.synonyms, ''),  // Native array
                 broader_terms: ensureNonEmpty(concept.broader_terms, ''),  // Native array
