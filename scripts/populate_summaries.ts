@@ -20,6 +20,9 @@
  *   --force            Regenerate ALL summaries (ignore existing)
  */
 
+// Suppress LanceDB Rust warnings that break progress bar
+process.env.RUST_LOG = 'error';
+
 import { connect, Table } from '@lancedb/lancedb';
 import * as path from 'path';
 
@@ -157,7 +160,6 @@ function toVectorArray(val: any): number[] {
 
 /**
  * Save concepts table with updated summaries (incremental save)
- * Suppresses LanceDB warnings to avoid breaking progress bar
  */
 async function saveConceptsIncremental(
   db: any,
@@ -181,21 +183,12 @@ async function saveConceptsIncremental(
     };
   });
   
-  // Suppress stderr temporarily to avoid LanceDB warnings breaking progress bar
-  const originalStderrWrite = process.stderr.write.bind(process.stderr);
-  process.stderr.write = () => true;
-  
-  try {
-    await db.dropTable('concepts');
-    await db.createTable('concepts', migratedConcepts, { mode: 'overwrite' });
-  } finally {
-    process.stderr.write = originalStderrWrite;
-  }
+  await db.dropTable('concepts');
+  await db.createTable('concepts', migratedConcepts, { mode: 'overwrite' });
 }
 
 /**
  * Save categories table with updated summaries (incremental save)
- * Suppresses LanceDB warnings to avoid breaking progress bar
  */
 async function saveCategoriesIncremental(
   db: any,
@@ -219,16 +212,8 @@ async function saveCategoriesIncremental(
     };
   });
   
-  // Suppress stderr temporarily to avoid LanceDB warnings breaking progress bar
-  const originalStderrWrite = process.stderr.write.bind(process.stderr);
-  process.stderr.write = () => true;
-  
-  try {
-    await db.dropTable('categories');
-    await db.createTable('categories', migratedCategories, { mode: 'overwrite' });
-  } finally {
-    process.stderr.write = originalStderrWrite;
-  }
+  await db.dropTable('categories');
+  await db.createTable('categories', migratedCategories, { mode: 'overwrite' });
 }
 
 async function populateSummaries(
