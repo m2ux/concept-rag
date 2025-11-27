@@ -11,6 +11,7 @@ export type ConceptType = 'thematic' | 'terminology';
  */
 export interface ConceptRecord {
     concept: string;
+    summary?: string;
     catalog_ids: number[];
     related_concept_ids?: number[];
     related_concepts?: string[];

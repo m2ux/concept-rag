@@ -185,7 +185,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
         return Array.from(value.toArray());
       }
       if (typeof value === 'string') {
-        return parseJsonField(value);
+        return parseJsonField<T>(value);
       }
       return [];
     };
@@ -198,6 +198,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
     
     return {
       concept: row.concept || '',
+      summary: row.summary || '',
       catalogIds,
       relatedConceptIds,
       relatedConcepts: parseArrayField(row.related_concepts),

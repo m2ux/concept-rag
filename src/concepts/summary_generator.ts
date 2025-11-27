@@ -1,0 +1,213 @@
+/**
+ * Summary generation for concepts and categories using LLM
+ */
+
+const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+const DEFAULT_MODEL = "x-ai/grok-4-fast";
+const DEFAULT_BATCH_SIZE = 30;
+const MIN_REQUEST_INTERVAL = 1000; // 1 second between requests
+
+export interface SummaryResult {
+  name: string;
+  summary: string;
+}
+
+let lastRequestTime = 0;
+
+async function rateLimitDelay(): Promise<void> {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+    const delayNeeded = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
+    await new Promise(resolve => setTimeout(resolve, delayNeeded));
+  }
+  lastRequestTime = Date.now();
+}
+
+/**
+ * Generate summaries for a batch of items
+ */
+async function generateSummaryBatch(
+  items: string[],
+  type: 'concept' | 'category',
+  apiKey: string,
+  model: string = DEFAULT_MODEL
+): Promise<SummaryResult[]> {
+  await rateLimitDelay();
+  
+  const prompt = type === 'concept' 
+    ? `Generate a one-sentence summary for each of the following concepts. The summary should be a clear, concise definition that would help someone understand what the concept means.
+
+Format your response as JSON array:
+[{"name": "concept name", "summary": "one sentence summary"}]
+
+Concepts to summarize:
+${items.map((item, i) => `${i + 1}. ${item}`).join('\n')}
+
+Return ONLY the JSON array, no other text.`
+    : `Generate a one-sentence summary for each of the following categories/domains. The summary should describe what topics and subjects fall under this category.
+
+Format your response as JSON array:
+[{"name": "category name", "summary": "one sentence summary"}]
+
+Categories to summarize:
+${items.map((item, i) => `${i + 1}. ${item}`).join('\n')}
+
+Return ONLY the JSON array, no other text.`;
+
+  try {
+    const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://github.com/concept-rag',
+        'X-Title': 'Concept-RAG Summary Generation'
+      },
+      body: JSON.stringify({
+        model: model,
+        messages: [
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.3,
+        max_tokens: 4000
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`API error: ${response.status} - ${error}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices[0]?.message?.content || '';
+    
+    // Parse JSON from response
+    const jsonMatch = content.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      console.error('  ⚠️  Failed to parse JSON from response');
+      return [];
+    }
+    
+    const results: SummaryResult[] = JSON.parse(jsonMatch[0]);
+    return results;
+  } catch (error) {
+    console.error('  ❌ Error generating summaries:', error);
+    return [];
+  }
+}
+
+/**
+ * Generate summaries for a list of items
+ * @returns Map of item name (lowercase) to summary
+ */
+export async function generateSummaries(
+  items: string[],
+  type: 'concept' | 'category',
+  options: {
+    apiKey?: string;
+    model?: string;
+    batchSize?: number;
+    onProgress?: (completed: number, total: number) => void;
+  } = {}
+): Promise<Map<string, string>> {
+  const apiKey = options.apiKey || process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    console.warn('⚠️  OPENROUTER_API_KEY not set, skipping summary generation');
+    return new Map();
+  }
+
+  const batchSize = options.batchSize || DEFAULT_BATCH_SIZE;
+  const model = options.model || DEFAULT_MODEL;
+  const summaryMap = new Map<string, string>();
+  
+  const totalBatches = Math.ceil(items.length / batchSize);
+  
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchNum = Math.floor(i / batchSize) + 1;
+    
+    if (options.onProgress) {
+      options.onProgress(i, items.length);
+    }
+    
+    const results = await generateSummaryBatch(batch, type, apiKey, model);
+    
+    // Match results back to items
+    for (const result of results) {
+      if (result.name && result.summary) {
+        summaryMap.set(result.name.toLowerCase(), result.summary);
+      }
+    }
+    
+    // Log progress if no custom handler
+    if (!options.onProgress && items.length > batchSize) {
+      process.stdout.write(`\r  Processing ${type}s: batch ${batchNum}/${totalBatches}...`);
+    }
+  }
+  
+  if (!options.onProgress && items.length > batchSize) {
+    console.log(` Done (${summaryMap.size} summaries)`);
+  }
+  
+  return summaryMap;
+}
+
+/**
+ * Generate summaries for category records during seeding
+ */
+export async function generateCategorySummaries(
+  categories: string[],
+  options: {
+    apiKey?: string;
+    model?: string;
+    batchSize?: number;
+  } = {}
+): Promise<Map<string, string>> {
+  if (categories.length === 0) {
+    return new Map();
+  }
+  
+  console.log(`  📝 Generating summaries for ${categories.length} categories...`);
+  
+  const summaries = await generateSummaries(categories, 'category', {
+    ...options,
+    onProgress: (completed, total) => {
+      const pct = Math.round((completed / total) * 100);
+      process.stdout.write(`\r  📝 Category summaries: ${pct}%`);
+    }
+  });
+  
+  console.log(`\n  ✅ Generated ${summaries.size} category summaries`);
+  return summaries;
+}
+
+/**
+ * Generate summaries for concept records during seeding
+ */
+export async function generateConceptSummaries(
+  concepts: string[],
+  options: {
+    apiKey?: string;
+    model?: string;
+    batchSize?: number;
+  } = {}
+): Promise<Map<string, string>> {
+  if (concepts.length === 0) {
+    return new Map();
+  }
+  
+  console.log(`  📝 Generating summaries for ${concepts.length} concepts...`);
+  
+  const summaries = await generateSummaries(concepts, 'concept', {
+    ...options,
+    onProgress: (completed, total) => {
+      const pct = Math.round((completed / total) * 100);
+      process.stdout.write(`\r  📝 Concept summaries: ${pct}%`);
+    }
+  });
+  
+  console.log(`\n  ✅ Generated ${summaries.size} concept summaries`);
+  return summaries;
+}
+

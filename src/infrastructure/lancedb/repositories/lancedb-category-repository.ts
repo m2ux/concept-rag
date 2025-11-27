@@ -208,6 +208,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
       id: row.id,
       category: row.category || '',
       description: row.description || '',
+      summary: row.summary || '',
       parentCategoryId: row.parent_category_id ?? null,
       aliases: parseJsonField(row.aliases, []),
       relatedCategories: parseJsonField(row.related_categories, []),

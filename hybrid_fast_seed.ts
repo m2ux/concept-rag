@@ -18,6 +18,7 @@ import { DocumentLoaderFactory } from './src/infrastructure/document-loaders/doc
 import { PDFDocumentLoader } from './src/infrastructure/document-loaders/pdf-loader.js';
 import { EPUBDocumentLoader } from './src/infrastructure/document-loaders/epub-loader.js';
 import { hashToId, generateStableId } from './src/infrastructure/utils/hash.js';
+import { generateCategorySummaries, generateConceptSummaries } from './src/concepts/summary_generator.js';
 
 // Setup timestamped logging
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
@@ -1042,17 +1043,25 @@ async function createLanceTableWithSimpleEmbeddings(
     
     // Generate fast local embeddings with normalized schema
     const data = documents.map((doc, i) => {
+        const isCatalog = tableName === 'catalog';
+        
         const baseData: any = {
             id: i.toString(),
-            text: doc.pageContent,
             source: doc.metadata.source || '',
             hash: doc.metadata.hash || '',
-            loc: JSON.stringify(doc.metadata.loc || {}),
             vector: createSimpleEmbedding(doc.pageContent)
         };
         
+        // Catalog uses 'summary', chunks use 'text'
+        if (isCatalog) {
+            baseData.summary = doc.pageContent;  // Renamed from 'text' to 'summary'
+        } else {
+            baseData.text = doc.pageContent;
+            baseData.loc = JSON.stringify(doc.metadata.loc || {});
+        }
+        
         // Add reserved bibliographic fields for catalog entries
-        if (tableName === 'catalog') {
+        if (isCatalog) {
             baseData.author = '';
             baseData.year = '';
             baseData.publisher = '';
@@ -1061,26 +1070,6 @@ async function createLanceTableWithSimpleEmbeddings(
         
         // Add concept metadata if present (using native arrays)
         if (doc.metadata.concepts) {
-            // Extract concept names and generate hash-based concept IDs
-            let conceptNames: string[] = [];
-            
-            // Handle two formats:
-            // 1. Catalog: concepts is object with primary_concepts array
-            // 2. Chunks: concepts is simple array of concept names
-            if (typeof doc.metadata.concepts === 'object') {
-                if (doc.metadata.concepts.primary_concepts) {
-                    conceptNames = doc.metadata.concepts.primary_concepts;
-                }
-            } else if (Array.isArray(doc.metadata.concepts)) {
-                conceptNames = doc.metadata.concepts;
-            }
-            
-            if (conceptNames.length > 0) {
-                // Generate hash-based concept IDs (native array)
-                const conceptIds = conceptNames.map((name: string) => hashToId(name));
-                baseData.concept_ids = conceptIds;
-            }
-            
             // Extract categories and generate hash-based category IDs
             let categories: string[] = [];
             if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.categories) {
@@ -1095,6 +1084,23 @@ async function createLanceTableWithSimpleEmbeddings(
                     categoryIdMap.get(cat) || hashToId(cat)
                 );
                 baseData.category_ids = categoryIds;
+            }
+            
+            // Only add concept_ids to chunks, NOT catalog (concepts are derived from chunks)
+            if (!isCatalog) {
+                let conceptNames: string[] = [];
+                if (typeof doc.metadata.concepts === 'object') {
+                    if (doc.metadata.concepts.primary_concepts) {
+                        conceptNames = doc.metadata.concepts.primary_concepts;
+                    }
+                } else if (Array.isArray(doc.metadata.concepts)) {
+                    conceptNames = doc.metadata.concepts;
+                }
+                
+                if (conceptNames.length > 0) {
+                    const conceptIds = conceptNames.map((name: string) => hashToId(name));
+                    baseData.concept_ids = conceptIds;
+                }
             }
         }
         
@@ -1386,9 +1392,12 @@ async function createCategoriesTable(
     // Generate stable hash-based IDs
     const sortedCategories = Array.from(categorySet).sort();
     const existingIds = new Set<number>();
-    const categoryRecords = [];
+    const categoryRecords: any[] = [];
     
     console.log("  🔄 Generating category records with embeddings...");
+    
+    // Generate summaries for categories using LLM
+    const categorySummaries = await generateCategorySummaries(sortedCategories);
     
     for (const category of sortedCategories) {
         // Generate stable hash-based ID
@@ -1397,6 +1406,9 @@ async function createCategoriesTable(
         
         // Generate simple description
         const description = `Concepts and practices related to ${category}`;
+        
+        // Get LLM-generated summary or fallback to description
+        const summary = categorySummaries.get(category.toLowerCase()) || description;
         
         // Generate embedding using simple embedding function (same as used for catalog/chunks)
         const embeddingText = `${category}: ${description}`;
@@ -1408,6 +1420,7 @@ async function createCategoriesTable(
             id: categoryId,
             category: category,
             description: description,
+            summary: summary,
             parent_category_id: 0, // Use 0 as null placeholder (LanceDB can't infer type from all nulls)
             aliases: JSON.stringify([]),
             related_categories: JSON.stringify([]),
@@ -1532,6 +1545,19 @@ async function rebuildConceptIndexFromExistingData(
     const conceptRecords = await conceptBuilder.buildConceptIndex(catalogDocs, allChunks);
     
     console.log(`  ✅ Built ${conceptRecords.length} unique concept records`);
+    
+    // Generate summaries for concepts using LLM
+    const conceptNames = conceptRecords.map(c => c.concept);
+    const conceptSummaries = await generateConceptSummaries(conceptNames);
+    
+    // Add summaries to concept records
+    for (const record of conceptRecords) {
+        const summary = conceptSummaries.get(record.concept.toLowerCase());
+        if (summary) {
+            record.summary = summary;
+        }
+    }
+    
     // Build source → catalog ID mapping for integer ID optimization
     console.log("  🔗 Building source-to-catalog-ID mapping...");
     const sourceToIdMap = new Map<string, string>();
@@ -2021,6 +2047,18 @@ async function hybridFastSeed() {
         const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogRecords);
         
         console.log(`✅ Built ${conceptRecords.length} unique concept records`);
+        
+        // Generate summaries for concepts using LLM
+        const conceptNames = conceptRecords.map(c => c.concept);
+        const conceptSummaries = await generateConceptSummaries(conceptNames);
+        
+        // Add summaries to concept records
+        for (const record of conceptRecords) {
+            const summary = conceptSummaries.get(record.concept.toLowerCase());
+            if (summary) {
+                record.summary = summary;
+            }
+        }
         
         // Log top concepts by weight (number of documents)
         const topConcepts = conceptRecords

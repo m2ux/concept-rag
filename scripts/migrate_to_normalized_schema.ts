@@ -125,10 +125,10 @@ async function migrateToNormalizedSchema(dbPath: string): Promise<boolean> {
           id: id,
           source: source,  // Keep for backward compatibility
           hash: row.hash || '',
-          text: row.text || '',
+          summary: row.text || row.summary || '',  // Renamed from 'text' to 'summary'
           vector: toNativeArray(row.vector),
           category_ids: categoryIds
-          // REMOVED: concepts, concept_ids, concept_categories, loc, filename_tags
+          // REMOVED: concepts, concept_ids, concept_categories, loc, filename_tags, text (renamed to summary)
         };
       });
       
@@ -262,6 +262,7 @@ async function migrateToNormalizedSchema(dbPath: string): Promise<boolean> {
         return {
           id: id,
           concept: row.concept || '',
+          summary: row.summary || '',  // New field for LLM-generated concept summary
           catalog_ids: catalogIds,
           related_concept_ids: relatedConceptIds,
           synonyms: synonyms,
@@ -278,6 +279,42 @@ async function migrateToNormalizedSchema(dbPath: string): Promise<boolean> {
       await db.createTable('concepts', migratedConcepts, { mode: 'overwrite' });
       stats.concepts.after = migratedConcepts.length;
       console.log(`  ✅ Concepts migrated: ${migratedConcepts.length} entries`);
+    }
+    
+    // ========== PHASE 4: Migrate Categories (add summary field) ==========
+    if (tableNames.includes('categories')) {
+      console.log('\n📁 Phase 4: Migrating categories table...');
+      
+      const categoriesTable = await db.openTable('categories');
+      const categoryRows = await categoriesTable.query().limit(10000).toArray();
+      console.log(`  Found ${categoryRows.length} categories`);
+      
+      const migratedCategories = categoryRows.map(row => {
+        // Parse array fields
+        let aliases = parseArrayField<string>(row.aliases);
+        if (aliases.length === 0) aliases = [''];
+        let relatedCategories = parseArrayField<number>(row.related_categories);
+        if (relatedCategories.length === 0) relatedCategories = [0];
+        
+        return {
+          id: row.id,
+          category: row.category || '',
+          description: row.description || '',
+          summary: row.summary || '',  // New field for LLM-generated category summary
+          parent_category_id: row.parent_category_id ?? null,
+          aliases: aliases,
+          related_categories: relatedCategories,
+          document_count: row.document_count || 0,
+          chunk_count: row.chunk_count || 0,
+          concept_count: row.concept_count || 0,
+          vector: toNativeArray(row.vector)
+        };
+      });
+      
+      // Recreate table with migrated data
+      await db.dropTable('categories');
+      await db.createTable('categories', migratedCategories, { mode: 'overwrite' });
+      console.log(`  ✅ Categories migrated: ${migratedCategories.length} entries`);
     }
     
     // ========== SUMMARY ==========
