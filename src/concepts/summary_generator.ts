@@ -12,6 +12,28 @@ export interface SummaryResult {
   summary: string;
 }
 
+/**
+ * Generate ASCII progress bar for summary generation
+ */
+function summaryProgressBar(
+  current: number, 
+  total: number, 
+  type: 'concept' | 'category',
+  width: number = 30
+): string {
+  const percentage = Math.round((current / total) * 100);
+  const filled = Math.round((percentage / 100) * width);
+  const empty = width - filled;
+  
+  const bar = '█'.repeat(filled) + '░'.repeat(empty);
+  const emoji = type === 'concept' ? '🧠' : '📂';
+  const label = type === 'concept' ? 'Concepts' : 'Categories';
+  const progress = `${emoji} ${label}: [${bar}] ${percentage}% (${current}/${total})`;
+  
+  // Pad with spaces to ensure complete line overwrite
+  return progress.padEnd(80, ' ');
+}
+
 let lastRequestTime = 0;
 
 async function rateLimitDelay(): Promise<void> {
@@ -173,12 +195,13 @@ export async function generateCategorySummaries(
   const summaries = await generateSummaries(categories, 'category', {
     ...options,
     onProgress: (completed, total) => {
-      const pct = Math.round((completed / total) * 100);
-      process.stdout.write(`\r  📝 Category summaries: ${pct}%`);
+      process.stdout.write(`\r  ${summaryProgressBar(completed, total, 'category')}`);
     }
   });
   
-  console.log(`\n  ✅ Generated ${summaries.size} category summaries`);
+  // Clear progress bar and show completion
+  process.stdout.write('\r' + ' '.repeat(80) + '\r');
+  console.log(`  ✅ Generated ${summaries.size} category summaries`);
   return summaries;
 }
 
@@ -202,12 +225,13 @@ export async function generateConceptSummaries(
   const summaries = await generateSummaries(concepts, 'concept', {
     ...options,
     onProgress: (completed, total) => {
-      const pct = Math.round((completed / total) * 100);
-      process.stdout.write(`\r  📝 Concept summaries: ${pct}%`);
+      process.stdout.write(`\r  ${summaryProgressBar(completed, total, 'concept')}`);
     }
   });
   
-  console.log(`\n  ✅ Generated ${summaries.size} concept summaries`);
+  // Clear progress bar and show completion
+  process.stdout.write('\r' + ' '.repeat(80) + '\r');
+  console.log(`  ✅ Generated ${summaries.size} concept summaries`);
   return summaries;
 }
 
