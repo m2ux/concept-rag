@@ -176,7 +176,7 @@ export class ApplicationContainer {
     const catalogSearchService = new CatalogSearchService(catalogRepo);
     const chunkSearchService = new ChunkSearchService(chunkRepo);
     const conceptSourcesService = new ConceptSourcesService(conceptRepo, catalogRepo);
-    const fuzzyConceptSearchService = new FuzzyConceptSearchService(conceptRepo, hybridSearchService);
+    const fuzzyConceptSearchService = new FuzzyConceptSearchService(conceptRepo, embeddingService, queryExpander);
     
     // 7. Create tools (with domain services)
     this.tools.set('concept_chunks', new ConceptChunksTool(conceptSearchService));
