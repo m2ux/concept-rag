@@ -4,6 +4,10 @@
  * 
  * Uses grok-4-fast to generate one-sentence summaries in batches
  * 
+ * RESUME SUPPORT: The script automatically resumes from where it left off
+ * by finding items that already have summaries and skipping them.
+ * Progress is saved incrementally after each batch.
+ * 
  * Usage:
  *   npx tsx scripts/populate_summaries.ts [db-path]
  *   npx tsx scripts/populate_summaries.ts ~/.concept_rag
@@ -13,9 +17,10 @@
  *   --categories-only  Only populate category summaries
  *   --batch-size N     Number of items per LLM request (default: 20)
  *   --dry-run          Show what would be done without making changes
+ *   --force            Regenerate ALL summaries (ignore existing)
  */
 
-import { connect } from '@lancedb/lancedb';
+import { connect, Table } from '@lancedb/lancedb';
 import * as path from 'path';
 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
@@ -38,6 +43,16 @@ async function rateLimitDelay(): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, delayNeeded));
   }
   lastRequestTime = Date.now();
+}
+
+/**
+ * Generate ASCII progress bar
+ */
+function progressBar(current: number, total: number, width: number = 30): string {
+  const percentage = Math.round((current / total) * 100);
+  const filled = Math.round((percentage / 100) * width);
+  const empty = width - filled;
+  return '█'.repeat(filled) + '░'.repeat(empty);
 }
 
 async function generateSummaries(
@@ -109,6 +124,95 @@ Return ONLY the JSON array, no other text.`;
   }
 }
 
+/**
+ * Convert Arrow Vectors and other LanceDB types to native arrays
+ */
+function toArray(val: any): string[] {
+  if (!val) return [''];
+  if (Array.isArray(val)) return val.length > 0 ? val : [''];
+  if (typeof val === 'object' && 'toArray' in val) {
+    const arr = Array.from(val.toArray()) as string[];
+    return arr.length > 0 ? arr : [''];
+  }
+  return [''];
+}
+
+function toNumberArray(val: any): number[] {
+  if (!val) return [0];
+  if (Array.isArray(val)) return val.length > 0 ? val : [0];
+  if (typeof val === 'object' && 'toArray' in val) {
+    const arr = Array.from(val.toArray()) as number[];
+    return arr.length > 0 ? arr : [0];
+  }
+  return [0];
+}
+
+function toVectorArray(val: any): number[] {
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'object' && 'toArray' in val) {
+    return Array.from(val.toArray()) as number[];
+  }
+  return [];
+}
+
+/**
+ * Save concepts table with updated summaries (incremental save)
+ */
+async function saveConceptsIncremental(
+  db: any,
+  allConcepts: any[],
+  updates: Map<number, string>
+): Promise<void> {
+  const migratedConcepts = allConcepts.map(row => {
+    const updatedSummary = updates.get(row.id);
+    return {
+      id: row.id,
+      concept: row.concept || '',
+      summary: updatedSummary ?? row.summary ?? '',
+      catalog_ids: toNumberArray(row.catalog_ids),
+      chunk_ids: toNumberArray(row.chunk_ids),
+      related_concept_ids: toNumberArray(row.related_concept_ids),
+      synonyms: toArray(row.synonyms),
+      broader_terms: toArray(row.broader_terms),
+      narrower_terms: toArray(row.narrower_terms),
+      weight: row.weight || 0,
+      vector: toVectorArray(row.vector)
+    };
+  });
+  
+  await db.dropTable('concepts');
+  await db.createTable('concepts', migratedConcepts, { mode: 'overwrite' });
+}
+
+/**
+ * Save categories table with updated summaries (incremental save)
+ */
+async function saveCategoriesIncremental(
+  db: any,
+  allCategories: any[],
+  updates: Map<number, string>
+): Promise<void> {
+  const migratedCategories = allCategories.map(row => {
+    const updatedSummary = updates.get(row.id);
+    return {
+      id: row.id,
+      category: row.category || '',
+      description: row.description || '',
+      summary: updatedSummary ?? row.summary ?? '',
+      parent_category_id: row.parent_category_id ?? null,
+      aliases: toArray(row.aliases),
+      related_categories: toNumberArray(row.related_categories),
+      document_count: row.document_count || 0,
+      chunk_count: row.chunk_count || 0,
+      concept_count: row.concept_count || 0,
+      vector: toVectorArray(row.vector)
+    };
+  });
+  
+  await db.dropTable('categories');
+  await db.createTable('categories', migratedCategories, { mode: 'overwrite' });
+}
+
 async function populateSummaries(
   dbPath: string,
   options: {
@@ -116,6 +220,7 @@ async function populateSummaries(
     categoriesOnly?: boolean;
     batchSize?: number;
     dryRun?: boolean;
+    force?: boolean;
   } = {}
 ) {
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -132,6 +237,8 @@ async function populateSummaries(
   console.log(`Model: ${MODEL}`);
   console.log(`Batch size: ${batchSize}`);
   if (options.dryRun) console.log('🔍 DRY RUN MODE - no changes will be made');
+  if (options.force) console.log('⚠️  FORCE MODE - regenerating ALL summaries');
+  console.log('💾 Progress saved after each batch (resume-safe)');
   console.log('');
 
   const db = await connect(dbPath);
@@ -142,19 +249,32 @@ async function populateSummaries(
     const conceptsTable = await db.openTable('concepts');
     const allConcepts = await conceptsTable.query().limit(100000).toArray();
     
-    // Find concepts without summaries
-    const needsSummary = allConcepts.filter(c => !c.summary || c.summary === '');
-    console.log(`  Found ${needsSummary.length} concepts without summaries (of ${allConcepts.length} total)`);
+    // Find concepts without summaries (or all if --force)
+    const needsSummary = options.force 
+      ? allConcepts 
+      : allConcepts.filter(c => !c.summary || c.summary === '');
+    
+    const alreadyDone = allConcepts.length - needsSummary.length;
+    
+    if (alreadyDone > 0 && !options.force) {
+      console.log(`  ✓ Already have summaries: ${alreadyDone}/${allConcepts.length}`);
+      console.log(`  → Resuming from item ${alreadyDone + 1}...`);
+    }
+    console.log(`  📋 Need to process: ${needsSummary.length} concepts`);
     
     if (needsSummary.length > 0 && !options.dryRun) {
-      let processed = 0;
-      const updates: { id: number; summary: string }[] = [];
+      const updates = new Map<number, string>();
+      const totalBatches = Math.ceil(needsSummary.length / batchSize);
       
       for (let i = 0; i < needsSummary.length; i += batchSize) {
         const batch = needsSummary.slice(i, i + batchSize);
         const names = batch.map(c => c.concept);
+        const batchNum = Math.floor(i / batchSize) + 1;
+        const processed = Math.min(i + batchSize, needsSummary.length);
         
-        process.stdout.write(`  Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(needsSummary.length / batchSize)}...`);
+        // Show progress bar
+        const bar = progressBar(processed, needsSummary.length);
+        process.stdout.write(`\r  🧠 [${bar}] ${processed}/${needsSummary.length} (batch ${batchNum}/${totalBatches})  `);
         
         const results = await generateSummaries(names, 'concept', apiKey);
         
@@ -164,68 +284,26 @@ async function populateSummaries(
             c.concept.toLowerCase() === result.name.toLowerCase()
           );
           if (concept && result.summary) {
-            updates.push({ id: concept.id, summary: result.summary });
-            processed++;
+            updates.set(concept.id, result.summary);
           }
         }
         
-        console.log(` ✓ (${results.length} summaries)`);
+        // Save progress incrementally after each batch
+        if (updates.size > 0) {
+          await saveConceptsIncremental(db, allConcepts, updates);
+          // Refresh allConcepts with updated data
+          const refreshedTable = await db.openTable('concepts');
+          const refreshedData = await refreshedTable.query().limit(100000).toArray();
+          allConcepts.length = 0;
+          allConcepts.push(...refreshedData);
+        }
       }
       
-      // Update database
-      if (updates.length > 0) {
-        console.log(`  💾 Updating ${updates.length} concepts in database...`);
-        
-        // LanceDB doesn't support direct updates, so we need to rebuild
-        const updatedConcepts = allConcepts.map(c => {
-          const update = updates.find(u => u.id === c.id);
-          if (update) {
-            return { ...c, summary: update.summary };
-          }
-          return c;
-        });
-        
-        // Convert Arrow Vectors to native arrays
-        const migratedConcepts = updatedConcepts.map(row => {
-          const toArray = (val: any) => {
-            if (!val) return [''];
-            if (Array.isArray(val)) return val.length > 0 ? val : [''];
-            if (typeof val === 'object' && 'toArray' in val) {
-              const arr = Array.from(val.toArray());
-              return arr.length > 0 ? arr : [''];
-            }
-            return [''];
-          };
-          
-          const toNumberArray = (val: any) => {
-            if (!val) return [0];
-            if (Array.isArray(val)) return val.length > 0 ? val : [0];
-            if (typeof val === 'object' && 'toArray' in val) {
-              const arr = Array.from(val.toArray()) as number[];
-              return arr.length > 0 ? arr : [0];
-            }
-            return [0];
-          };
-          
-          return {
-            id: row.id,
-            concept: row.concept || '',
-            summary: row.summary || '',
-            catalog_ids: toNumberArray(row.catalog_ids),
-            related_concept_ids: toNumberArray(row.related_concept_ids),
-            synonyms: toArray(row.synonyms),
-            broader_terms: toArray(row.broader_terms),
-            narrower_terms: toArray(row.narrower_terms),
-            weight: row.weight || 0,
-            vector: Array.isArray(row.vector) ? row.vector : Array.from(row.vector?.toArray?.() || [])
-          };
-        });
-        
-        await db.dropTable('concepts');
-        await db.createTable('concepts', migratedConcepts, { mode: 'overwrite' });
-        
-        console.log(`  ✅ Updated ${updates.length} concept summaries`);
-      }
+      // Clear progress bar and show completion
+      process.stdout.write('\r' + ' '.repeat(80) + '\r');
+      console.log(`  ✅ Generated ${updates.size} concept summaries (saved incrementally)`);
+    } else if (needsSummary.length === 0) {
+      console.log(`  ✅ All ${allConcepts.length} concepts already have summaries`);
     }
   }
 
@@ -235,19 +313,32 @@ async function populateSummaries(
     const categoriesTable = await db.openTable('categories');
     const allCategories = await categoriesTable.query().limit(10000).toArray();
     
-    // Find categories without summaries
-    const needsSummary = allCategories.filter(c => !c.summary || c.summary === '');
-    console.log(`  Found ${needsSummary.length} categories without summaries (of ${allCategories.length} total)`);
+    // Find categories without summaries (or all if --force)
+    const needsSummary = options.force
+      ? allCategories
+      : allCategories.filter(c => !c.summary || c.summary === '');
+    
+    const alreadyDone = allCategories.length - needsSummary.length;
+    
+    if (alreadyDone > 0 && !options.force) {
+      console.log(`  ✓ Already have summaries: ${alreadyDone}/${allCategories.length}`);
+      console.log(`  → Resuming from item ${alreadyDone + 1}...`);
+    }
+    console.log(`  📋 Need to process: ${needsSummary.length} categories`);
     
     if (needsSummary.length > 0 && !options.dryRun) {
-      let processed = 0;
-      const updates: { id: number; summary: string }[] = [];
+      const updates = new Map<number, string>();
+      const totalBatches = Math.ceil(needsSummary.length / batchSize);
       
       for (let i = 0; i < needsSummary.length; i += batchSize) {
         const batch = needsSummary.slice(i, i + batchSize);
         const names = batch.map(c => c.category);
+        const batchNum = Math.floor(i / batchSize) + 1;
+        const processed = Math.min(i + batchSize, needsSummary.length);
         
-        process.stdout.write(`  Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(needsSummary.length / batchSize)}...`);
+        // Show progress bar
+        const bar = progressBar(processed, needsSummary.length);
+        process.stdout.write(`\r  📂 [${bar}] ${processed}/${needsSummary.length} (batch ${batchNum}/${totalBatches})  `);
         
         const results = await generateSummaries(names, 'category', apiKey);
         
@@ -257,68 +348,26 @@ async function populateSummaries(
             c.category.toLowerCase() === result.name.toLowerCase()
           );
           if (category && result.summary) {
-            updates.push({ id: category.id, summary: result.summary });
-            processed++;
+            updates.set(category.id, result.summary);
           }
         }
         
-        console.log(` ✓ (${results.length} summaries)`);
+        // Save progress incrementally after each batch
+        if (updates.size > 0) {
+          await saveCategoriesIncremental(db, allCategories, updates);
+          // Refresh allCategories with updated data
+          const refreshedTable = await db.openTable('categories');
+          const refreshedData = await refreshedTable.query().limit(10000).toArray();
+          allCategories.length = 0;
+          allCategories.push(...refreshedData);
+        }
       }
       
-      // Update database
-      if (updates.length > 0) {
-        console.log(`  💾 Updating ${updates.length} categories in database...`);
-        
-        const updatedCategories = allCategories.map(c => {
-          const update = updates.find(u => u.id === c.id);
-          if (update) {
-            return { ...c, summary: update.summary };
-          }
-          return c;
-        });
-        
-        // Convert Arrow Vectors to native arrays
-        const migratedCategories = updatedCategories.map(row => {
-          const toArray = (val: any) => {
-            if (!val) return [''];
-            if (Array.isArray(val)) return val.length > 0 ? val : [''];
-            if (typeof val === 'object' && 'toArray' in val) {
-              const arr = Array.from(val.toArray());
-              return arr.length > 0 ? arr : [''];
-            }
-            return [''];
-          };
-          
-          const toNumberArray = (val: any) => {
-            if (!val) return [0];
-            if (Array.isArray(val)) return val.length > 0 ? val : [0];
-            if (typeof val === 'object' && 'toArray' in val) {
-              const arr = Array.from(val.toArray()) as number[];
-              return arr.length > 0 ? arr : [0];
-            }
-            return [0];
-          };
-          
-          return {
-            id: row.id,
-            category: row.category || '',
-            description: row.description || '',
-            summary: row.summary || '',
-            parent_category_id: row.parent_category_id ?? null,
-            aliases: toArray(row.aliases),
-            related_categories: toNumberArray(row.related_categories),
-            document_count: row.document_count || 0,
-            chunk_count: row.chunk_count || 0,
-            concept_count: row.concept_count || 0,
-            vector: Array.isArray(row.vector) ? row.vector : Array.from(row.vector?.toArray?.() || [])
-          };
-        });
-        
-        await db.dropTable('categories');
-        await db.createTable('categories', migratedCategories, { mode: 'overwrite' });
-        
-        console.log(`  ✅ Updated ${updates.length} category summaries`);
-      }
+      // Clear progress bar and show completion
+      process.stdout.write('\r' + ' '.repeat(80) + '\r');
+      console.log(`  ✅ Generated ${updates.size} category summaries (saved incrementally)`);
+    } else if (needsSummary.length === 0) {
+      console.log(`  ✅ All ${allCategories.length} categories already have summaries`);
     }
   }
 
@@ -333,7 +382,8 @@ const options = {
   conceptsOnly: args.includes('--concepts-only'),
   categoriesOnly: args.includes('--categories-only'),
   batchSize: parseInt(args.find(a => a.startsWith('--batch-size='))?.split('=')[1] || '') || DEFAULT_BATCH_SIZE,
-  dryRun: args.includes('--dry-run')
+  dryRun: args.includes('--dry-run'),
+  force: args.includes('--force')
 };
 
 populateSummaries(dbPath, options)
@@ -342,4 +392,3 @@ populateSummaries(dbPath, options)
     console.error('Error:', err);
     process.exit(1);
   });
-
