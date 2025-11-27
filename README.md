@@ -18,30 +18,21 @@ A powerful RAG MCP server that enables LLMs to interact with local PDF/EPUB docu
 The server provides **11 specialized MCP tools** organized into four categories:
 
 ### Content Discovery
-| Tool | Description | Example Query |
-|------|-------------|---------------|
-| `catalog_search` | Find documents by topic, title, or author (semantic search) | `"software architecture patterns"` |
-| `concept_search` | Fuzzy search concepts by description/meaning | `"design patterns for loose coupling"` |
-
-### Content Search
-| Tool | Description | Example Query |
-|------|-------------|---------------|
+| Tool | Description                                       | Example Query |
+|------|---------------------------------------------------|---------------|
+| `catalog_search` | Fuzzy search documents by topic, title, or author | `"software architecture patterns"` |
+| `concept_search` | Fuzzy search concepts by name, meaning            | `"design patterns for loose coupling"` |
 | `broad_chunks_search` | Cross-document search (phrases, keywords, topics) | `"implementing dependency injection"` |
 | `chunks_search` | Search within a specific known document | `"SOLID principles"` + source path |
-| `concept_chunks` | Find chunks tagged with a concept (high precision) | `"innovation"` → semantically-tagged results |
+| `category_search` | Browse documents by category/domain | `"software engineering"` |
 
-### Concept Analysis
+### Content Analysis
 | Tool | Description | Example Query |
 |------|-------------|---------------|
-
+| `concept_chunks` | Find chunks tagged with a concept | `"innovation"` → semantically-tagged results |
 | `extract_concepts` | Export all concepts from a document | `"Clean Architecture"` |
 | `source_concepts` | Find documents where concept(s) appear (union) | `["TDD", "BDD"]` → all docs with either |
 | `concept_sources` | Get per-concept source lists (separate arrays) | `["TDD", "BDD"]` → sources for each |
-
-### Category Browsing
-| Tool | Description | Example Query |
-|------|-------------|---------------|
-| `category_search` | Browse documents by category/domain | `"software engineering"` |
 | `list_categories` | List all categories in your library | *(no query required)* |
 | `list_concepts_in_category` | Find concepts in a category | `"distributed systems"` |
 
