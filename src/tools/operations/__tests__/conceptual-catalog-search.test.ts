@@ -61,9 +61,9 @@ describe('ConceptualCatalogSearchTool', () => {
       expect(parsedContent[0].scores.hybrid).toBeDefined();
     });
     
-    it('should respect limit parameter (defaults to 5)', async () => {
+    it('should respect limit parameter (defaults to 10)', async () => {
       // SETUP
-      const testResults = Array.from({ length: 10 }, (_, i) =>
+      const testResults = Array.from({ length: 15 }, (_, i) =>
         createTestSearchResult({
           id: `doc-${i}`,
           source: `/test/doc${i}.pdf`,
@@ -77,7 +77,7 @@ describe('ConceptualCatalogSearchTool', () => {
       
       // VERIFY
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent).toHaveLength(5); // Default limit
+      expect(parsedContent).toHaveLength(10); // Default limit
     });
     
     it('should include debug information when debug is true', async () => {
