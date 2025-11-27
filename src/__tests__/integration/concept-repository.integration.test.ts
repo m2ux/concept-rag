@@ -155,8 +155,8 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       expect(c.catalogIds).toBeDefined();
       expect(Array.isArray(c.catalogIds)).toBe(true);
       
-      expect(c.relatedConceptIds).toBeDefined();
-      expect(Array.isArray(c.relatedConceptIds)).toBe(true);
+      expect(c.adjacentIds).toBeDefined();
+      expect(Array.isArray(c.adjacentIds)).toBe(true);
     });
     
     it('should handle array fields correctly', async () => {
@@ -172,8 +172,8 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       // catalogIds array (replaces sources)
       expect(Array.isArray(conceptOpt.value.catalogIds)).toBe(true);
       
-      // relatedConceptIds array (replaces relatedConcepts)
-      expect(Array.isArray(conceptOpt.value.relatedConceptIds)).toBe(true);
+      // adjacentIds array (replaces relatedConcepts)
+      expect(Array.isArray(conceptOpt.value.adjacentIds)).toBe(true);
     });
   });
   

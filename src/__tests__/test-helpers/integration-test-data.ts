@@ -51,7 +51,7 @@ export interface IntegrationConceptData {
   catalog_ids: number[];
   
   /** Related concept references using integer IDs (native array) */
-  related_concept_ids: number[];
+  adjacent_ids: number[];
   
   [key: string]: unknown; // Index signature for LanceDB compatibility
 }
@@ -114,7 +114,7 @@ export function createIntegrationTestConcept(overrides?: Partial<IntegrationConc
     vector: embeddingService.generateEmbedding(conceptName),
     weight: 0.85,
     catalog_ids: [12345678],
-    related_concept_ids: [11111111, 22222222, 33333333]
+    adjacent_ids: [11111111, 22222222, 33333333]
   };
   
   return { ...defaults, ...overrides };
@@ -187,28 +187,28 @@ export function createStandardTestConcepts(): IntegrationConceptData[] {
       vector: embeddingService.generateEmbedding('repository pattern'),
       weight: 0.78,
       catalog_ids: [23456789],
-      related_concept_ids: [44444444, 55555555, 66666666]
+      adjacent_ids: [44444444, 55555555, 66666666]
     }),
     createIntegrationTestConcept({
       concept: 'dependency injection',
       vector: embeddingService.generateEmbedding('dependency injection'),
       weight: 0.82,
       catalog_ids: [34567890],
-      related_concept_ids: [77777777, 88888888, 99999999]
+      adjacent_ids: [77777777, 88888888, 99999999]
     }),
     createIntegrationTestConcept({
       concept: 'solid principles',
       vector: embeddingService.generateEmbedding('solid principles'),
       weight: 0.90,
       catalog_ids: [45678901],
-      related_concept_ids: [10101010, 20202020, 30303030]
+      adjacent_ids: [10101010, 20202020, 30303030]
     }),
     createIntegrationTestConcept({
       concept: 'typescript',
       vector: embeddingService.generateEmbedding('typescript'),
       weight: 0.75,
       catalog_ids: [56789012],
-      related_concept_ids: [40404040, 50505050, 60606060]
+      adjacent_ids: [40404040, 50505050, 60606060]
     })
   ];
 }

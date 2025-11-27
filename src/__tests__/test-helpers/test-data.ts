@@ -40,7 +40,7 @@ export function createTestConcept(overrides?: Partial<Concept>): Concept {
   return {
     concept: 'innovation',
     catalogIds: [12345678, 87654321],
-    relatedConceptIds: [11111111, 22222222, 33333333],
+    adjacentIds: [11111111, 22222222, 33333333],
     relatedConcepts: ['creativity', 'disruption', 'change'],
     synonyms: ['novelty', 'originality'],
     broaderTerms: ['change', 'transformation'],

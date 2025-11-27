@@ -196,15 +196,19 @@ export class LanceDBConceptRepository implements ConceptRepository {
     // Parse chunk_ids (native array, Arrow Vector, or JSON string)
     const chunkIds = parseArrayField<number>(row.chunk_ids);
     
-    // Parse related_concept_ids (native array, Arrow Vector, or JSON string)
-    const relatedConceptIds = parseArrayField<number>(row.related_concept_ids);
+    // Parse adjacent_ids (co-occurrence) - native array, Arrow Vector, or JSON string
+    const adjacentIds = parseArrayField<number>(row.adjacent_ids);
+    
+    // Parse related_ids (lexical links) - native array, Arrow Vector, or JSON string
+    const relatedIds = parseArrayField<number>(row.related_ids);
     
     return {
       concept: row.concept || '',
       summary: row.summary || '',
       catalogIds,
       chunkIds,
-      relatedConceptIds,
+      adjacentIds,
+      relatedIds,
       relatedConcepts: parseArrayField(row.related_concepts),
       synonyms: parseArrayField(row.synonyms),
       broaderTerms: parseArrayField(row.broader_terms),

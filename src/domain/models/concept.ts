@@ -12,7 +12,8 @@
  * const concept: Concept = {
  *   concept: 'machine learning',
  *   catalogIds: [12345678, 87654321],
- *   relatedConceptIds: [11111111, 22222222],
+ *   adjacentIds: [11111111, 22222222],  // co-occurrence
+ *   relatedIds: [33333333, 44444444],   // lexical links
  *   relatedConcepts: ['deep learning', 'neural networks'],
  *   synonyms: ['ML', 'statistical learning'],
  *   broaderTerms: ['artificial intelligence'],
@@ -42,14 +43,21 @@ export interface Concept {
   chunkIds?: number[];
   
   /** 
-   * Related concept IDs (hash-based integers).
-   * Primary authoritative field for related concepts.
+   * Adjacent concept IDs - co-occurrence based (concepts appearing together in documents).
+   * Hash-based integers.
    */
-  relatedConceptIds?: number[];
+  adjacentIds?: number[];
   
   /** 
-   * Related concept names (resolved from relatedConceptIds or from corpus analysis).
-   * May be populated for API compatibility when relatedConceptIds are resolved.
+   * Related concept IDs - lexically linked (concepts sharing significant words).
+   * E.g., "military strategy" ↔ "strategy pattern" share "strategy".
+   * Hash-based integers.
+   */
+  relatedIds?: number[];
+  
+  /** 
+   * Related concept names (resolved from relatedIds or adjacentIds).
+   * May be populated for API compatibility.
    */
   relatedConcepts?: string[];
   
@@ -68,4 +76,3 @@ export interface Concept {
   /** Importance weight (0-1, based on frequency and centrality) */
   weight: number;
 }
-

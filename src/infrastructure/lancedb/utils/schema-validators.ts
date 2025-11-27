@@ -276,7 +276,7 @@ export function validateChunkRow(row: any): void {
  * **Validation Rules (Normalized Schema)**:
  * - Required: concept
  * - Vector: Must be 384-dimensional array
- * - Array fields: catalog_ids, related_concept_ids (native arrays, not JSON)
+ * - Array fields: catalog_ids, adjacent_ids (native arrays, not JSON)
  * - Optional JSON fields: synonyms, broader_terms, narrower_terms
  * 
  * @param row - Concept row from LanceDB

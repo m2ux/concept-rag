@@ -14,7 +14,10 @@ export interface ConceptRecord {
     summary?: string;
     catalog_ids: number[];
     chunk_ids?: number[];
-    related_concept_ids?: number[];
+    /** Co-occurrence based links (concepts appearing together in documents) */
+    adjacent_ids?: number[];
+    /** Lexically-linked concepts (sharing significant words) */
+    related_ids?: number[];
     related_concepts?: string[];
     synonyms?: string[];
     broader_terms?: string[];

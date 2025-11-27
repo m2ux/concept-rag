@@ -58,8 +58,8 @@ export class ConceptIndexBuilder {
         // Build co-occurrence relationships (populates related_concepts)
         this.enrichWithCoOccurrence(conceptMap, documents);
         
-        // Convert related_concepts strings to related_concept_ids
-        this.resolveRelatedConceptIds(conceptMap);
+        // Convert related_concepts strings to adjacent_ids
+        this.resolveAdjacentIds(conceptMap);
         
         return Array.from(conceptMap.values());
     }
@@ -82,7 +82,8 @@ export class ConceptIndexBuilder {
                 concept: key,
                 catalog_ids: [],
                 related_concepts: [],
-                related_concept_ids: [],
+                adjacent_ids: [],
+                related_ids: [],
                 embeddings: createSimpleEmbedding(concept),
                 weight: 0
             });
@@ -98,10 +99,10 @@ export class ConceptIndexBuilder {
     }
     
     /**
-     * Convert related_concepts strings to related_concept_ids.
+     * Convert related_concepts strings to adjacent_ids.
      * Call after co-occurrence enrichment.
      */
-    private resolveRelatedConceptIds(conceptMap: Map<string, ConceptRecord>) {
+    private resolveAdjacentIds(conceptMap: Map<string, ConceptRecord>) {
         // Build concept name to ID mapping
         const conceptToId = new Map<string, number>();
         for (const [key, _record] of conceptMap) {
@@ -111,7 +112,7 @@ export class ConceptIndexBuilder {
         // Resolve related_concepts to IDs
         for (const [_key, record] of conceptMap) {
             if (record.related_concepts && record.related_concepts.length > 0) {
-                record.related_concept_ids = record.related_concepts
+                record.adjacent_ids = record.related_concepts
                     .map(name => conceptToId.get(name.toLowerCase().trim()))
                     .filter((id): id is number => id !== undefined);
             }
@@ -224,7 +225,8 @@ export class ConceptIndexBuilder {
                 summary: concept.summary || '',  // LLM-generated summary
                 catalog_ids: ensureNonEmpty(concept.catalog_ids, 0),  // Native array of hash-based IDs
                 chunk_ids: ensureNonEmpty(concept.chunk_ids, 0),  // Chunk IDs for fast lookups  // Native array of hash-based IDs
-                related_concept_ids: ensureNonEmpty(concept.related_concept_ids, 0),  // Native array of hash-based IDs
+                adjacent_ids: ensureNonEmpty(concept.adjacent_ids, 0),  // Co-occurrence links
+                related_ids: ensureNonEmpty(concept.related_ids, 0),  // Lexical links
                 synonyms: ensureNonEmpty(concept.synonyms, ''),  // Native array
                 broader_terms: ensureNonEmpty(concept.broader_terms, ''),  // Native array
                 narrower_terms: ensureNonEmpty(concept.narrower_terms, ''),  // Native array
