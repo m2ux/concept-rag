@@ -314,3 +314,5 @@ cython_debug/
 sample-docs
 logs
 .envrc
+data
+test_db
