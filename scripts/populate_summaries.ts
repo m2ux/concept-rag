@@ -6,7 +6,7 @@
  * 
  * RESUME SUPPORT: The script automatically resumes from where it left off
  * by finding items that already have summaries and skipping them.
- * Progress is saved every 10 batches for crash recovery.
+ * Progress is saved after each batch for crash recovery.
  * 
  * Usage:
  *   # Suppress LanceDB warnings for clean progress bar:
@@ -29,7 +29,6 @@ import * as path from 'path';
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const MODEL = "x-ai/grok-4-fast";
 const DEFAULT_BATCH_SIZE = 20;
-const SAVE_EVERY_N_BATCHES = 10; // Save to DB every N batches (balance between safety and speed)
 const MIN_REQUEST_INTERVAL = 1000; // 1 second between requests
 
 interface SummaryResult {
@@ -242,7 +241,7 @@ async function populateSummaries(
   console.log(`Batch size: ${batchSize}`);
   if (options.dryRun) console.log('🔍 DRY RUN MODE - no changes will be made');
   if (options.force) console.log('⚠️  FORCE MODE - regenerating ALL summaries');
-  console.log(`💾 Progress saved every ${SAVE_EVERY_N_BATCHES} batches (resume-safe)`);
+  console.log('💾 Progress saved after each batch (resume-safe)');
   if (!process.env.RUST_LOG) {
     console.log('💡 Tip: Run with RUST_LOG=error to suppress LanceDB warnings');
   }
@@ -272,7 +271,6 @@ async function populateSummaries(
     if (needsSummary.length > 0 && !options.dryRun) {
       const updates = new Map<number, string>();
       const totalBatches = Math.ceil(needsSummary.length / batchSize);
-      let lastSavedBatch = 0;
       
       for (let i = 0; i < needsSummary.length; i += batchSize) {
         const batch = needsSummary.slice(i, i + batchSize);
@@ -296,25 +294,14 @@ async function populateSummaries(
           }
         }
         
-        // Save progress every N batches (or on last batch)
-        const isLastBatch = i + batchSize >= needsSummary.length;
-        const shouldSave = (batchNum - lastSavedBatch >= SAVE_EVERY_N_BATCHES) || isLastBatch;
-        
-        if (shouldSave && updates.size > 0) {
-          // Clear line and show save message
-          process.stdout.write(`\r  💾 Saving ${updates.size} summaries...` + ' '.repeat(50));
-          
+        // Save progress after each batch
+        if (updates.size > 0) {
           await saveConceptsIncremental(db, allConcepts, updates);
-          lastSavedBatch = batchNum;
-          
           // Refresh allConcepts with updated data
           const refreshedTable = await db.openTable('concepts');
           const refreshedData = await refreshedTable.query().limit(100000).toArray();
           allConcepts.length = 0;
           allConcepts.push(...refreshedData);
-          
-          // Restore progress bar
-          process.stdout.write(`\r  🧠 [${bar}] ${processed}/${needsSummary.length} (batch ${batchNum}/${totalBatches})  `);
         }
       }
       
