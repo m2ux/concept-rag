@@ -35,7 +35,7 @@ USE THIS TOOL WHEN:
 DO NOT USE for:
 - Finding which documents to search (use catalog_search first)
 - Searching across multiple documents (use broad_chunks_search)
-- Tracking a concept across your entire library (use concept_search)
+- Tracking a concept across your entire library (use concept_chunks)
 - When you don't know the document source path
 
 RETURNS: Top 5 chunks from the specified document, ranked by hybrid score with concept and WordNet expansion. Requires exact source path match.

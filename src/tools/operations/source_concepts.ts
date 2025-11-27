@@ -46,7 +46,7 @@ USE THIS TOOL WHEN:
 - Finding documents that cover MULTIPLE concepts (pass an array)
 
 DO NOT USE for:
-- Finding specific text passages about a concept (use concept_search instead)
+- Finding specific text passages about a concept (use concept_chunks instead)
 - General keyword search (use broad_chunks_search instead)
 - Finding documents by title (use catalog_search instead)
 

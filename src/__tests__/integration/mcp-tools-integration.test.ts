@@ -41,10 +41,10 @@ describe('MCP Tools End-to-End Integration Tests', () => {
   });
   
   describe('Base Tools - Core Search Functionality', () => {
-    describe('concept_search tool', () => {
+    describe('concept_chunks tool', () => {
       it('should find chunks by concept name', async () => {
         // ARRANGE
-        const tool = container.getTool('concept_search');
+        const tool = container.getTool('concept_chunks');
         
         // ACT
         const result = await tool.execute({ concept: 'clean architecture', limit: 5 });
@@ -62,7 +62,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
       
       it('should handle non-existent concepts gracefully', async () => {
         // ARRANGE
-        const tool = container.getTool('concept_search');
+        const tool = container.getTool('concept_chunks');
         
         // ACT
         const result = await tool.execute({ concept: 'nonexistent_concept_xyz_123', limit: 5 });
@@ -77,7 +77,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
       
       it('should respect limit parameter', async () => {
         // ARRANGE
-        const tool = container.getTool('concept_search');
+        const tool = container.getTool('concept_chunks');
         
         // ACT
         const result = await tool.execute({ concept: 'clean architecture', limit: 2 });
@@ -395,7 +395,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
     
     it('should support concept → extract workflow', async () => {
       // ARRANGE
-      const conceptTool = container.getTool('concept_search');
+      const conceptTool = container.getTool('concept_chunks');
       const extractTool = container.getTool('extract_concepts');
       
       // ACT: Find document via concept search

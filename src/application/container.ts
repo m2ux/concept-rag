@@ -11,7 +11,7 @@ import {
   ChunkSearchService,
   ConceptSourcesService
 } from '../domain/services/index.js';
-import { ConceptSearchTool } from '../tools/operations/concept_search.js';
+import { ConceptChunksTool } from '../tools/operations/concept_chunks.js';
 import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_catalog_search.js';
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
 import { ConceptualBroadChunksSearchTool } from '../tools/operations/conceptual_broad_chunks_search.js';
@@ -57,7 +57,7 @@ import * as defaults from '../config.js';
  * await container.initialize('~/.concept_rag');
  * 
  * // Use tools
- * const searchTool = container.getTool('concept_search');
+ * const searchTool = container.getTool('concept_chunks');
  * const result = await searchTool.execute({ concept: 'microservices', limit: 10 });
  * 
  * // Shutdown
@@ -176,7 +176,7 @@ export class ApplicationContainer {
     const conceptSourcesService = new ConceptSourcesService(conceptRepo, catalogRepo);
     
     // 7. Create tools (with domain services)
-    this.tools.set('concept_search', new ConceptSearchTool(conceptSearchService));
+    this.tools.set('concept_chunks', new ConceptChunksTool(conceptSearchService));
     this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogSearchService));
     this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService));
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));
@@ -199,7 +199,7 @@ export class ApplicationContainer {
    * Get a specific tool by name.
    * 
    * Available tools:
-   * - `concept_search`: Find chunks by concept name
+   * - `concept_chunks`: Find chunks by concept name
    * - `concept_sources`: Get sources for each concept separately (array of source arrays)
    * - `source_concepts`: Find union of sources matching any concept (with concept attribution)
    * - `catalog_search`: Search document summaries
@@ -207,13 +207,13 @@ export class ApplicationContainer {
    * - `broad_chunks_search`: Search all chunks with hybrid ranking
    * - `extract_concepts`: Extract concepts from a document
    * 
-   * @param name - Tool name (e.g., 'concept_search', 'catalog_search')
+   * @param name - Tool name (e.g., 'concept_chunks', 'catalog_search')
    * @returns The requested tool instance
    * @throws {Error} If tool name is not recognized
    * 
    * @example
    * ```typescript
-   * const searchTool = container.getTool('concept_search');
+   * const searchTool = container.getTool('concept_chunks');
    * const result = await searchTool.execute({
    *   concept: 'microservices',
    *   limit: 10

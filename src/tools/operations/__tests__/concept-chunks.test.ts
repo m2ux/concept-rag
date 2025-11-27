@@ -1,7 +1,7 @@
 /**
- * Unit Tests for ConceptSearchTool
+ * Unit Tests for ConceptChunksTool
  * 
- * Tests the ConceptSearchTool using test doubles (fakes/mocks).
+ * Tests the ConceptChunksTool using test doubles (fakes/mocks).
  * Demonstrates dependency injection for testing as described in:
  * - "Continuous Delivery" (Humble & Farley), Chapter 4
  * - "Test Driven Development for Embedded C" (Grenning), Chapter 7
@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ConceptSearchTool } from '../concept_search.js';
+import { ConceptChunksTool } from '../concept_chunks.js';
 import { ConceptSearchService } from '../../../domain/services/index.js';
 import {
   FakeChunkRepository,
@@ -19,18 +19,18 @@ import {
   createTestConcept
 } from '../../../__tests__/test-helpers/index.js';
 
-describe('ConceptSearchTool', () => {
+describe('ConceptChunksTool', () => {
   let chunkRepo: FakeChunkRepository;
   let conceptRepo: FakeConceptRepository;
   let service: ConceptSearchService;
-  let tool: ConceptSearchTool;
+  let tool: ConceptChunksTool;
   
   beforeEach(() => {
     // SETUP - Fresh repositories and service for each test (test isolation)
     chunkRepo = new FakeChunkRepository();
     conceptRepo = new FakeConceptRepository();
     service = new ConceptSearchService(chunkRepo, conceptRepo);
-    tool = new ConceptSearchTool(service);
+    tool = new ConceptChunksTool(service);
   });
   
   describe('execute', () => {
@@ -153,7 +153,7 @@ describe('ConceptSearchTool', () => {
       // VERIFY - Should only get chunks 1 and 3
       const parsedContent = JSON.parse(result.content[0].text);
       expect(parsedContent.results).toHaveLength(2);
-      // Note: ConceptSearchTool doesn't include IDs in results, check source instead
+      // Note: ConceptChunksTool doesn't include IDs in results, check source instead
       const sources = parsedContent.results.map((r: any) => r.source);
       expect(sources).toHaveLength(2);
     });

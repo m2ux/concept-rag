@@ -27,7 +27,7 @@ The server provides **10 specialized MCP tools** organized into four categories:
 |------|-------------|---------------|
 | `broad_chunks_search` | Cross-document search (phrases, keywords, topics) | `"implementing dependency injection"` |
 | `chunks_search` | Search within a specific known document | `"SOLID principles"` + source path |
-| `concept_search` | Find chunks tagged with a concept (high precision) | `"innovation"` → semantically-tagged results |
+| `concept_chunks` | Find chunks tagged with a concept (high precision) | `"innovation"` → semantically-tagged results |
 
 ### Concept Analysis
 | Tool | Description | Example Query |
