@@ -23,7 +23,7 @@ export class ConceptualBroadChunksSearchTool extends BaseTool<ConceptualBroadChu
   }
   
   name = "broad_chunks_search";
-  description = `Search across ALL document chunks using hybrid search (vector similarity + BM25 keyword matching + concept scoring + WordNet expansion).
+  description = `Search across ALL document chunks using hybrid search (vector similarity + BM25 keyword matching + title matching + WordNet expansion).
 
 USE THIS TOOL WHEN:
 - Searching for specific phrases, keywords, or technical terms across all documents
@@ -35,9 +35,9 @@ USE THIS TOOL WHEN:
 DO NOT USE for:
 - Finding documents by title or getting document overviews (use catalog_search instead)
 - Searching within a single known document (use chunks_search instead)
-- Finding semantically-tagged concept discussions (use concept_chunks for higher precision)
+- Finding semantically-tagged concept discussions (use concept_search or concept_chunks)
 
-RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, concept, and WordNet scores. May include false positives based on keyword matches.`;
+RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, title, and WordNet scores. May include false positives based on keyword matches.`;
   inputSchema = {
     type: "object" as const,
     properties: {

@@ -9,7 +9,6 @@ import {
   calculateVectorScore,
   calculateWeightedBM25,
   calculateTitleScore,
-  calculateConceptScore,
   calculateWordNetBonus,
   calculateHybridScore,
   getMatchedConcepts,
@@ -23,8 +22,10 @@ import {
  * - Vector similarity (semantic search via embeddings)
  * - BM25 keyword matching (lexical search)
  * - Title matching (document relevance)
- * - Concept scoring (conceptual alignment)
  * - WordNet expansion (semantic enrichment)
+ * 
+ * Note: Concept scoring was removed from hybrid search. Use the dedicated
+ * concept_search tool for concept-based discovery instead.
  * 
  * This service orchestrates query expansion, vector search, and multi-signal
  * scoring to provide high-quality search results.
@@ -111,7 +112,8 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         row.source || ''
       );
       const titleScore = calculateTitleScore(expanded.original_terms, row.source || '');
-      const conceptScore = calculateConceptScore(expanded, row);
+      // Concept scoring removed - use concept_search tool instead
+      const conceptScore = 0;  // Deprecated
       const wordnetScore = calculateWordNetBonus(expanded.wordnet_terms, row.text || '');
       
       // Calculate hybrid score
@@ -119,7 +121,6 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         vectorScore,
         bm25Score,
         titleScore,
-        conceptScore,
         wordnetScore
       });
       
@@ -147,7 +148,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         vectorScore,
         bm25Score,
         titleScore,
-        conceptScore,
+        conceptScore: 0,  // Deprecated - always 0
         wordnetScore,
         hybridScore,
         matchedConcepts: getMatchedConcepts(expanded, row),
@@ -194,7 +195,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       console.error(`   Vector: ${result.vectorScore.toFixed(3)}`);
       console.error(`   BM25: ${result.bm25Score.toFixed(3)}`);
       console.error(`   Title: ${result.titleScore.toFixed(3)}`);
-      console.error(`   Concept: ${result.conceptScore.toFixed(3)}`);
+      // Concept score removed
       console.error(`   WordNet: ${result.wordnetScore.toFixed(3)}`);
       console.error(`   ➜ Hybrid: ${result.hybridScore.toFixed(3)}`);
       if (result.matchedConcepts && result.matchedConcepts.length > 0) {
