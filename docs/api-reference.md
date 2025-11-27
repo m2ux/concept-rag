@@ -39,7 +39,7 @@ Search document summaries and metadata to discover relevant documents using sema
 | `text` | string | ✅ | - | Search query - topics, titles, authors, or keywords |
 | `debug` | boolean | ❌ | `false` | Show query expansion and score breakdown |
 
-**Returns:** Top 5 documents with:
+**Returns:** Top 10 documents with:
 - Document summary/preview
 - Hybrid scores (vector + BM25 + title matching)
 - Matched concepts

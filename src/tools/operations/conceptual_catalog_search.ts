@@ -26,18 +26,17 @@ export class ConceptualCatalogSearchTool extends BaseTool<ConceptualCatalogSearc
   description = `Search document summaries and metadata to discover relevant documents. Uses title matching, concept matching, summary analysis, and semantic similarity.
 
 USE THIS TOOL WHEN:
-- Discovering what documents are available in the library ("What documents do I have?")
-- Finding documents about a general topic or domain
-- Looking for documents by title, author, or subject area
+- Finding documents about a specific topic or subject area
+- Looking for documents by title, author, or keywords
 - Need document-level results rather than specific chunks
 - Starting exploratory research to identify relevant sources
 
 DO NOT USE for:
+- Listing all documents (use list_categories then category_search instead)
 - Finding specific information within documents (use broad_chunks_search or chunks_search)
 - Tracking specific concept usage across chunks (use concept_search)
-- Deep content analysis (use broad_chunks_search)
 
-RETURNS: Top 5 documents with text previews, hybrid scores (including strong title matching bonus), matched concepts, and query expansion details.`;
+RETURNS: Top 10 documents with text previews, hybrid scores (including strong title matching bonus), matched concepts, and query expansion details.`;
   inputSchema = {
     type: "object" as const,
     properties: {
@@ -80,7 +79,7 @@ RETURNS: Top 5 documents with text previews, hybrid scores (including strong tit
     // Delegate to service (Result-based)
     const result = await this.catalogSearchService.searchCatalog({
       text: params.text,
-      limit: 5,
+      limit: 10,
       debug: params.debug || false
     });
     
