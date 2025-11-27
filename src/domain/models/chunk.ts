@@ -54,5 +54,15 @@ export interface Chunk {
   
   /** 384-dimensional vector embedding for semantic similarity search */
   embeddings?: number[];
+  
+  /** Page number within source document (1-indexed, from PDF metadata) */
+  pageNumber?: number;
+  
+  /** 
+   * Concept density score (0-1) indicating conceptual richness.
+   * Calculated as: concept_ids.length / (word_count / 10)
+   * Higher values indicate more concept-rich content.
+   */
+  conceptDensity?: number;
 }
 

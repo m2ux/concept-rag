@@ -55,6 +55,34 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       );
     }
   }
+  /**
+   * Find a catalog entry by ID.
+   * @param catalogId - Hash-based document ID
+   * @returns Some(result) if found, None otherwise
+   * @throws {DatabaseError} If database query fails
+   */
+  async findById(catalogId: number): Promise<Option<SearchResult>> {
+    try {
+      const results = await this.catalogTable
+        .query()
+        .where(`id = ${catalogId}`)
+        .limit(1)
+        .toArray();
+      
+      if (results.length === 0) {
+        return None();
+      }
+      
+      return Some(this.docToSearchResult(results[0]));
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to find catalog entry for ID ${catalogId}`,
+        'query',
+        error as Error
+      );
+    }
+  }
+  
   
   /**
    * Find a catalog entry by source path.

@@ -190,6 +190,26 @@ export class LanceDBChunkRepository implements ChunkRepository {
       }
     }
     
+    // Parse page_number from loc field or direct field
+    let pageNumber: number | undefined;
+    if (row.page_number !== undefined && row.page_number !== null) {
+      pageNumber = typeof row.page_number === 'number' ? row.page_number : parseInt(row.page_number);
+    } else if (row.loc) {
+      // Fall back to loc.pageNumber if page_number field doesn't exist
+      try {
+        const loc = typeof row.loc === 'string' ? JSON.parse(row.loc) : row.loc;
+        pageNumber = loc?.pageNumber;
+      } catch {
+        // Ignore parse errors
+      }
+    }
+    
+    // Parse concept_density (may be stored or computed)
+    let conceptDensity: number | undefined;
+    if (row.concept_density !== undefined && row.concept_density !== null) {
+      conceptDensity = typeof row.concept_density === 'number' ? row.concept_density : parseFloat(row.concept_density);
+    }
+    
     return {
       id: row.id || '',
       text: row.text || '',
@@ -199,7 +219,9 @@ export class LanceDBChunkRepository implements ChunkRepository {
       concepts,  // Resolved from conceptIds for API compatibility
       conceptIds,
       categoryIds,
-      embeddings  // May be undefined if no vector field found
+      embeddings,  // May be undefined if no vector field found
+      pageNumber,
+      conceptDensity
     };
   }
 }

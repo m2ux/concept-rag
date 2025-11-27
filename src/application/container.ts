@@ -4,13 +4,14 @@ import { ConceptualHybridSearchService } from '../infrastructure/search/conceptu
 import { LanceDBChunkRepository } from '../infrastructure/lancedb/repositories/lancedb-chunk-repository.js';
 import { LanceDBConceptRepository } from '../infrastructure/lancedb/repositories/lancedb-concept-repository.js';
 import { LanceDBCatalogRepository } from '../infrastructure/lancedb/repositories/lancedb-catalog-repository.js';
+import { LanceDBPageRepository } from '../infrastructure/lancedb/repositories/lancedb-page-repository.js';
 import { QueryExpander } from '../concepts/query_expander.js';
 import { 
   ConceptSearchService, 
   CatalogSearchService, 
   ChunkSearchService,
   ConceptSourcesService,
-  FuzzyConceptSearchService
+  HierarchicalConceptService
 } from '../domain/services/index.js';
 import { ConceptChunksTool } from '../tools/operations/concept_chunks.js';
 import { ConceptSearchTool } from '../tools/operations/concept_search.js';
@@ -27,6 +28,7 @@ import { BaseTool } from '../tools/base/tool.js';
 import { ConceptIdCache, CategoryIdCache, EmbeddingCache, SearchResultCache } from '../infrastructure/cache/index.js';
 import { LanceDBCategoryRepository } from '../infrastructure/lancedb/repositories/lancedb-category-repository.js';
 import type { CategoryRepository } from '../domain/interfaces/category-repository.js';
+import type { PageRepository } from '../domain/interfaces/repositories/page-repository.js';
 import { RetryService } from '../infrastructure/utils/retry-service.js';
 import { ResilientExecutor } from '../infrastructure/resilience/resilient-executor.js';
 import type { SearchResult } from '../domain/models/search-result.js';
@@ -73,6 +75,7 @@ export class ApplicationContainer {
   private conceptIdCache?: ConceptIdCache;
   private categoryIdCache?: CategoryIdCache;
   private categoryRepo?: CategoryRepository;
+  private pageRepo?: PageRepository;
   private retryService!: RetryService;
   private resilientExecutor!: ResilientExecutor;
   private embeddingCache?: EmbeddingCache;
@@ -140,7 +143,16 @@ export class ApplicationContainer {
       console.error('⚠️  Categories table not found (skipping category features)');
     }
     
-    // 3b. Create performance caches
+    // 3b. Open pages table if it exists (for hierarchical concept retrieval)
+    let pagesTable = null;
+    try {
+      pagesTable = await this.dbConnection.openTable('pages');
+      console.error('✅ Pages table found (hierarchical retrieval enabled)');
+    } catch (err) {
+      console.error('⚠️  Pages table not found (using basic concept search)');
+    }
+    
+    // 3c. Create performance caches
     this.embeddingCache = new EmbeddingCache(10000); // Cache up to 10k embeddings
     this.searchResultCache = new SearchResultCache<SearchResult[]>(1000, 5 * 60 * 1000); // 1k searches, 5min TTL
     console.error(`✅ Performance caches initialized`);
@@ -171,16 +183,39 @@ export class ApplicationContainer {
     const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, this.conceptIdCache);
     const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     
+    // 5c. Create PageRepository if pages table exists
+    if (pagesTable) {
+      this.pageRepo = new LanceDBPageRepository(pagesTable, this.conceptIdCache);
+    }
+    
     // 6. Create domain services (with repositories) - using Result-based error handling
     const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);
     const catalogSearchService = new CatalogSearchService(catalogRepo);
     const chunkSearchService = new ChunkSearchService(chunkRepo);
     const conceptSourcesService = new ConceptSourcesService(conceptRepo, catalogRepo);
-    const fuzzyConceptSearchService = new FuzzyConceptSearchService(conceptRepo, embeddingService, queryExpander);
+    
+    // 6a. Create HierarchicalConceptService if pages table exists
+    let hierarchicalConceptService: HierarchicalConceptService | null = null;
+    if (this.pageRepo) {
+      hierarchicalConceptService = new HierarchicalConceptService(
+        conceptRepo,
+        this.pageRepo,
+        chunkRepo,
+        catalogRepo
+      );
+      console.error('✅ HierarchicalConceptService initialized');
+    }
     
     // 7. Create tools (with domain services)
     this.tools.set('concept_chunks', new ConceptChunksTool(conceptSearchService));
-    this.tools.set('concept_search', new ConceptSearchTool(fuzzyConceptSearchService));
+    
+    // Use hierarchical concept search if available
+    if (hierarchicalConceptService) {
+      this.tools.set('concept_search', new ConceptSearchTool(hierarchicalConceptService));
+    } else {
+      // Pages table not available - concept_search tool won't be registered
+      console.error('⚠️  concept_search tool requires pages table (run seed_pages_table.ts first)');
+    }
     this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogSearchService));
     this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService));
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));

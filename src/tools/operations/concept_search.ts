@@ -1,68 +1,85 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
-import { FuzzyConceptSearchService, FuzzyConceptSearchResult } from "../../domain/services/fuzzy-concept-search-service.js";
-import { isErr } from "../../domain/functional/index.js";
+import { HierarchicalConceptService, HierarchicalConceptResult, EnrichedChunk, SourceWithPages } from "../../domain/services/hierarchical-concept-service.js";
 
 export interface ConceptSearchParams extends ToolParams {
-  text: string;
+  /** The concept to search for */
+  concept: string;
+  
+  /** Maximum sources to return (default: 5) */
   limit?: number;
+  
+  /** Optional source path filter */
+  source_filter?: string;
+  
+  /** Show debug information */
   debug?: boolean;
 }
 
 /**
- * MCP tool for fuzzy concept search.
+ * MCP tool for hierarchical concept search.
  * 
- * Searches concept summaries using hybrid search (vector + BM25 + title matching),
- * similar to how catalog_search searches document summaries.
+ * Provides comprehensive concept retrieval using hierarchical navigation:
+ * Concept → Pages → Chunks
  * 
- * Use this to find concepts by description or meaning, not just exact name match.
+ * Returns:
+ * - Concept metadata (summary, synonyms, related concepts)
+ * - Source documents with page-level context
+ * - Enriched chunks sorted by concept density
  */
 export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
   constructor(
-    private fuzzyConceptSearchService: FuzzyConceptSearchService
+    private hierarchicalService: HierarchicalConceptService
   ) {
     super();
   }
   
   name = "concept_search";
-  description = `Search for concepts by their summary/description using semantic similarity.
-
+  description = `Find all chunks tagged with a specific concept from the concept-enriched index. 
+  
 USE THIS TOOL WHEN:
-- Looking for concepts by description or meaning (not exact name)
-- Finding concepts related to a topic or theme
-- Discovering what concepts exist in your library about a subject
-- Fuzzy/semantic search over concept definitions
+- Searching for a conceptual topic (e.g., "innovation", "leadership", "strategic thinking")
+- You want semantically-tagged, high-precision results about a concept
+- Tracking where and how a concept is discussed across your library
+- Research queries focused on understanding a specific concept
 
 DO NOT USE for:
-- Finding chunks tagged with a specific concept (use concept_chunks instead)
+- Keyword searches or exact phrase matching (use broad_chunks_search instead)
 - Finding documents by title (use catalog_search instead)
-- Exact concept name lookup (use source_concepts or concept_sources)
+- Searching within a known document (use chunks_search instead)
 
-RETURNS: Top 10 concepts with summaries, document/chunk counts, related concepts, and hybrid scores.`;
+RETURNS: Concept-tagged chunks with concept_density scores, related concepts, and semantic categories. Results include:
+- Concept metadata: summary, synonyms, broader/narrower terms
+- Source documents: paths, page numbers where concept appears
+- Enriched chunks: text with page numbers and concept density ranking`;
 
   inputSchema = {
     type: "object" as const,
     properties: {
-      text: {
+      concept: {
         type: "string",
-        description: "Search query - topic, description, or keywords to find matching concepts",
+        description: "The concept to search for - use conceptual terms not exact phrases (e.g., 'innovation' not 'innovation process')",
       },
       limit: {
         type: "number",
-        description: "Maximum number of results to return (default: 10)",
-        default: 10
+        description: "Maximum number of sources to return (default: 5)",
+        default: 5
+      },
+      source_filter: {
+        type: "string",
+        description: "Optional: Filter results to documents containing this text in their source path"
       },
       debug: {
         type: "boolean",
-        description: "Show debug information (query expansion, score breakdown)",
+        description: "Show debug information",
         default: false
       }
     },
-    required: ["text"],
+    required: ["concept"],
   };
 
   async execute(params: ConceptSearchParams) {
     // Validate input
-    if (!params.text || params.text.trim() === '') {
+    if (!params.concept || params.concept.trim() === '') {
       return {
         isError: true,
         content: [{
@@ -70,8 +87,8 @@ RETURNS: Top 10 concepts with summaries, document/chunk counts, related concepts
           text: JSON.stringify({
             error: {
               code: 'VALIDATION_ERROR',
-              message: 'Search query text is required',
-              field: 'text'
+              message: 'Concept name is required',
+              field: 'concept'
             },
             timestamp: new Date().toISOString()
           })
@@ -79,69 +96,95 @@ RETURNS: Top 10 concepts with summaries, document/chunk counts, related concepts
       };
     }
     
-    const limit = params.limit || 10;
+    const maxSources = params.limit || 5;
     
-    console.error(`🔍 Searching concepts for: "${params.text}"`);
+    console.error(`🔍 Hierarchical concept search: "${params.concept}"`);
     
-    // Delegate to service
-    const result = await this.fuzzyConceptSearchService.searchConcepts({
-      text: params.text,
-      limit: limit,
-      debug: params.debug || false
-    });
-    
-    // Handle Result type
-    if (isErr(result)) {
-      const error = result.error;
-      const errorMessage = 
-        error.type === 'validation' ? error.message :
-        error.type === 'database' ? error.message :
-        error.type === 'empty_results' ? `No concepts found for query: ${error.query}` :
-        error.type === 'unknown' ? error.message :
-        'An unknown error occurred';
+    try {
+      // Perform hierarchical search
+      const result = await this.hierarchicalService.search({
+        concept: params.concept,
+        maxSources,
+        maxChunks: maxSources * 3, // ~3 chunks per source
+        chunksPerSource: 3,
+        sourceFilter: params.source_filter
+      });
+      
+      // Format for MCP response
+      const formatted = this.formatResult(result, params.debug);
+      
+      console.error(`✅ Found: ${result.totalPages} pages, ${result.chunks.length} chunks across ${result.sources.length} sources`);
       
       return {
+        content: [
+          { type: "text" as const, text: JSON.stringify(formatted, null, 2) },
+        ],
+        isError: false,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        isError: true,
         content: [{
           type: "text" as const,
           text: JSON.stringify({
             error: {
-              type: error.type,
-              message: errorMessage
+              code: 'SEARCH_ERROR',
+              message: message
             },
             timestamp: new Date().toISOString()
           })
-        }],
-        isError: true,
+        }]
       };
     }
-    
-    // Format results for MCP response
-    // @ts-expect-error - Type narrowing limitation
-    const formattedResults = result.value.map((r: FuzzyConceptSearchResult) => ({
-      concept: r.concept,
-      summary: r.summary,
-      document_count: r.documentCount,
-      chunk_count: r.chunkCount,
-      related_concepts: r.relatedConcepts.slice(0, 5),
-      synonyms: r.synonyms.slice(0, 5),
-      weight: r.weight.toFixed(3),
-      scores: {
-        hybrid: r.hybridScore.toFixed(3),
-        vector: r.vectorScore.toFixed(3),
-        bm25: r.bm25Score.toFixed(3),
-        name: r.nameScore.toFixed(3),
-        wordnet: r.wordnetScore.toFixed(3)
-      }
+  }
+  
+  /**
+   * Format hierarchical result for LLM consumption.
+   */
+  private formatResult(result: HierarchicalConceptResult, debug?: boolean) {
+    // Format sources with page context
+    const sources = result.sources.map((s: SourceWithPages) => ({
+      title: s.title,
+      source: s.source,
+      pages: s.pageNumbers,
+      page_previews: debug ? s.pagePreviews : undefined
     }));
     
-    console.error(`✅ Found ${formattedResults.length} matching concepts`);
+    // Format chunks with enhanced metadata
+    const chunks = result.chunks.map((e: EnrichedChunk) => ({
+      text: e.chunk.text,
+      source: e.chunk.source,
+      page: e.pageNumber,
+      concept_density: e.conceptDensity.toFixed(3),
+      concepts: e.chunk.concepts?.slice(0, 10),
+      document_title: e.documentTitle
+    }));
     
     return {
-      content: [
-        { type: "text" as const, text: JSON.stringify(formattedResults, null, 2) },
-      ],
-      isError: false,
+      concept: result.concept,
+      concept_id: result.conceptId,
+      summary: result.summary,
+      
+      // Semantic relationships
+      related_concepts: result.relatedConcepts,
+      synonyms: result.synonyms,
+      broader_terms: result.broaderTerms,
+      narrower_terms: result.narrowerTerms,
+      
+      // Sources with page-level context
+      sources,
+      
+      // Enriched chunks
+      chunks,
+      
+      // Statistics
+      stats: {
+        total_pages: result.totalPages,
+        total_chunks: result.totalChunks,
+        sources_returned: result.sources.length,
+        chunks_returned: result.chunks.length
+      }
     };
   }
 }
-
