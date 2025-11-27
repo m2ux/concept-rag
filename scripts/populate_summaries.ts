@@ -6,22 +6,22 @@
  * 
  * RESUME SUPPORT: The script automatically resumes from where it left off
  * by finding items that already have summaries and skipping them.
- * Progress is saved incrementally after each batch.
+ * Progress is saved every 10 batches for crash recovery.
  * 
  * Usage:
- *   npx tsx scripts/populate_summaries.ts [db-path]
- *   npx tsx scripts/populate_summaries.ts ~/.concept_rag
+ *   # Suppress LanceDB warnings for clean progress bar:
+ *   RUST_LOG=error npx tsx scripts/populate_summaries.ts [db-path]
+ *   
+ *   # Example:
+ *   RUST_LOG=error npx tsx scripts/populate_summaries.ts ~/.concept_rag
  *   
  * Options:
  *   --concepts-only    Only populate concept summaries
  *   --categories-only  Only populate category summaries
- *   --batch-size N     Number of items per LLM request (default: 20)
+ *   --batch-size=N     Number of items per LLM request (default: 20)
  *   --dry-run          Show what would be done without making changes
  *   --force            Regenerate ALL summaries (ignore existing)
  */
-
-// Suppress LanceDB Rust warnings that break progress bar
-process.env.RUST_LOG = 'error';
 
 import { connect, Table } from '@lancedb/lancedb';
 import * as path from 'path';
@@ -29,6 +29,7 @@ import * as path from 'path';
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const MODEL = "x-ai/grok-4-fast";
 const DEFAULT_BATCH_SIZE = 20;
+const SAVE_EVERY_N_BATCHES = 10; // Save to DB every N batches (balance between safety and speed)
 const MIN_REQUEST_INTERVAL = 1000; // 1 second between requests
 
 interface SummaryResult {
@@ -241,7 +242,10 @@ async function populateSummaries(
   console.log(`Batch size: ${batchSize}`);
   if (options.dryRun) console.log('🔍 DRY RUN MODE - no changes will be made');
   if (options.force) console.log('⚠️  FORCE MODE - regenerating ALL summaries');
-  console.log('💾 Progress saved after each batch (resume-safe)');
+  console.log(`💾 Progress saved every ${SAVE_EVERY_N_BATCHES} batches (resume-safe)`);
+  if (!process.env.RUST_LOG) {
+    console.log('💡 Tip: Run with RUST_LOG=error to suppress LanceDB warnings');
+  }
   console.log('');
 
   const db = await connect(dbPath);
@@ -268,6 +272,7 @@ async function populateSummaries(
     if (needsSummary.length > 0 && !options.dryRun) {
       const updates = new Map<number, string>();
       const totalBatches = Math.ceil(needsSummary.length / batchSize);
+      let lastSavedBatch = 0;
       
       for (let i = 0; i < needsSummary.length; i += batchSize) {
         const batch = needsSummary.slice(i, i + batchSize);
@@ -291,20 +296,31 @@ async function populateSummaries(
           }
         }
         
-        // Save progress incrementally after each batch
-        if (updates.size > 0) {
+        // Save progress every N batches (or on last batch)
+        const isLastBatch = i + batchSize >= needsSummary.length;
+        const shouldSave = (batchNum - lastSavedBatch >= SAVE_EVERY_N_BATCHES) || isLastBatch;
+        
+        if (shouldSave && updates.size > 0) {
+          // Clear line and show save message
+          process.stdout.write(`\r  💾 Saving ${updates.size} summaries...` + ' '.repeat(50));
+          
           await saveConceptsIncremental(db, allConcepts, updates);
+          lastSavedBatch = batchNum;
+          
           // Refresh allConcepts with updated data
           const refreshedTable = await db.openTable('concepts');
           const refreshedData = await refreshedTable.query().limit(100000).toArray();
           allConcepts.length = 0;
           allConcepts.push(...refreshedData);
+          
+          // Restore progress bar
+          process.stdout.write(`\r  🧠 [${bar}] ${processed}/${needsSummary.length} (batch ${batchNum}/${totalBatches})  `);
         }
       }
       
       // Clear progress bar and show completion
       process.stdout.write('\r' + ' '.repeat(80) + '\r');
-      console.log(`  ✅ Generated ${updates.size} concept summaries (saved incrementally)`);
+      console.log(`  ✅ Generated ${updates.size} concept summaries`);
     } else if (needsSummary.length === 0) {
       console.log(`  ✅ All ${allConcepts.length} concepts already have summaries`);
     }
@@ -332,6 +348,7 @@ async function populateSummaries(
     if (needsSummary.length > 0 && !options.dryRun) {
       const updates = new Map<number, string>();
       const totalBatches = Math.ceil(needsSummary.length / batchSize);
+      let lastSavedBatch = 0;
       
       for (let i = 0; i < needsSummary.length; i += batchSize) {
         const batch = needsSummary.slice(i, i + batchSize);
@@ -355,20 +372,31 @@ async function populateSummaries(
           }
         }
         
-        // Save progress incrementally after each batch
-        if (updates.size > 0) {
+        // Save progress every N batches (or on last batch)
+        const isLastBatch = i + batchSize >= needsSummary.length;
+        const shouldSave = (batchNum - lastSavedBatch >= SAVE_EVERY_N_BATCHES) || isLastBatch;
+        
+        if (shouldSave && updates.size > 0) {
+          // Clear line and show save message
+          process.stdout.write(`\r  💾 Saving ${updates.size} summaries...` + ' '.repeat(50));
+          
           await saveCategoriesIncremental(db, allCategories, updates);
+          lastSavedBatch = batchNum;
+          
           // Refresh allCategories with updated data
           const refreshedTable = await db.openTable('categories');
           const refreshedData = await refreshedTable.query().limit(10000).toArray();
           allCategories.length = 0;
           allCategories.push(...refreshedData);
+          
+          // Restore progress bar
+          process.stdout.write(`\r  📂 [${bar}] ${processed}/${needsSummary.length} (batch ${batchNum}/${totalBatches})  `);
         }
       }
       
       // Clear progress bar and show completion
       process.stdout.write('\r' + ' '.repeat(80) + '\r');
-      console.log(`  ✅ Generated ${updates.size} category summaries (saved incrementally)`);
+      console.log(`  ✅ Generated ${updates.size} category summaries`);
     } else if (needsSummary.length === 0) {
       console.log(`  ✅ All ${allCategories.length} categories already have summaries`);
     }
