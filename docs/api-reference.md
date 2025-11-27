@@ -6,13 +6,13 @@ This document provides a comprehensive API specification for all MCP tools avail
 
 ## Overview
 
-Concept-RAG provides **10 MCP tools** organized into four categories:
+Concept-RAG provides **11 MCP tools** organized into four categories:
 
 | Category | Tools | Purpose |
 |----------|-------|---------|
 | **Document Discovery** | `catalog_search` | Find documents by title, author, topic |
 | **Content Search** | `broad_chunks_search`, `chunks_search`, `concept_chunks` | Search within document content |
-| **Concept Analysis** | `extract_concepts`, `source_concepts`, `concept_sources` | Analyze and track concepts |
+| **Concept Analysis** | `concept_search`, `extract_concepts`, `source_concepts`, `concept_sources` | Analyze and track concepts |
 | **Category Browsing** | `category_search`, `list_categories`, `list_concepts_in_category` | Browse by domain/category |
 
 ---
@@ -160,6 +160,52 @@ Find all chunks tagged with a specific concept from the concept-enriched index.
 ---
 
 ## Concept Analysis
+
+### `concept_search`
+
+Search for concepts by their summary/description using semantic similarity.
+
+**Use When:**
+- Looking for concepts by description or meaning (not exact name)
+- Finding concepts related to a topic or theme
+- Discovering what concepts exist in your library about a subject
+- Fuzzy/semantic search over concept definitions
+
+**Do NOT Use For:**
+- Finding chunks tagged with a specific concept (use `concept_chunks` instead)
+- Finding documents by title (use `catalog_search` instead)
+- Exact concept name lookup (use `source_concepts` or `concept_sources`)
+
+**Parameters:**
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `text` | string | ✅ | - | Search query - topic, description, or keywords |
+| `limit` | number | ❌ | `10` | Maximum results to return |
+| `debug` | boolean | ❌ | `false` | Show query expansion and score breakdown |
+
+**Returns:** Top 10 concepts with:
+- Concept name and summary
+- Document and chunk counts
+- Related concepts and synonyms
+- Hybrid scores (vector + BM25 + name matching)
+
+**Example:**
+```json
+{
+  "text": "design patterns for loose coupling",
+  "limit": 10,
+  "debug": false
+}
+```
+
+**How It Works:**
+1. Converts query to a vector embedding
+2. Performs semantic search against concept summaries
+3. Re-ranks results using BM25, **concept name matching**, and WordNet expansion
+4. Concept name matches boost scores (exact match = highest boost)
+
+---
 
 ### `extract_concepts`
 
@@ -392,7 +438,8 @@ What do you want to find?
 │   ├── Within one document → chunks_search
 │   └── By concept tag → concept_chunks
 │
-├── Concept Analysis
+├── Concepts
+│   ├── Find concepts by description → concept_search
 │   ├── All concepts from a document → extract_concepts
 │   ├── Which docs have a concept → source_concepts
 │   └── Per-concept source lists → concept_sources
@@ -421,8 +468,10 @@ chunks_search → dive into specific document
 extract_concepts → understand document's conceptual structure
 ```
 
-**3. Track a Concept**
+**3. Discover Concepts**
 ```
+concept_search → find concepts by description
+    ↓
 concept_chunks → find where concept is discussed
     ↓
 source_concepts → get source attribution
@@ -469,6 +518,7 @@ All tools return structured error responses:
 | `catalog_search` | 50-200ms |
 | `broad_chunks_search` | 100-500ms |
 | `chunks_search` | 50-150ms |
+| `concept_search` | 50-200ms |
 | `concept_chunks` | 50-200ms |
 | `extract_concepts` | 100-300ms |
 | `category_search` | 30-130ms |

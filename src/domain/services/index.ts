@@ -11,4 +11,5 @@ export * from './catalog-search-service.js';
 // @ts-expect-error - Type narrowing limitation
 export * from './chunk-search-service.js';
 export * from './concept-sources-service.js';
+export * from './fuzzy-concept-search-service.js';
 

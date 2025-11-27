@@ -9,9 +9,11 @@ import {
   ConceptSearchService, 
   CatalogSearchService, 
   ChunkSearchService,
-  ConceptSourcesService
+  ConceptSourcesService,
+  FuzzyConceptSearchService
 } from '../domain/services/index.js';
 import { ConceptChunksTool } from '../tools/operations/concept_chunks.js';
+import { ConceptSearchTool } from '../tools/operations/concept_search.js';
 import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_catalog_search.js';
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
 import { ConceptualBroadChunksSearchTool } from '../tools/operations/conceptual_broad_chunks_search.js';
@@ -174,9 +176,11 @@ export class ApplicationContainer {
     const catalogSearchService = new CatalogSearchService(catalogRepo);
     const chunkSearchService = new ChunkSearchService(chunkRepo);
     const conceptSourcesService = new ConceptSourcesService(conceptRepo, catalogRepo);
+    const fuzzyConceptSearchService = new FuzzyConceptSearchService(conceptRepo, hybridSearchService);
     
     // 7. Create tools (with domain services)
     this.tools.set('concept_chunks', new ConceptChunksTool(conceptSearchService));
+    this.tools.set('concept_search', new ConceptSearchTool(fuzzyConceptSearchService));
     this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogSearchService));
     this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService));
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));
@@ -199,6 +203,7 @@ export class ApplicationContainer {
    * Get a specific tool by name.
    * 
    * Available tools:
+   * - `concept_search`: Fuzzy search concepts by summary/description
    * - `concept_chunks`: Find chunks by concept name
    * - `concept_sources`: Get sources for each concept separately (array of source arrays)
    * - `source_concepts`: Find union of sources matching any concept (with concept attribution)
@@ -207,7 +212,7 @@ export class ApplicationContainer {
    * - `broad_chunks_search`: Search all chunks with hybrid ranking
    * - `extract_concepts`: Extract concepts from a document
    * 
-   * @param name - Tool name (e.g., 'concept_chunks', 'catalog_search')
+   * @param name - Tool name (e.g., 'concept_search', 'catalog_search')
    * @returns The requested tool instance
    * @throws {Error} If tool name is not recognized
    * 
