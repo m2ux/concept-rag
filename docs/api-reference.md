@@ -56,7 +56,7 @@ Search document summaries and metadata to discover relevant documents using sema
 **How It Works:**
 1. Converts query to a vector embedding
 2. Performs semantic search against document summaries
-3. Re-ranks results using BM25, title matching, and concept alignment
+3. Re-ranks results using BM25, title matching, and WordNet expansion
 
 ---
 
@@ -64,7 +64,7 @@ Search document summaries and metadata to discover relevant documents using sema
 
 ### `broad_chunks_search`
 
-Search across ALL document chunks using hybrid search (vector + BM25 + concept + WordNet).
+Search across ALL document chunks using hybrid search (vector + BM25 + title + WordNet).
 
 **Use When:**
 - Comprehensive cross-document research on a topic
@@ -81,7 +81,7 @@ Search across ALL document chunks using hybrid search (vector + BM25 + concept +
 **Returns:** Top 10 chunks ranked by hybrid scoring with:
 - Text content
 - Source document path
-- Score components (vector, BM25, concept, WordNet)
+- Score components (vector, BM25, title, WordNet)
 
 **Example:**
 ```json

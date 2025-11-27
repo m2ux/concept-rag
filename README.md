@@ -214,7 +214,7 @@ This project is forked from [lance-mcp](https://github.com/adiom-data/lance-mcp)
 - 📚 **Formal concept model** - Rigorous definition ensuring semantic matching and disambiguation
 - 🧠 **Enhanced concept extraction** - 80-150+ concepts per document (Claude Sonnet 4.5)
 - 🌐 **WordNet semantic enrichment** - Synonym expansion and hierarchical navigation
-- 🔍 **Multi-signal hybrid ranking** - Vector + BM25 + concept + title + WordNet
+- 🔍 **Multi-signal hybrid ranking** - Vector + BM25 + title + WordNet
 - 📖 **Large document support** - Multi-pass extraction for >100k token documents
 - ⚡ **Incremental seeding** - Fast updates for new/changed documents only
 - 🛡️ **Robust error handling** - Better JSON parsing, debug logging, OCR fallback
