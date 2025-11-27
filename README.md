@@ -15,7 +15,7 @@ A powerful RAG MCP server that enables LLMs to interact with local PDF/EPUB docu
 ---
 ## 📝 Available Tools
 
-The server provides **10 specialized MCP tools** organized into four categories:
+The server provides **11 specialized MCP tools** organized into four categories:
 
 ### Document Discovery
 | Tool | Description | Example Query |
@@ -32,6 +32,7 @@ The server provides **10 specialized MCP tools** organized into four categories:
 ### Concept Analysis
 | Tool | Description | Example Query |
 |------|-------------|---------------|
+| `concept_search` | Fuzzy search concepts by description/meaning | `"design patterns for loose coupling"` |
 | `extract_concepts` | Export all concepts from a document | `"Clean Architecture"` |
 | `source_concepts` | Find documents where concept(s) appear (union) | `["TDD", "BDD"]` → all docs with either |
 | `concept_sources` | Get per-concept source lists (separate arrays) | `["TDD", "BDD"]` → sources for each |
@@ -161,7 +162,7 @@ src/
 │   ├── query_expander.ts         # Query expansion
 │   └── summary_generator.ts      # LLM summary generation
 ├── wordnet/                      # WordNet integration
-└── tools/                        # MCP tools (10 operations)
+└── tools/                        # MCP tools (11 operations)
 ```
 
 ## 🏗️ Architecture

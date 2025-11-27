@@ -119,6 +119,51 @@ export function calculateTitleScore(terms: string[], source: string): number {
 }
 
 /**
+ * Calculate name matching score (for concept search).
+ * 
+ * Gives high scores to concepts whose names contain query terms.
+ * Used instead of titleScore for concept search.
+ * 
+ * @param terms - Original query terms
+ * @param name - Concept name to match against
+ * @returns Score from 0.0 to 1.0
+ */
+export function calculateNameScore(terms: string[], name: string): number {
+  if (!name || terms.length === 0) return 0;
+  
+  const nameLower = name.toLowerCase();
+  
+  let matches = 0;
+  let exactMatch = false;
+  
+  for (const term of terms) {
+    const termLower = term.toLowerCase();
+    
+    // Check for exact match (concept name equals query term)
+    if (nameLower === termLower) {
+      exactMatch = true;
+      matches += 3;  // Triple weight for exact match
+    }
+    // Check for substring match
+    else if (nameLower.includes(termLower)) {
+      matches += 2;  // Double weight for substring
+    }
+    // Check for term containing concept name (e.g., "dependency injection patterns" contains "dependency injection")
+    else if (termLower.includes(nameLower)) {
+      matches += 1.5;
+    }
+  }
+  
+  // Bonus for exact match
+  if (exactMatch) {
+    return 1.0;
+  }
+  
+  // Normalize by number of terms
+  return Math.min(matches / (terms.length * 2), 1.0);
+}
+
+/**
  * Calculate concept matching score.
  * 
  * Scores documents based on concept alignment between query and document.
