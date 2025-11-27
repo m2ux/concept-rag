@@ -22,6 +22,7 @@
 
 import * as lancedb from '@lancedb/lancedb';
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+import { EPubLoader } from "@langchain/community/document_loaders/fs/epub";
 import { Document } from "@langchain/core/documents";
 import * as fs from 'fs';
 import * as path from 'path';
@@ -144,16 +145,33 @@ function saveCheckpoint(checkpointPath: string, checkpoint: Checkpoint): void {
 }
 
 // ============================================================================
-// PDF Loading
+// Document Loading (PDF & EPUB)
 // ============================================================================
 
-async function loadPdfPages(pdfPath: string): Promise<Document[]> {
-  if (!fs.existsSync(pdfPath)) {
-    throw new Error(`PDF not found: ${pdfPath}`);
+async function loadDocumentPages(docPath: string): Promise<Document[]> {
+  if (!fs.existsSync(docPath)) {
+    throw new Error(`Document not found: ${docPath}`);
   }
   
-  const loader = new PDFLoader(pdfPath, { splitPages: true });
-  return await loader.load();
+  const ext = path.extname(docPath).toLowerCase();
+  
+  if (ext === '.pdf') {
+    const loader = new PDFLoader(docPath, { splitPages: true });
+    return await loader.load();
+  } else if (ext === '.epub') {
+    const loader = new EPubLoader(docPath, { splitChapters: true });
+    const docs = await loader.load();
+    // Add page numbers based on chapter index for EPUBs
+    return docs.map((doc, idx) => ({
+      ...doc,
+      metadata: {
+        ...doc.metadata,
+        loc: { pageNumber: idx + 1 }
+      }
+    }));
+  } else {
+    throw new Error(`Unsupported file format: ${ext}`);
+  }
 }
 
 // ============================================================================
@@ -186,34 +204,41 @@ function buildPageMarkedContent(pages: Document[]): string {
   return sections.join('\n\n---\n\n');
 }
 
-function buildExtractionPrompt(markedContent: string): string {
+function buildExtractionPrompt(markedContent: string, validConcepts: string[]): string {
+  // Provide the list of valid concepts from the concepts table
+  const conceptList = validConcepts.slice(0, 500).join(', '); // Limit to avoid token overflow
+  
   return `You are analyzing a document divided into pages marked with [PAGE N].
 
-TASK: Extract significant concepts and indicate which page(s) each appears on.
+TASK: Identify which concepts from the VALID CONCEPTS LIST appear on which pages.
 
+VALID CONCEPTS (use ONLY these exact names):
+${conceptList}
+
+DOCUMENT:
 ${markedContent}
 
 INSTRUCTIONS:
-1. Extract concepts at THREE levels:
-   - THEMATIC: Core themes and principles
-   - METHODOLOGICAL: Frameworks, approaches, theories
-   - TECHNICAL: Specific terms, techniques, methods
-
-2. For each concept, list PAGE NUMBERS where it appears or is discussed.
+1. For each concept from the VALID CONCEPTS LIST that appears in the document:
+   - Use the EXACT concept name as provided (case-insensitive matching)
+   - List PAGE NUMBERS where it appears or is discussed
    - Include pages where concept is implied, not just literally mentioned
-   - A concept may span multiple pages
 
-3. Rate confidence: "high" (explicit), "medium" (clear implication), "low" (inferred)
+2. ONLY include concepts from the VALID CONCEPTS LIST above
+   - Do NOT invent new concept names
+   - If a concept isn't in the list, don't include it
+
+3. Rate confidence: "high" (explicit mention), "medium" (clear implication), "low" (inferred)
 
 Return ONLY valid JSON:
 {
   "concepts": [
-    {"concept": "name", "type": "thematic|methodological|technical", "pages": [1,2,5], "confidence": "high"}
+    {"concept": "exact name from list", "type": "thematic|methodological|technical", "pages": [1,2,5], "confidence": "high"}
   ],
   "categories": ["domain1", "domain2"]
 }
 
-Extract 50-150 concepts across all levels. Be thorough with page numbers.`;
+Be thorough - check each valid concept against each page.`;
 }
 
 async function callLLM(prompt: string): Promise<string> {
@@ -271,10 +296,11 @@ function parseExtractionResult(response: string): ExtractionResult {
 
 async function extractConceptsWithRetry(
   pages: Document[],
-  maxRetries: number
+  maxRetries: number,
+  validConcepts: string[]
 ): Promise<ExtractionResult> {
   const markedContent = buildPageMarkedContent(pages);
-  const prompt = buildExtractionPrompt(markedContent);
+  const prompt = buildExtractionPrompt(markedContent, validConcepts);
   
   let lastError: Error | null = null;
   
@@ -304,12 +330,21 @@ function createPageRecords(
 ): PageRecord[] {
   const pageRecords: PageRecord[] = [];
   
-  // Build page -> concepts map
+  // Build page -> concepts map using ONLY IDs from concepts table
   const pageConceptsMap = new Map<number, Set<number>>();
+  let matchedConcepts = 0;
+  let unmatchedConcepts = 0;
   
   for (const concept of extractionResult.concepts) {
-    const conceptId = conceptNameToId.get(concept.concept.toLowerCase()) || hashToId(concept.concept);
+    // Exact lookup by name (lowercase) to get ID from concepts table
+    const conceptId = conceptNameToId.get(concept.concept.toLowerCase().trim());
     
+    if (conceptId === undefined) {
+      unmatchedConcepts++;
+      continue; // Skip - concept not in table, don't generate fake ID
+    }
+    
+    matchedConcepts++;
     for (const pageNum of concept.pages) {
       if (!pageConceptsMap.has(pageNum)) {
         pageConceptsMap.set(pageNum, new Set());
@@ -317,6 +352,8 @@ function createPageRecords(
       pageConceptsMap.get(pageNum)!.add(conceptId);
     }
   }
+  
+  console.log(`   📊 Concept matching: ${matchedConcepts} matched, ${unmatchedConcepts} not in table`);
   
   // Create page records
   for (const page of pages) {
@@ -415,7 +452,8 @@ async function loadCatalogEntries(db: lancedb.Connection): Promise<CatalogEntry[
 
 async function processDocument(
   entry: CatalogEntry,
-  conceptNameToId: Map<string, number>
+  conceptNameToId: Map<string, number>,
+  validConcepts: string[]
 ): Promise<PageRecord[]> {
   const sourcePath = entry.source;
   const filename = path.basename(sourcePath);
@@ -423,13 +461,13 @@ async function processDocument(
   console.log(`\n📖 Processing: ${filename}`);
   console.log(`   Source: ${sourcePath}`);
   
-  // Load PDF pages
+  // Load document pages (PDF or EPUB)
   let pages: Document[];
   try {
-    pages = await loadPdfPages(sourcePath);
-    console.log(`   Loaded ${pages.length} pages`);
+    pages = await loadDocumentPages(sourcePath);
+    console.log(`   Loaded ${pages.length} pages/chapters`);
   } catch (error) {
-    throw new Error(`Failed to load PDF: ${(error as Error).message}`);
+    throw new Error(`Failed to load document: ${(error as Error).message}`);
   }
   
   if (pages.length === 0) {
@@ -437,9 +475,9 @@ async function processDocument(
     return [];
   }
   
-  // Extract concepts with page numbers
-  console.log(`   🤖 Extracting concepts...`);
-  const extractionResult = await extractConceptsWithRetry(pages, CONFIG.MAX_RETRIES);
+  // Extract concepts with page numbers (using ONLY valid concepts from table)
+  console.log(`   🤖 Extracting concepts (from ${validConcepts.length} valid concepts)...`);
+  const extractionResult = await extractConceptsWithRetry(pages, CONFIG.MAX_RETRIES, validConcepts);
   console.log(`   ✅ Extracted ${extractionResult.concepts.length} concepts`);
   
   // Create page records
@@ -495,6 +533,7 @@ async function main() {
   
   // Load existing data
   const conceptNameToId = await loadConceptNameToIdMap(db);
+  const validConcepts = Array.from(conceptNameToId.keys()); // Get all concept names
   let catalogEntries = await loadCatalogEntries(db);
   
   console.log(`📚 Found ${catalogEntries.length} catalog entries`);
@@ -551,7 +590,7 @@ async function main() {
     const entry = toProcess[i];
     
     try {
-      const pageRecords = await processDocument(entry, conceptNameToId);
+      const pageRecords = await processDocument(entry, conceptNameToId, validConcepts);
       batchRecords.push(...pageRecords);
       
       checkpoint.processedCatalogIds.push(entry.id);
