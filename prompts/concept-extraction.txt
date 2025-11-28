@@ -3,14 +3,16 @@ A concept is an abstract or concrete idea that can be identified, defined, and
 reused across texts. Concepts enable semantic search by capturing the MEANING 
 of content at multiple levels of abstraction.
 
-Extract ALL significant concepts from this document as JSON.
+Extract ALL significant concepts from this document as JSON, with a one-sentence 
+summary for each concept based on how it appears in this specific document.
 
 {CONTENT}
 
-Return JSON with these 3 fields:
-1. primary_concepts: Array of 80-150 strings (concepts at ALL levels: themes, methods, terms)
+Return JSON with these 2 fields:
+1. primary_concepts: Array of 80-150 objects, each with:
+   - "name": concept name (string)
+   - "summary": one-sentence definition based on this document's context (string)
 2. categories: Array of 3-7 strings (academic/professional domain names)
-3. related_concepts: Array of 20-40 strings (related concepts from adjacent domains)
 
 EXTRACTION STRATEGY:
 Think hierarchically - extract concepts at THREE levels:
@@ -26,6 +28,18 @@ Think hierarchically - extract concepts at THREE levels:
 🔸 LEVEL 3 - Technical (40-80): Domain-specific terminology and techniques
    Examples: "ideality index", "contradiction matrix", "exaptive bootstrapping"
    Test: "Would this appear in a domain glossary or index?"
+
+SUMMARY REQUIREMENTS:
+For each concept, write a one-sentence summary that:
+- Captures how this concept is used or defined IN THIS DOCUMENT
+- Is clear and concise (15-30 words)
+- Avoids starting with "A concept that..." or similar phrasing
+- Provides actionable understanding of what the concept means
+
+Examples:
+- Good: "The process of creating value by combining existing resources in novel ways."
+- Bad: "A concept related to innovation." (too vague)
+- Bad: "Exaptive bootstrapping refers to..." (unnecessary prefix)
 
 IMPORTANT RULES:
 
@@ -61,13 +75,14 @@ Use standard academic/professional domain names:
 - Bad: "innovation", "systems", "psychology" (too broad)
 - Bad: "TRIZ su-field analysis" (too specific)
 
-RELATED CONCEPTS:
-Include concepts from adjacent domains that share semantic overlap:
-- If extracting "strategy pattern", related_concepts might include: 
-  "military strategy", "strategic planning", "behavioral patterns"
-- If extracting "feedback loops", related might include:
-  "control systems", "cybernetics", "reinforcement learning"
-- This enables cross-domain concept discovery and semantic linking
+Use lowercase for concept names. Output complete JSON with ALL fields fully populated.
 
-Use lowercase. Output complete JSON with ALL fields fully populated.
+Example output format:
+{
+  "primary_concepts": [
+    {"name": "dependency injection", "summary": "A technique for achieving loose coupling by passing dependencies to objects rather than having them create their own."},
+    {"name": "separation of concerns", "summary": "Organizing code into distinct sections where each addresses a specific aspect of functionality."}
+  ],
+  "categories": ["software architecture", "design patterns", "object-oriented programming"]
+}
 

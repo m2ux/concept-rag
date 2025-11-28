@@ -1,6 +1,6 @@
 import * as lancedb from "@lancedb/lancedb";
 import { Document } from "@langchain/core/documents";
-import { ConceptRecord, ConceptMetadata } from "./types.js";
+import { ConceptRecord, ConceptMetadata, ExtractedConcept } from "./types.js";
 import { createSimpleEmbedding } from "../lancedb/hybrid_search_client.js";
 import { hashToId } from "../infrastructure/utils/hash.js";
 
@@ -98,25 +98,38 @@ export class ConceptIndexBuilder {
     
     /**
      * Add or update a concept in the map.
+     * Handles both string concepts (legacy) and ExtractedConcept objects (new with summaries).
      */
     private addOrUpdateConcept(
         map: Map<string, ConceptRecord>,
-        concept: string,
+        concept: string | ExtractedConcept,
         catalogId: number,
         weight: number = 1.0
     ) {
-        const key = concept.toLowerCase().trim();
+        // Extract name and summary from input
+        let conceptName: string;
+        let conceptSummary: string = '';
+        
+        if (typeof concept === 'string') {
+            conceptName = concept;
+        } else {
+            conceptName = concept.name;
+            conceptSummary = concept.summary || '';
+        }
+        
+        const key = conceptName.toLowerCase().trim();
         
         if (!key) return;  // Skip empty concepts
         
         if (!map.has(key)) {
             map.set(key, {
                 name: key,
+                summary: conceptSummary,  // Store summary from extraction
                 catalog_ids: [],
                 related_concepts: [],
                 adjacent_ids: [],
                 related_ids: [],
-                embeddings: createSimpleEmbedding(concept),
+                embeddings: createSimpleEmbedding(conceptName),
                 weight: 0
             });
         }
@@ -127,6 +140,11 @@ export class ConceptIndexBuilder {
         if (!record.catalog_ids.includes(catalogId)) {
             record.catalog_ids.push(catalogId);
             record.weight += weight;
+        }
+        
+        // Update summary if we have one and the record doesn't
+        if (conceptSummary && !record.summary) {
+            record.summary = conceptSummary;
         }
     }
     

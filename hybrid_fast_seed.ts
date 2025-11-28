@@ -18,7 +18,7 @@ import { DocumentLoaderFactory } from './src/infrastructure/document-loaders/doc
 import { PDFDocumentLoader } from './src/infrastructure/document-loaders/pdf-loader.js';
 import { EPUBDocumentLoader } from './src/infrastructure/document-loaders/epub-loader.js';
 import { hashToId, generateStableId } from './src/infrastructure/utils/hash.js';
-import { generateCategorySummaries, generateConceptSummaries } from './src/concepts/summary_generator.js';
+import { generateCategorySummaries } from './src/concepts/summary_generator.js';
 import { parseFilenameMetadata, normalizeText } from './src/infrastructure/utils/filename-metadata-parser.js';
 
 // Setup timestamped logging
@@ -1658,17 +1658,8 @@ async function rebuildConceptIndexFromExistingData(
     const conceptsWithChunks = conceptRecords.filter(c => c.chunk_ids && c.chunk_ids.length > 0).length;
     console.log(`  ✅ Mapped ${conceptsWithChunks} concepts to ${allChunkRecords.length} chunks`);
     
-    // Generate summaries for concepts using LLM
-    const conceptNames = conceptRecords.map(c => c.name);
-    const conceptSummaries = await generateConceptSummaries(conceptNames);
-    
-    // Add summaries to concept records
-    for (const record of conceptRecords) {
-        const summary = conceptSummaries.get(record.name.toLowerCase());
-        if (summary) {
-            record.summary = summary;
-        }
-    }
+    // Note: Summaries are now included in the concept extraction response,
+    // so no separate summary generation is needed.
     
     // Drop and recreate concepts table
     try {
@@ -2126,17 +2117,7 @@ async function hybridFastSeed() {
             console.warn(`  ⚠️  Could not build chunk_ids mapping: ${e.message}`);
         }
         
-        // Generate summaries for concepts using LLM
-        const conceptNames = conceptRecords.map(c => c.name);
-        const conceptSummaries = await generateConceptSummaries(conceptNames);
-        
-        // Add summaries to concept records
-        for (const record of conceptRecords) {
-            const summary = conceptSummaries.get(record.name.toLowerCase());
-            if (summary) {
-                record.summary = summary;
-            }
-        }
+        // Note: Summaries are now included in the concept extraction response.
         
         // Log top concepts by weight (number of documents)
         const topConcepts = conceptRecords

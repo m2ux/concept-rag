@@ -1,5 +1,5 @@
 import { Document } from "@langchain/core/documents";
-import { ConceptMetadata } from "./types.js";
+import { ConceptMetadata, ExtractedConcept } from "./types.js";
 import { buildConceptExtractionPrompt } from "../config.js";
 import * as fs from "fs";
 import type { ResilientExecutor } from "../infrastructure/resilience/resilient-executor.js";
@@ -130,12 +130,29 @@ export class ConceptExtractor {
             
             const concepts = JSON.parse(jsonText);
             
-            // Ensure arrays and filter out non-strings
-            // Note: related_concepts removed from extraction output (derived from concepts table)
+            // Parse primary_concepts - handle both new (object[]) and legacy (string[]) formats
+            let primaryConcepts: (ExtractedConcept | string)[] = [];
+            if (Array.isArray(concepts.primary_concepts)) {
+                primaryConcepts = concepts.primary_concepts
+                    .filter((c: any) => c != null)
+                    .map((c: any) => {
+                        if (typeof c === 'string') {
+                            // Legacy format: string only
+                            return c.trim() ? c : null;
+                        } else if (typeof c === 'object' && c.name) {
+                            // New format: object with name and summary
+                            return {
+                                name: String(c.name).trim(),
+                                summary: String(c.summary || '').trim()
+                            } as ExtractedConcept;
+                        }
+                        return null;
+                    })
+                    .filter((c: any) => c != null);
+            }
+            
             return {
-                primary_concepts: Array.isArray(concepts.primary_concepts) 
-                    ? concepts.primary_concepts.filter((c: any) => typeof c === 'string' && c.trim()) 
-                    : [],
+                primary_concepts: primaryConcepts,
                 categories: Array.isArray(concepts.categories) 
                     ? concepts.categories.filter((c: any) => typeof c === 'string' && c.trim()) 
                     : []
@@ -325,14 +342,31 @@ export class ConceptExtractor {
     
     // Merge multiple concept extractions into one
     private mergeConceptExtractions(extractions: ConceptMetadata[]): ConceptMetadata {
-        const mergedConcepts = new Set<string>();
+        // Map to store concepts with their best summary (first one found)
+        const conceptMap = new Map<string, ExtractedConcept>();
         const mergedCategories = new Set<string>();
         
         for (const extraction of extractions) {
-            // Type guard to ensure we only process strings
             extraction.primary_concepts.forEach(c => {
                 if (typeof c === 'string' && c.trim()) {
-                    mergedConcepts.add(c.toLowerCase());
+                    // Legacy format: string only
+                    const key = c.toLowerCase().trim();
+                    if (!conceptMap.has(key)) {
+                        conceptMap.set(key, { name: key, summary: '' });
+                    }
+                } else if (typeof c === 'object' && c.name) {
+                    // New format: object with name and summary
+                    const key = c.name.toLowerCase().trim();
+                    if (!conceptMap.has(key)) {
+                        // First occurrence - use this summary
+                        conceptMap.set(key, { 
+                            name: key, 
+                            summary: c.summary || '' 
+                        });
+                    } else if (!conceptMap.get(key)!.summary && c.summary) {
+                        // Existing entry has no summary, use this one
+                        conceptMap.get(key)!.summary = c.summary;
+                    }
                 }
             });
             extraction.categories.forEach(c => {
@@ -340,13 +374,12 @@ export class ConceptExtractor {
                     mergedCategories.add(c);
                 }
             });
-            // Note: related_concepts no longer extracted (derived from concepts table)
         }
         
-        console.log(`  ✅ Merged: ${mergedConcepts.size} unique concepts from ${extractions.length} chunks`);
+        console.log(`  ✅ Merged: ${conceptMap.size} unique concepts from ${extractions.length} chunks`);
         
         return {
-            primary_concepts: Array.from(mergedConcepts),
+            primary_concepts: Array.from(conceptMap.values()),
             categories: Array.from(mergedCategories).slice(0, 7)
         };
     }
@@ -427,20 +460,38 @@ export class ConceptExtractor {
                 }
             }
             
-            const concepts = JSON.parse(jsonText);
+            const rawConcepts = JSON.parse(jsonText);
             
-            
-            // Ensure all fields exist
-            if (!concepts.primary_concepts) {
-                concepts.primary_concepts = [];
+            // Parse primary_concepts - handle both new (object[]) and legacy (string[]) formats
+            let primaryConcepts: (ExtractedConcept | string)[] = [];
+            if (Array.isArray(rawConcepts.primary_concepts)) {
+                primaryConcepts = rawConcepts.primary_concepts
+                    .filter((c: any) => c != null)
+                    .map((c: any) => {
+                        if (typeof c === 'string') {
+                            // Legacy format: string only
+                            return c.trim() ? c : null;
+                        } else if (typeof c === 'object' && c.name) {
+                            // New format: object with name and summary
+                            return {
+                                name: String(c.name).trim(),
+                                summary: String(c.summary || '').trim()
+                            } as ExtractedConcept;
+                        }
+                        return null;
+                    })
+                    .filter((c: any) => c != null);
             }
-            if (!concepts.categories) {
-                concepts.categories = ['General'];
-            }
-            // Note: related_concepts no longer stored in extraction result
             
+            // Ensure categories exist
+            const categories = Array.isArray(rawConcepts.categories) 
+                ? rawConcepts.categories.filter((c: any) => typeof c === 'string' && c.trim())
+                : ['General'];
             
-            return concepts as ConceptMetadata;
+            return {
+                primary_concepts: primaryConcepts,
+                categories
+            } as ConceptMetadata;
         } catch (error) {
             console.error('Concept extraction error:', error);
             // Return empty structure as fallback

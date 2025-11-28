@@ -29,11 +29,49 @@ export interface ConceptRecord {
 }
 
 /**
+ * Individual concept with its summary (from LLM extraction).
+ */
+export interface ExtractedConcept {
+    name: string;
+    /** One-sentence summary generated in context of the source document */
+    summary: string;
+}
+
+/**
  * Concept metadata returned by LLM extraction.
+ * 
+ * Note: primary_concepts can be either:
+ * - ExtractedConcept[] (new format with summaries)
+ * - string[] (legacy format without summaries)
+ * 
+ * Use normalizeConceptMetadata() to handle both formats.
  */
 export interface ConceptMetadata {
-    primary_concepts: string[];
+    primary_concepts: (ExtractedConcept | string)[];
     categories: string[];
+}
+
+/**
+ * Normalize concept metadata to always have ExtractedConcept[] format.
+ * Handles both legacy (string[]) and new (ExtractedConcept[]) formats.
+ */
+export function normalizeConceptMetadata(metadata: ConceptMetadata): { 
+    concepts: ExtractedConcept[]; 
+    categories: string[] 
+} {
+    const concepts: ExtractedConcept[] = metadata.primary_concepts.map(c => {
+        if (typeof c === 'string') {
+            // Legacy format: convert string to object with empty summary
+            return { name: c, summary: '' };
+        }
+        // New format: already an ExtractedConcept
+        return c;
+    });
+    
+    return {
+        concepts,
+        categories: metadata.categories
+    };
 }
 
 // Search result with concept scoring
