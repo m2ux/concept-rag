@@ -17,7 +17,7 @@ import { Chunk } from './chunk.js';
  * ```typescript
  * const result: SearchResult = {
  *   // Chunk properties
- *   id: 'chunk-123',
+ *   id: 3847293847,  // hash-based integer
  *   text: 'Dependency injection is a design pattern...',
  *   source: '/docs/design-patterns.pdf',
  *   hash: 'abc123',

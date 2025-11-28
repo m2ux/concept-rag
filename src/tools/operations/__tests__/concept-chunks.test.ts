@@ -37,9 +37,9 @@ describe('ConceptChunksTool', () => {
     it('should find chunks by concept name', async () => {
       // SETUP
       const testChunks = [
-        createTestChunk({ id: 'chunk-1', concepts: ['innovation'], text: 'Text about innovation' }),
-        createTestChunk({ id: 'chunk-2', concepts: ['innovation'], text: 'More innovation content' }),
-        createTestChunk({ id: 'chunk-3', concepts: ['innovation'], text: 'Innovation everywhere' })
+        createTestChunk({ id: 1001, concepts: ['innovation'], text: 'Text about innovation' }),
+        createTestChunk({ id: 1002, concepts: ['innovation'], text: 'More innovation content' }),
+        createTestChunk({ id: 1003, concepts: ['innovation'], text: 'Innovation everywhere' })
       ];
       const testConcept = createTestConcept({ concept: 'innovation' });
       conceptRepo.addConcept(testConcept);
@@ -64,7 +64,7 @@ describe('ConceptChunksTool', () => {
       // SETUP
       const testChunks = Array.from({ length: 10 }, (_, i) =>
         createTestChunk({
-          id: `chunk-${i}`,
+          id: 5000 + i,
           concepts: ['testing'],
           text: `Test chunk ${i}`
         })
@@ -137,10 +137,10 @@ describe('ConceptChunksTool', () => {
       const creativityConcept = createTestConcept({ concept: 'creativity' });
       
       const chunks = [
-        createTestChunk({ id: 'chunk-1', concepts: ['innovation'] }),
-        createTestChunk({ id: 'chunk-2', concepts: ['creativity'] }),
-        createTestChunk({ id: 'chunk-3', concepts: ['innovation', 'creativity'] }),
-        createTestChunk({ id: 'chunk-4', concepts: ['other'] })
+        createTestChunk({ id: 1001, concepts: ['innovation'] }),
+        createTestChunk({ id: 1002, concepts: ['creativity'] }),
+        createTestChunk({ id: 1003, concepts: ['innovation', 'creativity'] }),
+        createTestChunk({ id: 1004, concepts: ['other'] })
       ];
       
       conceptRepo.addConcept(innovationConcept);

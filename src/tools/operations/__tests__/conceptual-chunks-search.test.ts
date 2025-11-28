@@ -30,13 +30,13 @@ describe('ConceptualChunksSearchTool', () => {
       // SETUP
       const testChunks = [
         createTestChunk({
-          id: 'chunk-1',
+          id: 1001,
           source: '/test/doc.pdf',
           text: 'First chunk about testing',
           concepts: ['testing']
         }),
         createTestChunk({
-          id: 'chunk-2',
+          id: 1002,
           source: '/test/doc.pdf',
           text: 'Second chunk',
           concepts: ['testing']
@@ -67,7 +67,7 @@ describe('ConceptualChunksSearchTool', () => {
       // SETUP
       const testChunks = Array.from({ length: 10 }, (_, i) =>
         createTestChunk({
-          id: `chunk-${i}`,
+          id: 5000 + i,
           source: '/test/doc.pdf',
           text: `Chunk ${i}`
         })
@@ -88,7 +88,7 @@ describe('ConceptualChunksSearchTool', () => {
     it('should include concept information', async () => {
       // SETUP
       const testChunk = createTestChunk({
-        id: 'chunk-1',
+        id: 1001,
         source: '/test/doc.pdf',
         text: 'Test chunk',
         concepts: ['testing', 'unit tests'],

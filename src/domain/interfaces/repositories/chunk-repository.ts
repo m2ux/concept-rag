@@ -91,6 +91,25 @@ export interface ChunkRepository {
   findBySource(sourcePath: string, limit: number): Promise<Chunk[]>;
   
   /**
+   * Find chunks from a specific catalog entry by ID.
+   * 
+   * Preferred over findBySource for normalized schema - uses integer ID
+   * instead of string path matching.
+   * 
+   * @param catalogId - The catalog entry ID (hash-based integer)
+   * @param limit - Maximum number of chunks to return
+   * @returns Promise resolving to chunks from the specified document
+   * @throws {Error} If database query fails
+   * 
+   * @example
+   * ```typescript
+   * const chunks = await chunkRepo.findByCatalogId(3847293847, 100);
+   * console.log(`Document has ${chunks.length} chunks`);
+   * ```
+   */
+  findByCatalogId(catalogId: number, limit: number): Promise<Chunk[]>;
+  
+  /**
    * Perform hybrid search across all chunks using multi-signal ranking.
    * 
    * Combines multiple ranking signals for best results:

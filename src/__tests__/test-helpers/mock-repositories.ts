@@ -34,7 +34,7 @@ import { fromNullable } from '../../domain/functional/index.js';
  * Useful for testing tools without database dependencies.
  */
 export class FakeChunkRepository implements ChunkRepository {
-  private chunks: Map<string, Chunk> = new Map();
+  private chunks: Map<number, Chunk> = new Map();
   
   constructor(initialChunks: Chunk[] = []) {
     initialChunks.forEach(chunk => this.chunks.set(chunk.id, chunk));
@@ -51,6 +51,13 @@ export class FakeChunkRepository implements ChunkRepository {
   async findBySource(sourcePath: string, limit: number): Promise<Chunk[]> {
     const results = Array.from(this.chunks.values())
       .filter(chunk => (chunk.source || '') === sourcePath)
+      .slice(0, limit);
+    return Promise.resolve(results);
+  }
+  
+  async findByCatalogId(catalogId: number, limit: number): Promise<Chunk[]> {
+    const results = Array.from(this.chunks.values())
+      .filter(chunk => chunk.catalogId === catalogId)
       .slice(0, limit);
     return Promise.resolve(results);
   }
@@ -186,7 +193,7 @@ export class FakeConceptRepository implements ConceptRepository {
  * Implements CatalogRepository interface with simple in-memory storage.
  */
 export class FakeCatalogRepository implements CatalogRepository {
-  private documents: Map<string, SearchResult> = new Map();
+  private documents: Map<number, SearchResult> = new Map();
   
   constructor(initialDocuments: SearchResult[] = []) {
     initialDocuments.forEach(doc => this.documents.set(doc.id, doc));
@@ -212,6 +219,12 @@ export class FakeCatalogRepository implements CatalogRepository {
       .filter(doc => doc.source === sourcePath);
     
     return Promise.resolve(fromNullable(results[0]));
+  }
+  
+  // @ts-expect-error - Type narrowing limitation
+  async findById(catalogId: number): Promise<Option<SearchResult>> {
+    const doc = this.documents.get(catalogId);
+    return Promise.resolve(fromNullable(doc));
   }
   
   async findByCategory(_categoryId: number): Promise<SearchResult[]> {

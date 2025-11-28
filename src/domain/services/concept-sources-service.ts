@@ -189,7 +189,7 @@ export class ConceptSourcesService {
           });
           
           for (const catalogId of concept.catalogIds) {
-            const entry = catalogResults.find(r => r.id === String(catalogId));
+            const entry = catalogResults.find(r => r.id === catalogId);
             if (entry?.source) {
               sourcePaths.push(entry.source);
             }

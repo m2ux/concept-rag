@@ -31,8 +31,8 @@ describe('ConceptSourcesTool', () => {
   describe('single concept', () => {
     it('should return sources for a single concept', async () => {
       // Add catalog entries that the concept references
-      catalogRepo.addDocument(createTestSearchResult({ id: '12345678', source: '/books/tdd-book.pdf' }));
-      catalogRepo.addDocument(createTestSearchResult({ id: '23456789', source: '/books/clean-code.pdf' }));
+      catalogRepo.addDocument(createTestSearchResult({ id: 12345678, source: '/books/tdd-book.pdf' }));
+      catalogRepo.addDocument(createTestSearchResult({ id: 23456789, source: '/books/clean-code.pdf' }));
       
       const testConcept = createTestConcept({
         concept: 'tdd',
@@ -65,9 +65,9 @@ describe('ConceptSourcesTool', () => {
   describe('multiple concepts (per-concept arrays)', () => {
     it('should return separate source arrays for each concept', async () => {
       // Add catalog entries
-      catalogRepo.addDocument(createTestSearchResult({ id: '12345678', source: '/books/book-a.pdf' }));
-      catalogRepo.addDocument(createTestSearchResult({ id: '23456789', source: '/books/book-b.pdf' }));
-      catalogRepo.addDocument(createTestSearchResult({ id: '34567890', source: '/books/book-c.pdf' }));
+      catalogRepo.addDocument(createTestSearchResult({ id: 12345678, source: '/books/book-a.pdf' }));
+      catalogRepo.addDocument(createTestSearchResult({ id: 23456789, source: '/books/book-b.pdf' }));
+      catalogRepo.addDocument(createTestSearchResult({ id: 34567890, source: '/books/book-c.pdf' }));
       
       const concept1 = createTestConcept({
         concept: 'tdd',
@@ -97,9 +97,9 @@ describe('ConceptSourcesTool', () => {
     
     it('should maintain position correspondence with input', async () => {
       // Add catalog entries
-      catalogRepo.addDocument(createTestSearchResult({ id: '11111111', source: '/books/first-book.pdf' }));
-      catalogRepo.addDocument(createTestSearchResult({ id: '22222222', source: '/books/second-book.pdf' }));
-      catalogRepo.addDocument(createTestSearchResult({ id: '33333333', source: '/books/third-book.pdf' }));
+      catalogRepo.addDocument(createTestSearchResult({ id: 11111111, source: '/books/first-book.pdf' }));
+      catalogRepo.addDocument(createTestSearchResult({ id: 22222222, source: '/books/second-book.pdf' }));
+      catalogRepo.addDocument(createTestSearchResult({ id: 33333333, source: '/books/third-book.pdf' }));
       
       const concept1 = createTestConcept({
         concept: 'first',
@@ -132,7 +132,7 @@ describe('ConceptSourcesTool', () => {
     
     it('should return empty array for not found concepts at correct position', async () => {
       // Add catalog entry for the concept that exists
-      catalogRepo.addDocument(createTestSearchResult({ id: '12345678', source: '/books/exists-book.pdf' }));
+      catalogRepo.addDocument(createTestSearchResult({ id: 12345678, source: '/books/exists-book.pdf' }));
       
       const testConcept = createTestConcept({
         concept: 'exists',
@@ -151,7 +151,7 @@ describe('ConceptSourcesTool', () => {
     
     it('should include source metadata (title, author, year)', async () => {
       // Add catalog entry
-      catalogRepo.addDocument(createTestSearchResult({ id: '12345678', source: '/books/test-book.pdf' }));
+      catalogRepo.addDocument(createTestSearchResult({ id: 12345678, source: '/books/test-book.pdf' }));
       
       const testConcept = createTestConcept({
         concept: 'test',

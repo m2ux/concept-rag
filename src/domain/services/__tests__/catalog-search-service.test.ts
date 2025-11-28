@@ -61,7 +61,7 @@ describe('CatalogSearchService', () => {
       // SETUP
       const mockResults: SearchResult[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Document about software architecture',
           source: '/docs/architecture.pdf',
           hash: 'hash1',
@@ -95,7 +95,7 @@ describe('CatalogSearchService', () => {
       // SETUP
       const mockResults: SearchResult[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Test document',
           source: '/test.pdf',
           hash: 'hash1',
@@ -109,7 +109,7 @@ describe('CatalogSearchService', () => {
           concepts: []
         },
         {
-          id: '2',
+          id: 2,
           text: 'Another document',
           source: '/test2.pdf',
           hash: 'hash2',
@@ -192,7 +192,7 @@ describe('CatalogSearchService', () => {
     it('should respect limit parameter', async () => {
       // SETUP
       const mockResults: SearchResult[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Document ${i}`,
         source: `/doc${i}.pdf`,
         hash: `hash${i}`,
@@ -223,7 +223,7 @@ describe('CatalogSearchService', () => {
     it('should handle large result sets', async () => {
       // SETUP
       const mockResults: SearchResult[] = Array.from({ length: 100 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Document ${i}`,
         source: `/doc${i}.pdf`,
         hash: `hash${i}`,

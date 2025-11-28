@@ -116,6 +116,26 @@ export class LanceDBChunkRepository implements ChunkRepository {
       .map((row: any) => this.mapRowToChunk(row));
   }
   
+  async findByCatalogId(catalogId: number, limit: number): Promise<Chunk[]> {
+    // Direct integer lookup - more efficient than string matching
+    try {
+      const results = await this.chunksTable
+        .query()
+        .where(`catalog_id = ${catalogId}`)
+        .limit(limit)
+        .toArray();
+      
+      return results.map((row: any) => this.mapRowToChunk(row));
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to find chunks for catalog ID ${catalogId}`,
+        'query',
+        error as Error
+      );
+    }
+  }
+  
+
   async search(query: SearchQuery): Promise<SearchResult[]> {
     // Use hybrid search for multi-signal ranking
     const limit = query.limit || 10;
@@ -211,7 +231,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
     }
     
     return {
-      id: row.id || '',
+      id: typeof row.id === 'number' ? row.id : parseInt(row.id) || 0,
       text: row.text || '',
       source: row.source || '',
       catalogId: row.catalog_id,

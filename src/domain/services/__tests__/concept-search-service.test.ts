@@ -35,6 +35,10 @@ class MockChunkRepository implements ChunkRepository {
     return Promise.resolve([]);
   }
 
+  async findByCatalogId(catalogId: number, limit: number): Promise<Chunk[]> {
+    return Promise.resolve([]);
+  }
+
   async countChunks(): Promise<number> {
     return Promise.resolve(0);
   }
@@ -105,7 +109,7 @@ describe('ConceptSearchService', () => {
       const conceptName = 'dependency injection';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk about dependency injection',
           source: '/docs/di.pdf',
           hash: 'hash1',
@@ -137,7 +141,7 @@ describe('ConceptSearchService', () => {
       const conceptName = 'dependency injection';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk about DI',
           source: '/docs/di.pdf',
           hash: 'hash1',
@@ -165,7 +169,7 @@ describe('ConceptSearchService', () => {
       const conceptName = 'dependency injection';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk about DI',
           source: '/docs/di.pdf',
           hash: 'hash1',
@@ -315,14 +319,14 @@ describe('ConceptSearchService', () => {
       const conceptName = 'architecture';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk from typescript guide',
           source: '/docs/typescript-guide.pdf',
           hash: 'hash1',
           concepts: ['architecture'],
         },
         {
-          id: '2',
+          id: 2,
           text: 'Chunk from python guide',
           source: '/docs/python-guide.pdf',
           hash: 'hash2',
@@ -351,7 +355,7 @@ describe('ConceptSearchService', () => {
       const conceptName = 'design patterns';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk from TypeScript guide',
           source: '/docs/TypeScript-Guide.pdf',
           hash: 'hash1',
@@ -376,14 +380,14 @@ describe('ConceptSearchService', () => {
       const conceptName = 'testing';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk 1',
           source: '/docs/doc1.pdf',
           hash: 'hash1',
           concepts: ['testing'],
         },
         {
-          id: '2',
+          id: 2,
           text: 'Chunk 2',
           source: '/docs/doc2.pdf',
           hash: 'hash2',
@@ -407,7 +411,7 @@ describe('ConceptSearchService', () => {
       const conceptName = 'architecture';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk',
           source: '/docs/typescript.pdf',
           hash: 'hash1',
@@ -434,21 +438,21 @@ describe('ConceptSearchService', () => {
       const conceptName = 'patterns';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Few concepts',
           source: '/docs/doc1.pdf',
           hash: 'hash1',
           concepts: ['patterns'],
         },
         {
-          id: '2',
+          id: 2,
           text: 'Many concepts',
           source: '/docs/doc2.pdf',
           hash: 'hash2',
           concepts: ['patterns', 'design', 'architecture'],
         },
         {
-          id: '3',
+          id: 3,
           text: 'Some concepts',
           source: '/docs/doc3.pdf',
           hash: 'hash3',
@@ -476,14 +480,14 @@ describe('ConceptSearchService', () => {
       const conceptName = 'testing';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Short chunk', // Short text, fewer concepts = lower relevance
           source: '/docs/doc1.pdf',
           hash: 'hash1',
           concepts: ['testing'],
         },
         {
-          id: '2',
+          id: 2,
           text: 'A'.repeat(300), // Long text (qualifies for text length bonus) + more concepts
           source: '/docs/doc2.pdf',
           hash: 'hash2',
@@ -512,14 +516,14 @@ describe('ConceptSearchService', () => {
       const conceptName = 'architecture';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk from Z document',
           source: '/docs/z.pdf',
           hash: 'hash1',
           concepts: ['architecture'],
         },
         {
-          id: '2',
+          id: 2,
           text: 'Chunk from A document',
           source: '/docs/a.pdf',
           hash: 'hash2',
@@ -548,14 +552,14 @@ describe('ConceptSearchService', () => {
       const conceptName = 'patterns';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk with density',
           source: '/docs/doc1.pdf',
           hash: 'hash1',
           concepts: ['patterns'],
         },
         {
-          id: '2',
+          id: 2,
           text: 'Chunk without density',
           source: '/docs/doc2.pdf',
           hash: 'hash2',
@@ -585,7 +589,7 @@ describe('ConceptSearchService', () => {
       // SETUP
       const conceptName = 'testing';
       const mockChunks: Chunk[] = Array.from({ length: 20 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Chunk ${i}`,
         source: `/docs/doc${i}.pdf`,
         hash: `hash${i}`,
@@ -607,7 +611,7 @@ describe('ConceptSearchService', () => {
       // SETUP
       const conceptName = 'architecture';
       const mockChunks: Chunk[] = Array.from({ length: 30 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Chunk ${i}`,
         source: i < 15 ? '/docs/typescript.pdf' : '/docs/python.pdf',
         hash: `hash${i}`,
@@ -636,7 +640,7 @@ describe('ConceptSearchService', () => {
       const conceptName = 'patterns';
       // Service requests limit * 2 = 10 chunks, so we'll return 10
       const mockChunks: Chunk[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Chunk ${i}`,
         source: `/docs/doc${i}.pdf`,
         hash: `hash${i}`,
@@ -665,7 +669,7 @@ describe('ConceptSearchService', () => {
     it('should calculate relevance from concept count and text length', () => {
       // SETUP - Short text with concepts scores high on density (capped at 1)
       const chunk: Chunk = {
-        id: '1',
+        id: 1,
         text: 'Chunk with concept',
         source: '/docs/doc.pdf',
         hash: 'hash1',
@@ -685,7 +689,7 @@ describe('ConceptSearchService', () => {
     it('should include concept match bonus', () => {
       // SETUP - Longer text with many concepts
       const chunk: Chunk = {
-        id: '1',
+        id: 1,
         text: 'A'.repeat(300), // 300 chars (qualifies for text length bonus)
         source: '/docs/doc.pdf',
         hash: 'hash1',
@@ -705,7 +709,7 @@ describe('ConceptSearchService', () => {
     it('should handle chunks with no concepts', () => {
       // SETUP
       const chunk: Chunk = {
-        id: '1',
+        id: 1,
         text: 'A'.repeat(300), // 300 chars
         source: '/docs/doc.pdf',
         hash: 'hash1',
@@ -725,7 +729,7 @@ describe('ConceptSearchService', () => {
     it('should handle short chunks with no concepts', () => {
       // SETUP
       const chunk: Chunk = {
-        id: '1',
+        id: 1,
         text: 'Short',
         source: '/docs/doc.pdf',
         hash: 'hash1',
@@ -745,7 +749,7 @@ describe('ConceptSearchService', () => {
     it('should return value in 0-1 range', () => {
       // SETUP
       const chunk: Chunk = {
-        id: '1',
+        id: 1,
         text: 'Chunk',
         source: '/docs/doc.pdf',
         hash: 'hash1',

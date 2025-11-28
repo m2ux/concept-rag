@@ -32,6 +32,10 @@ class MockChunkRepository implements ChunkRepository {
     return Promise.resolve(chunks.slice(0, limit));
   }
 
+  async findByCatalogId(catalogId: number, limit: number): Promise<Chunk[]> {
+    return Promise.resolve([]);
+  }
+
   async countChunks(): Promise<number> {
     return Promise.resolve(0);
   }
@@ -66,7 +70,7 @@ describe('ChunkSearchService', () => {
       // SETUP
       const mockResults: SearchResult[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk about software architecture',
           source: '/docs/architecture.pdf',
           hash: 'hash1',
@@ -100,7 +104,7 @@ describe('ChunkSearchService', () => {
       // SETUP
       const mockResults: SearchResult[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Test chunk',
           source: '/test.pdf',
           hash: 'hash1',
@@ -182,7 +186,7 @@ describe('ChunkSearchService', () => {
     it('should respect limit parameter', async () => {
       // SETUP
       const mockResults: SearchResult[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Chunk ${i}`,
         source: `/doc${i}.pdf`,
         hash: `hash${i}`,
@@ -214,14 +218,14 @@ describe('ChunkSearchService', () => {
       const sourcePath = '/docs/architecture.pdf';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'First chunk',
           source: sourcePath,
           hash: 'hash1',
           concepts: ['architecture'],
         },
         {
-          id: '2',
+          id: 2,
           text: 'Second chunk',
           source: sourcePath,
           hash: 'hash2',
@@ -249,7 +253,7 @@ describe('ChunkSearchService', () => {
       // SETUP
       const sourcePath = '/docs/test.pdf';
       const mockChunks: Chunk[] = Array.from({ length: 20 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Chunk ${i}`,
         source: sourcePath,
         hash: `hash${i}`,
@@ -309,7 +313,7 @@ describe('ChunkSearchService', () => {
       const sourcePath = '/docs/specific.pdf';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk from specific source',
           source: sourcePath,
           hash: 'hash1',
@@ -339,7 +343,7 @@ describe('ChunkSearchService', () => {
       const source2 = '/docs/doc2.pdf';
       const chunks1: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk from doc1',
           source: source1,
           hash: 'hash1',
@@ -348,7 +352,7 @@ describe('ChunkSearchService', () => {
       ];
       const chunks2: Chunk[] = [
         {
-          id: '2',
+          id: 2,
           text: 'Chunk from doc2',
           source: source2,
           hash: 'hash2',

@@ -19,7 +19,7 @@ import { Chunk, Concept, SearchResult } from '../../domain/models/index.js';
  */
 export function createTestChunk(overrides?: Partial<Chunk>): Chunk {
   return {
-    id: 'test-chunk-1',
+    id: 777888999,
     text: 'This is a test chunk about innovation and creativity in software development.',
     source: '/test/documents/test-document.pdf',
     hash: 'abc123def456',
@@ -93,7 +93,7 @@ export function createTestEmbedding(dimension: number = 384, value: number = 0.5
 export function createTestChunks(count: number, overrides?: Partial<Chunk>): Chunk[] {
   return Array.from({ length: count }, (_, i) => 
     createTestChunk({
-      id: `test-chunk-${i + 1}`,
+      id: 1000000 + i,
       text: `Test chunk ${i + 1} with some unique content about concept ${i}.`,
       ...overrides
     })

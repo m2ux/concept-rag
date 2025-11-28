@@ -197,7 +197,7 @@ export class FuzzyConceptSearchService {
           vectorScore,
           bm25Score,
           titleScore: nameScore,  // Use name score in place of title
-          conceptScore: 0,  // Not applicable for concept search
+          // conceptScore removed (deprecated)
           wordnetScore
         });
         

@@ -72,7 +72,7 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 
 | Column | Type | Description |
 |--------|------|-------------|
-| `id` | `string` | Unique chunk identifier |
+| `id` | `number` | Hash-based integer ID (FNV-1a of source-hash-index) |
 | `source` | `string` | Document source path (for backward compatibility) |
 | `catalog_id` | `number` | Hash-based catalog entry ID (foreign key) |
 | `text` | `string` | Chunk text content (typically 100-500 words) |
@@ -89,7 +89,7 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 
 ```typescript
 {
-  id: "chunk-456",
+  id: 2938475612,  // hash-based integer
   source: "/home/user/ebooks/Clean Architecture.pdf",
   catalog_id: 3847293847,
   text: "Clean architecture emphasizes separation of concerns...",

@@ -9,7 +9,7 @@
  * @example
  * ```typescript
  * const chunk: Chunk = {
- *   id: 'chunk-123',
+ *   id: 3847293847,  // hash-based integer
  *   text: 'Machine learning is a subset of artificial intelligence...',
  *   catalogId: 12345678,
  *   hash: 'abc123',
@@ -20,8 +20,8 @@
  * ```
  */
 export interface Chunk {
-  /** Unique identifier for the chunk */
-  id: string;
+  /** Unique identifier for the chunk (hash-based integer) */
+  id: number;
   
   /** The text content of the chunk (typically 100-500 words) */
   text: string;

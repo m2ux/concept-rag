@@ -30,13 +30,13 @@ describe('ConceptualCatalogSearchTool', () => {
       // SETUP
       const testResults = [
         createTestSearchResult({
-          id: 'doc1',
+          id: 100001,
           source: '/test/doc1.pdf',
           text: 'Document about clean architecture and software design',
           hybridScore: 0.95
         }),
         createTestSearchResult({
-          id: 'doc2',
+          id: 100002,
           source: '/test/doc2.pdf',
           text: 'Another document about clean architecture patterns',
           hybridScore: 0.85
@@ -65,7 +65,7 @@ describe('ConceptualCatalogSearchTool', () => {
       // SETUP
       const testResults = Array.from({ length: 15 }, (_, i) =>
         createTestSearchResult({
-          id: `doc-${i}`,
+          id: 7000 + i,
           source: `/test/doc${i}.pdf`,
           text: `Test document ${i} about testing`
         })

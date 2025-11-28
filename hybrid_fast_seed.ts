@@ -1045,8 +1045,10 @@ async function createLanceTableWithSimpleEmbeddings(
     const data = documents.map((doc, i) => {
         const isCatalog = tableName === 'catalog';
         
+        // Generate hash-based numeric ID from source + hash for uniqueness
+        const idSource = `${doc.metadata.source || ''}-${doc.metadata.hash || ''}-${i}`;
         const baseData: any = {
-            id: i.toString(),
+            id: isCatalog ? hashToId(doc.metadata.source || `doc-${i}`) : hashToId(idSource),
             source: doc.metadata.source || '',
             hash: doc.metadata.hash || '',
             vector: createSimpleEmbedding(doc.pageContent)

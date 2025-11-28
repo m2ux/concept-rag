@@ -201,8 +201,8 @@ export class HierarchicalConceptService {
       // Get page numbers for this document
       const pageNumbers = new Set(sourceDoc.pageNumbers);
       
-      // Find chunks from this document
-      const docChunks = await this.chunkRepo.findBySource(sourceDoc.source, 100);
+      // Find chunks from this document by catalog ID (normalized lookup)
+      const docChunks = await this.chunkRepo.findByCatalogId(sourceDoc.catalogId, 100);
       totalChunks += docChunks.length;
       
       // Filter to chunks from relevant pages and with the concept
