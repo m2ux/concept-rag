@@ -19,6 +19,7 @@ import { PDFDocumentLoader } from './src/infrastructure/document-loaders/pdf-loa
 import { EPUBDocumentLoader } from './src/infrastructure/document-loaders/epub-loader.js';
 import { hashToId, generateStableId } from './src/infrastructure/utils/hash.js';
 import { generateCategorySummaries, generateConceptSummaries } from './src/concepts/summary_generator.js';
+import { parseFilenameMetadata, normalizeText } from './src/infrastructure/utils/filename-metadata-parser.js';
 
 // Setup timestamped logging
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
@@ -101,6 +102,7 @@ process.on('unhandledRejection', (reason: any, promise) => {
     }
     console.warn(`⚠️  PDF processing error: ${message}`);
 });
+
 
 // Suppress PDF.js warnings that clutter output and add logging to file
 const originalConsoleWarn = console.warn;
@@ -1074,13 +1076,17 @@ async function createLanceTableWithSimpleEmbeddings(
             }
         }
         
-        // Add reserved bibliographic fields for catalog entries (for future use)
+        // Add bibliographic fields for catalog entries (parsed from filename)
         if (isCatalog) {
+            // Parse metadata from filename using '--' delimiter format
+            const fileMeta = parseFilenameMetadata(doc.metadata.source || '');
+            
             baseData.origin_hash = '';  // Reserved: hash of original file before processing
-            baseData.author = '';       // Reserved: document author(s)
-            baseData.year = 0;          // Reserved: publication year
-            baseData.publisher = '';    // Reserved: publisher name
-            baseData.isbn = '';         // Reserved: ISBN (stored as string for flexibility)
+            baseData.title = fileMeta.title || '';      // Document title from filename
+            baseData.author = fileMeta.author || '';    // Document author(s) from filename
+            baseData.year = fileMeta.year || 0;         // Publication year from filename
+            baseData.publisher = fileMeta.publisher || '';  // Publisher name from filename
+            baseData.isbn = fileMeta.isbn || '';        // ISBN from filename
             // DERIVED fields with placeholders for LanceDB schema inference
             baseData.concept_ids = [0];     // Will be overwritten if concepts exist
             baseData.concept_names = [''];  // DERIVED: Will be overwritten if concepts exist

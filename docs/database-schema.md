@@ -50,30 +50,51 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
 | `category_ids` | `number[]` | Native array of category integer IDs |
 | `category_names` | `string[]` | **DERIVED:** Category names for display and text search |
 | `origin_hash` | `string` | *Reserved:* Hash of original file before processing |
-| `author` | `string` | *Reserved:* Document author(s) |
-| `year` | `number` | *Reserved:* Publication year |
-| `publisher` | `string` | *Reserved:* Publisher name |
-| `isbn` | `string` | *Reserved:* ISBN (string for flexibility with hyphens/prefixes) |
+| `title` | `string` | Document title (parsed from filename, see below) |
+| `author` | `string` | Document author(s) (parsed from filename) |
+| `year` | `number` | Publication year (parsed from filename) |
+| `publisher` | `string` | Publisher name (parsed from filename) |
+| `isbn` | `string` | ISBN (parsed from filename, preserved with hyphens) |
+
+#### Filename Metadata Parsing
+
+Bibliographic fields are automatically extracted from filenames using the `--` delimiter format:
+
+```
+Title -- Author -- Date -- Publisher -- ISBN -- Hash.ext
+```
+
+**Example filename:**
+```
+Effective software testing -- Elfriede Dustin -- December 18, 2002 -- Addison-Wesley -- 9780201794298 -- 5297d243.pdf
+```
+
+**Normalization rules:**
+- Underscores (`_`) are converted to spaces
+- URL-encoded spaces (`%20`, `_20`) are converted to spaces  
+- Multiple consecutive spaces are collapsed to single space
+- Fields that cannot be parsed are left empty (string) or zero (number)
 
 #### Example Record
 
 ```typescript
 {
   id: 3847293847,
-  source: "/home/user/ebooks/Clean Architecture.pdf",
+  source: "/home/user/ebooks/Clean Architecture -- Robert Martin -- 2017 -- Pearson -- 9780134494166 -- abc123.pdf",
   summary: "Comprehensive guide to Clean Architecture principles...",
   hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   vector: Float32Array(384),
-  concept_ids: [2938475683, 1029384756, 3847293900],  // Document-level concepts
-  concept_names: ["clean architecture", "dependency injection", "solid principles"],  // DERIVED
+  concept_ids: [2938475683, 1029384756, 3847293900],
+  concept_names: ["clean architecture", "dependency injection", "solid principles"],
   category_ids: [1847362847, 2938476523],
-  category_names: ["software architecture", "design patterns"],  // DERIVED
-  // Reserved bibliographic fields (for future use)
+  category_names: ["software architecture", "design patterns"],
+  // Bibliographic fields (parsed from filename)
   origin_hash: "",
-  author: "",
-  year: 0,
-  publisher: "",
-  isbn: ""
+  title: "Clean Architecture",
+  author: "Robert Martin",
+  year: 2017,
+  publisher: "Pearson",
+  isbn: "9780134494166"
 }
 ```
 
