@@ -12,6 +12,9 @@ export class ConceptIndexBuilder {
     // Build source path to catalog ID mapping
     private sourceToIdMap = new Map<string, number>();
     
+    // Build catalog ID to source path mapping (for catalog_titles)
+    private catalogIdToSourceMap = new Map<number, string>();
+    
     /**
      * Build concept index from documents with metadata.
      * @param documents - Documents with concept metadata
@@ -28,6 +31,12 @@ export class ConceptIndexBuilder {
         
         // Use the provided source-to-catalogId map (actual IDs from catalog table)
         this.sourceToIdMap = sourceToCatalogId;
+        
+        // Build reverse mapping: catalogId → source (for catalog_titles)
+        this.catalogIdToSourceMap.clear();
+        for (const [source, catalogId] of sourceToCatalogId) {
+            this.catalogIdToSourceMap.set(catalogId, source);
+        }
         
         if (this.sourceToIdMap.size === 0) {
             console.warn('  ⚠️  No source-to-catalog-ID mapping provided! Catalog IDs will be 0.');
@@ -67,7 +76,24 @@ export class ConceptIndexBuilder {
         // Convert related_concepts strings to adjacent_ids
         this.resolveAdjacentIds(conceptMap);
         
+        // Populate catalog_titles (DERIVED field) from catalog_ids
+        this.populateCatalogTitles(conceptMap);
+        
         return Array.from(conceptMap.values());
+    }
+    
+    /**
+     * Populate catalog_titles for each concept from catalog_ids.
+     * DERIVED field: resolved from catalog_ids → catalog.source paths.
+     */
+    private populateCatalogTitles(conceptMap: Map<string, ConceptRecord>): void {
+        for (const [_key, record] of conceptMap) {
+            if (record.catalog_ids && record.catalog_ids.length > 0) {
+                record.catalog_titles = record.catalog_ids
+                    .map(catalogId => this.catalogIdToSourceMap.get(catalogId))
+                    .filter((source): source is string => source !== undefined);
+            }
+        }
     }
     
     /**
@@ -230,6 +256,7 @@ export class ConceptIndexBuilder {
                 name: concept.name,  // Renamed from 'concept' to 'name'
                 summary: concept.summary || '',  // LLM-generated summary
                 catalog_ids: ensureNonEmpty(concept.catalog_ids, 0),  // Native array of hash-based IDs
+                catalog_titles: ensureNonEmpty(concept.catalog_titles, ''),  // DERIVED: document titles for display
                 chunk_ids: ensureNonEmpty(concept.chunk_ids, 0),  // Chunk IDs for fast lookups  // Native array of hash-based IDs
                 adjacent_ids: ensureNonEmpty(concept.adjacent_ids, 0),  // Co-occurrence links
                 related_ids: ensureNonEmpty(concept.related_ids, 0),  // Lexical links

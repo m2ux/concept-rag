@@ -202,10 +202,14 @@ export class LanceDBConceptRepository implements ConceptRepository {
     // Parse related_ids (lexical links) - native array, Arrow Vector, or JSON string
     const relatedIds = parseArrayField<number>(row.related_ids);
     
+    // Parse catalog_titles (DERIVED field for display and text search)
+    const catalogTitles = parseArrayField<string>(row.catalog_titles);
+    
     return {
       name: row.name || row.concept || '',  // Support both 'name' (new) and 'concept' (legacy)
       summary: row.summary || '',
       catalogIds,
+      catalogTitles,  // DERIVED: for display and text search
       chunkIds,
       adjacentIds,
       relatedIds,

@@ -42,6 +42,13 @@ export interface Concept {
    */
   chunkIds?: number[];
   
+  /**
+   * Denormalized catalog titles - DERIVED field for display and text search.
+   * Resolved from catalog_ids → catalog.source (title extracted from path).
+   * Enables human-readable document display without lookup.
+   */
+  catalogTitles?: string[];
+  
   /** 
    * Adjacent concept IDs - co-occurrence based (concepts appearing together in documents).
    * Hash-based integers.

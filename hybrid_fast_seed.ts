@@ -1062,9 +1062,10 @@ async function createLanceTableWithSimpleEmbeddings(
             baseData.text = doc.pageContent;
             // Extract page_number from loc.pageNumber (LangChain format) or direct field
             baseData.page_number = doc.metadata.page_number ?? doc.metadata.loc?.pageNumber ?? 1;
-            // ALWAYS include concept_ids for chunks schema (LanceDB needs consistent schema)
-            // Use placeholder [0] for empty arrays to enable LanceDB type inference
+            // ALWAYS include concept_ids and concept_names for chunks schema (LanceDB needs consistent schema)
+            // Use placeholder values for empty arrays to enable LanceDB type inference
             baseData.concept_ids = [0];  // Will be overwritten below if concepts exist
+            baseData.concept_names = [''];  // DERIVED: Will be overwritten below if concepts exist
             // Add catalog_id (foreign key to catalog table) if map is provided
             if (sourceToCatalogIdMap && doc.metadata.source) {
                 baseData.catalog_id = sourceToCatalogIdMap.get(doc.metadata.source) || 0;
@@ -1080,6 +1081,10 @@ async function createLanceTableWithSimpleEmbeddings(
             baseData.year = 0;          // Reserved: publication year
             baseData.publisher = '';    // Reserved: publisher name
             baseData.isbn = '';         // Reserved: ISBN (stored as string for flexibility)
+            // DERIVED fields with placeholders for LanceDB schema inference
+            baseData.concept_ids = [0];     // Will be overwritten if concepts exist
+            baseData.concept_names = [''];  // DERIVED: Will be overwritten if concepts exist
+            baseData.category_names = [''];  // DERIVED: Will be overwritten if concepts exist
         }
         
         // Add concept metadata if present (using native arrays)
@@ -1107,20 +1112,52 @@ async function createLanceTableWithSimpleEmbeddings(
             // Since concepts table uses hashToId(name.toLowerCase().trim()) for ID generation,
             // we use the same formula here to ensure foreign key consistency
             if (!isCatalog) {
-                let conceptNames: string[] = [];
+                let chunkConceptNames: string[] = [];
                 // Check Array.isArray FIRST since arrays are also objects
                 if (Array.isArray(doc.metadata.concepts)) {
-                    conceptNames = doc.metadata.concepts;
+                    chunkConceptNames = doc.metadata.concepts;
                 } else if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.primary_concepts) {
-                    conceptNames = doc.metadata.concepts.primary_concepts;
+                    chunkConceptNames = doc.metadata.concepts.primary_concepts;
                 }
                 
-                if (conceptNames.length > 0) {
+                if (chunkConceptNames.length > 0) {
                     // Use same normalization as concepts table: hashToId(name.toLowerCase().trim())
-                    const conceptIds = conceptNames.map((name: string) => 
+                    const conceptIds = chunkConceptNames.map((name: string) => 
                         hashToId(name.toLowerCase().trim())
                     );
                     baseData.concept_ids = conceptIds;
+                    // DERIVED FIELD: Store concept names for display and text search
+                    baseData.concept_names = chunkConceptNames.map((name: string) => name.toLowerCase().trim());
+                }
+            }
+            
+            // Populate concept_names and category_names for catalog (DERIVED fields)
+            if (isCatalog && doc.metadata.concepts) {
+                // Extract primary concepts for concept_names
+                let catalogConceptNames: string[] = [];
+                if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.primary_concepts) {
+                    catalogConceptNames = doc.metadata.concepts.primary_concepts;
+                }
+                if (catalogConceptNames.length > 0) {
+                    // Store concept_ids and concept_names together
+                    const conceptIds = catalogConceptNames.map((name: string) => 
+                        hashToId(name.toLowerCase().trim())
+                    );
+                    baseData.concept_ids = conceptIds;
+                    // DERIVED FIELD: Store concept names for display and text search
+                    baseData.concept_names = catalogConceptNames.map((name: string) => name.toLowerCase().trim());
+                }
+                
+                // Extract categories for category_names (DERIVED)
+                let categoryNames: string[] = [];
+                if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.categories) {
+                    categoryNames = doc.metadata.concepts.categories;
+                } else if (doc.metadata.concept_categories) {
+                    categoryNames = doc.metadata.concept_categories;
+                }
+                if (categoryNames.length > 0) {
+                    // DERIVED FIELD: Store category names for display and text search
+                    baseData.category_names = categoryNames;
                 }
             }
         }

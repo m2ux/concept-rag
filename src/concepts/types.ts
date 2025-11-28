@@ -13,6 +13,8 @@ export interface ConceptRecord {
     name: string;
     summary?: string;
     catalog_ids: number[];
+    /** DERIVED: Human-readable document titles (from catalog.source paths) */
+    catalog_titles?: string[];
     chunk_ids?: number[];
     /** Co-occurrence based links (concepts appearing together in documents) */
     adjacent_ids?: number[];

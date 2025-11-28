@@ -208,12 +208,27 @@ export class LanceDBChunkRepository implements ChunkRepository {
       conceptDensity = typeof row.concept_density === 'number' ? row.concept_density : parseFloat(row.concept_density);
     }
     
+    // Parse concept_names (DERIVED field for display and text search)
+    let conceptNames: string[] | undefined;
+    if (row.concept_names) {
+      if (Array.isArray(row.concept_names)) {
+        conceptNames = row.concept_names;
+      } else if (typeof row.concept_names === 'object' && row.concept_names !== null && 'toArray' in row.concept_names) {
+        // Arrow Vector - convert to JavaScript array
+        conceptNames = Array.from(row.concept_names.toArray());
+      } else if (typeof row.concept_names === 'string') {
+        // JSON string
+        conceptNames = parseJsonField<string>(row.concept_names);
+      }
+    }
+    
     return {
       id: typeof row.id === 'number' ? row.id : parseInt(row.id) || 0,
       text: row.text || '',
       catalogId: row.catalog_id || 0,
       hash: row.hash || '',
       conceptIds,
+      conceptNames,  // DERIVED: for display and text search
       embeddings,  // May be undefined if no vector field found
       pageNumber,
       conceptDensity

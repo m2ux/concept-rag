@@ -90,6 +90,26 @@ export interface SearchResult extends Chunk {
   
   /** Query terms expanded via WordNet and corpus analysis */
   expandedTerms?: string[];
+  
+  /**
+   * Denormalized concept names - DERIVED field for display and text search.
+   * For catalog entries: resolved from documentConceptIds → concepts.name
+   * Enables queries like: `array_contains(concept_names, 'dependency injection')`
+   */
+  conceptNames?: string[];
+  
+  /**
+   * Denormalized category names - DERIVED field for display and text search.
+   * Resolved from catalog.category_ids → categories.category
+   * Enables human-readable category display without lookup.
+   */
+  categoryNames?: string[];
+  
+  /**
+   * Category IDs associated with this document (for catalog entries).
+   * Foreign keys to the categories table.
+   */
+  categoryIds?: number[];
 }
 
 /**

@@ -52,5 +52,12 @@ export interface Chunk {
    * Higher values indicate more concept-rich content.
    */
   conceptDensity?: number;
+  
+  /**
+   * Denormalized concept names - DERIVED field for display and text search.
+   * Regenerated from concept_ids → concepts.name lookup.
+   * Enables queries like: `array_contains(concept_names, 'dependency injection')`
+   */
+  conceptNames?: string[];
 }
 

@@ -141,6 +141,43 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       }
     }
     
+    // Parse category_ids (native array, Arrow Vector, or JSON string)
+    let categoryIds: number[] = [];
+    if (doc.category_ids) {
+      if (Array.isArray(doc.category_ids)) {
+        categoryIds = doc.category_ids;
+      } else if (typeof doc.category_ids === 'object' && 'toArray' in doc.category_ids) {
+        // Arrow Vector - convert to JavaScript array
+        categoryIds = Array.from(doc.category_ids.toArray());
+      } else if (typeof doc.category_ids === 'string') {
+        categoryIds = this.parseJsonArray(doc.category_ids);
+      }
+    }
+    
+    // Parse concept_names (DERIVED field for display and text search)
+    let conceptNames: string[] | undefined;
+    if (doc.concept_names) {
+      if (Array.isArray(doc.concept_names)) {
+        conceptNames = doc.concept_names;
+      } else if (typeof doc.concept_names === 'object' && 'toArray' in doc.concept_names) {
+        conceptNames = Array.from(doc.concept_names.toArray());
+      } else if (typeof doc.concept_names === 'string') {
+        conceptNames = this.parseJsonArray(doc.concept_names);
+      }
+    }
+    
+    // Parse category_names (DERIVED field for display and text search)
+    let categoryNames: string[] | undefined;
+    if (doc.category_names) {
+      if (Array.isArray(doc.category_names)) {
+        categoryNames = doc.category_names;
+      } else if (typeof doc.category_names === 'object' && 'toArray' in doc.category_names) {
+        categoryNames = Array.from(doc.category_names.toArray());
+      } else if (typeof doc.category_names === 'string') {
+        categoryNames = this.parseJsonArray(doc.category_names);
+      }
+    }
+    
     return {
       id: doc.id,
       catalogId: doc.id,  // For catalog entries, catalogId = id
@@ -148,6 +185,9 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       source: doc.source || doc.filename || '',  // Support both old and new field names
       hash: doc.hash,
       documentConceptIds: conceptIds,  // Document-level concept IDs
+      conceptNames,  // DERIVED: for display and text search
+      categoryIds,   // Category foreign keys
+      categoryNames, // DERIVED: for display and text search
       embeddings: doc.vector || [],
       distance: 0,
       hybridScore: 1.0,

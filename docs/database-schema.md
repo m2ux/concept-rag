@@ -46,7 +46,9 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
 | `hash` | `string` | SHA-256 content hash for deduplication |
 | `vector` | `Float32Array` | 384-dimensional embedding of summary |
 | `concept_ids` | `number[]` | Native array of concept IDs (foreign keys to concepts table) |
+| `concept_names` | `string[]` | **DERIVED:** Concept names for display and text search |
 | `category_ids` | `number[]` | Native array of category integer IDs |
+| `category_names` | `string[]` | **DERIVED:** Category names for display and text search |
 | `origin_hash` | `string` | *Reserved:* Hash of original file before processing |
 | `author` | `string` | *Reserved:* Document author(s) |
 | `year` | `number` | *Reserved:* Publication year |
@@ -63,7 +65,9 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
   hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   vector: Float32Array(384),
   concept_ids: [2938475683, 1029384756, 3847293900],  // Document-level concepts
+  concept_names: ["clean architecture", "dependency injection", "solid principles"],  // DERIVED
   category_ids: [1847362847, 2938476523],
+  category_names: ["software architecture", "design patterns"],  // DERIVED
   // Reserved bibliographic fields (for future use)
   origin_hash: "",
   author: "",
@@ -87,6 +91,7 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
 | `hash` | `string` | Content hash for deduplication |
 | `vector` | `Float32Array` | 384-dimensional embedding |
 | `concept_ids` | `number[]` | Native array of concept integer IDs (for concept-chunk linkage) |
+| `concept_names` | `string[]` | **DERIVED:** Concept names for display and text search |
 | `chunk_index` | `number` | Sequential index within document |
 | `page_number` | `number` | Page number in source document (from PDF loader) |
 | `concept_density` | `number` | Density of concepts in chunk (0-1) |
@@ -107,6 +112,7 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
   hash: "def456",
   vector: Float32Array(384),
   concept_ids: [3847293847, 1928374652, 2837465928],
+  concept_names: ["clean architecture", "separation of concerns", "dependency rule"],  // DERIVED
   chunk_index: 15,
   page_number: 15,  // directly from PDF loader
   concept_density: 0.75
@@ -125,6 +131,7 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
 | `name` | `string` | Concept name (unique, lowercase, e.g., "dependency injection") |
 | `summary` | `string` | LLM-generated one-sentence summary of the concept |
 | `catalog_ids` | `number[]` | Native array of catalog entry integer IDs |
+| `catalog_titles` | `string[]` | **DERIVED:** Document titles (source paths) for display |
 | `chunk_ids` | `number[]` | Native array of chunk IDs where concept appears |
 | `adjacent_ids` | `number[]` | Co-occurrence links (concepts appearing together in documents) |
 | `related_ids` | `number[]` | Lexical links (concepts sharing significant words) |
@@ -152,6 +159,7 @@ Two types of concept relationships:
   name: "clean architecture",
   summary: "A software design approach that separates concerns into layers...",
   catalog_ids: [1029384756, 2938475612],
+  catalog_titles: ["/home/user/ebooks/Clean Architecture.pdf", "/home/user/ebooks/DDD.pdf"],  // DERIVED
   chunk_ids: [123456, 234567, 345678],
   adjacent_ids: [2938475683, 1029384756],  // co-occurrence
   related_ids: [1847362999, 2938476000],   // lexical links
@@ -199,6 +207,50 @@ Two types of concept relationships:
   concept_count: 340,
   vector: Float32Array(384)
 }
+```
+
+---
+
+## Derived Fields
+
+**DERIVED** fields are denormalized for query performance and display. They can be regenerated from canonical sources at any time.
+
+### Design Philosophy: IDs for Truth, Names for Queries
+
+```
+IDs (concept_ids, catalog_ids, etc.)    →  SOURCE OF TRUTH
+Names (concept_names, catalog_titles)   →  PRIMARY FOR QUERIES
+```
+
+**Runtime queries use TEXT arrays** (fast, human-readable, no cache lookups):
+```typescript
+// GOOD: Query on denormalized names
+chunks.query().where(`array_contains(concept_names, 'dependency injection')`)
+concepts.query().where(`array_contains(catalog_titles, 'Clean Architecture')`)
+```
+
+### Derived Field Summary
+
+| Table | Field | Type | Regeneration Source |
+|-------|-------|------|---------------------|
+| `chunks` | `concept_names` | `string[]` | `concept_ids` → `concepts.name` |
+| `catalog` | `concept_names` | `string[]` | `concept_ids` → `concepts.name` |
+| `catalog` | `category_names` | `string[]` | `category_ids` → `categories.category` |
+| `concepts` | `catalog_titles` | `string[]` | `catalog_ids` → `catalog.source` |
+
+### Regenerating Derived Fields
+
+Use the regeneration script to rebuild all derived name fields:
+
+```bash
+# Full regeneration
+npx tsx scripts/rebuild_derived_names.ts --dbpath ~/.concept_rag
+
+# Target specific table
+npx tsx scripts/rebuild_derived_names.ts --table chunks
+
+# Dry run to see what would change
+npx tsx scripts/rebuild_derived_names.ts --dry-run
 ```
 
 ---
@@ -338,6 +390,7 @@ await chunksTable.createIndex("vector", {
 | 2025-11-28 | Removed `source` and `loc` from chunks, `catalog_id` required | - |
 | 2025-11-28 | Removed `concepts` (string[]) from chunks, use `concept_ids` + cache | - |
 | 2025-11-28 | Removed pages table, added `concept_ids` to catalog (four-table) | - |
+| 2025-11-28 | Added derived name fields for queries: `concept_names`, `category_names`, `catalog_titles` | - |
 
 ---
 
@@ -418,3 +471,4 @@ npx tsx scripts/validate_normalized_schema.ts ~/.concept_rag
 - Source Cache: `src/infrastructure/cache/catalog-source-cache.ts`
 - Migration Script: `scripts/migrate_to_normalized_schema.ts`
 - Lexical Linking: `scripts/link_related_concepts.ts`
+- Derived Fields Regeneration: `scripts/rebuild_derived_names.ts`
