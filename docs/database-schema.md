@@ -116,6 +116,7 @@ Effective software testing -- Elfriede Dustin -- December 18, 2002 -- Addison-We
 | `vector` | `Float32Array` | 384-dimensional embedding |
 | `concept_ids` | `number[]` | Native array of concept integer IDs (for concept-chunk linkage) |
 | `concept_names` | `string[]` | **DERIVED:** Concept names for display and text search |
+| `concept_density` | `number` | Concept richness score: `concept_ids.length / (word_count / 10)` |
 | `page_number` | `number` | Page number in source document (from PDF loader) |
 
 > **Note:** The `source` field was removed in v7. Chunks store `catalog_title` for display and `catalog_id` for joins. Tools should use `catalog_title` directly.

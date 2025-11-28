@@ -172,7 +172,7 @@ console.log = (...args: any[]) => {
     }
 };
 
-const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume"]});
+const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume", "with-wordnet"]});
 
 const databaseDir = argv["dbpath"] || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag");
 const filesDir = argv["filesdir"];
@@ -198,6 +198,7 @@ function validateArgs() {
         console.error("  --auto-reseed: Re-process documents with incomplete metadata");
         console.error("  --resume: Resume from checkpoint (skip already processed documents)");
         console.error("  --clean-checkpoint: Clear checkpoint and start fresh");
+        console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
         process.exit(1);
     }
     
@@ -1090,10 +1091,11 @@ async function createLanceTableWithSimpleEmbeddings(
             baseData.text = doc.pageContent;
             // Extract page_number from loc.pageNumber (LangChain format) or direct field
             baseData.page_number = doc.metadata.page_number ?? doc.metadata.loc?.pageNumber ?? 1;
-            // ALWAYS include concept_ids and concept_names for chunks schema (LanceDB needs consistent schema)
+            // ALWAYS include concept_ids, concept_names, concept_density for chunks schema
             // Use placeholder values for empty arrays to enable LanceDB type inference
             baseData.concept_ids = [0];  // Will be overwritten below if concepts exist
             baseData.concept_names = [''];  // DERIVED: Will be overwritten below if concepts exist
+            baseData.concept_density = 0;  // Will be computed below if concepts exist
             // Add catalog_id (foreign key to catalog table) if map is provided
             if (sourceToCatalogIdMap && doc.metadata.source) {
                 baseData.catalog_id = sourceToCatalogIdMap.get(doc.metadata.source) || 0;
@@ -1168,6 +1170,13 @@ async function createLanceTableWithSimpleEmbeddings(
                     baseData.concept_ids = conceptIds;
                     // DERIVED FIELD: Store concept names for display and text search
                     baseData.concept_names = chunkConceptNames.map((name: string) => name.toLowerCase().trim());
+                    
+                    // Calculate concept density: concepts per 10 words
+                    // Higher values indicate more concept-rich content
+                    const wordCount = doc.pageContent.split(/\s+/).length;
+                    baseData.concept_density = wordCount > 0 ? conceptIds.length / (wordCount / 10) : 0;
+                } else {
+                    baseData.concept_density = 0;
                 }
             }
             
@@ -1710,9 +1719,14 @@ async function rebuildConceptIndexFromExistingData(
     // so no separate summary generation is needed.
     
     // Enrich concepts with WordNet data (synonyms, broader_terms, narrower_terms)
-    console.log("  📚 Enriching concepts with WordNet data...");
-    const conceptEnricher = new ConceptEnricher();
-    await conceptEnricher.enrichConcepts(conceptRecords);
+    // Disabled by default - use --with-wordnet to enable
+    if (argv['with-wordnet']) {
+        console.log("  📚 Enriching concepts with WordNet data...");
+        const conceptEnricher = new ConceptEnricher();
+        await conceptEnricher.enrichConcepts(conceptRecords);
+    } else {
+        console.log("  ⏭️  Skipping WordNet enrichment (use --with-wordnet to enable)");
+    }
     
     // Note: Lexical linking (related_ids) can be added post-seeding via:
     //   npx tsx scripts/link_related_concepts.ts --db <path>
@@ -2240,9 +2254,14 @@ async function hybridFastSeed() {
         // Note: Summaries are now included in the concept extraction response.
         
         // Enrich concepts with WordNet data (synonyms, broader_terms, narrower_terms)
-        console.log("📚 Enriching concepts with WordNet data...");
-        const conceptEnricher = new ConceptEnricher();
-        await conceptEnricher.enrichConcepts(conceptRecords);
+        // Disabled by default - use --with-wordnet to enable
+        if (argv['with-wordnet']) {
+            console.log("📚 Enriching concepts with WordNet data...");
+            const conceptEnricher = new ConceptEnricher();
+            await conceptEnricher.enrichConcepts(conceptRecords);
+        } else {
+            console.log("⏭️  Skipping WordNet enrichment (use --with-wordnet to enable)");
+        }
         
         // Note: Lexical linking (related_ids) can be added post-seeding via:
         //   npx tsx scripts/link_related_concepts.ts --db <path>

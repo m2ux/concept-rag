@@ -50,45 +50,69 @@ export function calculateWeightedBM25(
   docText: string,
   docSource: string
 ): number {
+  if (terms.length === 0) return 0;
+  
   const k1 = 1.5;  // Term frequency saturation parameter
   const b = 0.75;  // Document length normalization
   
   const combinedText = `${docText} ${docSource}`.toLowerCase();
-  const docWords = combinedText.split(/\s+/);
+  // Tokenize into words, removing punctuation
+  const docWords = combinedText.split(/[\s.,;:!?()[\]{}'"]+/).filter(w => w.length > 0);
   const avgDocLength = 100;  // Approximate average
   const docLength = docWords.length;
   
-  let score = 0;
-  let totalWeight = 0;
+  let rawScore = 0;
+  let termsMatched = 0;
   
   for (const term of terms) {
     const termLower = term.toLowerCase();
     const weight = weights.get(termLower) || 0.5;  // Default weight
-    totalWeight += weight;
     
-    // Count term frequency (fuzzy matching)
+    // Count term frequency with stricter matching:
+    // - Exact word match gets full score
+    // - Word starts with term (prefix match) gets partial score
     let termFreq = 0;
     for (const word of docWords) {
-      if (word.includes(termLower) || termLower.includes(word)) {
-        termFreq += 1;
+      if (word === termLower) {
+        termFreq += 1.0;  // Exact match
+      } else if (word.startsWith(termLower) && termLower.length >= 3) {
+        termFreq += 0.5;  // Prefix match (e.g., "war" matches "warfare")
+      } else if (termLower.length >= 4 && word.length >= 4 && word.includes(termLower)) {
+        termFreq += 0.25;  // Substring match (only for longer terms)
       }
     }
     
     if (termFreq > 0) {
+      termsMatched++;
+      // BM25 formula
       const numerator = termFreq * (k1 + 1);
       const denominator = termFreq + k1 * (1 - b + b * (docLength / avgDocLength));
-      score += (numerator / denominator) * weight;  // Apply term weight
+      rawScore += (numerator / denominator) * weight;
     }
   }
   
-  // Normalize by total weight to get 0-1 range
-  return totalWeight > 0 ? Math.min(score / totalWeight, 1.0) : 0;
+  // No matches = 0 score
+  if (termsMatched === 0) return 0;
+  
+  // Normalize: consider both the raw BM25 score and term coverage
+  // - termCoverage: what fraction of query terms matched (rewards comprehensive matches)
+  // - rawScore is already weighted, normalize by expected max (roughly 2.5 per matching term)
+  const termCoverage = termsMatched / terms.length;
+  const expectedMaxPerTerm = 2.5;  // BM25 saturates around this value per term
+  const normalizedRaw = rawScore / (termsMatched * expectedMaxPerTerm);
+  
+  // Combine: weight term coverage more heavily to discriminate documents
+  // that match more query terms
+  const finalScore = (normalizedRaw * 0.5) + (termCoverage * 0.5);
+  
+  return Math.min(Math.max(finalScore, 0), 1.0);
 }
 
 /**
  * Calculate title matching score.
  * 
  * Gives high scores to documents whose titles contain query terms.
+ * Uses word boundary matching to avoid false positives (e.g., "war" in "software").
  * Important for document-level search (catalog).
  * 
  * @param terms - Original query terms
@@ -98,18 +122,28 @@ export function calculateWeightedBM25(
 export function calculateTitleScore(terms: string[], source: string): number {
   if (!source || terms.length === 0) return 0;
   
-  const sourceLower = source.toLowerCase();
   const filename = source.split('/').pop() || source;
-  const filenameLower = filename.toLowerCase();
+  // Tokenize filename into words (split on non-alphanumeric characters)
+  const filenameWords = filename.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 0);
+  const sourceWords = source.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 0);
   
   let matches = 0;
   for (const term of terms) {
     const termLower = term.toLowerCase();
-    // Prioritize filename matches over full path
-    if (filenameLower.includes(termLower)) {
+    // Check for whole word match in filename
+    if (filenameWords.includes(termLower)) {
       matches += 2;  // Double weight for filename matches
-    } else if (sourceLower.includes(termLower)) {
-      matches += 1;
+    } else if (sourceWords.includes(termLower)) {
+      matches += 1;  // Single weight for path matches
+    } else {
+      // Partial match: term is prefix of a word (e.g., "architect" matches "architecture")
+      const hasFilenamePrefix = filenameWords.some(w => w.startsWith(termLower) && termLower.length >= 4);
+      const hasSourcePrefix = sourceWords.some(w => w.startsWith(termLower) && termLower.length >= 4);
+      if (hasFilenamePrefix) {
+        matches += 1;  // Reduced weight for prefix match
+      } else if (hasSourcePrefix) {
+        matches += 0.5;
+      }
     }
   }
   
