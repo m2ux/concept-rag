@@ -361,7 +361,7 @@ async function callOpenRouterOCR(pdfPath: string): Promise<{ documents: Document
                         pageContent: cleanText,
                         metadata: {
                             source: pdfPath,
-                            loc: { pageNumber: pageNumber },
+                            page_number: pageNumber,
                             ocr_processed: true,
                             ocr_method: 'tesseract_local',
                             ocr_confidence: 'good'
@@ -373,7 +373,7 @@ async function callOpenRouterOCR(pdfPath: string): Promise<{ documents: Document
                         pageContent: '[No text content detected on this page]',
                         metadata: {
                             source: pdfPath,
-                            loc: { pageNumber: pageNumber },
+                            page_number: pageNumber,
                             ocr_processed: true,
                             ocr_method: 'tesseract_local',
                             ocr_confidence: 'low'
@@ -389,7 +389,7 @@ async function callOpenRouterOCR(pdfPath: string): Promise<{ documents: Document
                     pageContent: `[OCR failed for this page: ${pageError.message}]`,
                     metadata: {
                         source: pdfPath,
-                        loc: { pageNumber: pageNumber },
+                        page_number: pageNumber,
                         ocr_processed: false,
                         ocr_method: 'tesseract_local',
                         ocr_error: pageError.message
@@ -447,7 +447,7 @@ Alternative: Process manually with other OCR tools.`;
             pageContent: placeholderText,
             metadata: {
                 source: pdfPath,
-                loc: { pageNumber: 1 },
+                page_number: 1,
                 ocr_processed: false,
                 ocr_method: 'tesseract_failed',
                 ocr_error: error.message
@@ -854,7 +854,7 @@ async function loadDocumentsWithErrorHandling(
                                             metadata: {
                                                 source: docFile,
                                                 hash: hash,
-                                                loc: chunk.loc || { pageNumber: 1 },
+                                                page_number: chunk.page_number || 1,
                                                 // Preserve chunk ID for in-place updates
                                                 chunkId: chunk.id,
                                                 // Mark if needs concept enrichment
@@ -1059,7 +1059,8 @@ async function createLanceTableWithSimpleEmbeddings(
             baseData.summary = doc.pageContent;  // Renamed from 'text' to 'summary'
         } else {
             baseData.text = doc.pageContent;
-            baseData.loc = JSON.stringify(doc.metadata.loc || {});
+            // Extract page_number from loc.pageNumber (LangChain format) or direct field
+            baseData.page_number = doc.metadata.page_number ?? doc.metadata.loc?.pageNumber ?? 1;
             // ALWAYS include concept_ids and category_ids for chunks schema (LanceDB needs consistent schema)
             // Use placeholder [0] for empty arrays to enable LanceDB type inference
             baseData.concept_ids = [0];  // Will be overwritten below if concepts exist
@@ -1824,9 +1825,11 @@ async function hybridFastSeed() {
     }
 
     // Simplify metadata but preserve hash and OCR information
+    // Extract page_number from loc.pageNumber (LangChain format) or direct field
     for (const doc of rawDocs) {
+        const pageNumber = doc.metadata.page_number ?? doc.metadata.loc?.pageNumber ?? 1;
         doc.metadata = { 
-            loc: doc.metadata.loc, 
+            page_number: pageNumber,
             source: doc.metadata.source,
             hash: doc.metadata.hash,
             ocr_processed: doc.metadata.ocr_processed,
@@ -2003,9 +2006,9 @@ async function hybridFastSeed() {
                 const data: any = {
                     id: chunkIds[idx],
                     text: doc.pageContent,
-                    source: doc.metadata.source,
                     hash: doc.metadata.hash,
-                    loc: JSON.stringify(doc.metadata.loc || {}),
+                    catalog_id: sourceToCatalogId.get(doc.metadata.source) || 0,
+                    page_number: doc.metadata.page_number || 1,
                     vector: createSimpleEmbedding(doc.pageContent),
                     concept_ids: conceptIds,
                     category_ids: categoryIds

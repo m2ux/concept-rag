@@ -76,12 +76,11 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 | `catalog_id` | `number` | **Required.** Hash-based catalog entry ID (foreign key to catalog) |
 | `text` | `string` | Chunk text content (typically 100-500 words) |
 | `hash` | `string` | Content hash for deduplication |
-| `loc` | `string` | JSON-stringified location metadata (page, offset) |
 | `vector` | `Float32Array` | 384-dimensional embedding |
 | `concept_ids` | `number[]` | Native array of concept integer IDs |
 | `category_ids` | `number[]` | Native array of category integer IDs |
 | `chunk_index` | `number` | Sequential index within document |
-| `page_number` | `number` | Page number for hierarchical retrieval |
+| `page_number` | `number` | Page number in source document (from PDF loader) |
 | `concept_density` | `number` | Density of concepts in chunk (0-1) |
 
 > **Note:** The `source` field was removed in v4. Use `catalog_id` to lookup the source path from the catalog table. At runtime, use `CatalogSourceCache` for efficient `catalogId` → `source` resolution.
@@ -94,12 +93,11 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
   catalog_id: 3847293847,  // REQUIRED - lookup source from catalog
   text: "Clean architecture emphasizes separation of concerns...",
   hash: "def456",
-  loc: '{"pageNumber":15,"from":1200,"to":1850}',
   vector: Float32Array(384),
   concept_ids: [3847293847, 1928374652, 2837465928],
   category_ids: [1847362847],
   chunk_index: 15,
-  page_number: 15,
+  page_number: 15,  // directly from PDF loader
   concept_density: 0.75
 }
 ```
@@ -358,7 +356,7 @@ await chunksTable.createIndex("vector", {
 | 2025-11-19 | Added categories table (four-table architecture) | ADR-0028 |
 | 2025-11-26 | Schema normalization (redundant field removal) | ADR-0043 |
 | 2025-11-28 | Added pages table, lexical linking (five-table architecture) | - |
-| 2025-11-28 | Removed `source` from chunks, `catalog_id` required | - |
+| 2025-11-28 | Removed `source` and `loc` from chunks, `catalog_id` required | - |
 
 ---
 
@@ -385,8 +383,9 @@ await chunksTable.createIndex("vector", {
 | Change | Details |
 |--------|---------|
 | `source` | **Removed** - Use `catalog_id` to lookup source from catalog |
+| `loc` | **Removed** - Page info now in `page_number` directly |
 | `catalog_id` | **Now required** - Foreign key to catalog table |
-| `page_number` | **Added** - For hierarchical retrieval |
+| `page_number` | **Added** - Populated directly from PDF loader |
 | `concept_density` | **Restored** - For ranking |
 
 ### Source Resolution (v4)
