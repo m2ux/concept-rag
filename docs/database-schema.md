@@ -3,7 +3,7 @@
 **Last Updated:** 2025-11-28  
 **Database:** LanceDB (embedded vector database)  
 **Embedding Model:** all-MiniLM-L6-v2 (384 dimensions)  
-**Schema Version:** Normalized v4 (source removed from chunks, catalogId required)
+**Schema Version:** Normalized v5 (concepts string field removed from chunks)
 
 ## Overview
 
@@ -96,6 +96,8 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 > **Note:** The `source` field was removed in v4. Use `catalog_id` to lookup the source path from the catalog table. At runtime, use `CatalogSourceCache` for efficient `catalogId` → `source` resolution.
 > 
 > **Note:** The `category_ids` field was removed - use `catalog_id` → `catalog.category_ids` for category lookup.
+>
+> **Note:** The `concepts` (string[]) field was removed. Use `concept_ids` with `ConceptIdCache.getNames()` to resolve concept names when needed for display.
 
 #### Example Record
 
@@ -367,6 +369,7 @@ await chunksTable.createIndex("vector", {
 | 2025-11-26 | Schema normalization (redundant field removal) | ADR-0043 |
 | 2025-11-28 | Added pages table, lexical linking (five-table architecture) | - |
 | 2025-11-28 | Removed `source` and `loc` from chunks, `catalog_id` required | - |
+| 2025-11-28 | Removed `concepts` (string[]) from chunks, use `concept_ids` + cache | - |
 
 ---
 
@@ -396,6 +399,7 @@ await chunksTable.createIndex("vector", {
 | `source` | **Removed** - Use `catalog_id` to lookup source from catalog |
 | `loc` | **Removed** - Page info now in `page_number` directly |
 | `category_ids` | **Removed** - Use `catalog_id` → `catalog.category_ids` |
+| `concepts` (string[]) | **Removed** - Use `concept_ids` with `ConceptIdCache` to resolve names |
 | `catalog_id` | **Now required** - Foreign key to catalog table |
 | `page_number` | **Added** - Populated directly from PDF loader |
 | `concept_density` | **Restored** - For ranking |
