@@ -128,12 +128,16 @@ export class LanceDBCatalogRepository implements CatalogRepository {
    * Convert a raw document row to SearchResult format.
    */
   private docToSearchResult(doc: any): SearchResult {
-    // Parse category_ids (native array, Arrow Vector, or JSON string)
-    if (doc.category_ids) {
-      if (Array.isArray(doc.category_ids)) {
-      } else if (typeof doc.category_ids === 'object' && 'toArray' in doc.category_ids) {
+    // Parse concept_ids (native array, Arrow Vector, or JSON string)
+    let conceptIds: number[] = [];
+    if (doc.concept_ids) {
+      if (Array.isArray(doc.concept_ids)) {
+        conceptIds = doc.concept_ids;
+      } else if (typeof doc.concept_ids === 'object' && 'toArray' in doc.concept_ids) {
         // Arrow Vector - convert to JavaScript array
-      } else {
+        conceptIds = Array.from(doc.concept_ids.toArray());
+      } else if (typeof doc.concept_ids === 'string') {
+        conceptIds = this.parseJsonArray(doc.concept_ids);
       }
     }
     
@@ -143,6 +147,7 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       text: doc.summary || doc.text || '',  // 'summary' is new field name, 'text' for backward compat
       source: doc.source || doc.filename || '',  // Support both old and new field names
       hash: doc.hash,
+      documentConceptIds: conceptIds,  // Document-level concept IDs
       embeddings: doc.vector || [],
       distance: 0,
       hybridScore: 1.0,

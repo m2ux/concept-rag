@@ -1,28 +1,27 @@
 /**
  * Hierarchical Concept Service
  * 
- * Provides comprehensive concept retrieval using hierarchical navigation:
- * Concept → Pages → Chunks
+ * Provides comprehensive concept retrieval using document-level navigation:
+ * Concept → Documents (via catalogIds) → Chunks
  * 
  * This service orchestrates multi-level retrieval to provide rich context
  * for each concept, including:
  * - Concept metadata (summary, related concepts, WordNet relations)
- * - Pages where concept is discussed (with page numbers)
- * - Chunks from those pages (with concept density ranking)
+ * - Documents where concept appears
+ * - Chunks from those documents (with concept density ranking)
  * 
  * **Design**: Follows the Facade pattern to coordinate multiple repositories.
  */
 
 import { ChunkRepository } from '../interfaces/repositories/chunk-repository.js';
 import { ConceptRepository } from '../interfaces/repositories/concept-repository.js';
-import { PageRepository } from '../interfaces/repositories/page-repository.js';
 import { CatalogRepository } from '../interfaces/repositories/catalog-repository.js';
-import { Chunk, Concept, Page } from '../models/index.js';
+import { Chunk, Concept } from '../models/index.js';
 import { isSome, foldOption } from '../functional/index.js';
 import { hashToId } from '../../infrastructure/utils/hash.js';
 
 /**
- * Source document with page context.
+ * Source document with concept context.
  */
 export interface SourceWithPages {
   /** Document catalog ID */
@@ -34,10 +33,10 @@ export interface SourceWithPages {
   /** Document title (extracted from source) */
   title: string;
   
-  /** Page numbers where concept appears */
+  /** Page numbers where concept appears (from chunks) */
   pageNumbers: number[];
   
-  /** Text previews from relevant pages */
+  /** Text previews from relevant chunks */
   pagePreviews: string[];
 }
 
@@ -86,14 +85,14 @@ export interface HierarchicalConceptResult {
   /** WordNet narrower terms (hyponyms) */
   narrowerTerms: string[];
   
-  /** Source documents with page-level context */
+  /** Source documents with context */
   sources: SourceWithPages[];
   
   /** Enriched chunks with hierarchical context */
   chunks: EnrichedChunk[];
   
-  /** Total number of pages where concept appears */
-  totalPages: number;
+  /** Total number of documents where concept appears */
+  totalDocuments: number;
   
   /** Total number of chunks with this concept */
   totalChunks: number;
@@ -122,13 +121,12 @@ export interface HierarchicalSearchParams {
 /**
  * Service for hierarchical concept retrieval.
  * 
- * Coordinates concept → pages → chunks navigation to provide comprehensive
+ * Coordinates concept → documents → chunks navigation to provide comprehensive
  * context for any concept in the knowledge base.
  */
 export class HierarchicalConceptService {
   constructor(
     private conceptRepo: ConceptRepository,
-    private pageRepo: PageRepository,
     private chunkRepo: ChunkRepository,
     private catalogRepo: CatalogRepository
   ) {}
@@ -149,6 +147,7 @@ export class HierarchicalConceptService {
     // 1. Get concept metadata
     const conceptOpt = await this.conceptRepo.findByName(conceptName);
     
+    let catalogIds: number[] = [];
     const conceptData = foldOption(
       conceptOpt,
       () => ({
@@ -158,76 +157,73 @@ export class HierarchicalConceptService {
         broaderTerms: [] as string[],
         narrowerTerms: [] as string[]
       }),
-      (concept: Concept) => ({
-        summary: concept.summary || '',
-        relatedConcepts: concept.relatedConcepts || [],
-        synonyms: concept.synonyms || [],
-        broaderTerms: concept.broaderTerms || [],
-        narrowerTerms: concept.narrowerTerms || []
-      })
+      (concept: Concept) => {
+        catalogIds = concept.catalogIds || [];
+        return {
+          summary: concept.summary || '',
+          relatedConcepts: concept.relatedConcepts || [],
+          synonyms: concept.synonyms || [],
+          broaderTerms: concept.broaderTerms || [],
+          narrowerTerms: concept.narrowerTerms || []
+        };
+      }
     );
     
-    // 2. Find pages where concept appears
-    const pages = await this.pageRepo.findByConceptId(conceptId, 100);
-    const totalPages = pages.length;
+    const totalDocuments = catalogIds.length;
     
-    // 3. Group pages by document
-    const pagesByDocument = this.groupPagesByDocument(pages);
-    
-    // 4. Build sources with page context
+    // 2. Build sources from catalogIds
     const sources: SourceWithPages[] = [];
-    for (const [catalogId, docPages] of pagesByDocument.entries()) {
-      if (sources.length >= maxSources) break;
-      
+    const enrichedChunks: EnrichedChunk[] = [];
+    let totalChunks = 0;
+    
+    // Limit to maxSources
+    const limitedCatalogIds = catalogIds.slice(0, maxSources);
+    
+    for (const catalogId of limitedCatalogIds) {
       // Get document metadata
       const catalogOpt = await this.catalogRepo.findById(catalogId);
-      const source = isSome(catalogOpt) && catalogOpt.value.source ? catalogOpt.value.source : `Document ${catalogId}`;
+      const source = isSome(catalogOpt) && catalogOpt.value.source 
+        ? catalogOpt.value.source 
+        : `Document ${catalogId}`;
       const title = this.extractTitle(source);
       
+      // Find chunks from this document that have the concept
+      const docChunks = await this.chunkRepo.findByCatalogId(catalogId, 100);
+      totalChunks += docChunks.length;
+      
+      // Filter to chunks with this concept
+      const conceptChunks = docChunks
+        .filter(chunk => chunk.conceptIds?.includes(conceptId))
+        .slice(0, chunksPerSource);
+      
+      // Collect page numbers from chunks
+      const pageNumbers = [...new Set(conceptChunks.map(c => c.pageNumber ?? 0))].sort((a, b) => a - b);
+      
+      // Build source info
       sources.push({
         catalogId,
         source,
         title,
-        pageNumbers: docPages.map(p => p.pageNumber).sort((a, b) => a - b),
-        pagePreviews: docPages.slice(0, 3).map(p => p.textPreview)
+        pageNumbers,
+        pagePreviews: conceptChunks.slice(0, 3).map(c => c.text.substring(0, 200))
       });
-    }
-    
-    // 5. Find chunks from relevant pages
-    const enrichedChunks: EnrichedChunk[] = [];
-    let totalChunks = 0;
-    
-    for (const sourceDoc of sources) {
-      // Get page numbers for this document
-      const pageNumbers = new Set(sourceDoc.pageNumbers);
-      
-      // Find chunks from this document by catalog ID (normalized lookup)
-      const docChunks = await this.chunkRepo.findByCatalogId(sourceDoc.catalogId, 100);
-      totalChunks += docChunks.length;
-      
-      // Filter to chunks from relevant pages or with the concept ID
-      const relevantChunks = docChunks
-        .filter(chunk => {
-          const chunkPage = chunk.pageNumber ?? 0;
-          const hasConcept = chunk.conceptIds?.includes(conceptId) ?? false;
-          return pageNumbers.has(chunkPage) || hasConcept;
-        })
-        .slice(0, chunksPerSource);
       
       // Enrich chunks with hierarchical metadata
-      for (const chunk of relevantChunks) {
+      for (const chunk of conceptChunks) {
         if (enrichedChunks.length >= maxChunks) break;
         
         enrichedChunks.push({
           chunk,
           pageNumber: chunk.pageNumber ?? 0,
           conceptDensity: chunk.conceptDensity ?? 0,
-          documentTitle: sourceDoc.title
+          documentTitle: title
         });
       }
+      
+      if (enrichedChunks.length >= maxChunks) break;
     }
     
-    // 6. Sort enriched chunks by concept density
+    // 3. Sort enriched chunks by concept density
     enrichedChunks.sort((a, b) => b.conceptDensity - a.conceptDensity);
     
     return {
@@ -241,24 +237,9 @@ export class HierarchicalConceptService {
       narrowerTerms: conceptData.narrowerTerms,
       sources,
       chunks: enrichedChunks.slice(0, maxChunks),
-      totalPages,
+      totalDocuments,
       totalChunks
     };
-  }
-  
-  /**
-   * Group pages by their catalog (document) ID.
-   */
-  private groupPagesByDocument(pages: Page[]): Map<number, Page[]> {
-    const byDocument = new Map<number, Page[]>();
-    
-    for (const page of pages) {
-      const existing = byDocument.get(page.catalogId) || [];
-      existing.push(page);
-      byDocument.set(page.catalogId, existing);
-    }
-    
-    return byDocument;
   }
   
   /**
@@ -277,4 +258,3 @@ export class HierarchicalConceptService {
       .trim();
   }
 }
-

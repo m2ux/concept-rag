@@ -3,11 +3,11 @@
 **Last Updated:** 2025-11-28  
 **Database:** LanceDB (embedded vector database)  
 **Embedding Model:** all-MiniLM-L6-v2 (384 dimensions)  
-**Schema Version:** Normalized v5 (concepts string field removed from chunks)
+**Schema Version:** Normalized v6 (pages table removed, concept_ids added to catalog)
 
 ## Overview
 
-Concept-RAG uses a five-table normalized architecture optimized for concept-heavy workloads:
+Concept-RAG uses a four-table normalized architecture optimized for concept-heavy workloads:
 
 ```
 ┌─────────────┐       ┌─────────────┐       ┌─────────────┐       ┌──────────────┐
@@ -15,13 +15,9 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 │ (documents) │       │  (segments) │       │   (index)   │       │  (taxonomy)  │
 └─────────────┘       └─────────────┘       └─────────────┘       └──────────────┘
       │                     │                     │                      │
-      │               ┌─────────────┐             │                      │
-      └──────────────>│   pages     │<────────────┘                      │
-                      │ (page-level)│                                    │
-                      └─────────────┘                                    │
-                            │                                            │
-                            └────────────────────────────────────────────┘
-                          Many-to-many via native array columns
+      │                     │                     │                      │
+      └─────────────────────┴─────────────────────┴──────────────────────┘
+                        Many-to-many via native array columns
 ```
 
 ### Design Principles
@@ -49,6 +45,7 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 | `summary` | `string` | LLM-generated document summary |
 | `hash` | `string` | SHA-256 content hash for deduplication |
 | `vector` | `Float32Array` | 384-dimensional embedding of summary |
+| `concept_ids` | `number[]` | Native array of concept IDs (foreign keys to concepts table) |
 | `category_ids` | `number[]` | Native array of category integer IDs |
 | `origin_hash` | `string` | *Reserved:* Hash of original file before processing |
 | `author` | `string` | *Reserved:* Document author(s) |
@@ -65,6 +62,7 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
   summary: "Comprehensive guide to Clean Architecture principles...",
   hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   vector: Float32Array(384),
+  concept_ids: [2938475683, 1029384756, 3847293900],  // Document-level concepts
   category_ids: [1847362847, 2938476523],
   // Reserved bibliographic fields (for future use)
   origin_hash: "",
@@ -167,35 +165,7 @@ Two types of concept relationships:
 
 ---
 
-### 4. Pages Table
-
-**Purpose:** Page-level concept attribution for hierarchical retrieval.
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | `number` | Hash-based integer ID (FNV-1a of "catalogId-pageNum") |
-| `catalog_id` | `number` | Parent document ID (foreign key) |
-| `page_number` | `number` | Page number within document |
-| `concept_ids` | `number[]` | Native array of concept IDs on this page |
-| `text_preview` | `string` | First ~500 chars of page content |
-| `vector` | `Float32Array` | 384-dimensional embedding of page content |
-
-#### Example Record
-
-```typescript
-{
-  id: 1029384756,
-  catalog_id: 3847293847,
-  page_number: 15,
-  concept_ids: [2938475683, 1029384756, 3847293900],
-  text_preview: "Clean architecture emphasizes separation of concerns...",
-  vector: Float32Array(384)
-}
-```
-
----
-
-### 5. Categories Table
+### 4. Categories Table
 
 **Purpose:** Taxonomy of semantic categories with hierarchy for domain browsing.
 
@@ -237,34 +207,33 @@ Two types of concept relationships:
 
 ```
 Catalog (1) ──────< (N) Chunks       // One document has many chunks (via catalog_id)
-Catalog (1) ──────< (N) Pages        // One document has many pages (via catalog_id)
 Catalog (N) >─────< (N) Categories   // Documents belong to categories (via category_ids)
+Catalog (N) >─────< (N) Concepts     // Documents tagged with concepts (via concept_ids)
 Chunks (N) >──────< (N) Concepts     // Chunks tagged with concepts (via concept_ids)
-Pages (N) >───────< (N) Concepts     // Pages contain concepts (via concept_ids)
 Concepts (N) >────< (N) Catalog      // Concepts appear in documents (via catalog_ids)
 Concepts (N) >────< (N) Concepts     // Adjacent concepts (via adjacent_ids)
 Concepts (N) >────< (N) Concepts     // Related concepts (via related_ids)
 Categories (N) ───< (1) Categories   // Hierarchical parent-child (via parent_category_id)
 ```
 
-### Hierarchical Concept Retrieval Flow
+### Concept Retrieval Flow
 
 ```
 concept_search("strategy pattern")
        │
        ▼
 ┌─────────────────┐
-│ concepts table  │  Find concept by name → get ID
+│ concepts table  │  Find concept by name → get ID and catalog_ids
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│  pages table    │  Find pages with concept_id → get page numbers
+│ catalog table   │  Find documents where concept appears
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│ chunks table    │  Find chunks on those pages → return content
+│ chunks table    │  Find chunks from those documents with concept_id
 └─────────────────┘
 ```
 
@@ -277,8 +246,8 @@ const chunks = await chunksTable
   .where(`array_contains(concept_ids, ${conceptId})`)
   .toArray();
 
-// Find pages by concept ID
-const pages = await pagesTable
+// Find documents with a concept
+const docs = await catalogTable
   .query()
   .where(`array_contains(concept_ids, ${conceptId})`)
   .toArray();
@@ -353,7 +322,6 @@ await chunksTable.createIndex("vector", {
 | **Chunks** | 471,454 |
 | **Concepts** | 59,587 |
 | **Categories** | 687 |
-| **Pages** | ~50,000 (estimated) |
 | **Avg concepts per chunk** | ~3-5 |
 
 ---
@@ -367,31 +335,29 @@ await chunksTable.createIndex("vector", {
 | 2025-11-19 | Hash-based integer IDs | ADR-0027 |
 | 2025-11-19 | Added categories table (four-table architecture) | ADR-0028 |
 | 2025-11-26 | Schema normalization (redundant field removal) | ADR-0043 |
-| 2025-11-28 | Added pages table, lexical linking (five-table architecture) | - |
 | 2025-11-28 | Removed `source` and `loc` from chunks, `catalog_id` required | - |
 | 2025-11-28 | Removed `concepts` (string[]) from chunks, use `concept_ids` + cache | - |
+| 2025-11-28 | Removed pages table, added `concept_ids` to catalog (four-table) | - |
 
 ---
 
-## Schema Changes (v3 - November 2025)
+## Schema Changes (v6 - November 2025)
 
-### New: Pages Table
-| Field | Description |
-|-------|-------------|
-| `id` | Hash-based ID from "catalogId-pageNum" |
-| `catalog_id` | Parent document ID |
-| `page_number` | Page number in document |
-| `concept_ids` | Concepts on this page (LLM-extracted) |
-| `text_preview` | First ~500 chars |
-| `vector` | Page embedding |
-
-### Concepts Table Changes
+### Catalog Table Changes
 | Change | Details |
 |--------|---------|
-| `concept` → `name` | Renamed for consistency |
-| `related_concept_ids` → `adjacent_ids` | Renamed for clarity (co-occurrence) |
-| `related_ids` | **Added** - Lexical links (shared words) |
-| `chunk_ids` | **Added** - Direct chunk references |
+| `concept_ids` | **Added** - Document-level concept IDs (foreign keys to concepts table) |
+
+### Removed: Pages Table
+The pages table was removed. Concept-document associations are now stored via:
+- `catalog.concept_ids` - concepts in each document
+- `concepts.catalog_ids` - documents where each concept appears
+- `chunks.concept_ids` - concepts in each chunk
+
+### Concepts Table
+| Field | Description |
+|-------|-------------|
+| `catalog_ids` | Documents where this concept appears (bidirectional with catalog.concept_ids) |
 
 ### Chunks Table Changes
 | Change | Details |
@@ -404,7 +370,7 @@ await chunksTable.createIndex("vector", {
 | `page_number` | **Added** - Populated directly from PDF loader |
 | `concept_density` | **Restored** - For ranking |
 
-### Source Resolution (v4)
+### Source Resolution
 
 With `source` removed from chunks, use the `CatalogSourceCache` for display:
 
@@ -432,9 +398,6 @@ cp -r ~/.concept_rag ~/.concept_rag.backup.$(date +%Y%m%d)
 # Run migration
 npx tsx scripts/migrate_to_normalized_schema.ts ~/.concept_rag
 
-# Seed pages table
-npx tsx scripts/seed_pages_table.ts --db ~/.concept_rag
-
 # Run lexical linking
 npx tsx scripts/link_related_concepts.ts --db ~/.concept_rag
 
@@ -454,5 +417,4 @@ npx tsx scripts/validate_normalized_schema.ts ~/.concept_rag
 - Schema Validators: `src/infrastructure/lancedb/utils/schema-validators.ts`
 - Source Cache: `src/infrastructure/cache/catalog-source-cache.ts`
 - Migration Script: `scripts/migrate_to_normalized_schema.ts`
-- Pages Seeding: `scripts/seed_pages_table.ts`
 - Lexical Linking: `scripts/link_related_concepts.ts`

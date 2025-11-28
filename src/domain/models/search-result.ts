@@ -50,6 +50,13 @@ export interface SearchResult extends Chunk {
    */
   source?: string;
   
+  /**
+   * Concept IDs associated with this document (for catalog entries).
+   * Foreign keys to the concepts table.
+   * For catalog entries only - chunks have their own conceptIds in the Chunk model.
+   */
+  documentConceptIds?: number[];
+  
   /** Vector distance from query (0 = identical, higher = more different) */
   distance: number;
   

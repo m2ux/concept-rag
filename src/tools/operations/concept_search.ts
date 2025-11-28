@@ -115,7 +115,7 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       // Format for MCP response
       const formatted = this.formatResult(result, params.debug);
       
-      console.error(`✅ Found: ${result.totalPages} pages, ${result.chunks.length} chunks across ${result.sources.length} sources`);
+      console.error(`✅ Found: ${result.totalDocuments} documents, ${result.chunks.length} chunks across ${result.sources.length} sources`);
       
       return {
         content: [
@@ -190,7 +190,7 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       
       // Statistics
       stats: {
-        total_pages: result.totalPages,
+        total_documents: result.totalDocuments,
         total_chunks: result.totalChunks,
         sources_returned: result.sources.length,
         chunks_returned: result.chunks.length
