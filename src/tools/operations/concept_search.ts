@@ -173,6 +173,9 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
       concept_id: result.conceptId,
       summary: result.summary,
       
+      // Concept match score (how well query matched this concept)
+      match_score: result.scores?.hybridScore?.toFixed(3) || '1.000',
+      
       // Semantic relationships
       related_concepts: result.relatedConcepts,
       synonyms: result.synonyms,
@@ -182,7 +185,7 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
       // Sources with page-level context
       sources,
       
-      // Enriched chunks
+      // Enriched chunks (ranked by concept_density)
       chunks,
       
       // Statistics
@@ -193,14 +196,13 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
         chunks_returned: result.chunks.length
       },
       
-      // Hybrid search scores (debug mode only)
+      // Detailed hybrid search scores (debug mode only)
       ...(debug && result.scores ? {
-        hybrid_scores: {
-          overall: result.scores.hybridScore.toFixed(3),
+        score_breakdown: {
           name_match: result.scores.nameScore.toFixed(3),
           vector: result.scores.vectorScore.toFixed(3),
           bm25_summary: result.scores.bm25Score.toFixed(3),
-          synonym_match: result.scores.wordnetScore.toFixed(3)
+          wordnet: result.scores.wordnetScore.toFixed(3)
         }
       } : {})
     };
