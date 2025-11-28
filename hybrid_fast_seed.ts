@@ -21,6 +21,7 @@ import { hashToId, generateStableId } from './src/infrastructure/utils/hash.js';
 import { generateCategorySummaries } from './src/concepts/summary_generator.js';
 import { parseFilenameMetadata, normalizeText } from './src/infrastructure/utils/filename-metadata-parser.js';
 import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
+import { ConceptEnricher } from './src/concepts/concept_enricher.js';
 
 // Setup timestamped logging
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
@@ -1708,6 +1709,14 @@ async function rebuildConceptIndexFromExistingData(
     // Note: Summaries are now included in the concept extraction response,
     // so no separate summary generation is needed.
     
+    // Enrich concepts with WordNet data (synonyms, broader_terms, narrower_terms)
+    console.log("  📚 Enriching concepts with WordNet data...");
+    const conceptEnricher = new ConceptEnricher();
+    await conceptEnricher.enrichConcepts(conceptRecords);
+    
+    // Note: Lexical linking (related_ids) can be added post-seeding via:
+    //   npx tsx scripts/link_related_concepts.ts --db <path>
+    
     // Drop and recreate concepts table
     try {
         await db.dropTable('concepts');
@@ -2229,6 +2238,14 @@ async function hybridFastSeed() {
         }
         
         // Note: Summaries are now included in the concept extraction response.
+        
+        // Enrich concepts with WordNet data (synonyms, broader_terms, narrower_terms)
+        console.log("📚 Enriching concepts with WordNet data...");
+        const conceptEnricher = new ConceptEnricher();
+        await conceptEnricher.enrichConcepts(conceptRecords);
+        
+        // Note: Lexical linking (related_ids) can be added post-seeding via:
+        //   npx tsx scripts/link_related_concepts.ts --db <path>
         
         // Log top concepts by weight (number of documents)
         const topConcepts = conceptRecords
