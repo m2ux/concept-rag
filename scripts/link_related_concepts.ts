@@ -145,10 +145,10 @@ async function main() {
   
   console.log(`📊 Loaded ${allConcepts.length} concepts\n`);
   
-  // Build concept data
+  // Build concept data (support both 'name' (new schema) and 'concept' (legacy))
   const concepts: ConceptData[] = allConcepts.map(c => ({ 
     id: c.id, 
-    concept: c.concept 
+    concept: c.name || c.concept || ''
   }));
   
   // Build word index
@@ -210,9 +210,20 @@ async function main() {
   // LanceDB doesn't support in-place updates of array fields easily
   // So we'll load all data, add related_ids, and recreate
   
+  // Build ID → name lookup for related_concepts population
+  const idToName = new Map<number, string>();
+  for (const c of allConcepts) {
+    idToName.set(c.id, c.name || c.concept || '');
+  }
+  
   const updatedData = allConcepts.map(row => {
     const conceptId = row.id;
     const relatedIds = linkMap.get(conceptId) || [];
+    
+    // Convert related IDs to names for the related_concepts field
+    const relatedConceptNames = relatedIds
+      .map(id => idToName.get(id))
+      .filter(name => name && name !== '') as string[];
     
     // Parse existing fields
     const parseArray = (val: any): any[] => {
@@ -231,12 +242,14 @@ async function main() {
     
     return {
       id: row.id,
-      name: row.name || row.concept,  // Support both 'name' (new) and 'concept' (legacy)
+      name: row.name || row.concept || '',  // Support both 'name' (new) and 'concept' (legacy)
       summary: row.summary || '',
       catalog_ids: ensureNonEmpty(parseArray(row.catalog_ids), 0),
+      catalog_titles: ensureNonEmpty(parseArray(row.catalog_titles), ''),  // Preserve derived field
       chunk_ids: ensureNonEmpty(parseArray(row.chunk_ids), 0),
       adjacent_ids: ensureNonEmpty(parseArray(row.adjacent_ids || row.related_concept_ids), 0),
       related_ids: ensureNonEmpty(relatedIds, 0),
+      related_concepts: ensureNonEmpty(relatedConceptNames, ''),  // Derived from related_ids
       synonyms: ensureNonEmpty(parseArray(row.synonyms), ''),
       broader_terms: ensureNonEmpty(parseArray(row.broader_terms), ''),
       narrower_terms: ensureNonEmpty(parseArray(row.narrower_terms), ''),
