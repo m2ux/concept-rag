@@ -358,6 +358,15 @@ async function main() {
   const allCatalogRows = await catalogTable.query().limit(100000).toArray();
   const allChunks = await chunksTable.query().limit(1000000).toArray();
   
+  // Build source → catalog ID map from ACTUAL catalog table IDs (foreign key constraint)
+  const sourceToCatalogId = new Map<string, number>();
+  for (const r of allCatalogRows) {
+    if (r.source && r.id !== undefined) {
+      sourceToCatalogId.set(r.source, typeof r.id === 'number' ? r.id : parseInt(r.id, 10));
+    }
+  }
+  console.log(`   ✅ Built source→catalogId map with ${sourceToCatalogId.size} entries`);
+  
   // Transform catalog rows into Document objects for concept builder
   const allCatalogFresh = allCatalogRows.map((row: any) => {
     // Safe JSON parsing for catalog concepts
@@ -418,7 +427,8 @@ async function main() {
   });
   
   const conceptBuilder = new ConceptIndexBuilder();
-  const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogFresh, docs);
+  // Pass actual catalog IDs from the database (foreign key constraint)
+  const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogFresh, sourceToCatalogId);
   
   console.log(`   ✅ Built ${conceptRecords.length} concept records`);
   

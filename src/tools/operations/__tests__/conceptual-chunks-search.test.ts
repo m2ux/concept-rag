@@ -5,12 +5,15 @@
  * Follows Four-Phase Test pattern from TDD for Embedded C (Grenning).
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import { ConceptualChunksSearchTool } from '../conceptual_chunks_search.js';
 import { ChunkSearchService } from '../../../domain/services/index.js';
+import { ConceptIdCache } from '../../../infrastructure/cache/concept-id-cache.js';
+import { CatalogSourceCache } from '../../../infrastructure/cache/catalog-source-cache.js';
 import {
   FakeChunkRepository,
   FakeCatalogRepository,
+  FakeConceptRepository,
   createTestChunk,
   createTestSearchResult
 } from '../../../__tests__/test-helpers/index.js';
@@ -18,8 +21,29 @@ import {
 describe('ConceptualChunksSearchTool', () => {
   let chunkRepo: FakeChunkRepository;
   let catalogRepo: FakeCatalogRepository;
+  let conceptRepo: FakeConceptRepository;
   let service: ChunkSearchService;
   let tool: ConceptualChunksSearchTool;
+  
+  beforeAll(async () => {
+    // Initialize global caches for tests
+    conceptRepo = new FakeConceptRepository();
+    const conceptIdCache = ConceptIdCache.getInstance();
+    conceptIdCache.clear();
+    await conceptIdCache.initialize(conceptRepo);
+    
+    // Initialize CatalogSourceCache with a fake catalog repo
+    const fakeCatalogRepo = new FakeCatalogRepository();
+    fakeCatalogRepo.addDocument(createTestSearchResult({
+      id: 12345678,
+      catalogId: 12345678,
+      source: '/test/doc.pdf',
+      text: 'Test document'
+    }));
+    const catalogSourceCache = CatalogSourceCache.getInstance();
+    catalogSourceCache.clear();
+    await catalogSourceCache.initialize(fakeCatalogRepo);
+  });
   
   beforeEach(() => {
     // SETUP - Fresh repositories and service for each test
@@ -31,7 +55,8 @@ describe('ConceptualChunksSearchTool', () => {
     // Add a default catalog entry for test documents
     catalogRepo.addDocument(createTestSearchResult({
       id: 12345678,
-      
+      catalogId: 12345678,
+      source: '/test/doc.pdf',
       text: 'Test document'
     }));
   });
@@ -118,8 +143,8 @@ describe('ConceptualChunksSearchTool', () => {
       
       // VERIFY
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent[0].concepts).toBeDefined();
-      expect(Array.isArray(parsedContent[0].concepts)).toBe(true);
+      expect(parsedContent[0].concept_ids).toBeDefined();
+      expect(Array.isArray(parsedContent[0].concept_ids)).toBe(true);
     });
     
     it('should handle empty results', async () => {

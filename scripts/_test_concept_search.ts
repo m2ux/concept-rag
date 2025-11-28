@@ -3,7 +3,6 @@
  */
 import * as lancedb from '@lancedb/lancedb';
 import { LanceDBConceptRepository } from '../src/infrastructure/lancedb/repositories/lancedb-concept-repository.js';
-import { LanceDBPageRepository } from '../src/infrastructure/lancedb/repositories/lancedb-page-repository.js';
 import { LanceDBChunkRepository } from '../src/infrastructure/lancedb/repositories/lancedb-chunk-repository.js';
 import { LanceDBCatalogRepository } from '../src/infrastructure/lancedb/repositories/lancedb-catalog-repository.js';
 import { HierarchicalConceptService } from '../src/domain/services/hierarchical-concept-service.js';
@@ -13,11 +12,11 @@ import { ConceptualHybridSearchService } from '../src/infrastructure/search/conc
 import { QueryExpander } from '../src/concepts/query_expander.js';
 
 const TEST_CONCEPTS = [
-  'military strategy (principles of war)',  // Art of War - domain-specific
-  'strategy pattern',                        // Design Patterns - domain-specific
-  'five-factor strategy framework (moral law, heaven, earth, commander, method and discipline)',
-  'design patterns',
-  'reinforcing feedback loop (self‑amplifying / exponential feedback)'  // Thinking in Systems
+  'military strategy and doctrine',                 // Art of War
+  'strategy pattern',                               // Design Patterns
+  'feedback loops (information-feedback control)',  // Thinking in Systems
+  'balancing feedback loop (negative feedback, goal-seeking)',  // Thinking in Systems
+  'reinforcing feedback loop (positive feedback, exponential growth)'  // Thinking in Systems
 ];
 
 async function main() {
@@ -29,7 +28,6 @@ async function main() {
   
   // Open tables
   const conceptsTable = await db.openTable('concepts');
-  const pagesTable = await db.openTable('pages');
   const chunksTable = await db.openTable('chunks');
   const catalogTable = await db.openTable('catalog');
   
@@ -42,21 +40,18 @@ async function main() {
   const queryExpander = new QueryExpander(conceptsTable, embeddingService);
   const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
   
-  const pageRepo = new LanceDBPageRepository(pagesTable, conceptIdCache);
-  const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, conceptIdCache);
+  const chunkRepo = new LanceDBChunkRepository(chunksTable, embeddingService, hybridSearchService, conceptIdCache);
   const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
   
   // Create hierarchical service
   const hierarchicalService = new HierarchicalConceptService(
     conceptRepo,
-    pageRepo,
     chunkRepo,
     catalogRepo
   );
   
   console.log(`\n📊 Database stats:`);
   console.log(`   Concepts: ${await conceptsTable.countRows()}`);
-  console.log(`   Pages: ${await pagesTable.countRows()}`);
   console.log(`   Chunks: ${await chunksTable.countRows()}`);
   console.log(`   Catalog: ${await catalogTable.countRows()}\n`);
   
@@ -86,18 +81,18 @@ async function main() {
       
       console.log(`\n📄 Sources (${result.sources.length}):`);
       for (const src of result.sources) {
-        console.log(`   • ${src.title}`);
-        console.log(`     Pages: ${src.pageNumbers.slice(0, 10).join(', ')}${src.pageNumbers.length > 10 ? '...' : ''}`);
+        console.log(`   • ${src.title} (catalog ID: ${src.catalogId})`);
       }
       
       console.log(`\n📦 Chunks (${result.chunks.length} of ${result.totalChunks}):`);
-      for (const chunk of result.chunks.slice(0, 3)) {
-        const preview = chunk.chunk.text.substring(0, 150).replace(/\n/g, ' ');
-        console.log(`   • [Page ${chunk.pageNumber}] density=${chunk.conceptDensity.toFixed(3)}`);
+      for (const enrichedChunk of result.chunks.slice(0, 3)) {
+        const text = enrichedChunk.chunk?.text || '';
+        const preview = text.substring(0, 150).replace(/\n/g, ' ');
+        console.log(`   • [Page ${enrichedChunk.pageNumber || 'N/A'}] density: ${enrichedChunk.conceptDensity?.toFixed(2) || 'N/A'}`);
         console.log(`     "${preview}..."`);
       }
       
-      console.log(`\n✅ Stats: ${result.totalPages} pages, ${result.totalChunks} chunks`);
+      console.log(`\n✅ Stats: ${result.sources.length} sources, ${result.totalChunks} chunks`);
       
     } catch (error) {
       console.error(`❌ Error: ${error instanceof Error ? error.message : error}`);
@@ -109,4 +104,3 @@ async function main() {
 }
 
 main().catch(console.error);
-

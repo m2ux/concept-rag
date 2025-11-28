@@ -14,22 +14,23 @@ export class ConceptIndexBuilder {
     
     /**
      * Build concept index from documents with metadata.
+     * @param documents - Documents with concept metadata
+     * @param sourceToCatalogId - Map of source paths to actual catalog IDs from the catalog table
+     *                            (REQUIRED: foreign keys must reference actual IDs, not computed hashes)
      */
     async buildConceptIndex(
         documents: Document[],
-        _chunks?: Document[]
+        sourceToCatalogId: Map<string, number>
     ): Promise<ConceptRecord[]> {
         const conceptMap = new Map<string, ConceptRecord>();
         
         console.log('📊 Building concept index from document metadata...');
         
-        // Build source to ID mapping for catalog_ids
-        this.sourceToIdMap.clear();
-        for (const doc of documents) {
-            const source = doc.metadata.source;
-            if (source) {
-                this.sourceToIdMap.set(source, hashToId(source));
-            }
+        // Use the provided source-to-catalogId map (actual IDs from catalog table)
+        this.sourceToIdMap = sourceToCatalogId;
+        
+        if (this.sourceToIdMap.size === 0) {
+            console.warn('  ⚠️  No source-to-catalog-ID mapping provided! Catalog IDs will be 0.');
         }
         
         for (const doc of documents) {
@@ -40,7 +41,12 @@ export class ConceptIndexBuilder {
             }
             
             const source = doc.metadata.source;
-            const catalogId = this.sourceToIdMap.get(source) || hashToId(source);
+            // Look up actual catalog ID - DO NOT compute from hash!
+            const catalogId = this.sourceToIdMap.get(source);
+            if (catalogId === undefined) {
+                console.warn(`  ⚠️  No catalog ID found for source: ${source}`);
+                continue;
+            }
             
             // Process primary concepts
             for (const concept of metadata.primary_concepts || []) {

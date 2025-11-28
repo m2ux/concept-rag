@@ -241,7 +241,18 @@ async function main() {
   console.log(`🧠 Rebuilding concept index...`);
   
   // Load ALL catalog records
-  const allCatalogDocs = (await catalogTable.query().limit(100000).toArray())
+  const allCatalogRecords = await catalogTable.query().limit(100000).toArray();
+  
+  // Build source → catalog ID map from ACTUAL catalog table IDs (foreign key constraint)
+  const sourceToCatalogId = new Map<string, number>();
+  for (const r of allCatalogRecords) {
+    if (r.source && r.id !== undefined) {
+      sourceToCatalogId.set(r.source, typeof r.id === 'number' ? r.id : parseInt(r.id, 10));
+    }
+  }
+  console.log(`  ✅ Built source→catalogId map with ${sourceToCatalogId.size} entries`);
+  
+  const allCatalogDocs = allCatalogRecords
     .filter((r: any) => r.concepts)
     .map((r: any) => new Document({
       pageContent: r.text || '',
@@ -266,7 +277,8 @@ async function main() {
     }));
   
   const conceptBuilder = new ConceptIndexBuilder();
-  const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogDocs, allChunks);
+  // Pass actual catalog IDs from the database (foreign key constraint)
+  const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogDocs, sourceToCatalogId);
   
   // Drop and recreate
   try {

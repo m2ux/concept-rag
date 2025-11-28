@@ -1025,7 +1025,8 @@ async function createLanceTableWithSimpleEmbeddings(
     db: lancedb.Connection,
     documents: Document[],
     tableName: string,
-    mode?: "overwrite"
+    mode?: "overwrite",
+    sourceToCatalogIdMap?: Map<string, number>
 ): Promise<lancedb.Table> {
     
     console.log(`🔄 Creating simple embeddings for ${documents.length} ${tableName}...`);
@@ -1064,7 +1065,12 @@ async function createLanceTableWithSimpleEmbeddings(
             // ALWAYS include concept_ids for chunks schema (LanceDB needs consistent schema)
             // Use placeholder [0] for empty arrays to enable LanceDB type inference
             baseData.concept_ids = [0];  // Will be overwritten below if concepts exist
-
+            // Add catalog_id (foreign key to catalog table) if map is provided
+            if (sourceToCatalogIdMap && doc.metadata.source) {
+                baseData.catalog_id = sourceToCatalogIdMap.get(doc.metadata.source) || 0;
+            } else {
+                baseData.catalog_id = 0;  // Placeholder if no map provided
+            }
         }
         
         // Add reserved bibliographic fields for catalog entries (for future use)
@@ -1097,7 +1103,9 @@ async function createLanceTableWithSimpleEmbeddings(
                 }
             }
             
-            // Only add concept_ids to chunks, NOT catalog (concepts are derived from chunks)
+            // Populate concept_ids in chunks using consistent normalization
+            // Since concepts table uses hashToId(name.toLowerCase().trim()) for ID generation,
+            // we use the same formula here to ensure foreign key consistency
             if (!isCatalog) {
                 let conceptNames: string[] = [];
                 // Check Array.isArray FIRST since arrays are also objects
@@ -1108,7 +1116,10 @@ async function createLanceTableWithSimpleEmbeddings(
                 }
                 
                 if (conceptNames.length > 0) {
-                    const conceptIds = conceptNames.map((name: string) => hashToId(name));
+                    // Use same normalization as concepts table: hashToId(name.toLowerCase().trim())
+                    const conceptIds = conceptNames.map((name: string) => 
+                        hashToId(name.toLowerCase().trim())
+                    );
                     baseData.concept_ids = conceptIds;
                 }
             }
@@ -1492,6 +1503,15 @@ async function rebuildConceptIndexFromExistingData(
 ): Promise<void> {
     const catalogRecords = await catalogTable.query().limit(100000).toArray();
     
+    // Build source → catalog ID map from ACTUAL catalog table IDs (foreign key constraint)
+    const sourceToCatalogId = new Map<string, number>();
+    for (const r of catalogRecords) {
+        if (r.source && r.id !== undefined) {
+            sourceToCatalogId.set(r.source, typeof r.id === 'number' ? r.id : parseInt(r.id, 10));
+        }
+    }
+    console.log(`  ✅ Built source→catalogId map with ${sourceToCatalogId.size} entries`);
+    
     // Convert to Document format
     const catalogDocs = catalogRecords
         .filter((r: any) => r.text && r.source && r.concepts)
@@ -1552,7 +1572,8 @@ async function rebuildConceptIndexFromExistingData(
     console.log(`  ✅ Loaded ${allChunks.length} total chunks`);
     
     const conceptBuilder = new ConceptIndexBuilder();
-    const conceptRecords = await conceptBuilder.buildConceptIndex(catalogDocs, allChunks);
+    // Pass actual catalog IDs from the database (foreign key constraint)
+    const conceptRecords = await conceptBuilder.buildConceptIndex(catalogDocs, sourceToCatalogId);
     
     console.log(`  ✅ Built ${conceptRecords.length} unique concept records`);
     
@@ -1595,7 +1616,7 @@ async function rebuildConceptIndexFromExistingData(
     console.log(`  ✅ Mapped ${conceptsWithChunks} concepts to ${allChunkRecords.length} chunks`);
     
     // Generate summaries for concepts using LLM
-    const conceptNames = conceptRecords.map(c => c.concept);
+    const conceptNames = conceptRecords.map(c => c.name);
     const conceptSummaries = await generateConceptSummaries(conceptNames);
     
     // Add summaries to concept records
@@ -1606,74 +1627,6 @@ async function rebuildConceptIndexFromExistingData(
         }
     }
     
-    // Build source → catalog ID mapping for integer ID optimization
-    console.log("  🔗 Building source-to-catalog-ID mapping...");
-    const sourceToIdMap = new Map<string, string>();
-    const incompleteRecords = [];
-    const sourceCounts = new Map<string, number>();
-    const duplicateSources = [];
-    
-    for (const row of catalogRecords) {
-        if (row.source && row.id) {
-            // Check for duplicate sources
-            if (sourceToIdMap.has(row.source)) {
-                const existingId = sourceToIdMap.get(row.source);
-                duplicateSources.push({
-                    source: row.source,
-                    existingId: existingId,
-                    duplicateId: row.id,
-                    hash: row.hash
-                });
-            }
-            sourceToIdMap.set(row.source, row.id);
-            
-            // Track source counts
-            sourceCounts.set(row.source, (sourceCounts.get(row.source) || 0) + 1);
-        } else {
-            // Detailed analysis of what's wrong
-            let reason = '';
-            if (!row.source) {
-                reason = `missing/empty source (type: ${typeof row.source}, value: ${JSON.stringify(row.source)})`;
-            } else if (!row.id) {
-                reason = `missing/empty id (type: ${typeof row.id}, value: ${JSON.stringify(row.id)})`;
-            }
-            
-            incompleteRecords.push({
-                source: row.source || '[no source]',
-                id: row.id || '[no id]',
-                hash: row.hash || 'unknown',
-                reason: reason,
-                hasText: !!row.text,
-                hasConcepts: !!row.concepts
-            });
-        }
-    }
-    
-    // Report incomplete records
-    if (incompleteRecords.length > 0) {
-        console.log(`  ⚠️  Found ${incompleteRecords.length} incomplete catalog records:`);
-        incompleteRecords.forEach((rec, idx) => {
-            const sourceDisplay = typeof rec.source === 'string' ? rec.source.substring(0, 50) : rec.source;
-            console.log(`     ${idx + 1}. ${sourceDisplay}... [${rec.hash.slice(0, 8)}]`);
-            console.log(`        → ${rec.reason}`);
-            console.log(`        → has text: ${rec.hasText}, has concepts: ${rec.hasConcepts}`);
-        });
-        console.log(`\n  💡 To fix: run with --auto-reseed to delete and re-process these records`);
-    }
-    
-    // Report duplicate sources
-    if (duplicateSources.length > 0) {
-        console.log(`  ⚠️  Found ${duplicateSources.length} duplicate source paths (same file path, different IDs):`);
-        duplicateSources.forEach((dup, idx) => {
-            const sourceDisplay = dup.source.substring(0, 60);
-            console.log(`     ${idx + 1}. ${sourceDisplay}...`);
-            console.log(`        → Existing ID: ${dup.existingId}, Duplicate ID: ${dup.duplicateId} [${dup.hash.slice(0, 8)}]`);
-        });
-        console.log(`\n  💡 Duplicate sources mean multiple catalog entries point to the same file`);
-        console.log(`     This usually happens when re-seeding without --overwrite`);
-    }
-    
-    console.log(`  ✅ Mapped ${sourceToIdMap.size}/${catalogRecords.length} sources to catalog IDs`);
     // Drop and recreate concepts table
     try {
         await db.dropTable('concepts');
@@ -1682,8 +1635,9 @@ async function rebuildConceptIndexFromExistingData(
         // Table didn't exist, that's fine
     }
     
-    await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToIdMap);
-    console.log("  ✅ Concept index created successfully (with catalog_ids optimization)");
+    // Create concepts table - catalog_ids are already populated with actual IDs from sourceToCatalogId
+    await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts');
+    console.log("  ✅ Concept index created successfully (with actual catalog IDs)");
     // Create categories table with hash-based IDs
     await createCategoriesTable(db, catalogDocs);
 }
@@ -1850,17 +1804,17 @@ async function hybridFastSeed() {
     }
 
     console.log(`Number of new catalog records: ${catalogRecords.length}`);
-    // Build source → catalog ID mapping for integer ID optimization
+    // Build source → catalog ID mapping from ACTUAL catalog table IDs (foreign key constraint)
     console.log("🔗 Building source-to-catalog-ID mapping for optimization...");
     catalogTable = await db.openTable(defaults.CATALOG_TABLE_NAME);
     const catalogRows = await catalogTable.query().toArray();
-    const sourceToIdMap = new Map<string, string>();
+    const sourceToCatalogIdMap = new Map<string, number>();
     for (const row of catalogRows) {
-        if (row.source && row.id) {
-            sourceToIdMap.set(row.source, row.id);
+        if (row.source && row.id !== undefined) {
+            sourceToCatalogIdMap.set(row.source, typeof row.id === 'number' ? row.id : parseInt(row.id, 10));
         }
     }
-    console.log(`✅ Mapped ${sourceToIdMap.size} sources to catalog IDs`);
+    console.log(`✅ Mapped ${sourceToCatalogIdMap.size} sources to catalog IDs`);
     // Build and store concept index (moved to after chunk creation for chunk_count)
     // We'll create chunks first, then build concept index with chunk stats
     console.log("🔧 Creating chunks with fast local embeddings...");
@@ -1966,7 +1920,8 @@ async function hybridFastSeed() {
     
     if (newChunksToCreate.length > 0) {
         console.log(`📊 Creating ${newChunksToCreate.length} new chunks...`);
-        await createLanceTableWithSimpleEmbeddings(db, newChunksToCreate, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined);
+        // Pass sourceToCatalogIdMap so chunks get proper catalog_id foreign key
+        await createLanceTableWithSimpleEmbeddings(db, newChunksToCreate, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined, sourceToCatalogIdMap);
     }
     
     // Update existing chunks with new concept metadata
@@ -1986,9 +1941,10 @@ async function hybridFastSeed() {
             
             const chunkData = batch.map((doc, idx) => {
                 // Build concept IDs (native array)
+                // IMPORTANT: Lowercase concept names to match concepts table ID generation
                 let conceptIds: number[] = [];
                 if (doc.metadata.concepts && Array.isArray(doc.metadata.concepts) && doc.metadata.concepts.length > 0) {
-                    conceptIds = doc.metadata.concepts.map((name: string) => hashToId(name));
+                    conceptIds = doc.metadata.concepts.map((name: string) => hashToId(name.toLowerCase().trim()));
                 }
                 
                 const data: any = {
@@ -2076,8 +2032,8 @@ async function hybridFastSeed() {
         
         const conceptBuilder = new ConceptIndexBuilder();
         
-        // Build concept index from ALL catalog records (new + existing)
-        const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogRecords);
+        // Build concept index from ALL catalog records using ACTUAL catalog IDs (foreign key constraint)
+        const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogRecords, sourceToCatalogIdMap);
         
         console.log(`✅ Built ${conceptRecords.length} unique concept records`);
         
@@ -2116,7 +2072,7 @@ async function hybridFastSeed() {
             
             // Add chunk_ids to concept records
             for (const record of conceptRecords) {
-                const conceptId = hashToId(record.concept);
+                const conceptId = hashToId(record.name);
                 const chunkIds = conceptToChunkIds.get(conceptId) || [];
                 record.chunk_ids = chunkIds;
             }
@@ -2128,12 +2084,12 @@ async function hybridFastSeed() {
         }
         
         // Generate summaries for concepts using LLM
-        const conceptNames = conceptRecords.map(c => c.concept);
+        const conceptNames = conceptRecords.map(c => c.name);
         const conceptSummaries = await generateConceptSummaries(conceptNames);
         
         // Add summaries to concept records
         for (const record of conceptRecords) {
-            const summary = conceptSummaries.get(record.concept.toLowerCase());
+            const summary = conceptSummaries.get(record.name.toLowerCase());
             if (summary) {
                 record.summary = summary;
             }
@@ -2148,7 +2104,7 @@ async function hybridFastSeed() {
         if (topConcepts.length > 0) {
             console.log(`  🔝 Top concepts by document count:`);
             topConcepts.forEach(c => {
-                console.log(`    • "${c.concept}" appears in ${c.catalog_ids.length} documents`);
+                console.log(`    • "${c.name}" appears in ${c.catalog_ids.length} documents`);
             });
         }
         
@@ -2162,8 +2118,8 @@ async function hybridFastSeed() {
                     // Table didn't exist, that's fine
                 }
                 
-                await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToIdMap);
-                console.log("✅ Concept index created successfully (with catalog_ids optimization)");
+                await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToCatalogIdMap);
+                console.log("✅ Concept index created successfully (with catalog_ids from actual catalog table)");
                 
                 // Create categories table with hash-based IDs
                 await createCategoriesTable(db, allCatalogRecords);

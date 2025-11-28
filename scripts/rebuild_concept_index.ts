@@ -39,6 +39,15 @@ async function rebuildConceptIndex() {
     const catalogRecords = await catalogTable.query().limit(100000).toArray();
     console.log(`  ✅ Loaded ${catalogRecords.length} catalog entries`);
     
+    // Build source → catalog ID map from ACTUAL catalog table IDs (foreign key constraint)
+    const sourceToCatalogId = new Map<string, number>();
+    for (const r of catalogRecords) {
+        if (r.source && r.id !== undefined) {
+            sourceToCatalogId.set(r.source, typeof r.id === 'number' ? r.id : parseInt(r.id, 10));
+        }
+    }
+    console.log(`  ✅ Built source→catalogId map with ${sourceToCatalogId.size} entries`);
+    
     // Convert to Document format and filter for those with concepts
     const catalogDocs = catalogRecords
         .filter((r: any) => r.text && r.source && r.concepts)
@@ -102,10 +111,10 @@ async function rebuildConceptIndex() {
     );
     console.log(`  ✅ Found ${chunksWithConcepts.length} chunks with concept metadata\n`);
     
-    // Build concept index
+    // Build concept index using actual catalog IDs (foreign key constraint)
     console.log("🧠 Building concept index from ALL data...");
     const conceptBuilder = new ConceptIndexBuilder();
-    const conceptRecords = await conceptBuilder.buildConceptIndex(catalogDocs, allChunks);
+    const conceptRecords = await conceptBuilder.buildConceptIndex(catalogDocs, sourceToCatalogId);
     
     console.log(`  ✅ Built ${conceptRecords.length} unique concept records\n`);
     
@@ -118,22 +127,22 @@ async function rebuildConceptIndex() {
     if (topConceptsByChunks.length > 0) {
         console.log(`🔝 Top 15 concepts by chunk count:\n`);
         topConceptsByChunks.forEach((c, idx) => {
-            console.log(`  ${(idx + 1).toString().padStart(2)}. "${c.concept}" - ${c.chunk_count ?? 0} chunks (${c.category})`);
+            console.log(`  ${(idx + 1).toString().padStart(2)}. "${c.name}" - ${c.chunk_ids?.length ?? 0} chunks`);
         });
         console.log();
     }
     
     // Check TypeScript specifically
     const typescriptConcepts = conceptRecords.filter(c => 
-        c.concept.toLowerCase().includes('typescript')
+        c.name.toLowerCase().includes('typescript')
     );
     
     if (typescriptConcepts.length > 0) {
         console.log(`\n📌 TypeScript-related concepts:\n`);
         typescriptConcepts.forEach(c => {
-            console.log(`  • "${c.concept}"`);
-            console.log(`    Documents: ${c.document_count ?? 0}`);
-            console.log(`    Chunks: ${c.chunk_count ?? 0}`);
+            console.log(`  • "${c.name}"`);
+            console.log(`    Documents: ${c.catalog_ids?.length ?? 0}`);
+            console.log(`    Chunks: ${c.chunk_ids?.length ?? 0}`);
         });
         console.log();
     }

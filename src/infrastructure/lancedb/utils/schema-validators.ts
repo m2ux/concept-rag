@@ -278,10 +278,8 @@ export function validateChunkRow(row: any): void {
  * @throws {InvalidEmbeddingsError} If embeddings are invalid
  */
 export function validateConceptRow(row: any): void {
-  // Validate required fields - support both 'name' (new) and 'concept' (legacy)
-  const hasName = row.name !== undefined && row.name !== null;
-  const hasConcept = row.concept !== undefined && row.concept !== null;
-  if (!hasName && !hasConcept) {
+  // Validate required name field
+  if (row.name === undefined || row.name === null) {
     throw new SchemaValidationError('name', 'string', 'missing', { entityName: 'concept' });
   }
   
@@ -294,12 +292,12 @@ export function validateConceptRow(row: any): void {
       'missing',
       {
         entityName: 'concept',
-        conceptName: row.name || row.concept,
+        conceptName: row.name,
         message: 'No vector field found - concept cannot be used for vector search'
       }
     );
   }
-  validateEmbeddings(row, vectorField, row.name || row.concept || 'concept');
+  validateEmbeddings(row, vectorField, row.name || 'concept');
   
   // Validate optional JSON fields (only WordNet fields remain as JSON)
   const jsonFields = ['synonyms', 'broader_terms', 'narrower_terms'];

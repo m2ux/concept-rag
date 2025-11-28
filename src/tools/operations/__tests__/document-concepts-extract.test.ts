@@ -5,21 +5,49 @@
  * Follows Four-Phase Test pattern from TDD for Embedded C (Grenning).
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import { DocumentConceptsExtractTool } from '../document_concepts_extract.js';
+import { ConceptIdCache } from '../../../infrastructure/cache/concept-id-cache.js';
 import {
   FakeCatalogRepository,
-  createTestSearchResult
+  FakeConceptRepository,
+  createTestSearchResult,
+  createTestConcept
 } from '../../../__tests__/test-helpers/index.js';
 
 describe('DocumentConceptsExtractTool', () => {
   let catalogRepo: FakeCatalogRepository;
+  let conceptIdCache: ConceptIdCache;
   let tool: DocumentConceptsExtractTool;
+  
+  // Test concept IDs - use hashToId logic to generate these
+  const CONCEPT_IDS = {
+    testing: 11111111,
+    softwareDesign: 22222222,
+    architecture: 33333333,
+    patterns: 44444444
+  };
+  
+  beforeAll(async () => {
+    // Create a mock concept repository with known IDs
+    const mockConceptRepo = {
+      findAll: vi.fn().mockResolvedValue([
+        { id: CONCEPT_IDS.testing, name: 'testing' },
+        { id: CONCEPT_IDS.softwareDesign, name: 'software design' },
+        { id: CONCEPT_IDS.architecture, name: 'architecture' },
+        { id: CONCEPT_IDS.patterns, name: 'patterns' }
+      ])
+    };
+    
+    conceptIdCache = ConceptIdCache.getInstance();
+    conceptIdCache.clear();
+    await conceptIdCache.initialize(mockConceptRepo as any);
+  });
   
   beforeEach(() => {
     // SETUP - Fresh repository for each test
     catalogRepo = new FakeCatalogRepository();
-    tool = new DocumentConceptsExtractTool(catalogRepo);
+    tool = new DocumentConceptsExtractTool(catalogRepo, undefined, undefined, conceptIdCache);
   });
   
   describe('execute', () => {
@@ -28,7 +56,7 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document about testing',
-        conceptIds: [11111111, 22222222, 33333333, 44444444],
+        conceptIds: [CONCEPT_IDS.testing, CONCEPT_IDS.softwareDesign, CONCEPT_IDS.architecture, CONCEPT_IDS.patterns],
       });
       catalogRepo.addDocument(testDoc);
       
@@ -86,7 +114,7 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document about testing',
-        conceptIds: [11111111, 22222222, 33333333],
+        conceptIds: [CONCEPT_IDS.testing, CONCEPT_IDS.softwareDesign, CONCEPT_IDS.architecture],
       });
       catalogRepo.addDocument(testDoc);
       
@@ -109,7 +137,7 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document',
-        conceptIds: [11111111],
+        conceptIds: [CONCEPT_IDS.testing],
       });
       catalogRepo.addDocument(testDoc);
       
@@ -140,4 +168,3 @@ describe('DocumentConceptsExtractTool', () => {
     });
   });
 });
-

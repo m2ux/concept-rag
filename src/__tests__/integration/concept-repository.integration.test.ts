@@ -50,7 +50,7 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       // ASSERT: Concept should be found with correct data
       expect(isSome(conceptOpt)).toBe(true);
       // @ts-expect-error - Type narrowing limitation
-      expect((conceptOpt as { tag: "some"; value: Concept }).value.concept).toBe('clean architecture');
+      expect((conceptOpt as { tag: "some"; value: Concept }).value.name).toBe('clean architecture');
     });
     
     it('should handle case-insensitive lookup', async () => {
@@ -71,9 +71,9 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       expect(isSome(mixedOpt)).toBe(true);
       if (isSome(lowerOpt) && isSome(upperOpt) && isSome(mixedOpt)) {
         // @ts-expect-error - Type narrowing limitation
-        expect(upperOpt.value.concept).toBe(lowerOpt.value.concept);
+        expect(upperOpt.value.name).toBe(lowerOpt.value.name);
         // @ts-expect-error - Type narrowing limitation
-        expect(mixedOpt.value.concept).toBe(lowerOpt.value.concept);
+        expect(mixedOpt.value.name).toBe(lowerOpt.value.name);
       }
     });
     
@@ -132,9 +132,9 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       const c = conceptOpt.value;
       
       // String fields
-      expect(c.concept).toBeDefined();
-      expect(typeof c.concept).toBe('string');
-      expect(c.concept).toBe('dependency injection');
+      expect(c.name).toBeDefined();
+      expect(typeof c.name).toBe('string');
+      expect(c.name).toBe('dependency injection');
       
       // Vector field (critical)
       expect(c.embeddings).toBeDefined();

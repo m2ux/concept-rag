@@ -75,7 +75,7 @@ export class QueryExpander {
                 .toArray();
             
             for (const result of results) {
-                const concept = result.concept.toLowerCase();
+                const concept = result.name.toLowerCase();
                 const conceptType = result.concept_type;  // 'thematic' or 'terminology'
                 const weight = 1 - (result._distance || 0);
                 
