@@ -4,8 +4,6 @@ import { CatalogRepository } from "../../domain/interfaces/repositories/catalog-
 import { InputValidator } from "../../domain/services/validation/index.js";
 import { isErr, isSome } from "../../domain/functional/index.js";
 import { Chunk } from "../../domain/models/index.js";
-import { CatalogSourceCache } from "../../infrastructure/cache/catalog-source-cache.js";
-import { ConceptIdCache } from "../../infrastructure/cache/concept-id-cache.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
   text: string;
@@ -138,27 +136,17 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
       };
     }
     
-    // Format results for MCP response
-    // Use derived fields if available, fallback to cache resolution
-    const sourceCache = CatalogSourceCache.getInstance();
-    const conceptCache = ConceptIdCache.getInstance();
+    // Format results for MCP response - use direct fields
     // @ts-expect-error - Type narrowing limitation
     const formattedResults = result.value.map((r: Chunk) => {
-      // Use derived concept_names if available, fallback to cache resolution
-      let conceptNames: string[];
-      if (r.conceptNames && r.conceptNames.length > 0 && r.conceptNames[0] !== '') {
-        // Use pre-populated derived field (new schema)
-        conceptNames = r.conceptNames;
-      } else if (r.conceptIds) {
-        // Fallback: resolve via cache (backward compatibility)
-        conceptNames = conceptCache.getNames(r.conceptIds.map(id => String(id)));
-      } else {
-        conceptNames = [];
-      }
+      // Use derived concept_names field directly
+      const conceptNames = (r.conceptNames && r.conceptNames.length > 0 && r.conceptNames[0] !== '')
+        ? r.conceptNames
+        : [];
       
       return {
         text: r.text,
-        source: sourceCache.getSourceOrDefault(r.catalogId, params.source),
+        title: r.catalogTitle || '',
         concepts: conceptNames,
         concept_ids: r.conceptIds || [],
       };
@@ -172,6 +160,3 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
     };
   }
 }
-
-
-

@@ -24,7 +24,7 @@ import { CategorySearchTool } from '../tools/operations/category-search-tool.js'
 import { ListCategoriesTool } from '../tools/operations/list-categories-tool.js';
 import { ListConceptsInCategoryTool } from '../tools/operations/list-concepts-in-category-tool.js';
 import { BaseTool } from '../tools/base/tool.js';
-import { ConceptIdCache, CategoryIdCache, EmbeddingCache, SearchResultCache } from '../infrastructure/cache/index.js';
+import { EmbeddingCache, SearchResultCache } from '../infrastructure/cache/index.js';
 import { LanceDBCategoryRepository } from '../infrastructure/lancedb/repositories/lancedb-category-repository.js';
 import type { CategoryRepository } from '../domain/interfaces/category-repository.js';
 import { RetryService } from '../infrastructure/utils/retry-service.js';
@@ -70,8 +70,6 @@ import * as defaults from '../config.js';
  */
 export class ApplicationContainer {
   private dbConnection!: LanceDBConnection;
-  private conceptIdCache?: ConceptIdCache;
-  private categoryIdCache?: CategoryIdCache;
   private categoryRepo?: CategoryRepository;
   private retryService!: RetryService;
   private resilientExecutor!: ResilientExecutor;
@@ -140,10 +138,10 @@ export class ApplicationContainer {
       console.error('⚠️  Categories table not found (skipping category features)');
     }
     
-    // 3b. Create performance caches
+    // 3b. Create performance caches (for embeddings and search results only)
     this.embeddingCache = new EmbeddingCache(10000); // Cache up to 10k embeddings
     this.searchResultCache = new SearchResultCache<SearchResult[]>(1000, 5 * 60 * 1000); // 1k searches, 5min TTL
-    console.error(`✅ Performance caches initialized`);
+    console.error(`✅ Performance caches initialized (embeddings, search results)`);
     
     // 4. Create infrastructure services (with caches and resilience integration)
     const embeddingService = new SimpleEmbeddingService(this.embeddingCache);
@@ -151,25 +149,16 @@ export class ApplicationContainer {
     const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander, this.searchResultCache, this.resilientExecutor);
     
     // 5. Create repositories (with infrastructure services)
+    // Note: ID mapping caches removed - schema now has derived text fields (concept_names, catalog_title)
     const conceptRepo = new LanceDBConceptRepository(conceptsTable);
+    const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService);
+    const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     
-    // 5a. Initialize ConceptIdCache for fast ID↔name resolution
-    this.conceptIdCache = ConceptIdCache.getInstance();
-    await this.conceptIdCache.initialize(conceptRepo);
-    const cacheStats = this.conceptIdCache.getStats();
-    console.error(`✅ ConceptIdCache initialized: ${cacheStats.conceptCount} concepts, ~${Math.round(cacheStats.memorySizeEstimate / 1024)}KB`);
-    
-    // 5b. Initialize CategoryIdCache if categories table exists
+    // 5a. Create category repository if categories table exists
     if (categoriesTable) {
       this.categoryRepo = new LanceDBCategoryRepository(categoriesTable);
-      this.categoryIdCache = CategoryIdCache.getInstance();
-      await this.categoryIdCache.initialize(this.categoryRepo);
-      const catStats = this.categoryIdCache.getStats();
-      console.error(`✅ CategoryIdCache initialized: ${catStats.categoryCount} categories, ~${Math.round(catStats.memorySizeEstimate / 1024)}KB`);
+      console.error('✅ Category repository initialized');
     }
-    
-    const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService, this.conceptIdCache);
-    const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     
     // 6. Create domain services (with repositories) - using Result-based error handling
     const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);
@@ -196,10 +185,10 @@ export class ApplicationContainer {
     this.tools.set('source_concepts', new SourceConceptsTool(conceptSourcesService));
     
     // 7a. Register category tools if categories table exists
-    if (categoriesTable && this.categoryIdCache) {
-      this.tools.set('category_search', new CategorySearchTool(this.categoryIdCache, catalogRepo));
-      this.tools.set('list_categories', new ListCategoriesTool(this.categoryIdCache));
-      this.tools.set('list_concepts_in_category', new ListConceptsInCategoryTool(this.categoryIdCache, catalogRepo, conceptRepo));
+    if (categoriesTable && this.categoryRepo) {
+      this.tools.set('category_search', new CategorySearchTool(this.categoryRepo, catalogRepo));
+      this.tools.set('list_categories', new ListCategoriesTool(this.categoryRepo));
+      this.tools.set('list_concepts_in_category', new ListConceptsInCategoryTool(this.categoryRepo, catalogRepo, conceptRepo));
       console.error(`✅ Category tools registered (3 tools)`);
     }
     
@@ -304,12 +293,6 @@ export class ApplicationContainer {
   async close(): Promise<void> {
     await this.dbConnection.close();
     this.tools.clear();
-    if (this.conceptIdCache) {
-      this.conceptIdCache.clear();
-    }
-    if (this.categoryIdCache) {
-      this.categoryIdCache.clear();
-    }
     if (this.embeddingCache) {
       this.embeddingCache.clear();
     }
@@ -324,13 +307,6 @@ export class ApplicationContainer {
    */
   getCategoryRepository(): CategoryRepository | undefined {
     return this.categoryRepo;
-  }
-  
-  /**
-   * Get CategoryIdCache (if initialized)
-   */
-  getCategoryIdCache(): CategoryIdCache | undefined {
-    return this.categoryIdCache;
   }
   
   /**
@@ -363,4 +339,3 @@ export class ApplicationContainer {
     return this.retryService;
   }
 }
-

@@ -4,8 +4,6 @@ import { ChunkRepository } from "../../domain/interfaces/repositories/chunk-repo
 import { ConceptRepository } from "../../domain/interfaces/repositories/concept-repository.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
 import { RecordNotFoundError } from "../../domain/exceptions/index.js";
-import { ConceptIdCache } from "../../infrastructure/cache/concept-id-cache.js";
-import { CategoryIdCache } from "../../infrastructure/cache/category-id-cache.js";
 
 export interface DocumentConceptsExtractParams extends ToolParams {
   document_query: string;
@@ -15,7 +13,7 @@ export interface DocumentConceptsExtractParams extends ToolParams {
 
 /**
  * Extract all concepts from a specific document in the database.
- * Derives concepts from chunk data and resolves IDs via caches.
+ * Uses derived text fields (concept_names, category_names) for fast lookup.
  */
 export class DocumentConceptsExtractTool extends BaseTool<DocumentConceptsExtractParams> {
   private validator = new InputValidator();
@@ -23,9 +21,7 @@ export class DocumentConceptsExtractTool extends BaseTool<DocumentConceptsExtrac
   constructor(
     private catalogRepo: CatalogRepository,
     private _chunkRepo?: ChunkRepository,
-    private conceptRepo?: ConceptRepository,
-    private conceptIdCache?: ConceptIdCache,
-    private categoryIdCache?: CategoryIdCache
+    private conceptRepo?: ConceptRepository
   ) {
     super();
   }
@@ -94,38 +90,20 @@ OUTPUT FORMATS:
       // Take the best match
       const doc = results[0];
       
-      // Get concepts - use derived fields if available, fallback to cache resolution
+      // Get concepts - use derived fields directly (new schema)
       let primaryConcepts: string[] = [];
       let categories: string[] = [];
       let relatedConcepts: string[] = [];
       
-      // Use derived concept_names if available (new schema)
+      // Use derived concept_names field
       if (doc.conceptNames && doc.conceptNames.length > 0 && doc.conceptNames[0] !== '') {
         primaryConcepts = doc.conceptNames;
-      } else if (doc.conceptIds && doc.conceptIds.length > 0 && this.conceptIdCache) {
-        // Fallback: resolve from IDs via cache (backward compatibility)
-        primaryConcepts = this.conceptIdCache.getNames(doc.conceptIds.map(id => String(id)));
       }
       
-      // Use derived category_names if available (new schema)
+      // Use derived category_names field
       if (doc.categoryNames && doc.categoryNames.length > 0 && doc.categoryNames[0] !== '') {
         categories = doc.categoryNames;
       }
-      
-      // Note: concepts string field was removed from Chunk model.
-      // All concept resolution is now done via conceptIds and ConceptIdCache.
-      if (primaryConcepts.length === 0) {
-        // Legacy fallback: check for any raw metadata fields
-        const rawDoc = doc as any;
-        if (rawDoc.concepts && typeof rawDoc.concepts === 'object' && rawDoc.concepts !== null) {
-          // Object format
-          primaryConcepts = rawDoc.concepts.primary_concepts || [];
-          relatedConcepts = rawDoc.concepts.related_concepts || [];
-        }
-      }
-      
-      // Categories are now derived from catalog.category_ids, not chunk
-      // Use categoryIdCache if available (would need to lookup via catalogId)
       
       // Derive related concepts from concept repository if available
       if (relatedConcepts.length === 0 && this.conceptRepo && doc.conceptIds) {
@@ -260,4 +238,3 @@ OUTPUT FORMATS:
     return markdown;
   }
 }
-

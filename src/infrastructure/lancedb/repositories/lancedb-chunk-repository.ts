@@ -9,7 +9,6 @@ import { DatabaseError } from '../../../domain/exceptions/index.js';
 import { parseJsonField } from '../utils/field-parsers.js';
 import { validateChunkRow, detectVectorField } from '../utils/schema-validators.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
-import { ConceptIdCache } from '../../cache/concept-id-cache.js';
 import { isNone } from '../../../domain/functional/index.js';
 
 /**
@@ -19,14 +18,16 @@ import { isNone } from '../../../domain/functional/index.js';
  * Performance: O(log n) vector search vs O(n) full scan.
  * 
  * Search operations use HybridSearchService for multi-signal ranking.
+ * 
+ * Note: Uses derived text fields (concept_names, catalog_title) for display
+ * and filtering. No ID-to-name caches needed at runtime.
  */
 export class LanceDBChunkRepository implements ChunkRepository {
   constructor(
     private chunksTable: lancedb.Table,
     private conceptRepo: ConceptRepository,
     private embeddingService: EmbeddingService,
-    private hybridSearchService: HybridSearchService,
-    private conceptIdCache: ConceptIdCache
+    private hybridSearchService: HybridSearchService
   ) {}
   
   /**
@@ -34,14 +35,10 @@ export class LanceDBChunkRepository implements ChunkRepository {
    * 
    * Strategy:
    * 1. Load chunks in batches (to handle large databases)
-   * 2. Filter to chunks that contain the concept in their concepts field
+   * 2. Filter to chunks that contain the concept in their concept_names field
    * 3. Return up to limit results
    * 
-   * Note: Previous implementation used vector search, but this failed because
-   * concept embeddings (short phrases) are not semantically similar to chunk
-   * embeddings (full paragraphs). Direct field filtering is more reliable.
-   * 
-   * See: .ai/planning/2025-11-17-empty-chunk-investigation/INVESTIGATION_REPORT.md
+   * Note: Uses derived concept_names field for matching - no cache lookup needed.
    */
   async findByConceptName(concept: string, limit: number): Promise<Chunk[]> {
     const conceptLower = concept.toLowerCase().trim();
@@ -55,8 +52,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
         return [];
       }
       
-      // Load chunks and filter by concepts field
-      // Note: LanceDB loads efficiently, and we can optimize with batching if needed
+      // Load chunks and filter by concept_names field
       const batchSize = 100000;
       const allRows = await this.chunksTable
         .query()
@@ -76,7 +72,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
         
         const chunk = this.mapRowToChunk(row);
         
-        // Check if concept is in chunk's concept list
+        // Check if concept is in chunk's concept_names list
         if (this.chunkContainsConcept(chunk, conceptLower)) {
           matches.push(chunk);
           if (matches.length >= limit) break;
@@ -100,24 +96,23 @@ export class LanceDBChunkRepository implements ChunkRepository {
     }
   }
   
-  async findBySource(source: string, limit: number): Promise<Chunk[]> {
-    // LanceDB doesn't support SQL WHERE on non-indexed columns efficiently
-    // Best approach: vector search + filter, or use source as query
-    const sourceEmbedding = this.embeddingService.generateEmbedding(source);
+  async findByTitle(title: string, limit: number): Promise<Chunk[]> {
+    // Search chunks by catalog_title using vector similarity
+    const titleEmbedding = this.embeddingService.generateEmbedding(title);
     
     const results = await this.chunksTable
-      .vectorSearch(sourceEmbedding)
+      .vectorSearch(titleEmbedding)
       .limit(limit * 2)  // Get extra for filtering
       .toArray();
     
     return results
-      .filter((row: any) => row.source && row.source.toLowerCase().includes(source.toLowerCase()))
+      .filter((row: any) => row.catalog_title && row.catalog_title.toLowerCase().includes(title.toLowerCase()))
       .slice(0, limit)
       .map((row: any) => this.mapRowToChunk(row));
   }
   
   async findByCatalogId(catalogId: number, limit: number): Promise<Chunk[]> {
-    // Direct integer lookup - more efficient than string matching
+    // Direct integer lookup - most efficient
     try {
       const results = await this.chunksTable
         .query()
@@ -158,20 +153,23 @@ export class LanceDBChunkRepository implements ChunkRepository {
   
   // Helper methods
   
+  /**
+   * Check if chunk contains a concept using derived concept_names field.
+   * No cache lookup needed - uses text field directly.
+   */
   private chunkContainsConcept(chunk: Chunk, concept: string): boolean {
-    if (!chunk.conceptIds || chunk.conceptIds.length === 0) {
-      return false;
+    // Use derived concept_names field directly (new schema)
+    if (chunk.conceptNames && chunk.conceptNames.length > 0 && chunk.conceptNames[0] !== '') {
+      return chunk.conceptNames.some((c: string) => {
+        const cLower = c.toLowerCase();
+        return cLower === concept || 
+               cLower.includes(concept) || 
+               concept.includes(cLower);
+      });
     }
     
-    // Resolve concept names from IDs using cache
-    const conceptNames = this.conceptIdCache.getNames(chunk.conceptIds.map(id => String(id)));
-    
-    return conceptNames.some((c: string) => {
-      const cLower = c.toLowerCase();
-      return cLower === concept || 
-             cLower.includes(concept) || 
-             concept.includes(cLower);
-    });
+    // No concept_names available
+    return false;
   }
   
   /**
@@ -196,7 +194,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
       }
     }
     
-    // Parse page_number directly (loc field removed in schema v4)
+    // Parse page_number directly
     let pageNumber: number | undefined;
     if (row.page_number !== undefined && row.page_number !== null) {
       pageNumber = typeof row.page_number === 'number' ? row.page_number : parseInt(row.page_number);
@@ -226,6 +224,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
       id: typeof row.id === 'number' ? row.id : parseInt(row.id) || 0,
       text: row.text || '',
       catalogId: row.catalog_id || 0,
+      catalogTitle: row.catalog_title || '',  // DERIVED: document title for display
       hash: row.hash || '',
       conceptIds,
       conceptNames,  // DERIVED: for display and text search
@@ -235,4 +234,3 @@ export class LanceDBChunkRepository implements ChunkRepository {
     };
   }
 }
-

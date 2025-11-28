@@ -1076,15 +1076,16 @@ async function createLanceTableWithSimpleEmbeddings(
         const idSource = `${doc.metadata.source || ''}-${doc.metadata.hash || ''}-${i}`;
         const baseData: any = {
             id: isCatalog ? hashToId(doc.metadata.source || `doc-${i}`) : hashToId(idSource),
-            source: doc.metadata.source || '',
             hash: doc.metadata.hash || '',
             vector: createSimpleEmbedding(doc.pageContent)
         };
         
         // Catalog uses 'summary', chunks use 'text'
         if (isCatalog) {
+            baseData.source = doc.metadata.source || '';  // Catalog keeps source path
             baseData.summary = doc.pageContent;  // Renamed from 'text' to 'summary'
         } else {
+            // Chunks get catalog_title instead of source
             baseData.text = doc.pageContent;
             // Extract page_number from loc.pageNumber (LangChain format) or direct field
             baseData.page_number = doc.metadata.page_number ?? doc.metadata.loc?.pageNumber ?? 1;
@@ -1098,6 +1099,9 @@ async function createLanceTableWithSimpleEmbeddings(
             } else {
                 baseData.catalog_id = 0;  // Placeholder if no map provided
             }
+            // Add catalog_title (derived from filename) for display
+            const fileMeta = parseFilenameMetadata(doc.metadata.source || '');
+            baseData.catalog_title = fileMeta.title || '';
         }
         
         // Add bibliographic fields for catalog entries (parsed from filename)

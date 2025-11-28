@@ -1,6 +1,4 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
-import { CatalogSourceCache } from "../../infrastructure/cache/catalog-source-cache.js";
-import { ConceptIdCache } from "../../infrastructure/cache/concept-id-cache.js";
 import { HierarchicalConceptService, HierarchicalConceptResult, EnrichedChunk, SourceWithPages } from "../../domain/services/hierarchical-concept-service.js";
 
 export interface ConceptSearchParams extends ToolParams {
@@ -153,29 +151,19 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       page_previews: debug ? s.pagePreviews : undefined
     }));
     
-    // Format chunks with enhanced metadata
-    const conceptCache = ConceptIdCache.getInstance();
-    const sourceCache = CatalogSourceCache.getInstance();
+    // Format chunks with enhanced metadata - use direct fields
     const chunks = result.chunks.map((e: EnrichedChunk) => {
-      // Use derived concept_names if available, fallback to cache resolution
-      let conceptNames: string[];
-      if (e.chunk.conceptNames && e.chunk.conceptNames.length > 0 && e.chunk.conceptNames[0] !== '') {
-        // Use pre-populated derived field (new schema)
-        conceptNames = e.chunk.conceptNames.slice(0, 10);
-      } else if (e.chunk.conceptIds) {
-        // Fallback: resolve via cache (backward compatibility)
-        conceptNames = conceptCache.getNames(e.chunk.conceptIds.map(id => String(id))).slice(0, 10);
-      } else {
-        conceptNames = [];
-      }
+      // Use derived concept_names field directly (new schema has this populated)
+      const conceptNames = (e.chunk.conceptNames && e.chunk.conceptNames.length > 0 && e.chunk.conceptNames[0] !== '')
+        ? e.chunk.conceptNames.slice(0, 10)
+        : [];
       
       return {
         text: e.chunk.text,
-        source: sourceCache.getSourceOrDefault(e.chunk.catalogId),
+        title: e.chunk.catalogTitle || e.documentTitle || '',
         page: e.pageNumber,
         concept_density: e.conceptDensity.toFixed(3),
-        concepts: conceptNames,
-        document_title: e.documentTitle
+        concepts: conceptNames
       };
     });
     

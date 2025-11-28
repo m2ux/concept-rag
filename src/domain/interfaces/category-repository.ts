@@ -57,5 +57,26 @@ export interface CategoryRepository {
    * @param query Search query
    */
   searchByName(query: string): Promise<Category[]>;
+  
+  /**
+   * Resolve a category by name, ID, or alias.
+   * @param nameOrIdOrAlias - Category name, numeric ID string, or alias
+   * @returns Category if found, null otherwise
+   */
+  resolveCategory(nameOrIdOrAlias: string): Promise<Category | null>;
+  
+  /**
+   * Get the hierarchy path names for a category (from root to this category).
+   * @param categoryId - Category ID
+   * @returns Array of category names from root to this category
+   */
+  getHierarchyPath(categoryId: number): Promise<string[]>;
+  
+  /**
+   * Get child category IDs for a category.
+   * @param parentId - Parent category ID
+   * @returns Array of child category IDs
+   */
+  getChildIds(parentId: number): Promise<number[]>;
 }
 

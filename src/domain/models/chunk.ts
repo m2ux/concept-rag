@@ -4,10 +4,7 @@
  * A chunk is a segment of text extracted from a document, enriched with:
  * - Vector embeddings for semantic search
  * - Extracted concepts for conceptual navigation (via ID references)
- * - Metadata for filtering and organization
- * 
- * Source path should be looked up via catalogId from the catalog table.
- * The source field is deprecated and retained only for backward compatibility.
+ * - Derived fields for display (catalog_title, concept_names)
  * 
  * @example
  * ```typescript
@@ -15,13 +12,16 @@
  *   id: 3847293847,  // hash-based integer
  *   text: 'Machine learning is a subset of artificial intelligence...',
  *   catalogId: 12345678,
+ *   catalogTitle: 'Machine Learning Fundamentals',  // derived from catalog
  *   hash: 'abc123',
  *   conceptIds: [11111111, 22222222],
+ *   conceptNames: ['machine learning', 'artificial intelligence'],  // derived
  *   embeddings: [0.1, 0.2, ...]
  * };
  * 
- * // To get source path for display, use CatalogSourceCache:
- * const source = CatalogSourceCache.getInstance().getSource(chunk.catalogId);
+ * // Display uses derived fields directly - no cache lookup needed
+ * console.log(`Title: ${chunk.catalogTitle}`);
+ * console.log(`Concepts: ${chunk.conceptNames.join(', ')}`);
  * ```
  */
 export interface Chunk {
@@ -33,6 +33,13 @@ export interface Chunk {
   
   /** Parent document ID (hash-based integer, matches catalog.id) */
   catalogId: number;
+  
+  /**
+   * Document title from catalog - DERIVED field for display.
+   * Populated from catalog.title during seeding.
+   * Use this for display instead of looking up via catalogId.
+   */
+  catalogTitle?: string;
   
   /** Content hash for deduplication */
   hash: string;
@@ -60,4 +67,3 @@ export interface Chunk {
    */
   conceptNames?: string[];
 }
-

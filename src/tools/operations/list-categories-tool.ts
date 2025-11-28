@@ -3,8 +3,7 @@
  */
 
 import { BaseTool, ToolParams } from '../base/tool.js';
-import { CategoryIdCache } from '../../infrastructure/cache/category-id-cache.js';
-import { listCategories, ListCategoriesParams } from './list-categories.js';
+import type { CategoryRepository } from '../../domain/interfaces/category-repository.js';
 import { InputValidator } from '../../domain/services/validation/index.js';
 
 export interface ListCategoriesToolParams extends ToolParams {
@@ -16,7 +15,7 @@ export interface ListCategoriesToolParams extends ToolParams {
 export class ListCategoriesTool extends BaseTool<ListCategoriesToolParams> {
   private validator = new InputValidator();
   
-  constructor(private categoryCache: CategoryIdCache) {
+  constructor(private categoryRepo: CategoryRepository) {
     super();
   }
   
@@ -48,10 +47,79 @@ export class ListCategoriesTool extends BaseTool<ListCategoriesToolParams> {
       // Validate input
       this.validator.validateListCategories(params);
       
-      const result = await listCategories(
-        params as ListCategoriesParams,
-        this.categoryCache
-      );
+      // Get all categories
+      let categories = await this.categoryRepo.findAll();
+      
+      // Apply search filter if provided
+      if (params.search) {
+        const searchLower = params.search.toLowerCase();
+        categories = categories.filter(cat => 
+          cat.category.toLowerCase().includes(searchLower) ||
+          cat.description.toLowerCase().includes(searchLower) ||
+          cat.aliases.some(alias => alias.toLowerCase().includes(searchLower))
+        );
+      }
+      
+      // Sort categories
+      const sortBy = params.sortBy || 'popularity';
+      if (sortBy === 'name') {
+        categories.sort((a, b) => a.category.localeCompare(b.category));
+      } else {
+        // Sort by document count (popularity)
+        categories.sort((a, b) => b.documentCount - a.documentCount);
+      }
+      
+      // Limit results
+      const limit = params.limit || 50;
+      const limitedCategories = categories.slice(0, limit);
+      
+      // Format output (fetch additional data for each category)
+      const formattedCategories = await Promise.all(limitedCategories.map(async cat => {
+        const hierarchyPath = await this.categoryRepo.getHierarchyPath(cat.id);
+        const parentCat = cat.parentCategoryId 
+          ? await this.categoryRepo.findById(cat.parentCategoryId)
+          : null;
+        
+        // Get related category names
+        const relatedNames = [];
+        for (const relId of cat.relatedCategories || []) {
+          const relCat = await this.categoryRepo.findById(relId);
+          if (relCat) relatedNames.push(relCat.category);
+        }
+        
+        return {
+          id: cat.id,
+          name: cat.category,
+          description: cat.description,
+          aliases: cat.aliases,
+          parent: parentCat?.category || null,
+          hierarchy: hierarchyPath,
+          statistics: {
+            documents: cat.documentCount,
+            chunks: cat.chunkCount,
+            concepts: cat.conceptCount
+          },
+          relatedCategories: relatedNames
+        };
+      }));
+      
+      // Calculate summary statistics
+      const allCategories = await this.categoryRepo.findAll();
+      const totalCategories = allCategories.length;
+      const totalDocuments = allCategories.reduce((sum, cat) => sum + cat.documentCount, 0);
+      const rootCategories = allCategories.filter(cat => cat.parentCategoryId === null).length;
+      
+      const result = JSON.stringify({
+        summary: {
+          totalCategories,
+          categoriesReturned: formattedCategories.length,
+          rootCategories,
+          totalDocuments,
+          sortedBy: sortBy,
+          searchQuery: params.search || null
+        },
+        categories: formattedCategories
+      }, null, 2);
       
       return {
         content: [{ type: "text" as const, text: result }],
@@ -62,4 +130,3 @@ export class ListCategoriesTool extends BaseTool<ListCategoriesToolParams> {
     }
   }
 }
-

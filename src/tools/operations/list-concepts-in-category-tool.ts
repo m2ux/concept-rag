@@ -3,10 +3,10 @@
  */
 
 import { BaseTool, ToolParams } from '../base/tool.js';
-import { CategoryIdCache } from '../../infrastructure/cache/category-id-cache.js';
+import type { CategoryRepository } from '../../domain/interfaces/category-repository.js';
 import { CatalogRepository } from '../../domain/interfaces/repositories/catalog-repository.js';
 import { ConceptRepository } from '../../domain/interfaces/repositories/concept-repository.js';
-import { listConceptsInCategory, ListConceptsInCategoryParams } from './list-concepts-in-category.js';
+import { isSome } from '../../domain/functional/option.js';
 
 export interface ListConceptsInCategoryToolParams extends ToolParams {
   category: string;
@@ -16,7 +16,7 @@ export interface ListConceptsInCategoryToolParams extends ToolParams {
 
 export class ListConceptsInCategoryTool extends BaseTool<ListConceptsInCategoryToolParams> {
   constructor(
-    private categoryCache: CategoryIdCache,
+    private categoryRepo: CategoryRepository,
     private catalogRepo: CatalogRepository,
     private conceptRepo: ConceptRepository
   ) {
@@ -48,12 +48,80 @@ export class ListConceptsInCategoryTool extends BaseTool<ListConceptsInCategoryT
   
   async execute(params: ListConceptsInCategoryToolParams) {
     try {
-      const result = await listConceptsInCategory(
-        params as ListConceptsInCategoryParams,
-        this.categoryCache,
-        this.catalogRepo,
-        this.conceptRepo
-      );
+      // Resolve category
+      const category = await this.categoryRepo.resolveCategory(params.category);
+      
+      if (!category) {
+        return {
+          content: [{ 
+            type: "text" as const, 
+            text: JSON.stringify({
+              error: `Category not found: ${params.category}`,
+              suggestion: 'Use list_categories to see available categories'
+            }, null, 2) 
+          }],
+          isError: true
+        };
+      }
+      
+      // Get unique concepts in this category (query-time computation)
+      const conceptIds = await this.catalogRepo.getConceptsInCategory(category.id);
+      
+      // Fetch concept details
+      const limit = params.limit || 50;
+      const conceptsToFetch = conceptIds.slice(0, Math.min(conceptIds.length, 200)); // Fetch up to 200 for sorting
+      
+      // Fetch concepts by ID
+      const concepts = [];
+      for (const conceptId of conceptsToFetch) {
+        try {
+          const conceptOption = await this.conceptRepo.findById(conceptId);
+          if (isSome(conceptOption)) {
+            const concept = conceptOption.value;
+            concepts.push({
+              id: conceptId,
+              name: concept.name,
+              documentCount: concept.catalogIds?.length || 0,
+              weight: concept.weight || 0
+            });
+          }
+        } catch {
+          // Skip concepts that can't be found
+        }
+      }
+      
+      // Sort concepts
+      const sortBy = params.sortBy || 'documentCount';
+      if (sortBy === 'documentCount') {
+        concepts.sort((a, b) => b.documentCount - a.documentCount);
+      } else {
+        concepts.sort((a, b) => a.name.localeCompare(b.name));
+      }
+      
+      // Limit results
+      const limitedConcepts = concepts.slice(0, limit);
+      
+      // Get hierarchy path
+      const hierarchyPath = await this.categoryRepo.getHierarchyPath(category.id);
+      
+      // Format response
+      const result = JSON.stringify({
+        category: {
+          id: category.id,
+          name: category.category,
+          description: category.description,
+          hierarchy: hierarchyPath
+        },
+        statistics: {
+          totalDocuments: category.documentCount || 0,
+          totalChunks: category.chunkCount || 0,
+          totalUniqueConcepts: conceptIds.length,
+          conceptsReturned: limitedConcepts.length
+        },
+        concepts: limitedConcepts,
+        sortedBy: sortBy,
+        note: 'Concepts are category-agnostic and appear across multiple categories'
+      }, null, 2);
       
       return {
         content: [{ type: "text" as const, text: result }],
@@ -64,4 +132,3 @@ export class ListConceptsInCategoryTool extends BaseTool<ListConceptsInCategoryT
     }
   }
 }
-

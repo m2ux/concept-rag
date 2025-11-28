@@ -201,6 +201,66 @@ export class LanceDBCategoryRepository implements CategoryRepository {
   }
 
   /**
+   * Resolve a category by name, ID, or alias.
+   * Returns the category if found, null otherwise.
+   * 
+   * @param nameOrIdOrAlias - Category name, numeric ID, or alias
+   * @returns Category if found
+   */
+  async resolveCategory(nameOrIdOrAlias: string): Promise<Category | null> {
+    // Try as alias first
+    const byAlias = await this.findByAlias(nameOrIdOrAlias);
+    if (byAlias) return byAlias;
+    
+    // Try as name
+    const byName = await this.findByName(nameOrIdOrAlias);
+    if (byName) return byName;
+    
+    // Try as numeric ID
+    const numericId = parseInt(nameOrIdOrAlias, 10);
+    if (!isNaN(numericId)) {
+      const byId = await this.findById(numericId);
+      if (byId) return byId;
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get the hierarchy path names for a category (from root to this category).
+   * @param categoryId - Category ID
+   * @returns Array of category names from root to this category
+   */
+  async getHierarchyPath(categoryId: number): Promise<string[]> {
+    const path: string[] = [];
+    let currentId: number | null = categoryId;
+    
+    // Walk up the hierarchy
+    while (currentId !== null) {
+      const cat = await this.findById(currentId);
+      if (!cat) break;
+      
+      path.unshift(cat.category);
+      currentId = cat.parentCategoryId;
+      
+      // Prevent infinite loops
+      if (path.length > 10) break;
+    }
+    
+    return path;
+  }
+
+  /**
+   * Get child category IDs for a category.
+   * @param parentId - Parent category ID
+   * @returns Array of child category IDs
+   */
+  async getChildIds(parentId: number): Promise<number[]> {
+    const children = await this.findChildren(parentId);
+    return children.map(c => c.id);
+  }
+
+  /**
    * Map LanceDB row to Category domain model
    */
   private mapRowToCategory(row: any): Category {

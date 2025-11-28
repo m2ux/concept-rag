@@ -2,7 +2,6 @@ import { BaseTool, ToolParams } from "../base/tool.js";
 import { ConceptSearchService } from "../../domain/services/index.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
 import { isSome, isErr } from "../../domain/functional/index.js";
-import { ConceptIdCache } from "../../infrastructure/cache/concept-id-cache.js";
 
 export interface ConceptSearchParams extends ToolParams {
   concept: string;
@@ -139,24 +138,16 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
    * Pure presentation logic - converts domain model to MCP JSON format.
    */
   private formatMCPResponse(result: any) {
-    // Format chunk results - use derived concept_names if available, fallback to cache
-    const conceptCache = ConceptIdCache.getInstance();
+    // Format chunk results - use derived concept_names directly
     const formattedChunks = result.chunks.map((chunk: any) => {
-      // Use derived concept_names if available, fallback to cache resolution
-      let conceptNames: string[];
-      if (chunk.conceptNames && chunk.conceptNames.length > 0 && chunk.conceptNames[0] !== '') {
-        // Use pre-populated derived field (new schema)
-        conceptNames = chunk.conceptNames;
-      } else if (chunk.conceptIds) {
-        // Fallback: resolve via cache (backward compatibility)
-        conceptNames = conceptCache.getNames(chunk.conceptIds.map((id: number) => String(id)));
-      } else {
-        conceptNames = [];
-      }
+      // Use derived concept_names field (new schema has this populated)
+      const conceptNames = (chunk.conceptNames && chunk.conceptNames.length > 0 && chunk.conceptNames[0] !== '')
+        ? chunk.conceptNames
+        : [];
       
       return {
         text: chunk.text,
-        source: chunk.source,
+        title: chunk.catalogTitle || '',
         concept_density: (chunk.conceptDensity || 0).toFixed(3),
         concepts_in_chunk: conceptNames,
         categories: chunk.conceptCategories || [],
@@ -204,4 +195,3 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       };
   }
 }
-

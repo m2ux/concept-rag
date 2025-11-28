@@ -3,7 +3,7 @@
 **Last Updated:** 2025-11-28  
 **Database:** LanceDB (embedded vector database)  
 **Embedding Model:** all-MiniLM-L6-v2 (384 dimensions)  
-**Schema Version:** Normalized v6 (pages table removed, concept_ids added to catalog)
+**Schema Version:** Normalized v7 (derived text fields, no ID caches needed)
 
 ## Overview
 
@@ -26,7 +26,8 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
 - **Hash-based IDs**: FNV-1a hashing for stable integer IDs across database rebuilds
 - **Native arrays**: Many-to-many relationships stored as LanceDB native arrays (not JSON strings)
 - **ID-based references**: All relationships use integer IDs (no string paths in relationships)
-- **Compute on demand**: Statistics derived via queries, not pre-stored
+- **Derived text fields**: Human-readable names stored alongside IDs for direct text queries
+- **No runtime caches**: Derived fields eliminate need for ID-to-name cache lookups
 - **Vector storage**: 384-dimensional embeddings on all tables for semantic search
 - **LLM as source**: Concepts table is populated by LLM extraction, serving as canonical source
 
@@ -42,6 +43,7 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
 |--------|------|-------------|
 | `id` | `number` | Hash-based integer ID (FNV-1a of source path) |
 | `source` | `string` | Document file path (unique identifier) |
+| `title` | `string` | Document title (parsed from filename) |
 | `summary` | `string` | LLM-generated document summary |
 | `hash` | `string` | SHA-256 content hash for deduplication |
 | `vector` | `Float32Array` | 384-dimensional embedding of summary |
@@ -50,7 +52,6 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
 | `category_ids` | `number[]` | Native array of category integer IDs |
 | `category_names` | `string[]` | **DERIVED:** Category names for display and text search |
 | `origin_hash` | `string` | *Reserved:* Hash of original file before processing |
-| `title` | `string` | Document title (parsed from filename, see below) |
 | `author` | `string` | Document author(s) (parsed from filename) |
 | `year` | `number` | Publication year (parsed from filename) |
 | `publisher` | `string` | Publisher name (parsed from filename) |
@@ -74,6 +75,7 @@ Effective software testing -- Elfriede Dustin -- December 18, 2002 -- Addison-We
 - URL-encoded spaces (`%20`, `_20`) are converted to spaces  
 - Multiple consecutive spaces are collapsed to single space
 - Fields that cannot be parsed are left empty (string) or zero (number)
+- If no `--` delimiters exist, entire filename (without extension) becomes the title
 
 #### Example Record
 
@@ -81,6 +83,7 @@ Effective software testing -- Elfriede Dustin -- December 18, 2002 -- Addison-We
 {
   id: 3847293847,
   source: "/home/user/ebooks/Clean Architecture -- Robert Martin -- 2017 -- Pearson -- 9780134494166 -- abc123.pdf",
+  title: "Clean Architecture",
   summary: "Comprehensive guide to Clean Architecture principles...",
   hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   vector: Float32Array(384),
@@ -90,7 +93,6 @@ Effective software testing -- Elfriede Dustin -- December 18, 2002 -- Addison-We
   category_names: ["software architecture", "design patterns"],
   // Bibliographic fields (parsed from filename)
   origin_hash: "",
-  title: "Clean Architecture",
   author: "Robert Martin",
   year: 2017,
   publisher: "Pearson",
@@ -108,35 +110,33 @@ Effective software testing -- Elfriede Dustin -- December 18, 2002 -- Addison-We
 |--------|------|-------------|
 | `id` | `number` | Hash-based integer ID (FNV-1a of source-hash-index) |
 | `catalog_id` | `number` | **Required.** Hash-based catalog entry ID (foreign key to catalog) |
+| `catalog_title` | `string` | **DERIVED:** Document title from catalog (for display) |
 | `text` | `string` | Chunk text content (typically 100-500 words) |
 | `hash` | `string` | Content hash for deduplication |
 | `vector` | `Float32Array` | 384-dimensional embedding |
 | `concept_ids` | `number[]` | Native array of concept integer IDs (for concept-chunk linkage) |
 | `concept_names` | `string[]` | **DERIVED:** Concept names for display and text search |
-| `chunk_index` | `number` | Sequential index within document |
 | `page_number` | `number` | Page number in source document (from PDF loader) |
-| `concept_density` | `number` | Density of concepts in chunk (0-1) |
 
-> **Note:** The `source` field was removed in v4. Use `catalog_id` to lookup the source path from the catalog table. At runtime, use `CatalogSourceCache` for efficient `catalogId` → `source` resolution.
+> **Note:** The `source` field was removed in v7. Chunks store `catalog_title` for display and `catalog_id` for joins. Tools should use `catalog_title` directly.
 > 
 > **Note:** The `category_ids` field was removed - use `catalog_id` → `catalog.category_ids` for category lookup.
 >
-> **Note:** The `concepts` (string[]) field was removed. Use `concept_ids` with `ConceptIdCache.getNames()` to resolve concept names when needed for display.
+> **Note:** No ID-to-name caches are needed at runtime. Use `concept_names` and `catalog_title` directly.
 
 #### Example Record
 
 ```typescript
 {
   id: 2938475612,  // hash-based integer
-  catalog_id: 3847293847,  // REQUIRED - lookup source and categories from catalog
+  catalog_id: 3847293847,  // foreign key to catalog
+  catalog_title: "Clean Architecture",  // DERIVED: for display
   text: "Clean architecture emphasizes separation of concerns...",
   hash: "def456",
   vector: Float32Array(384),
   concept_ids: [3847293847, 1928374652, 2837465928],
   concept_names: ["clean architecture", "separation of concerns", "dependency rule"],  // DERIVED
-  chunk_index: 15,
-  page_number: 15,  // directly from PDF loader
-  concept_density: 0.75
+  page_number: 15
 }
 ```
 
@@ -150,9 +150,9 @@ Effective software testing -- Elfriede Dustin -- December 18, 2002 -- Addison-We
 |--------|------|-------------|
 | `id` | `number` | Hash-based integer ID (FNV-1a of concept name) |
 | `name` | `string` | Concept name (unique, lowercase, e.g., "dependency injection") |
-| `summary` | `string` | LLM-generated one-sentence summary of the concept |
+| `summary` | `string` | LLM-generated contextual summary of the concept |
 | `catalog_ids` | `number[]` | Native array of catalog entry integer IDs |
-| `catalog_titles` | `string[]` | **DERIVED:** Document titles (source paths) for display |
+| `catalog_titles` | `string[]` | **DERIVED:** Document titles for display |
 | `chunk_ids` | `number[]` | Native array of chunk IDs where concept appears |
 | `adjacent_ids` | `number[]` | Co-occurrence links (concepts appearing together in documents) |
 | `related_ids` | `number[]` | Lexical links (concepts sharing significant words) |
@@ -161,6 +161,13 @@ Effective software testing -- Elfriede Dustin -- December 18, 2002 -- Addison-We
 | `narrower_terms` | `string[]` | Native array of hyponyms (from WordNet) |
 | `weight` | `number` | Importance weight (0-1, based on frequency/centrality) |
 | `vector` | `Float32Array` | 384-dimensional concept embedding |
+
+#### Concept Summaries
+
+Concept summaries are generated during extraction (same LLM call) to ensure alignment with the source text:
+- 15-30 words describing the concept in the document's context
+- Domain-specific terminology from the source document
+- Enables fuzzy text search on concept meanings
 
 #### Concept Linking
 
@@ -178,9 +185,9 @@ Two types of concept relationships:
 {
   id: 3847293847,
   name: "clean architecture",
-  summary: "A software design approach that separates concerns into layers...",
+  summary: "A software design approach that separates business logic from infrastructure through dependency inversion and clear boundaries.",
   catalog_ids: [1029384756, 2938475612],
-  catalog_titles: ["/home/user/ebooks/Clean Architecture.pdf", "/home/user/ebooks/DDD.pdf"],  // DERIVED
+  catalog_titles: ["Clean Architecture", "Domain-Driven Design"],  // DERIVED
   chunk_ids: [123456, 234567, 345678],
   adjacent_ids: [2938475683, 1029384756],  // co-occurrence
   related_ids: [1847362999, 2938476000],   // lexical links
@@ -239,25 +246,30 @@ Two types of concept relationships:
 ### Design Philosophy: IDs for Truth, Names for Queries
 
 ```
-IDs (concept_ids, catalog_ids, etc.)    →  SOURCE OF TRUTH
-Names (concept_names, catalog_titles)   →  PRIMARY FOR QUERIES
+IDs (concept_ids, catalog_ids, etc.)    →  SOURCE OF TRUTH (foreign keys)
+Names (concept_names, catalog_title)    →  PRIMARY FOR QUERIES (human-readable)
 ```
 
-**Runtime queries use TEXT arrays** (fast, human-readable, no cache lookups):
+**Runtime queries use TEXT fields directly** (fast, human-readable, no cache lookups):
 ```typescript
-// GOOD: Query on denormalized names
+// Query on derived text fields - no cache needed
 chunks.query().where(`array_contains(concept_names, 'dependency injection')`)
 concepts.query().where(`array_contains(catalog_titles, 'Clean Architecture')`)
+
+// Display uses derived fields directly
+const title = chunk.catalog_title;  // Not: cache.getTitle(chunk.catalog_id)
+const concepts = chunk.concept_names;  // Not: cache.getNames(chunk.concept_ids)
 ```
 
 ### Derived Field Summary
 
 | Table | Field | Type | Regeneration Source |
 |-------|-------|------|---------------------|
+| `chunks` | `catalog_title` | `string` | `catalog_id` → `catalog.title` |
 | `chunks` | `concept_names` | `string[]` | `concept_ids` → `concepts.name` |
 | `catalog` | `concept_names` | `string[]` | `concept_ids` → `concepts.name` |
 | `catalog` | `category_names` | `string[]` | `category_ids` → `categories.category` |
-| `concepts` | `catalog_titles` | `string[]` | `catalog_ids` → `catalog.source` |
+| `concepts` | `catalog_titles` | `string[]` | `catalog_ids` → `catalog.title` |
 
 ### Regenerating Derived Fields
 
@@ -296,44 +308,46 @@ concept_search("strategy pattern")
        │
        ▼
 ┌─────────────────┐
-│ concepts table  │  Find concept by name → get ID and catalog_ids
+│ concepts table  │  Find concept by name → get catalog_ids, catalog_titles
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│ catalog table   │  Find documents where concept appears
+│ catalog table   │  Documents listed in catalog_titles (no extra lookup)
 └────────┬────────┘
          │
          ▼
 ┌─────────────────┐
-│ chunks table    │  Find chunks from those documents with concept_id
+│ chunks table    │  Find chunks with concept_name, display catalog_title
 └─────────────────┘
 ```
 
 ### Querying Relationships
 
 ```typescript
-// Find chunks by concept ID
+// Find chunks by concept name (uses derived field)
 const chunks = await chunksTable
   .query()
-  .where(`array_contains(concept_ids, ${conceptId})`)
+  .where(`array_contains(concept_names, 'dependency injection')`)
   .toArray();
+
+// Display chunk results (uses derived fields directly)
+for (const chunk of chunks) {
+  console.log(`Title: ${chunk.catalog_title}`);
+  console.log(`Concepts: ${chunk.concept_names.join(', ')}`);
+}
 
 // Find documents with a concept
 const docs = await catalogTable
   .query()
-  .where(`array_contains(concept_ids, ${conceptId})`)
+  .where(`array_contains(concept_names, 'clean architecture')`)
   .toArray();
 
 // Find documents in a category
 const docs = await catalogTable
   .query()
-  .where(`array_contains(category_ids, ${categoryId})`)
+  .where(`array_contains(category_names, 'software architecture')`)
   .toArray();
-
-// Find lexically related concepts
-const concept = await conceptsTable.query().where(`id = ${conceptId}`).toArray();
-const relatedIds = concept[0].related_ids;
 ```
 
 ---
@@ -408,76 +422,47 @@ await chunksTable.createIndex("vector", {
 | 2025-11-19 | Hash-based integer IDs | ADR-0027 |
 | 2025-11-19 | Added categories table (four-table architecture) | ADR-0028 |
 | 2025-11-26 | Schema normalization (redundant field removal) | ADR-0043 |
-| 2025-11-28 | Removed `source` and `loc` from chunks, `catalog_id` required | - |
-| 2025-11-28 | Removed `concepts` (string[]) from chunks, use `concept_ids` + cache | - |
-| 2025-11-28 | Removed pages table, added `concept_ids` to catalog (four-table) | - |
-| 2025-11-28 | Added derived name fields for queries: `concept_names`, `category_names`, `catalog_titles` | - |
+| 2025-11-28 | Added derived name fields: `concept_names`, `category_names`, `catalog_titles` | - |
+| 2025-11-28 | Replaced `source` with `catalog_title` in chunks (v7) | - |
+| 2025-11-28 | Removed ID mapping caches (ConceptIdCache, CatalogSourceCache, CategoryIdCache) | - |
+| 2025-11-28 | Added `summary` field to concepts (extracted with concept) | - |
 
 ---
 
-## Schema Changes (v6 - November 2025)
+## Schema Changes (v7 - November 2025)
 
-### Catalog Table Changes
+### Philosophy: Derived Text Fields Replace Caches
+
+The v7 schema eliminates the need for runtime ID-to-name caches by storing derived text fields directly:
+
+| Before (v6) | After (v7) |
+|-------------|------------|
+| `chunk.catalog_id` → `CatalogSourceCache.getSource()` | `chunk.catalog_title` (direct) |
+| `chunk.concept_ids` → `ConceptIdCache.getNames()` | `chunk.concept_names` (direct) |
+| `concept.catalog_ids` → cache lookup | `concept.catalog_titles` (direct) |
+
+### Chunks Table Changes (v7)
+
 | Change | Details |
 |--------|---------|
-| `concept_ids` | **Added** - Document-level concept IDs (foreign keys to concepts table) |
+| `source` | **Removed** - Use `catalog_title` for display |
+| `catalog_title` | **Added** - Document title from catalog (derived) |
+| `concept_names` | **Added** - Concept names for display (derived) |
 
-### Removed: Pages Table
-The pages table was removed. Concept-document associations are now stored via:
-- `catalog.concept_ids` - concepts in each document
-- `concepts.catalog_ids` - documents where each concept appears
-- `chunks.concept_ids` - concepts in each chunk
+### Removed: ID Mapping Caches
 
-### Concepts Table
-| Field | Description |
-|-------|-------------|
-| `catalog_ids` | Documents where this concept appears (bidirectional with catalog.concept_ids) |
+The following caches are no longer needed and have been removed:
 
-### Chunks Table Changes
-| Change | Details |
-|--------|---------|
-| `source` | **Removed** - Use `catalog_id` to lookup source from catalog |
-| `loc` | **Removed** - Page info now in `page_number` directly |
-| `category_ids` | **Removed** - Use `catalog_id` → `catalog.category_ids` |
-| `concepts` (string[]) | **Removed** - Use `concept_ids` with `ConceptIdCache` to resolve names |
-| `catalog_id` | **Now required** - Foreign key to catalog table |
-| `page_number` | **Added** - Populated directly from PDF loader |
-| `concept_density` | **Restored** - For ranking |
+- **ConceptIdCache** - Replaced by `concept_names` derived field
+- **CatalogSourceCache** - Replaced by `catalog_title` derived field  
+- **CategoryIdCache** - Replaced by `category_names` derived field
 
-### Source Resolution
+### Performance Caches (Still Used)
 
-With `source` removed from chunks, use the `CatalogSourceCache` for display:
+These performance caches remain for CPU/DB optimization:
 
-```typescript
-import { CatalogSourceCache } from './infrastructure/cache/catalog-source-cache.js';
-
-// Initialize once at startup
-const cache = CatalogSourceCache.getInstance();
-await cache.initialize(catalogRepo);
-
-// Resolve catalogId to source path
-const sourcePath = cache.getSource(chunk.catalogId);
-```
-
----
-
-## Migration
-
-To migrate from legacy schema to normalized schema:
-
-```bash
-# Backup first!
-cp -r ~/.concept_rag ~/.concept_rag.backup.$(date +%Y%m%d)
-
-# Run migration
-npx tsx scripts/migrate_to_normalized_schema.ts ~/.concept_rag
-
-# Run lexical linking
-npx tsx scripts/link_related_concepts.ts --db ~/.concept_rag
-
-# Validate
-npx tsx scripts/validate_normalized_schema.ts ~/.concept_rag
-```
+- **EmbeddingCache** - Avoids recomputing embeddings
+- **SearchResultCache** - Caches repeated search queries
 
 ---
 
@@ -489,7 +474,6 @@ npx tsx scripts/validate_normalized_schema.ts ~/.concept_rag
 - [ADR-0043: Schema Normalization](architecture/adr0043-schema-normalization.md)
 - Domain Models: `src/domain/models/`
 - Schema Validators: `src/infrastructure/lancedb/utils/schema-validators.ts`
-- Source Cache: `src/infrastructure/cache/catalog-source-cache.ts`
 - Migration Script: `scripts/migrate_to_normalized_schema.ts`
 - Lexical Linking: `scripts/link_related_concepts.ts`
 - Derived Fields Regeneration: `scripts/rebuild_derived_names.ts`
