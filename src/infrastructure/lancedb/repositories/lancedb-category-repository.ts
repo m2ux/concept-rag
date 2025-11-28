@@ -41,7 +41,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
       // Using explicit high limit to ensure all categories are loaded for cache initialization
       const rows = await this.table
         .query()
-        .limit(10000) // 10x safety margin over max expected categories
+        .limit(100000) // LanceDB defaults to 10 without explicit limit
         .toArray();
       return rows.map((row: any) => this.mapRowToCategory(row));
     } catch (error) {
@@ -132,6 +132,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
       const rows = await this.table
         .query()
         .where('parent_category_id IS NULL')
+        .limit(100000)  // LanceDB defaults to 10 without explicit limit
         .toArray();
       return rows.map((row: any) => this.mapRowToCategory(row));
     } catch (error) {
@@ -148,6 +149,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
       const rows = await this.table
         .query()
         .where(`parent_category_id = ${parentId}`)
+        .limit(100000)  // LanceDB defaults to 10 without explicit limit
         .toArray();
       return rows.map((row: any) => this.mapRowToCategory(row));
     } catch (error) {

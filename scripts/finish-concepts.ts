@@ -46,7 +46,7 @@ async function main() {
     
     // Read catalog to extract concept metadata
     const catalogTable = await db.openTable('catalog');
-    const catalogRecords = await catalogTable.query().toArray();
+    const catalogRecords = await catalogTable.query().limit(100000).toArray();
     
     console.log(`📚 Found ${catalogRecords.length} catalog entries`);
     
@@ -107,7 +107,7 @@ async function main() {
     if (tables.includes('chunks')) {
         console.log('🔗 Building concept → chunk_ids mapping...');
         const chunksTable = await db.openTable('chunks');
-        const allChunks = await chunksTable.query().toArray();
+        const allChunks = await chunksTable.query().limit(100000).toArray();
         
         let totalMappings = 0;
         for (const chunk of allChunks) {

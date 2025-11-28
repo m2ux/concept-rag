@@ -18,7 +18,7 @@ async function fixupTestDatabase() {
   // Step 1: Extract categories from catalog
   console.log('\n1️⃣  Extracting categories from catalog...');
   const catalogTable = await db.openTable('catalog');
-  const catalogRows = await catalogTable.query().toArray();
+  const catalogRows = await catalogTable.query().limit(100000).toArray();
   
   const categorySet = new Set<string>();
   const categoryStats = new Map<string, {
@@ -168,7 +168,7 @@ async function fixupTestDatabase() {
   console.log('\n6️⃣  Calculating category statistics...');
   
   const chunksTable = await db.openTable('chunks');
-  const chunkRows = await chunksTable.query().toArray();
+  const chunkRows = await chunksTable.query().limit(100000).toArray();
   
   const categorychunkCount = new Map<number, number>();
   for (const chunk of chunkRows) {

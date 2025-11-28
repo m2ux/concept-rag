@@ -104,7 +104,7 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       
       // If hash lookup fails, try loading all and filtering (fallback for legacy data)
       if (results.length === 0) {
-        const allDocs = await this.catalogTable.query().limit(10000).toArray();
+        const allDocs = await this.catalogTable.query().limit(100000).toArray();
         const matchingDoc = allDocs.find((doc: any) => doc.source === source);
         
         if (!matchingDoc) {
@@ -221,7 +221,7 @@ export class LanceDBCatalogRepository implements CatalogRepository {
     try {
       // Query all catalog entries and filter by category_ids
       // Note: LanceDB query() has default limit of 10, so we need explicit high limit
-      const allDocs = await this.catalogTable.query().limit(10000).toArray();
+      const allDocs = await this.catalogTable.query().limit(100000).toArray();
       
       const matches = allDocs.filter((doc: any) => {
         if (!doc.category_ids) return false;

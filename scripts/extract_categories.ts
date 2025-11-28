@@ -71,7 +71,7 @@ async function extractCategories(dbPath: string = `${process.env.HOME}/.concept_
   console.log('\n1️⃣  Extracting from catalog table...');
   try {
     const catalogTable = await db.openTable('catalog');
-    const catalogRows = await catalogTable.query().toArray();
+    const catalogRows = await catalogTable.query().limit(100000).toArray();
     console.log(`   Found ${catalogRows.length} catalog entries`);
     
     for (const row of catalogRows) {
@@ -107,7 +107,7 @@ async function extractCategories(dbPath: string = `${process.env.HOME}/.concept_
   console.log('\n2️⃣  Extracting from chunks table...');
   try {
     const chunksTable = await db.openTable('chunks');
-    const chunkRows = await chunksTable.query().toArray();
+    const chunkRows = await chunksTable.query().limit(100000).toArray();
     console.log(`   Found ${chunkRows.length} chunk entries`);
     
     for (const row of chunkRows) {
@@ -135,7 +135,7 @@ async function extractCategories(dbPath: string = `${process.env.HOME}/.concept_
   console.log('\n3️⃣  Extracting from concepts table...');
   try {
     const conceptsTable = await db.openTable('concepts');
-    const conceptRows = await conceptsTable.query().toArray();
+    const conceptRows = await conceptsTable.query().limit(100000).toArray();
     console.log(`   Found ${conceptRows.length} concept entries`);
     
     for (const row of conceptRows) {

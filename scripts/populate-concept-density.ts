@@ -29,7 +29,7 @@ async function main() {
     }
     
     const chunksTable = await db.openTable('chunks');
-    const allChunks = await chunksTable.query().toArray();
+    const allChunks = await chunksTable.query().limit(100000).toArray();
     
     console.log(`📊 Found ${allChunks.length} chunks`);
     
