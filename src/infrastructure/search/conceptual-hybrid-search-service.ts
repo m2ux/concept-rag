@@ -138,7 +138,8 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       const result: SearchResult = {
         id: row.id || '',
         text: row.text || '',
-        catalogId: row.catalog_id || 0,
+        source: row.source || '',  // Source document path
+        catalogId: row.catalog_id || row.id || 0,
         hash: row.hash || '',
         conceptIds: parseArrayField(row.concept_ids),
         embeddings: row.vector || [],

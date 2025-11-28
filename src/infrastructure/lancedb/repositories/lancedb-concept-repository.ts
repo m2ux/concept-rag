@@ -71,11 +71,32 @@ export class LanceDBConceptRepository implements ConceptRepository {
       const escaped = escapeSqlString(conceptLower);
       
       // Use SQL-like query for exact match with escaped input
-      const results = await this.conceptsTable
-        .query()
-        .where(`concept = '${escaped}'`)
-        .limit(1)
-        .toArray();
+      // Try 'name' field first (new schema), fall back to 'concept' field (legacy)
+      let results: any[] = [];
+      
+      // Try 'name' field (new schema)
+      try {
+        results = await this.conceptsTable
+          .query()
+          .where(`name = '${escaped}'`)
+          .limit(1)
+          .toArray();
+      } catch {
+        // 'name' field might not exist in legacy schema, ignore error
+      }
+      
+      // Fallback to legacy 'concept' field if no results
+      if (results.length === 0) {
+        try {
+          results = await this.conceptsTable
+            .query()
+            .where(`concept = '${escaped}'`)
+            .limit(1)
+            .toArray();
+        } catch {
+          // 'concept' field might not exist in new schema, ignore error
+        }
+      }
       
       if (results.length === 0) {
         return None();  // Concept not found (not an error, just return None)

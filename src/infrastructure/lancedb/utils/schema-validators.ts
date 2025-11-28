@@ -278,8 +278,9 @@ export function validateChunkRow(row: any): void {
  * @throws {InvalidEmbeddingsError} If embeddings are invalid
  */
 export function validateConceptRow(row: any): void {
-  // Validate required name field
-  if (row.name === undefined || row.name === null) {
+  // Validate required name field (support both 'name' and legacy 'concept' field)
+  const conceptName = row.name || row.concept;
+  if (conceptName === undefined || conceptName === null) {
     throw new SchemaValidationError('name', 'string', 'missing', { entityName: 'concept' });
   }
   

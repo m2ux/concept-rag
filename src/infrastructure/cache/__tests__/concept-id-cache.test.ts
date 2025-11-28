@@ -58,7 +58,7 @@ describe('ConceptIdCache', () => {
       // SETUP
       const concepts: Concept[] = [
         {
-          concept: 'dependency injection',
+          name: 'dependency injection',
           conceptType: 'terminology',
           category: 'software engineering',
           sources: [],
@@ -82,7 +82,7 @@ describe('ConceptIdCache', () => {
       // SETUP
       const concepts: Concept[] = [
         {
-          concept: 'architecture',
+          name: 'architecture',
           conceptType: 'thematic',
           category: 'engineering',
           sources: [],
@@ -128,8 +128,8 @@ describe('ConceptIdCache', () => {
     it('should handle multiple concepts', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any,
-        { concept: 'concept2', conceptType: 'terminology', category: 'cat2', sources: [], relatedConcepts: [], weight: 2 } as any
+        { name: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any,
+        { name: 'concept2', conceptType: 'terminology', category: 'cat2', sources: [], relatedConcepts: [], weight: 2 } as any
       ];
       (concepts[0] as any).id = '1';
       (concepts[1] as any).id = '2';
@@ -149,7 +149,7 @@ describe('ConceptIdCache', () => {
     it('should return ID for existing concept name', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'microservices', conceptType: 'thematic', category: 'architecture', sources: [], relatedConcepts: [], weight: 10 } as any
+        { name: 'microservices', conceptType: 'thematic', category: 'architecture', sources: [], relatedConcepts: [], weight: 10 } as any
       ];
       (concepts[0] as any).id = '456';
       mockRepo.setConcepts(concepts);
@@ -187,7 +187,7 @@ describe('ConceptIdCache', () => {
     it('should return name for existing concept ID', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'API gateway', conceptType: 'terminology', category: 'architecture', sources: [], relatedConcepts: [], weight: 8 } as any
+        { name: 'API gateway', conceptType: 'terminology', category: 'architecture', sources: [], relatedConcepts: [], weight: 8 } as any
       ];
       (concepts[0] as any).id = '789';
       mockRepo.setConcepts(concepts);
@@ -225,8 +225,8 @@ describe('ConceptIdCache', () => {
     it('should return IDs for multiple concept names', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any,
-        { concept: 'concept2', conceptType: 'terminology', category: 'cat2', sources: [], relatedConcepts: [], weight: 2 } as any
+        { name: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any,
+        { name: 'concept2', conceptType: 'terminology', category: 'cat2', sources: [], relatedConcepts: [], weight: 2 } as any
       ];
       (concepts[0] as any).id = '1';
       (concepts[1] as any).id = '2';
@@ -243,7 +243,7 @@ describe('ConceptIdCache', () => {
     it('should filter out undefined entries', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
+        { name: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
       ];
       (concepts[0] as any).id = '1';
       mockRepo.setConcepts(concepts);
@@ -273,8 +273,8 @@ describe('ConceptIdCache', () => {
     it('should return names for multiple concept IDs', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any,
-        { concept: 'concept2', conceptType: 'terminology', category: 'cat2', sources: [], relatedConcepts: [], weight: 2 } as any
+        { name: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any,
+        { name: 'concept2', conceptType: 'terminology', category: 'cat2', sources: [], relatedConcepts: [], weight: 2 } as any
       ];
       (concepts[0] as any).id = '1';
       (concepts[1] as any).id = '2';
@@ -291,7 +291,7 @@ describe('ConceptIdCache', () => {
     it('should filter out undefined entries', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
+        { name: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
       ];
       (concepts[0] as any).id = '1';
       mockRepo.setConcepts(concepts);
@@ -323,7 +323,7 @@ describe('ConceptIdCache', () => {
     it('should skip if concept name already exists', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'existing', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
+        { name: 'existing', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
       ];
       (concepts[0] as any).id = '1';
       mockRepo.setConcepts(concepts);
@@ -343,7 +343,7 @@ describe('ConceptIdCache', () => {
     it('should update concept name', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'old name', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
+        { name: 'old name', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
       ];
       (concepts[0] as any).id = '1';
       mockRepo.setConcepts(concepts);
@@ -363,7 +363,7 @@ describe('ConceptIdCache', () => {
     it('should remove concept from cache', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'to remove', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
+        { name: 'to remove', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
       ];
       (concepts[0] as any).id = '1';
       mockRepo.setConcepts(concepts);
@@ -383,7 +383,7 @@ describe('ConceptIdCache', () => {
     it('should return true for existing concept name', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'test concept', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
+        { name: 'test concept', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
       ];
       (concepts[0] as any).id = '1';
       mockRepo.setConcepts(concepts);
@@ -397,7 +397,7 @@ describe('ConceptIdCache', () => {
     it('should return true for existing concept ID', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'test', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
+        { name: 'test', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
       ];
       (concepts[0] as any).id = '1';
       mockRepo.setConcepts(concepts);
@@ -413,8 +413,8 @@ describe('ConceptIdCache', () => {
     it('should return all concept IDs', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any,
-        { concept: 'concept2', conceptType: 'terminology', category: 'cat2', sources: [], relatedConcepts: [], weight: 2 } as any
+        { name: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any,
+        { name: 'concept2', conceptType: 'terminology', category: 'cat2', sources: [], relatedConcepts: [], weight: 2 } as any
       ];
       (concepts[0] as any).id = '1';
       (concepts[1] as any).id = '2';
@@ -433,8 +433,8 @@ describe('ConceptIdCache', () => {
     it('should return all concept names', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any,
-        { concept: 'concept2', conceptType: 'terminology', category: 'cat2', sources: [], relatedConcepts: [], weight: 2 } as any
+        { name: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any,
+        { name: 'concept2', conceptType: 'terminology', category: 'cat2', sources: [], relatedConcepts: [], weight: 2 } as any
       ];
       (concepts[0] as any).id = '1';
       (concepts[1] as any).id = '2';
@@ -455,7 +455,7 @@ describe('ConceptIdCache', () => {
     it('should return cache statistics', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
+        { name: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
       ];
       (concepts[0] as any).id = '1';
       mockRepo.setConcepts(concepts);
@@ -491,7 +491,7 @@ describe('ConceptIdCache', () => {
     it('should clear all cache data', async () => {
       // SETUP
       const concepts: Concept[] = [
-        { concept: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
+        { name: 'concept1', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
       ];
       (concepts[0] as any).id = '1';
       mockRepo.setConcepts(concepts);
@@ -514,7 +514,7 @@ describe('ConceptIdCache', () => {
       cache.clear();
 
       const newConcepts: Concept[] = [
-        { concept: 'new concept', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
+        { name: 'new concept', conceptType: 'thematic', category: 'cat1', sources: [], relatedConcepts: [], weight: 1 } as any
       ];
       (newConcepts[0] as any).id = '100';
       mockRepo.setConcepts(newConcepts);
