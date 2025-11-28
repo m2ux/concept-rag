@@ -1,6 +1,6 @@
 # MCP Tool Test Report - Detailed Output
 
-**Generated:** 2025-11-28T17:03:20.484Z
+**Generated:** 2025-11-28T17:25:40.722Z
 **Database:** ./test_db
 
 ---
@@ -26,7 +26,7 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
 {
   "concept": "military strategy",
   "concept_id": 455274635,
-  "summary": "Systematic planning and conduct of armed conflict to achieve political objectives and national security. In this document it frames overarching principles—deception, timing, logistics, terrain exploitation and unified command—guiding decisions that minimize cost and maximize strategic advantage in war.",
+  "summary": "Systematic planning and conduct of armed conflict to achieve political objectives with minimal cost. In this document it encompasses deception, terrain exploitation, logistics, timing, force disposition, and unified command as methods to secure victory while preserving the state's resources and people.",
   "related_concepts": [],
   "synonyms": [
     ""
@@ -69,9 +69,9 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
 **Output:**
 ```json
 {
-  "concept": "software complexity",
-  "concept_id": 3445340504,
-  "summary": "The structural properties of code that make a system hard to understand and modify. In this book it denotes the accumulation of dependencies and obscurities that cause change amplification, cognitive load, and unknown unknowns, guiding design choices to minimize long-term cost.",
+  "concept": "software architecture",
+  "concept_id": 3503213995,
+  "summary": "High-level organization of a software system describing components, their relationships, and interaction protocols. The text shows how patterns help architects structure subsystems, reduce coupling, and evolve frameworks by capturing recurrent collaboration strategies.",
   "related_concepts": [],
   "synonyms": [
     ""
@@ -84,49 +84,17 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
   ],
   "sources": [
     {
-      "title": "Clean Architecture A Craftsman's Guide to Software - Robert C Martin - Robert C Martin Series, 1st Edition, September 10, 2017 - Pearson - 9780134494166 - 29f880be2248b1d30f3d956a037bb366 - Anna’s Archive",
-      "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
-      "pages": [
-        12,
-        13,
-        14
-      ]
+      "title": "Design Patterns Elements of Reusable Object-Oriented - Gamma, Erich;Helm, Richard;Johnson, Ralph E ;Vlissides, John - Uttar Pradesh, India, 2016 - 9780201633610 - 2121300da35565356b45a1b90df80e9d - Anna’s Archive",
+      "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
+      "pages": []
     }
   ],
-  "chunks": [
-    {
-      "text": "complexity.  This  book is  an  opinion piece, so  some readers will disagree\nwith some of  my suggestions. If  you do disagree, try to  understand why.\nI’m interested in  hearing about things that work for you, things that don’t\nwork, and any other ideas you may have about software design. I hope that\nthe ensuing conversations will improve our collective understanding of\nsoftware design.  I  will incorporate what I  learn in  future editions of  this\nbook.",
-      "title": "Clean Architecture A Craftsman's Guide to Software",
-      "page": 12,
-      "concept_density": "0.000",
-      "concepts": [
-        "software complexity"
-      ]
-    },
-    {
-      "text": "If for some reason the software-design-book Google Group should disappear\nin the future, search on the Web for my home page; it will contain updated\ninstructions for how to  communicate about the book. Please don’t  send\nbook-related email to my personal email address.\nI recommend that you take the suggestions in this book with a grain of\nsalt. The overall goal is to reduce complexity; this is more important than\nany particular principle or idea you read here. If you try an idea from this",
-      "title": "Clean Architecture A Craftsman's Guide to Software",
-      "page": 13,
-      "concept_density": "0.000",
-      "concepts": [
-        "software complexity"
-      ]
-    },
-    {
-      "text": "Chapter 1\nIntroduction\n(It’s All About Complexity)\nWriting computer software is one of the purest creative activities in the\nhistory of the human race. Programmers aren’t  bound by  practical\nlimitations such  as the laws of physics; we can create exciting virtual\nworlds with behaviors that could never exist in the real world.\nProgramming doesn’t require great physical skill or coordination, like ballet\nor basketball. All programming requires is a creative mind and the ability to",
-      "title": "Clean Architecture A Craftsman's Guide to Software",
-      "page": 14,
-      "concept_density": "0.000",
-      "concepts": [
-        "software complexity"
-      ]
-    }
-  ],
+  "chunks": [],
   "stats": {
     "total_documents": 1,
     "total_chunks": 100,
     "sources_returned": 1,
-    "chunks_returned": 3
+    "chunks_returned": 0
   }
 }
 ```
@@ -148,7 +116,7 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
 {
   "concept": "feedback loop",
   "concept_id": 2255290044,
-  "summary": "A closed chain of cause-and-effect whereby changes in a stock influence flows that in turn change that same stock. The text distinguishes feedback as the fundamental mechanism by which systems self-regulate, amplify, or produce unexpected outcomes.",
+  "summary": "A feedback loop is a causal chain where a stock influences flows that in turn change that same stock, closing the loop. The book emphasizes feedback loops as the primary mechanism by which systems generate characteristic behaviors like regulation, growth, oscillation, and collapse.",
   "related_concepts": [],
   "synonyms": [
     ""
@@ -173,11 +141,9 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
       "text": "to the competitive exclusion principle, if a reinforcing feedback loop rewards the winner of a competition with the means to win further competitions, the result will be the elimination of all but a few competitors. — For he that hath, to him shall be given; and he that hath not, from him shall be taken even that which he hath (Mark 4:25) or — The rich get richer and the poor get poorer. A diverse system with multiple pathways and redundancies is more stable and less vulnerable to external",
       "title": "Thinking in Systems",
       "page": 1,
-      "concept_density": "0.000",
+      "concept_density": "0.225",
       "concepts": [
-        "system",
         "feedback loop",
-        "reinforcing feedback loop",
         "reinforcing feedback"
       ]
     },
@@ -185,11 +151,10 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
       "text": "you’ll find that you can understand this graphical language easily. I start with the basics: the definition of a system and a dissection of its parts (in a reductionist, unholistic way). Then I put the parts back together to show how they interconnect to make the basic operating unit of a system: the feedback loop. Next I will introduce you to a systems zoo—a collection of some common and interesting types of systems. You’ll see how a few of these creatures behave and why and where they can be",
       "title": "Thinking in Systems",
       "page": 1,
-      "concept_density": "0.000",
+      "concept_density": "0.225",
       "concepts": [
-        "system",
-        "feedback loop",
-        "interconnectedness"
+        "system definition",
+        "feedback loop"
       ]
     }
   ],
@@ -219,7 +184,7 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
 {
   "concept": "decorator pattern",
   "concept_id": 3086272672,
-  "summary": "A structural pattern that attaches additional responsibilities to objects dynamically by wrapping them with decorator objects conforming to the same interface. The book demonstrates decorators for UI embellishments like borders and scrollbars, avoiding subclass proliferation and enabling run-time composition.",
+  "summary": "A wrapper object that presents the same interface as a wrapped object to add behavior, often producing many small shallow classes. The author acknowledges decorators’ usefulness but warns of overuse, recommending composition or combining buffering-like defaults into core classes when the feature is universally needed.",
   "related_concepts": [],
   "synonyms": [
     ""
@@ -231,6 +196,11 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
     ""
   ],
   "sources": [
+    {
+      "title": "Clean Architecture A Craftsman's Guide to Software - Robert C Martin - Robert C Martin Series, 1st Edition, September 10, 2017 - Pearson - 9780134494166 - 29f880be2248b1d30f3d956a037bb366 - Anna’s Archive",
+      "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
+      "pages": []
+    },
     {
       "title": "Design Patterns Elements of Reusable Object-Oriented - Gamma, Erich;Helm, Richard;Johnson, Ralph E ;Vlissides, John - Uttar Pradesh, India, 2016 - 9780201633610 - 2121300da35565356b45a1b90df80e9d - Anna’s Archive",
       "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
@@ -246,56 +216,59 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
       "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n3 \n4 Structural Patterns..............................................155 \nAdapter...........................................................157 \nBridge............................................................171 \nComposite.........................................................183 \nDecorator.........................................................196 \nFaçade............................................................208",
       "title": "Design Patterns Elements of Reusable Object-Oriented",
       "page": 3,
-      "concept_density": "0.000",
+      "concept_density": "5.000",
       "concepts": [
+        "design pattern",
+        "structural patterns",
         "adapter pattern",
         "bridge pattern",
         "composite pattern",
         "decorator pattern",
-        "design pattern",
-        "object oriented design"
+        "design patterns",
+        "object-oriented design"
       ]
     },
     {
       "text": "problems. Somepeople read the catalog through first and then use aproblem-directed \napproach to apply the patterns to their projects. \nIf you aren't an experienced object-oriented designer, then start withthe simplest \nand most common patterns: \n• Abstract Factory (page 99) \n• Adapter (157) \n• Composite (183) \n• Decorator (196) \n• Factory Method (121) \n• Observer (326) \n• Strategy (349) \n• Template Method (360) \nIt's hard to find an object-oriented system that doesn't use at leasta couple",
       "title": "Design Patterns Elements of Reusable Object-Oriented",
       "page": 10,
-      "concept_density": "0.000",
+      "concept_density": "2.133",
       "concepts": [
-        "abstract factory pattern",
-        "factory method pattern",
+        "design pattern",
+        "pattern template",
+        "related patterns",
+        "abstract factory",
+        "factory method",
         "adapter pattern",
         "composite pattern",
         "decorator pattern",
         "observer pattern",
-        "strategy pattern",
-        "template method pattern",
-        "border decorator",
-        "scroller decorator"
+        "strategy pattern"
       ]
     },
     {
       "text": "to replace the algorithm either statically or dynamically, when you have a lot \nof variants of the algorithm, or when the algorithm has complex data structures \nthat you want to encapsulate. \nMVC uses other design patterns, such as Factory Method (121) to specify the default \ncontroller class for a view and Decorator (196) to add scrolling to a view. But \nthe main relationships in MVC are given by the Observer, Composite, and Strategy \ndesign patterns. \nDescribing Design Patterns",
       "title": "Design Patterns Elements of Reusable Object-Oriented",
       "page": 16,
-      "concept_density": "0.000",
+      "concept_density": "1.667",
       "concepts": [
-        "factory method pattern",
+        "design pattern",
+        "related patterns",
+        "abstract factory",
+        "factory method",
         "composite pattern",
         "decorator pattern",
         "observer pattern",
         "strategy pattern",
-        "border decorator",
-        "scroller decorator",
-        "design pattern",
-        "reuse strategy"
+        "mvc",
+        "border decorator"
       ]
     }
   ],
   "stats": {
-    "total_documents": 1,
-    "total_chunks": 100,
-    "sources_returned": 1,
+    "total_documents": 2,
+    "total_chunks": 200,
+    "sources_returned": 2,
     "chunks_returned": 3
   }
 }
@@ -325,26 +298,9 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
     "text_preview": "...",
     "scores": {
-      "hybrid": "0.132",
-      "vector": "-0.906",
+      "hybrid": "0.130",
+      "vector": "-0.910",
       "bm25": "0.511",
-      "title": "1.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "war",
-      "state of war",
-      "hostility"
-    ]
-  },
-  {
-    "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.020",
-      "vector": "-0.901",
-      "bm25": "0.000",
       "title": "1.000",
       "wordnet": "0.000"
     },
@@ -359,8 +315,25 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
     "text_preview": "...",
     "scores": {
-      "hybrid": "-0.264",
-      "vector": "-0.879",
+      "hybrid": "-0.265",
+      "vector": "-0.883",
+      "bm25": "0.000",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "war",
+      "state of war",
+      "hostility"
+    ]
+  },
+  {
+    "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
+    "text_preview": "...",
+    "scores": {
+      "hybrid": "-0.271",
+      "vector": "-0.904",
       "bm25": "0.000",
       "title": "0.000",
       "wordnet": "0.000"
@@ -376,8 +349,8 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
     "text_preview": "...",
     "scores": {
-      "hybrid": "-0.269",
-      "vector": "-0.896",
+      "hybrid": "-0.273",
+      "vector": "-0.911",
       "bm25": "0.000",
       "title": "0.000",
       "wordnet": "0.000"
@@ -410,8 +383,8 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
     "text_preview": "...",
     "scores": {
-      "hybrid": "0.189",
-      "vector": "-0.572",
+      "hybrid": "0.214",
+      "vector": "-0.488",
       "bm25": "0.369",
       "title": "1.000",
       "wordnet": "0.000"
@@ -427,8 +400,8 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
     "text_preview": "...",
     "scores": {
-      "hybrid": "-0.160",
-      "vector": "-0.534",
+      "hybrid": "-0.158",
+      "vector": "-0.526",
       "bm25": "0.000",
       "title": "0.000",
       "wordnet": "0.000"
@@ -444,8 +417,8 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
     "text_preview": "...",
     "scores": {
-      "hybrid": "-0.171",
-      "vector": "-0.570",
+      "hybrid": "-0.169",
+      "vector": "-0.562",
       "bm25": "0.000",
       "title": "0.000",
       "wordnet": "0.000"
@@ -461,8 +434,8 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
     "text_preview": "...",
     "scores": {
-      "hybrid": "-0.176",
-      "vector": "-0.588",
+      "hybrid": "-0.177",
+      "vector": "-0.592",
       "bm25": "0.000",
       "title": "0.000",
       "wordnet": "0.000"
@@ -495,10 +468,10 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
     "text_preview": "...",
     "scores": {
-      "hybrid": "0.213",
-      "vector": "-0.598",
+      "hybrid": "0.114",
+      "vector": "-0.512",
       "bm25": "0.475",
-      "title": "1.000",
+      "title": "0.500",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -511,24 +484,8 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
     "text_preview": "...",
     "scores": {
-      "hybrid": "-0.222",
-      "vector": "-0.739",
-      "bm25": "0.000",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "system",
-      "plan of action"
-    ]
-  },
-  {
-    "source": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.244",
-      "vector": "-0.812",
+      "hybrid": "-0.228",
+      "vector": "-0.759",
       "bm25": "0.000",
       "title": "0.000",
       "wordnet": "0.000"
@@ -543,8 +500,24 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
     "text_preview": "...",
     "scores": {
-      "hybrid": "-0.245",
-      "vector": "-0.816",
+      "hybrid": "-0.233",
+      "vector": "-0.776",
+      "bm25": "0.000",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "system",
+      "plan of action"
+    ]
+  },
+  {
+    "source": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
+    "text_preview": "...",
+    "scores": {
+      "hybrid": "-0.242",
+      "vector": "-0.806",
       "bm25": "0.000",
       "title": "0.000",
       "wordnet": "0.000"
@@ -576,26 +549,10 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
     "text_preview": "...",
     "scores": {
-      "hybrid": "0.199",
-      "vector": "-0.629",
+      "hybrid": "0.106",
+      "vector": "-0.520",
       "bm25": "0.458",
-      "title": "1.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "pattern",
-      "match"
-    ]
-  },
-  {
-    "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.206",
-      "vector": "-0.688",
-      "bm25": "0.000",
-      "title": "0.000",
+      "title": "0.500",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -608,8 +565,24 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
     "text_preview": "...",
     "scores": {
-      "hybrid": "-0.212",
-      "vector": "-0.706",
+      "hybrid": "-0.208",
+      "vector": "-0.692",
+      "bm25": "0.000",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "pattern",
+      "match"
+    ]
+  },
+  {
+    "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
+    "text_preview": "...",
+    "scores": {
+      "hybrid": "-0.208",
+      "vector": "-0.693",
       "bm25": "0.000",
       "title": "0.000",
       "wordnet": "0.000"
@@ -624,8 +597,8 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
     "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
     "text_preview": "...",
     "scores": {
-      "hybrid": "-0.216",
-      "vector": "-0.720",
+      "hybrid": "-0.218",
+      "vector": "-0.728",
       "bm25": "0.000",
       "title": "0.000",
       "wordnet": "0.000"
@@ -661,60 +634,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
 ```json
 [
   {
-    "text": "o maintains a reference to a Strategy object. \no may define an interface that lets Strategy access its data. \nCollaborations \n• Strategy and Context interact to implement the chosen algorithm. Acontext \nmay pass all data required by the algorithm to the strategywhen the algorithm \nis called. Alternatively, the context can passitself as an argument to \nStrategy operations. That lets the strategycall back on the context as \nrequired.",
+    "text": "}; \n \nContext<MyStrategy> aContext; \nWith templates, there's no need to define an abstract class that defines \nthe interface to the Strategy. Using Strategy as atemplate parameter also \nlets you bind a Strategy to itsContext statically, which can increase \nefficiency. \n3. Making Strategy objects optional.The Context class may be simplified if \nit's meaningful not tohave a Strategy object. Context checks to see if it \nhas a Strategyobject before accessing it. If there is one, then Context",
     "source": "",
     "scores": {
-      "hybrid": "0.118",
-      "vector": "-0.154",
-      "bm25": "0.450",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "military",
-      "strategy",
-      "victory",
-      "armed forces",
-      "armed services",
-      "military machine",
-      "war machine",
-      "force",
-      "military science",
-      "triumph"
-    ]
-  },
-  {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n56 \nstrategies;they encapsulate different formatting algorithms. A composition is \nthecontext for a compositor strategy. \nThe key to applying the Strategy pattern is designing interfaces forthe strategy \nand its context that are general enough to support arange of algorithms. You \nshouldn't have to change the strategy orcontext interface to support a new",
-    "source": "",
-    "scores": {
-      "hybrid": "0.110",
-      "vector": "-0.163",
-      "bm25": "0.438",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "military",
-      "strategy",
-      "victory",
-      "armed forces",
-      "armed services",
-      "military machine",
-      "war machine",
-      "force",
-      "military science",
-      "triumph"
-    ]
-  },
-  {
-    "text": "at run-time by adding asingle SetCompositor operation to Composition's basic \nglyphinterface. \nStrategy Pattern \nEncapsulating an algorithm in an object is the intent of the Strategy (349) pattern. \nThe key participants in thepattern are Strategy objects (which encapsulate \ndifferent algorithms)and the context in which they operate. Compositors are",
-    "source": "",
-    "scores": {
-      "hybrid": "0.105",
+      "hybrid": "0.117",
       "vector": "-0.161",
-      "bm25": "0.424",
+      "bm25": "0.454",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -736,9 +661,33 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "drawback in that a client must understandhow Strategies differ before it \ncan select the appropriate one.Clients might be exposed to implementation \nissues. Therefore youshould use the Strategy pattern only when the variation \nin behavior isrelevant to clients. \n6. Communication overhead between Strategy and Context.The Strategy interface \nis shared by all ConcreteStrategy classeswhether the algorithms they \nimplement are trivial or complex. Henceit's likely that some",
     "source": "",
     "scores": {
-      "hybrid": "0.099",
-      "vector": "-0.166",
+      "hybrid": "0.111",
+      "vector": "-0.136",
       "bm25": "0.413",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "military",
+      "strategy",
+      "victory",
+      "armed forces",
+      "armed services",
+      "military machine",
+      "war machine",
+      "force",
+      "military science",
+      "triumph"
+    ]
+  },
+  {
+    "text": "at run-time by adding asingle SetCompositor operation to Composition's basic \nglyphinterface. \nStrategy Pattern \nEncapsulating an algorithm in an object is the intent of the Strategy (349) pattern. \nThe key participants in thepattern are Strategy objects (which encapsulate \ndifferent algorithms)and the context in which they operate. Compositors are",
+    "source": "",
+    "scores": {
+      "hybrid": "0.091",
+      "vector": "-0.197",
+      "bm25": "0.424",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -760,8 +709,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "strategies as statelessobjects that contexts can share. Any residual state \nis maintained by thecontext, which passes it in each request to the Strategy \nobject. Sharedstrategies should not maintain state across invocations. The \nFlyweight (218) pattern describes this approach in moredetail. \nImplementation \nConsider the following implementation issues: \n1. Defining the Strategy and Context interfaces.The Strategy and Context",
     "source": "",
     "scores": {
-      "hybrid": "0.086",
-      "vector": "-0.201",
+      "hybrid": "0.087",
+      "vector": "-0.199",
       "bm25": "0.415",
       "title": "0.000",
       "wordnet": "0.000"
@@ -781,12 +730,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "}; \n \nContext<MyStrategy> aContext; \nWith templates, there's no need to define an abstract class that defines \nthe interface to the Strategy. Using Strategy as atemplate parameter also \nlets you bind a Strategy to itsContext statically, which can increase \nefficiency. \n3. Making Strategy objects optional.The Context class may be simplified if \nit's meaningful not tohave a Strategy object. Context checks to see if it \nhas a Strategyobject before accessing it. If there is one, then Context",
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n56 \nstrategies;they encapsulate different formatting algorithms. A composition is \nthecontext for a compositor strategy. \nThe key to applying the Strategy pattern is designing interfaces forthe strategy \nand its context that are general enough to support arange of algorithms. You \nshouldn't have to change the strategy orcontext interface to support a new",
     "source": "",
     "scores": {
-      "hybrid": "0.069",
-      "vector": "-0.281",
-      "bm25": "0.454",
+      "hybrid": "0.066",
+      "vector": "-0.273",
+      "bm25": "0.438",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -805,36 +754,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "void Composition::Repair () { \n switch (_breakingStrategy) { \n case SimpleStrategy: \n  ComposeWithSimpleCompositor(); \n  break; \n case TeXStrategy: \n  ComposeWithTeXCompositor(); \n  break; \n  // ... \n } \n // merge results with existing composition, if necessary     \n} \nThe Strategy pattern eliminates this case statement by delegating \nthelinebreaking task to a Strategy object: \nvoid Composition::Repair () { \n  _compositor->Compose(); \n  // merge results with existing composition, if necessary",
+    "text": "can be selectedat compile-time, and (2) it does not have to be changed at \nrun-time.In this case, the class to be configured (e.g., Context) isdefined \nas a template class that has a Strategy class as aparameter: \ntemplate <class AStrategy> \nclass Context { \n void Operation() { theStrategy.DoAlgorithm(); } \n  // ...  \nprivate: \n AStrategy theStrategy; \n}; \nThe class is then configured with a Strategy class when it's \ninstantiated: \nclass MyStrategy { \npublic: \n void DoAlgorithm(); \n};",
     "source": "",
     "scores": {
-      "hybrid": "0.047",
-      "vector": "-0.299",
-      "bm25": "0.416",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "military",
-      "strategy",
-      "victory",
-      "armed forces",
-      "armed services",
-      "military machine",
-      "war machine",
-      "force",
-      "military science",
-      "triumph"
-    ]
-  },
-  {
-    "text": "chapter.  But he proceeds to give a biography of his descendant,  Sun Pin,\nborn about a hundred years after his famous ancestor's death, and also the\noutstanding military genius of his time.  The historian speaks of him too as\nSun Tzu, and in his preface we read:  \"Sun Tzu had his feet cut off and yet\ncontinued to discuss the art of war.\" It seems likely, then, that  \"Pin\" was a\nnickname  bestowed  on  him  after  his  mutilation,  unless  the  story  was",
-    "source": "",
-    "scores": {
-      "hybrid": "0.039",
-      "vector": "-0.161",
-      "bm25": "0.258",
+      "hybrid": "0.048",
+      "vector": "-0.292",
+      "bm25": "0.411",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -856,57 +781,9 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "interfaces must give a ConcreteStrategyefficient access to any data it needs \nfrom a context, and vice versa. \nOne approach is to have Context pass data in parameters to \nStrategyoperations—in other words, take the data to the strategy. This \nkeepsStrategy and Context decoupled. On the other hand, Context mightpass \ndata the Strategy doesn't need. \nAnother technique has a context pass itself as an argument, andthe strategy",
     "source": "",
     "scores": {
-      "hybrid": "0.037",
-      "vector": "-0.339",
+      "hybrid": "0.046",
+      "vector": "-0.316",
       "bm25": "0.432",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "military",
-      "strategy",
-      "victory",
-      "armed forces",
-      "armed services",
-      "military machine",
-      "war machine",
-      "force",
-      "military science",
-      "triumph"
-    ]
-  },
-  {
-    "text": "uses itnormally. If there isn't a strategy, then Context carries out \ndefaultbehavior. The benefit of this approach is that clients don't have \ntodeal with Strategy objects at all unless they don't like thedefault \nbehavior.",
-    "source": "",
-    "scores": {
-      "hybrid": "0.030",
-      "vector": "-0.325",
-      "bm25": "0.400",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "military",
-      "strategy",
-      "victory",
-      "armed forces",
-      "armed services",
-      "military machine",
-      "war machine",
-      "force",
-      "military science",
-      "triumph"
-    ]
-  },
-  {
-    "text": "victory will not stand in doubt;  if you know Heaven and know Earth, you\nmay make your victory complete.\n     [Li Ch`uan sums up as follows:  \"Given a knowledge of three things--the\naffairs of men, the seasons of heaven and the natural advantages of earth--,\nvictory will invariably crown   your battles.\"]",
-    "source": "",
-    "scores": {
-      "hybrid": "0.016",
-      "vector": "-0.384",
-      "bm25": "0.423",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -928,8 +805,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "extend. \n3. Strategies eliminate conditional statements.The Strategy pattern offers \nan alternative to conditional statements forselecting desired behavior. \nWhen different behaviors are lumped into oneclass, it's hard to avoid using \nconditional statements to select theright behavior. Encapsulating the \nbehavior in separate Strategy classeseliminates these conditional \nstatements. \nFor example, without strategies, the code for breakingtext into lines could \nlook like",
     "source": "",
     "scores": {
-      "hybrid": "0.009",
-      "vector": "-0.348",
+      "hybrid": "0.035",
+      "vector": "-0.283",
       "bm25": "0.370",
       "title": "0.000",
       "wordnet": "0.000"
@@ -949,14 +826,158 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "[Ho Shih thus expounds the paradox:  \"In warfare, first lay plans which\nwill ensure victory, and then lead your army to battle;  if you will not begin\nwith stratagem but rely on brute strength alone, victory will no longer be\nassured.\"]\n     16.  The consummate leader cultivates the moral law,  and strictly adheres\nto method and discipline; thus it is in his power to control success.\n     17.  In respect of military method,  we have,  firstly, Measurement;",
+    "text": "chapter.  But he proceeds to give a biography of his descendant,  Sun Pin,\nborn about a hundred years after his famous ancestor's death, and also the\noutstanding military genius of his time.  The historian speaks of him too as\nSun Tzu, and in his preface we read:  \"Sun Tzu had his feet cut off and yet\ncontinued to discuss the art of war.\" It seems likely, then, that  \"Pin\" was a\nnickname  bestowed  on  him  after  his  mutilation,  unless  the  story  was",
     "source": "",
     "scores": {
-      "hybrid": "0.008",
-      "vector": "-0.357",
-      "bm25": "0.322",
+      "hybrid": "0.032",
+      "vector": "-0.178",
+      "bm25": "0.258",
       "title": "0.000",
-      "wordnet": "0.111"
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "military",
+      "strategy",
+      "victory",
+      "armed forces",
+      "armed services",
+      "military machine",
+      "war machine",
+      "force",
+      "military science",
+      "triumph"
+    ]
+  },
+  {
+    "text": "void Composition::Repair () { \n switch (_breakingStrategy) { \n case SimpleStrategy: \n  ComposeWithSimpleCompositor(); \n  break; \n case TeXStrategy: \n  ComposeWithTeXCompositor(); \n  break; \n  // ... \n } \n // merge results with existing composition, if necessary     \n} \nThe Strategy pattern eliminates this case statement by delegating \nthelinebreaking task to a Strategy object: \nvoid Composition::Repair () { \n  _compositor->Compose(); \n  // merge results with existing composition, if necessary",
+    "source": "",
+    "scores": {
+      "hybrid": "0.027",
+      "vector": "-0.349",
+      "bm25": "0.416",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "military",
+      "strategy",
+      "victory",
+      "armed forces",
+      "armed services",
+      "military machine",
+      "war machine",
+      "force",
+      "military science",
+      "triumph"
+    ]
+  },
+  {
+    "text": "victory will not stand in doubt;  if you know Heaven and know Earth, you\nmay make your victory complete.\n     [Li Ch`uan sums up as follows:  \"Given a knowledge of three things--the\naffairs of men, the seasons of heaven and the natural advantages of earth--,\nvictory will invariably crown   your battles.\"]",
+    "source": "",
+    "scores": {
+      "hybrid": "0.020",
+      "vector": "-0.373",
+      "bm25": "0.423",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "military",
+      "strategy",
+      "victory",
+      "armed forces",
+      "armed services",
+      "military machine",
+      "war machine",
+      "force",
+      "military science",
+      "triumph"
+    ]
+  },
+  {
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n351 \nStructure \n \nParticipants \n• Strategy (Compositor) \no declares an interface common to all supported algorithms. Context \nuses this interface to call the algorithm defined by a \nConcreteStrategy. \n• ConcreteStrategy (SimpleCompositor, TeXCompositor,ArrayCompositor) \no implements the algorithm using the Strategy interface. \n• Context (Composition) \no is configured with a ConcreteStrategy object.",
+    "source": "",
+    "scores": {
+      "hybrid": "0.016",
+      "vector": "-0.367",
+      "bm25": "0.407",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "military",
+      "strategy",
+      "victory",
+      "armed forces",
+      "armed services",
+      "military machine",
+      "war machine",
+      "force",
+      "military science",
+      "triumph"
+    ]
+  },
+  {
+    "text": "ObjectWindows uses Validator objects to encapsulate validationstrategies. \nValidators are examples of Strategy objects. Data entryfields delegate the \nvalidation strategy to an optional Validatorobject. The client attaches a \nvalidator to a field if validation isrequired (an example of an optional strategy). \nWhen the dialog isclosed, the entry fields ask their validators to validate the \ndata.The class library provides validators for common cases, such as",
+    "source": "",
+    "scores": {
+      "hybrid": "0.009",
+      "vector": "-0.385",
+      "bm25": "0.408",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "military",
+      "strategy",
+      "victory",
+      "armed forces",
+      "armed services",
+      "military machine",
+      "war machine",
+      "force",
+      "military science",
+      "triumph"
+    ]
+  },
+  {
+    "text": "Compositor's interface is carefully designed to support alllayout algorithms that \nsubclasses might implement. You don't want tohave to change this interface with \nevery new subclass, because that willrequire changing existing subclasses. In \ngeneral, the Strategy andContext interfaces determine how well the pattern \nachieves its intent.",
+    "source": "",
+    "scores": {
+      "hybrid": "0.005",
+      "vector": "-0.291",
+      "bm25": "0.304",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "military",
+      "strategy",
+      "victory",
+      "armed forces",
+      "armed services",
+      "military machine",
+      "war machine",
+      "force",
+      "military science",
+      "triumph"
+    ]
+  },
+  {
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n349 \nStrategy \nIntent \nDefine a family of algorithms, encapsulate each one, and make theminterchangeable. \nStrategy lets the algorithm vary independently fromclients that use it. \nAlso Known As \nPolicy \nMotivation \nMany algorithms exist for breaking a stream of text into lines.Hard-wiring all \nsuch algorithms into the classes that require themisn't desirable for several \nreasons:",
+    "source": "",
+    "scores": {
+      "hybrid": "0.003",
+      "vector": "-0.361",
+      "bm25": "0.367",
+      "title": "0.000",
+      "wordnet": "0.000"
     },
     "matched_concepts": [],
     "expanded_terms": [
@@ -976,8 +997,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "or extend the component's functionality by replacing the strategy object. \nFor example, we can support different border styles by having the component \ndefer border-drawing to a separate Border object. The Border object is a \nStrategy object that encapsulates a border-drawing strategy. By extending \nthe number of strategies from just one to an open-ended list, we achieve \nthe same effect as nesting decorators recursively. \nIn MacApp 3.0 [App89] and Bedrock [Sym93a], for example, graphical",
     "source": "",
     "scores": {
-      "hybrid": "0.001",
-      "vector": "-0.325",
+      "hybrid": "0.000",
+      "vector": "-0.326",
       "bm25": "0.271",
       "title": "0.000",
       "wordnet": "0.111"
@@ -1000,8 +1021,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "is the negation of civil order!\"  The unpalatable fact remains, however, that\neven Imperial wishes must be subordinated to military necessity.]",
     "source": "",
     "scores": {
-      "hybrid": "-0.009",
-      "vector": "-0.375",
+      "hybrid": "-0.002",
+      "vector": "-0.358",
       "bm25": "0.352",
       "title": "0.000",
       "wordnet": "0.000"
@@ -1021,12 +1042,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "Factory Methods (121) are often called by template methods. In the Motivation \nexample,the factory method DoCreateDocument is called by the template \nmethodOpenDocument. \nStrategy (349): Template methods use inheritance to vary part of an \nalgorithm.Strategies use delegation to vary the entire algorithm.",
+    "text": "[Ts`ao Kung's note is, freely translated:   \"The military sphere and the\ncivil  sphere  are  wholly  distinct;  you  can't  handle  an  army  in  kid  gloves.\"\nAnd Chang Yu says:   \"Humanity and justice are the principles on which to\ngovern a state, but not an army;  opportunism and flexibility,  on the other\nhand,  are military rather than civil virtues to assimilate the governing of an\narmy\"--to that of a State, understood.]",
     "source": "",
     "scores": {
-      "hybrid": "-0.011",
-      "vector": "-0.338",
-      "bm25": "0.311",
+      "hybrid": "-0.007",
+      "vector": "-0.373",
+      "bm25": "0.356",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -1045,12 +1066,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "Compositor's interface is carefully designed to support alllayout algorithms that \nsubclasses might implement. You don't want tohave to change this interface with \nevery new subclass, because that willrequire changing existing subclasses. In \ngeneral, the Strategy andContext interfaces determine how well the pattern \nachieves its intent.",
+    "text": "military  classic,\"  and  Wang  Hsi,    \"an  old  book  on  war.\"    Considering  the\nenormous  amount  of  fighting  that  had  gone  on  for  centuries  before  Sun\nTzu's time between the various kingdoms and principalities of China, it is\nnot  in  itself  improbable  that  a  collection  of  military  maxims  should  have\nbeen made and written down at some earlier period.]\nOn the field of battle,\n     [Implied, though not actually in the Chinese.]",
     "source": "",
     "scores": {
-      "hybrid": "-0.017",
-      "vector": "-0.346",
-      "bm25": "0.304",
+      "hybrid": "-0.008",
+      "vector": "-0.378",
+      "bm25": "0.358",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -1069,60 +1090,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "22. Carefully study the well-being of your men,\n     [For  \"well-being\", Wang Hsi means, \"Pet them,  humor them, give them\nplenty of food and drink,  and look after them generally.\"]\nand do not overtax them.  Concentrate your energy and hoard your strength.\n          [Ch`en  recalls  the  line  of  action  adopted  in  224  B.C.  by  the  famous\ngeneral  Wang  Chien,    whose  military  genius      largely  contributed  to  the",
+    "text": "and    'a  spear'  (cessation  of  hostilities).    Military  prowess  is  seen  in  the\nrepression   of   cruelty,  the calling in of   weapons,   the preservation of the",
     "source": "",
     "scores": {
-      "hybrid": "-0.025",
-      "vector": "-0.341",
-      "bm25": "0.279",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "military",
-      "strategy",
-      "victory",
-      "armed forces",
-      "armed services",
-      "military machine",
-      "war machine",
-      "force",
-      "military science",
-      "triumph"
-    ]
-  },
-  {
-    "text": "men  in  taking  a  town  when  the  same  expenditure  of  soldiers  will  gain  a\nprovince.\"]\npositions which must not be contested, commands of the sovereign which\nmust not be obeyed.\n     [This is a hard saying for the Chinese, with their reverence for authority,\nand Wei Liao Tzu (quoted by Tu Mu) is moved to exclaim:    \"Weapons   are\nbaleful   instruments,   strife   is antagonistic to virtue, a military commander",
-    "source": "",
-    "scores": {
-      "hybrid": "-0.031",
-      "vector": "-0.355",
-      "bm25": "0.277",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "military",
-      "strategy",
-      "victory",
-      "armed forces",
-      "armed services",
-      "military machine",
-      "war machine",
-      "force",
-      "military science",
-      "triumph"
-    ]
-  },
-  {
-    "text": "which it flows; the soldier works out his victory in relation to the foe whom\nhe is facing.\n     32.  Therefore, just as water retains no constant shape,  so in warfare there\nare no constant conditions.\n     33.  He who can modify his tactics in relation to his opponent and thereby\nsucceed in winning, may be called a heaven-born captain.\n     34.  The five elements (water, fire, wood, metal, earth) are not always\nequally predominant;",
-    "source": "",
-    "scores": {
-      "hybrid": "-0.037",
-      "vector": "-0.362",
-      "bm25": "0.270",
+      "hybrid": "-0.015",
+      "vector": "-0.383",
+      "bm25": "0.346",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -1162,33 +1135,9 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "independent of each other, so that a programmer can work on one module\nwithout having to understand the details of other modules.\nBecause software is  so malleable, software design is  a  continuous\nprocess that spans the entire lifecycle of  a  software system; this makes\nsoftware design different from the design of physical systems such as\nbuildings, ships, or bridges. However, software design has not always been\nviewed this way.  For much of  the history of  programming, design was",
     "source": "",
     "scores": {
-      "hybrid": "0.178",
-      "vector": "-0.044",
+      "hybrid": "0.165",
+      "vector": "-0.076",
       "bm25": "0.438",
-      "title": "0.000",
-      "wordnet": "0.100"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "software",
-      "architecture",
-      "layers",
-      "software program",
-      "computer software",
-      "software system",
-      "software package",
-      "code",
-      "computer architecture",
-      "structure"
-    ]
-  },
-  {
-    "text": "13. Comments should describe things that are not obvious from the\ncode (see p. 101 ).\n14. Software should be designed for ease of reading, not ease of\nwriting (see p. 149 ).",
-    "source": "",
-    "scores": {
-      "hybrid": "0.162",
-      "vector": "0.099",
-      "bm25": "0.257",
       "title": "0.000",
       "wordnet": "0.100"
     },
@@ -1210,8 +1159,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n395 \nSoftware Architecture programsponsored by the U.S. Department of Defense [GM92] \nconcentrates on gathering architectural information. Theknowledge-based software \nengineering community tries to representsoftware-related knowledge in general. \nThere are many other groupswith goals at least a little like ours. \nJames Coplien's Advanced C++: Programming Styles andIdioms [Cop92] has influenced",
     "source": "",
     "scores": {
-      "hybrid": "0.151",
-      "vector": "-0.013",
+      "hybrid": "0.163",
+      "vector": "0.017",
       "bm25": "0.391",
       "title": "0.000",
       "wordnet": "0.000"
@@ -1231,36 +1180,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "With this background, let’s  discuss in more detail what causes\ncomplexity, and how to make software systems simpler.",
+    "text": "actually used. \nWith this book, the Gang of Four have made a seminalcontribution to software \nengineering. There is much to learnedfrom them, and much to be actively applied. \nGrady Booch \nChief Scientist, Rational Software Corporation",
     "source": "",
     "scores": {
-      "hybrid": "0.148",
-      "vector": "-0.034",
-      "bm25": "0.355",
-      "title": "0.000",
-      "wordnet": "0.100"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "software",
-      "architecture",
-      "layers",
-      "software program",
-      "computer software",
-      "software system",
-      "software package",
-      "code",
-      "computer architecture",
-      "structure"
-    ]
-  },
-  {
-    "text": "Once the software has reached adolescence and is put into service, itsevolution \nis governed by two conflicting needs: (1) the software mustsatisfy more \nrequirements, and (2) the software must be more reusable.New requirements usually \nadd new classes and operations and perhapswhole class hierarchies. The software \ngoes through an expansionaryphase to meet new requirements. This can't continue \nfor long,however. Eventually the software will become too inflexible andarthritic",
-    "source": "",
-    "scores": {
-      "hybrid": "0.148",
-      "vector": "-0.074",
-      "bm25": "0.445",
+      "hybrid": "0.150",
+      "vector": "-0.025",
+      "bm25": "0.400",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -1279,14 +1204,14 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "From Alexander's point of view, the patterns in this book do not forma pattern \nlanguage. Given the variety of software systems that peoplebuild, it's hard to \nsee how we could provide a \"complete\" set ofpatterns, one that offers step-by-step \ninstructions for designing anapplication. We can do that for certain classes of \napplications, suchas report-writing or making a forms-entry system. But our \ncatalog isjust a collection of related patterns; we can't pretend it's a \npatternlanguage.",
+    "text": "software more quickly, but the software development process will be more\nenjoyable.",
     "source": "",
     "scores": {
-      "hybrid": "0.143",
-      "vector": "0.048",
-      "bm25": "0.260",
+      "hybrid": "0.149",
+      "vector": "-0.065",
+      "bm25": "0.437",
       "title": "0.000",
-      "wordnet": "0.100"
+      "wordnet": "0.000"
     },
     "matched_concepts": [],
     "expanded_terms": [
@@ -1306,8 +1231,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n59 \n \n \nFigure 2.8:  Embellished object structure \nNote that we can reverse the order of composition, putting thebordered composition \ninto the Scroller instance. In that case theborder would be scrolled along with \nthe text, which may or may not bedesirable. The point is, transparent enclosure \nmakes it easy toexperiment with different alternatives, and it keeps clients free \nofembellishment code.",
     "source": "",
     "scores": {
-      "hybrid": "0.138",
-      "vector": "-0.060",
+      "hybrid": "0.148",
+      "vector": "-0.035",
       "bm25": "0.255",
       "title": "0.000",
       "wordnet": "0.300"
@@ -1327,12 +1252,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n415 \n    Rect(Point(0, 0), Point(0, 0));",
+    "text": "Once the software has reached adolescence and is put into service, itsevolution \nis governed by two conflicting needs: (1) the software mustsatisfy more \nrequirements, and (2) the software must be more reusable.New requirements usually \nadd new classes and operations and perhapswhole class hierarchies. The software \ngoes through an expansionaryphase to meet new requirements. This can't continue \nfor long,however. Eventually the software will become too inflexible andarthritic",
     "source": "",
     "scores": {
-      "hybrid": "0.138",
-      "vector": "-0.017",
-      "bm25": "0.362",
+      "hybrid": "0.142",
+      "vector": "-0.091",
+      "bm25": "0.445",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -1351,12 +1276,36 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "Chapter 4\nModules Should Be Deep\nOne of the most important techniques for managing software complexity is\nto design systems so that developers only need to face a small fraction of\nthe overall complexity at any given time. This approach is called modular\ndesign , and this chapter presents its basic principles.\n4.1    Modular design\nIn modular design, a software system is decomposed into a collection of\nmodules that  are  relatively independent. Modules can  take  many forms,",
+    "text": "Chapter 19\nSoftware Trends\nAs a way of illustrating the principles discussed in this book, this chapter\nconsiders several trends and patterns that have become popular in software\ndevelopment over the last few decades. For each trend, I will describe how\nthat trend relates to the principles in this book and use the principles to\nevaluate whether that trend provides leverage against software complexity.\n19.1  Object-oriented programming and inheritance",
     "source": "",
     "scores": {
-      "hybrid": "0.131",
-      "vector": "-0.068",
-      "bm25": "0.347",
+      "hybrid": "0.138",
+      "vector": "-0.053",
+      "bm25": "0.399",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "software",
+      "architecture",
+      "layers",
+      "software program",
+      "computer software",
+      "software system",
+      "software package",
+      "code",
+      "computer architecture",
+      "structure"
+    ]
+  },
+  {
+    "text": "13. Comments should describe things that are not obvious from the\ncode (see p. 101 ).\n14. Software should be designed for ease of reading, not ease of\nwriting (see p. 149 ).",
+    "source": "",
+    "scores": {
+      "hybrid": "0.135",
+      "vector": "0.030",
+      "bm25": "0.257",
       "title": "0.000",
       "wordnet": "0.100"
     },
@@ -1399,14 +1348,14 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "this idea: if different layers have the same abstraction, such as pass-through\nmethods or  decorators, then there’s  a  good chance that  they  haven’t\nprovided enough benefit to compensate for the additional infrastructure they\nrepresent. Similarly,  pass-through arguments require each of  several\nmethods to be aware of their existence (which adds to complexity) without\ncontributing additional functionality.",
+    "text": "15. The increments of software development should be abstractions,\nnot features (see p. 154 ).",
     "source": "",
     "scores": {
       "hybrid": "0.128",
-      "vector": "-0.007",
-      "bm25": "0.226",
+      "vector": "-0.044",
+      "bm25": "0.365",
       "title": "0.000",
-      "wordnet": "0.200"
+      "wordnet": "0.000"
     },
     "matched_concepts": [],
     "expanded_terms": [
@@ -1423,14 +1372,14 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "15. The increments of software development should be abstractions,\nnot features (see p. 154 ).",
+    "text": "From Alexander's point of view, the patterns in this book do not forma pattern \nlanguage. Given the variety of software systems that peoplebuild, it's hard to \nsee how we could provide a \"complete\" set ofpatterns, one that offers step-by-step \ninstructions for designing anapplication. We can do that for certain classes of \napplications, suchas report-writing or making a forms-entry system. But our \ncatalog isjust a collection of related patterns; we can't pretend it's a \npatternlanguage.",
     "source": "",
     "scores": {
-      "hybrid": "0.123",
-      "vector": "-0.057",
-      "bm25": "0.365",
+      "hybrid": "0.120",
+      "vector": "-0.011",
+      "bm25": "0.260",
       "title": "0.000",
-      "wordnet": "0.000"
+      "wordnet": "0.100"
     },
     "matched_concepts": [],
     "expanded_terms": [
@@ -1451,7 +1400,7 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "source": "",
     "scores": {
       "hybrid": "0.119",
-      "vector": "-0.054",
+      "vector": "-0.053",
       "bm25": "0.252",
       "title": "0.000",
       "wordnet": "0.200"
@@ -1474,9 +1423,33 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "saving time.  The  general-purpose approach seems consistent with  the\ninvestment mindset discussed in Chapter 3 , where you spend a bit more\ntime up front to save time later on.\nOn the other hand, we know that it’s hard to predict the future needs of\na software system, so a general-purpose solution might include facilities\nthat are never actually needed. Furthermore, if you implement something\nthat  is  too  general-purpose, it  might  not  do  a  good  job  of  solving the",
     "source": "",
     "scores": {
-      "hybrid": "0.108",
-      "vector": "-0.041",
+      "hybrid": "0.119",
+      "vector": "-0.013",
       "bm25": "0.260",
+      "title": "0.000",
+      "wordnet": "0.100"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "software",
+      "architecture",
+      "layers",
+      "software program",
+      "computer software",
+      "software system",
+      "software package",
+      "code",
+      "computer architecture",
+      "structure"
+    ]
+  },
+  {
+    "text": "also accommodates new implementations asthe system evolves. \nAs a result of these differences, Adapter and Bridge are often used atdifferent \npoints in the software lifecycle. An adapter often becomesnecessary when you \ndiscover that two incompatible classesshould work together, generally to avoid \nreplicating code. Thecoupling is unforeseen. In contrast, the user of a bridge \nunderstandsup-front that an abstraction must have several implementations,",
+    "source": "",
+    "scores": {
+      "hybrid": "0.097",
+      "vector": "-0.035",
+      "bm25": "0.227",
       "title": "0.000",
       "wordnet": "0.100"
     },
@@ -1498,8 +1471,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "requirements aresatisfied, and consolidation as the software becomes more general. \n \nThis cycle is unavoidable. But good designers are aware of thechanges that can \nprompt refactorings. Good designers also know classand object structures that \ncan help avoid refactorings—their designsare robust in the face of requirement \nchanges. A thoroughrequirements analysis will highlight those requirements that",
     "source": "",
     "scores": {
-      "hybrid": "0.103",
-      "vector": "-0.017",
+      "hybrid": "0.097",
+      "vector": "-0.032",
       "bm25": "0.224",
       "title": "0.000",
       "wordnet": "0.100"
@@ -1519,12 +1492,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "investments. This  amount is  small  enough that  it  won’t  impact your\nschedules significantly,  but  large  enough to  produce significant benefits\nover time. Your initial projects will thus take 10–20% longer than they\nwould in a purely tactical approach. That extra time will result in a better\nsoftware design, and you will start experiencing the benefits within a few\nmonths. It won’t be long before you’re developing at least 10–20% faster",
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n190 \nimplement Component::Add without introducing the possibility of it failing. \nYou could make it do nothing, but that ignores an important consideration; \nthat is, an attempt to add something to a leaf probably indicates a bug. \nIn that case, the Add operation produces garbage. You could make it delete \nits argument, but that might not be what clients expect.",
     "source": "",
     "scores": {
-      "hybrid": "0.099",
-      "vector": "-0.023",
-      "bm25": "0.270",
+      "hybrid": "0.094",
+      "vector": "-0.039",
+      "bm25": "0.273",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -1543,12 +1516,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "pages 1–22, Champéry, Switzerland, October 1992. Also available as IBM \nResearch DivisionTechnical Report RC 18524 (79392). \n \n \n[HO87] \nDaniel C. Halbert and Patrick D. O'Brien.Object-\noriented development. \nIEEE Software,4(5):71–79, September 1987.",
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n326 \nObserver \nIntent \nDefine a one-to-many dependency between objects so that when oneobject changes \nstate, all its dependents are notified and updatedautomatically. \nAlso Known As \nDependents, Publish-Subscribe \nMotivation \nA common side-effect of partitioning a system into a collection ofcooperating \nclasses is the need to maintain consistency betweenrelated objects. You don't",
     "source": "",
     "scores": {
-      "hybrid": "0.097",
-      "vector": "-0.079",
-      "bm25": "0.321",
+      "hybrid": "0.093",
+      "vector": "-0.053",
+      "bm25": "0.285",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -1567,12 +1540,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n73 \nEncapsulating a Request \nFrom our perspective as designers, a pull-down menu is just anotherkind of glyph \nthat contains other glyphs. What distinguishespull-down menus from other glyphs \nthat have children is that mostglyphs in menus do some work in response to an \nup-click. \nLet's assume that these work-performing glyphs are instances of aGlyph subclass",
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n302 \nListIterator<Employee*> i(employees); \nint count = 0; \nfor (i.First(); !i.IsDone(); i.Next()) { \ncount++; \ni.CurrentItem()->Print(); \nif (count >= 10) { \nbreak; \n} \n} \nInternal iterators can encapsulate different kinds of iteration. \nForexample, FilteringListTraverser encapsulates aniteration that \nprocesses only items that satisfy a test: \ntemplate <class Item> \nclass FilteringListTraverser { \npublic:",
     "source": "",
     "scores": {
-      "hybrid": "0.097",
-      "vector": "-0.038",
-      "bm25": "0.280",
+      "hybrid": "0.089",
+      "vector": "-0.063",
+      "bm25": "0.286",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -1591,14 +1564,14 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "imprint of other factors that have shapedthe software landscape: components, \nresidue from the greatoperating system and browser wars, methods, processes, tools. \nEachline in this strata marks a definitive event: below that line,computing was \nthis way; above that line, the art of computing hadchanged. \nDesign Patterns draws such a line of demarcation;this is a work that represents \na change in the practice ofcomputing. Erich, Richard, Ralph, and John present",
+    "text": "Summary of Design Principles\nHere are the most important software design principles discussed in  this\nbook:\n1. Complexity is incremental: you have to sweat the small stuff (see\np. 11 ).\n2. Working code isn’t enough (see p. 14 ).\n3. Make continual small investments to improve system design (see\np. 15 ).\n4. Modules should be deep (see p. 22 )\n5. Interfaces should be designed to make the most common usage as\nsimple as possible (see p. 27 ).",
     "source": "",
     "scores": {
-      "hybrid": "0.096",
-      "vector": "-0.029",
-      "bm25": "0.270",
+      "hybrid": "0.088",
+      "vector": "-0.046",
+      "bm25": "0.216",
       "title": "0.000",
-      "wordnet": "0.000"
+      "wordnet": "0.100"
     },
     "matched_concepts": [],
     "expanded_terms": [
@@ -1615,12 +1588,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "get promoted into environments with harder and harder problems.\nEventually,  everyone reaches a  point where your first ideas are  no longer\ngood enough; if you want to get really great results, you have to consider a\nsecond possibility,  or  perhaps a  third, no matter how smart you are. The\ndesign of  large software systems falls in  this category: no-one is  good\nenough to get it right with their first try.\nUnfortunately, I often see smart people who insist on implementing the",
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n299 \n} \nNow we're in a position to write the code for printingthe employees \nindependent of a concrete representation. \n// we know only that we have an AbstractList \nAbstractList<Employee*>* employees; \n// ... \nIterator<Employee*>* iterator = employees->CreateIterator(); \nPrintEmployees(*iterator); \ndelete iterator; \n5. Making sure iterators get deleted.Notice that CreateIterator returns a",
     "source": "",
     "scores": {
-      "hybrid": "0.096",
-      "vector": "-0.068",
-      "bm25": "0.257",
+      "hybrid": "0.086",
+      "vector": "-0.065",
+      "bm25": "0.231",
       "title": "0.000",
       "wordnet": "0.100"
     },
@@ -1660,9 +1633,53 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "the stock it influences. Try thinking about that yourself. The more you do, the more you’ll begin to see feedback loops everywhere. The most common “non-feedback” decisions students suggest are falling in love and committing suicide. I’ll leave it to you to decide whether you think these are actually decisions made with no feedback involved. Watch out! If you see feedback loops everywhere, you’re already in danger of becoming a systems thinker! Instead of seeing only how A causes B, you’ll",
     "source": "",
     "scores": {
-      "hybrid": "0.318",
-      "vector": "0.081",
+      "hybrid": "0.288",
+      "vector": "0.005",
       "bm25": "0.515",
+      "title": "0.000",
+      "wordnet": "0.400"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "feedback",
+      "loops",
+      "systems",
+      "natural process",
+      "loop",
+      "program",
+      "system",
+      "plan of action"
+    ]
+  },
+  {
+    "text": "different mechanisms, at different time scales, and with redundancy—one kicking in if another one fails. A set of feedback loops that can restore or rebuild feedback loops is resilience at a still higher level—meta-resilience, if you will. Even higher meta-meta- resilience comes from feedback loops that can learn , create , design , and evolve ever more complex restorative structures. Systems that can do this are self-organizing, which will be the next surprising system characteristic I come",
+    "source": "",
+    "scores": {
+      "hybrid": "0.286",
+      "vector": "-0.025",
+      "bm25": "0.540",
+      "title": "0.000",
+      "wordnet": "0.400"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "feedback",
+      "loops",
+      "systems",
+      "natural process",
+      "loop",
+      "program",
+      "system",
+      "plan of action"
+    ]
+  },
+  {
+    "text": "life. Honor, Respect, and Distribute Information You’ve seen how information holds systems together and how delayed, biased, scattered, or missing information can make feedback loops malfunction. Decision makers can’t respond to information they don’t have, can’t respond accurately to information that is inaccurate, and can’t respond in a timely way to information that is late. I would guess that most of what goes wrong in systems goes wrong because of biased, late, or missing information. If I",
+    "source": "",
+    "scores": {
+      "hybrid": "0.277",
+      "vector": "0.003",
+      "bm25": "0.490",
       "title": "0.000",
       "wordnet": "0.400"
     },
@@ -1682,8 +1699,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "machines and factories. The more you make, the more capacity you have to make even more. This reinforcing feedback loop is the central engine of growth in an economy. Figure 14. Reinvestment in capital. By now you may be seeing how basic balancing and reinforcing feedback loops are to systems. Sometimes I challenge my students to try to think of any human decision that occurs without a feedback loop—that is, a decision that is made without regard to any information about the level of the stock",
     "source": "",
     "scores": {
-      "hybrid": "0.290",
-      "vector": "0.027",
+      "hybrid": "0.270",
+      "vector": "-0.023",
       "bm25": "0.498",
       "title": "0.000",
       "wordnet": "0.400"
@@ -1701,12 +1718,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "of many more examples. The world is full of goal-seeking feedback loops. Balancing feedback loops are equilibrating or goal-seeking structures in systems and are both sources of stability and sources of resistance to change. The presence of a feedback mechanism doesn’t necessarily mean that the mechanism works well . The feedback mechanism may not be strong enough to bring the stock to the desired level. Feedbacks—the interconnections, the information part of the system—can fail for many",
+    "text": "It forces nations into reinforcing loops “racing to the bottom,” competing with each other to weaken environmental and social safeguards in order to attract corporate investment. It’s a recipe for unleashing “success to the successful” loops, until they generate enormous accumulations of power and huge centralized planning systems that will destroy themselves. 4. Self- Organization— The power to add, change, or evolve system structure The most stunning thing living systems and some social",
     "source": "",
     "scores": {
-      "hybrid": "0.273",
-      "vector": "-0.048",
-      "bm25": "0.531",
+      "hybrid": "0.270",
+      "vector": "0.020",
+      "bm25": "0.454",
       "title": "0.000",
       "wordnet": "0.400"
     },
@@ -1727,7 +1744,7 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "source": "",
     "scores": {
       "hybrid": "0.264",
-      "vector": "-0.062",
+      "vector": "-0.061",
       "bm25": "0.521",
       "title": "0.000",
       "wordnet": "0.400"
@@ -1745,12 +1762,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "secrecy, • monitoring systems to report on environmental damage, • protection for whistleblowers, and • impact fees, pollution taxes, and performance bonds to recapture the externalized public costs of private benefits. 7. Reinforcing Feedback Loops— The strength of the gain of driving loops A balancing feedback loop is self-correcting; a reinforcing feedback loop is self-reinforcing. The more it works, the more it gains power to work some more, driving system behavior in one direction. The",
+    "text": "of many more examples. The world is full of goal-seeking feedback loops. Balancing feedback loops are equilibrating or goal-seeking structures in systems and are both sources of stability and sources of resistance to change. The presence of a feedback mechanism doesn’t necessarily mean that the mechanism works well . The feedback mechanism may not be strong enough to bring the stock to the desired level. Feedbacks—the interconnections, the information part of the system—can fail for many",
     "source": "",
     "scores": {
-      "hybrid": "0.261",
-      "vector": "-0.077",
-      "bm25": "0.529",
+      "hybrid": "0.254",
+      "vector": "-0.095",
+      "bm25": "0.531",
       "title": "0.000",
       "wordnet": "0.400"
     },
@@ -1767,34 +1784,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "life. Honor, Respect, and Distribute Information You’ve seen how information holds systems together and how delayed, biased, scattered, or missing information can make feedback loops malfunction. Decision makers can’t respond to information they don’t have, can’t respond accurately to information that is inaccurate, and can’t respond in a timely way to information that is late. I would guess that most of what goes wrong in systems goes wrong because of biased, late, or missing information. If I",
+    "text": "You’ll be thinking not in terms of a static world, but a dynamic one. You’ll stop looking for who’s to blame; instead you’ll start asking, “What’s the system?” The concept of feedback opens up the idea that a system can cause its own behavior. So far, I have limited this discussion to one kind of feedback loop at a time. Of course, in real systems feedback loops rarely come singly. They are linked together, often in fantastically complex patterns. A single stock is likely to have several",
     "source": "",
     "scores": {
       "hybrid": "0.252",
-      "vector": "-0.059",
-      "bm25": "0.490",
-      "title": "0.000",
-      "wordnet": "0.400"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "feedback",
-      "loops",
-      "systems",
-      "natural process",
-      "loop",
-      "program",
-      "system",
-      "plan of action"
-    ]
-  },
-  {
-    "text": "cycles don’t come from presidents, although presidents can do much to ease or intensify the optimism of the upturns and the pain of the downturns. Economies are extremely complex systems; they are full of balancing feedback loops with delays, and they are inherently oscillatory. 5 Jay W. Forrester, 1989. Two-Stock Systems A Renewable Stock Constrained by a Nonrenewable Stock—an Oil Economy The systems I’ve displayed so far have been free of constraints imposed by their surroundings. The capital",
-    "source": "",
-    "scores": {
-      "hybrid": "0.248",
-      "vector": "-0.081",
-      "bm25": "0.502",
+      "vector": "-0.078",
+      "bm25": "0.508",
       "title": "0.000",
       "wordnet": "0.400"
     },
@@ -1814,8 +1809,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "balancing death loop.Both also have an aging process. Steel mills and lathes and turbines get older and die just as people do. Systems with similar feedback structures produce similar dynamic behaviors. One of the central insights of systems theory, as central as the observation that systems largely cause their own behavior, is that systems with similar feedback structures produce similar dynamic behaviors, even if the outward appearance of these systems is completely dissimilar. A population",
     "source": "",
     "scores": {
-      "hybrid": "0.240",
-      "vector": "-0.079",
+      "hybrid": "0.248",
+      "vector": "-0.058",
       "bm25": "0.478",
       "title": "0.000",
       "wordnet": "0.400"
@@ -1833,102 +1828,14 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "goal (the thermostat), and a response mechanism (the furnace and/or air conditioner, fans, pumps, pipes, fuel, etc.). A complex system usually has numerous balancing feedback loops it can bring into play, so it can self-correct under different conditions and impacts. Some of those loops may be inactive much of the time—like the emergency cooling system in a nuclear power plant, or your ability to sweat or shiver to maintain your body temperature—but their presence is critical to the long term",
+    "text": "affect only future behavior; it can’t deliver a signal fast enough to correct behavior that drove the current feedback. • A stock-maintaining balancing feedback loop must have its goal set appropriately to compensate for draining or inflowing processes that affect that stock. Otherwise, the feedback process will fall short of or exceed the target for the stock. • Systems with similar feedback structures produce similar dynamic behaviors. Shifting Dominance, Delays, and Oscillations • Complex",
     "source": "",
     "scores": {
-      "hybrid": "0.239",
-      "vector": "-0.031",
-      "bm25": "0.429",
+      "hybrid": "0.234",
+      "vector": "-0.051",
+      "bm25": "0.436",
       "title": "0.000",
       "wordnet": "0.400"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "feedback",
-      "loops",
-      "systems",
-      "natural process",
-      "loop",
-      "program",
-      "system",
-      "plan of action"
-    ]
-  },
-  {
-    "text": "I don’t have to pay attention to it” ploy. No one can define or measure justice, democracy, security, freedom, truth, or love. No one can define or measure any value. But if no one speaks up for them, if systems aren’t designed to produce them, if we don’t speak about them and point toward their presence or absence, they will cease to exist. Make Feedback Policies for Feedback Systems President Jimmy Carter had an unusual ability to think in feedback terms and to make feedback policies.",
-    "source": "",
-    "scores": {
-      "hybrid": "0.230",
-      "vector": "0.038",
-      "bm25": "0.438",
-      "title": "0.000",
-      "wordnet": "0.200"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "feedback",
-      "loops",
-      "systems",
-      "natural process",
-      "loop",
-      "program",
-      "system",
-      "plan of action"
-    ]
-  },
-  {
-    "text": "expensive diagnostic machines can lead to out-of-sight health care costs. Escalation in morality can lead to holier-than-thou sanctimoniousness. Escalation in art can lead from baroque to rococo to kitsch. Escalation in environmentally responsible lifestyles can lead to rigid and unnecessary puritanism. Escalation, being a reinforcing feedback loop, builds exponentially. Therefore, it can carry a competition to extremes faster than anyone would believe possible. If nothing is done to break the",
-    "source": "",
-    "scores": {
-      "hybrid": "0.224",
-      "vector": "0.179",
-      "bm25": "0.282",
-      "title": "0.000",
-      "wordnet": "0.200"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "feedback",
-      "loops",
-      "systems",
-      "natural process",
-      "loop",
-      "program",
-      "system",
-      "plan of action"
-    ]
-  },
-  {
-    "text": "It forces nations into reinforcing loops “racing to the bottom,” competing with each other to weaken environmental and social safeguards in order to attract corporate investment. It’s a recipe for unleashing “success to the successful” loops, until they generate enormous accumulations of power and huge centralized planning systems that will destroy themselves. 4. Self- Organization— The power to add, change, or evolve system structure The most stunning thing living systems and some social",
-    "source": "",
-    "scores": {
-      "hybrid": "0.221",
-      "vector": "-0.103",
-      "bm25": "0.454",
-      "title": "0.000",
-      "wordnet": "0.400"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "feedback",
-      "loops",
-      "systems",
-      "natural process",
-      "loop",
-      "program",
-      "system",
-      "plan of action"
-    ]
-  },
-  {
-    "text": "practical understanding of how these systems work, and how to work with them. Modern systems theory, bound up with computers and equations, hides the fact that it traffics in truths known at some level by everyone. It is often possible, therefore, to make a direct translation from systems jargon to traditional wisdom. Because of feedback delays within complex systems, by the time a problem becomes apparent it may be unnecessarily difficult to solve. — A stitch in time saves nine. According to",
-    "source": "",
-    "scores": {
-      "hybrid": "0.209",
-      "vector": "0.000",
-      "bm25": "0.422",
-      "title": "0.000",
-      "wordnet": "0.200"
     },
     "matched_concepts": [],
     "expanded_terms": [
@@ -1946,8 +1853,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "Contents A Note from the Author A Note from the Editor Introduction: The Systems Lens Part One: System Structure and Behavior ONE. The Basics TWO. A Brief Visit to the Systems Zoo Part Two: Systems and Us THREE. Why Systems Work So Well FOUR. Why Systems Surprise Us FIVE. System Traps . . . and Opportunities Part Three: Creating Change— in Systems and in Our Philosophy SIX. Leverage Points—Places to Intervene in a System SEVEN. Living in a World of Systems Appendix System Definitions: A",
     "source": "",
     "scores": {
-      "hybrid": "0.199",
-      "vector": "-0.015",
+      "hybrid": "0.221",
+      "vector": "0.041",
       "bm25": "0.413",
       "title": "0.000",
       "wordnet": "0.200"
@@ -1965,34 +1872,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "programs are weak balancing loops that try to counter these strong reinforcing ones. It would be much more effective to weaken the reinforcing loops. That’s what progressive income tax, inheritance tax, and universal high-quality public education programs are meant to do. If the wealthy can influence government to weaken, rather than strengthen, those measures, then the government itself shifts from a balancing structure to one that reinforces success to the successful! Look for leverage points",
+    "text": "I don’t have to pay attention to it” ploy. No one can define or measure justice, democracy, security, freedom, truth, or love. No one can define or measure any value. But if no one speaks up for them, if systems aren’t designed to produce them, if we don’t speak about them and point toward their presence or absence, they will cease to exist. Make Feedback Policies for Feedback Systems President Jimmy Carter had an unusual ability to think in feedback terms and to make feedback policies.",
     "source": "",
     "scores": {
-      "hybrid": "0.197",
-      "vector": "-0.043",
-      "bm25": "0.336",
-      "title": "0.000",
-      "wordnet": "0.400"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "feedback",
-      "loops",
-      "systems",
-      "natural process",
-      "loop",
-      "program",
-      "system",
-      "plan of action"
-    ]
-  },
-  {
-    "text": "when trying to achieve a particular goal. It doesn’t necessarily relate to the\noverall size  or  functionality of  the  system. People often  use  the  word\n“complex” to describe large systems with sophisticated features, but if such\na system is easy to work on, then, for the purposes of this book, it is not\ncomplex. Of course, almost all large and sophisticated software systems are\nin fact hard to work on, so they also meet my definition of complexity, but",
-    "source": "",
-    "scores": {
-      "hybrid": "0.189",
-      "vector": "0.030",
-      "bm25": "0.342",
+      "hybrid": "0.220",
+      "vector": "0.013",
+      "bm25": "0.438",
       "title": "0.000",
       "wordnet": "0.200"
     },
@@ -2012,8 +1897,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "rate high enough to cover the charges you incur while you’re paying (including interest). If you’re gearing up your work force to a higher level, you have to hire fast enough to correct for those who quit while you are hiring. In other words, your mental model of the system needs to include all the important flows, or you will be surprised by the system’s behavior. A stock-maintaining balancing feedback loop must have its goal set appropriately to compensate for draining or inflowing processes",
     "source": "",
     "scores": {
-      "hybrid": "0.186",
-      "vector": "-0.052",
+      "hybrid": "0.204",
+      "vector": "-0.007",
       "bm25": "0.317",
       "title": "0.000",
       "wordnet": "0.400"
@@ -2031,14 +1916,124 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "Systems Theory . (Philadelphia: University of Pennsylvania Press, 1991). The long, varied, and fascinating history of feedback concepts in social theory. Sweeney, Linda B. and Dennis Meadows. The Systems Thinking Playbook. (2001). A collection of 30 short gaming exercises that illustrate lessons about systems thinking and mental models. Organizations, Websites, Periodicals, and Software Creative Learning Exchange—an organization devoted to developing “systems citizens” in K–12 education.",
+    "text": "limit to  what we can do with tools alone. If  we want to  make it  easier to\nwrite software, so that we can build more powerful systems more cheaply,",
     "source": "",
     "scores": {
-      "hybrid": "0.184",
-      "vector": "-0.069",
-      "bm25": "0.429",
+      "hybrid": "0.199",
+      "vector": "0.089",
+      "bm25": "0.309",
       "title": "0.000",
       "wordnet": "0.200"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "feedback",
+      "loops",
+      "systems",
+      "natural process",
+      "loop",
+      "program",
+      "system",
+      "plan of action"
+    ]
+  },
+  {
+    "text": "expensive diagnostic machines can lead to out-of-sight health care costs. Escalation in morality can lead to holier-than-thou sanctimoniousness. Escalation in art can lead from baroque to rococo to kitsch. Escalation in environmentally responsible lifestyles can lead to rigid and unnecessary puritanism. Escalation, being a reinforcing feedback loop, builds exponentially. Therefore, it can carry a competition to extremes faster than anyone would believe possible. If nothing is done to break the",
+    "source": "",
+    "scores": {
+      "hybrid": "0.198",
+      "vector": "0.113",
+      "bm25": "0.282",
+      "title": "0.000",
+      "wordnet": "0.200"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "feedback",
+      "loops",
+      "systems",
+      "natural process",
+      "loop",
+      "program",
+      "system",
+      "plan of action"
+    ]
+  },
+  {
+    "text": "practical understanding of how these systems work, and how to work with them. Modern systems theory, bound up with computers and equations, hides the fact that it traffics in truths known at some level by everyone. It is often possible, therefore, to make a direct translation from systems jargon to traditional wisdom. Because of feedback delays within complex systems, by the time a problem becomes apparent it may be unnecessarily difficult to solve. — A stitch in time saves nine. According to",
+    "source": "",
+    "scores": {
+      "hybrid": "0.193",
+      "vector": "-0.039",
+      "bm25": "0.422",
+      "title": "0.000",
+      "wordnet": "0.200"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "feedback",
+      "loops",
+      "systems",
+      "natural process",
+      "loop",
+      "program",
+      "system",
+      "plan of action"
+    ]
+  },
+  {
+    "text": "PART TWO Systems and Us",
+    "source": "",
+    "scores": {
+      "hybrid": "0.189",
+      "vector": "0.024",
+      "bm25": "0.348",
+      "title": "0.000",
+      "wordnet": "0.200"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "feedback",
+      "loops",
+      "systems",
+      "natural process",
+      "loop",
+      "program",
+      "system",
+      "plan of action"
+    ]
+  },
+  {
+    "text": "When systems work well, we see a kind of harmony in their functioning. Think of a community kicking in to high gear to respond to a storm. People work long hours to help victims, talents and skills emerge; once the emergency is over, life goes back to “normal.” Why do systems work so well? Consider the properties of highly functional systems—machines or human communities or ecosystems—which are familiar to you. Chances are good that you may have observed one of three characteristics:",
+    "source": "",
+    "scores": {
+      "hybrid": "0.189",
+      "vector": "0.026",
+      "bm25": "0.346",
+      "title": "0.000",
+      "wordnet": "0.200"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "feedback",
+      "loops",
+      "systems",
+      "natural process",
+      "loop",
+      "program",
+      "system",
+      "plan of action"
+    ]
+  },
+  {
+    "text": "programs are weak balancing loops that try to counter these strong reinforcing ones. It would be much more effective to weaken the reinforcing loops. That’s what progressive income tax, inheritance tax, and universal high-quality public education programs are meant to do. If the wealthy can influence government to weaken, rather than strengthen, those measures, then the government itself shifts from a balancing structure to one that reinforces success to the successful! Look for leverage points",
+    "source": "",
+    "scores": {
+      "hybrid": "0.178",
+      "vector": "-0.090",
+      "bm25": "0.336",
+      "title": "0.000",
+      "wordnet": "0.400"
     },
     "matched_concepts": [],
     "expanded_terms": [
@@ -2056,31 +2051,9 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "in communication patterns that inheritance doesn't reveal. In general, the \nrun-time structures aren't clear from the code until you understand the patterns. \nDesigning for Change \nThe key to maximizing reuse lies in anticipating new requirements and changes \nto existing requirements, and in designing your systems so that they can evolve \naccordingly. \nTo design the system so that it's robust to such changes, you must consider how",
     "source": "",
     "scores": {
-      "hybrid": "0.183",
-      "vector": "0.066",
+      "hybrid": "0.172",
+      "vector": "0.037",
       "bm25": "0.292",
-      "title": "0.000",
-      "wordnet": "0.200"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "feedback",
-      "loops",
-      "systems",
-      "natural process",
-      "loop",
-      "program",
-      "system",
-      "plan of action"
-    ]
-  },
-  {
-    "text": "Bibliography of Systems Resources _____________ In addition to the works cited in the Notes, the items listed here are jumping off points—places to start your search for more ways to see and learn about systems. The fields of systems thinking and system dynamics are now extensive, reaching into many disciplines. For more resources, see also www.ThinkingInSystems.org Systems Thinking and Modeling Books Bossel, Hartmut. Systems and Models: Complexity, Dynamics, Evolution, Sustainability .",
-    "source": "",
-    "scores": {
-      "hybrid": "0.181",
-      "vector": "-0.046",
-      "bm25": "0.397",
       "title": "0.000",
       "wordnet": "0.200"
     },
@@ -2115,11 +2088,11 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
 ```json
 [
   {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n431 \n \nDesign pattern relationships",
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n93 \nDesign Pattern Catalog",
     "source": "",
     "scores": {
-      "hybrid": "0.258",
-      "vector": "0.157",
+      "hybrid": "0.259",
+      "vector": "0.161",
       "bm25": "0.488",
       "title": "0.000",
       "wordnet": "0.000"
@@ -2139,11 +2112,11 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n93 \nDesign Pattern Catalog",
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n431 \n \nDesign pattern relationships",
     "source": "",
     "scores": {
-      "hybrid": "0.232",
-      "vector": "0.092",
+      "hybrid": "0.228",
+      "vector": "0.081",
       "bm25": "0.488",
       "title": "0.000",
       "wordnet": "0.000"
@@ -2166,33 +2139,9 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n44 \nTable 1.2:  Design aspects that design patterns let you vary \nHow to Use a Design Pattern \nOnce you've picked a design pattern, how do you use it? Here's a step-by-step \napproach to applying a design pattern effectively: \n1. Read the pattern once through for an overview. Pay particular attention \nto the Applicability and Consequences sections to ensure the pattern is \nright for your problem.",
     "source": "",
     "scores": {
-      "hybrid": "0.224",
-      "vector": "0.045",
+      "hybrid": "0.220",
+      "vector": "0.033",
       "bm25": "0.516",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "design",
-      "pattern",
-      "factory",
-      "plan",
-      "create by mental act",
-      "match",
-      "mill",
-      "manufacturing plant",
-      "manufactory",
-      "plant"
-    ]
-  },
-  {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n23 \nClearly there are many ways to organize design patterns. Having multiple ways \nof thinking about patterns will deepen your insight into what they do, how they \ncompare, and when to apply them. \n \n \nFigure 1.1:  Design pattern relationships \nHow Design Patterns Solve Design Problems \nDesign patterns solve many of the day-to-day problems object-oriented designers",
-    "source": "",
-    "scores": {
-      "hybrid": "0.209",
-      "vector": "0.016",
-      "bm25": "0.506",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -2214,8 +2163,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "A design pattern names, abstracts, and identifies the key aspects of a common \ndesign structure that make it useful for creating a reusable object-oriented design. \nThe design pattern identifies the participating classes and instances, their roles \nand collaborations, and the distribution of responsibilities. Each design pattern",
     "source": "",
     "scores": {
-      "hybrid": "0.195",
-      "vector": "-0.018",
+      "hybrid": "0.201",
+      "vector": "-0.003",
       "bm25": "0.505",
       "title": "0.000",
       "wordnet": "0.000"
@@ -2238,8 +2187,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "With more than 20 design patterns in the catalog to choose from, it might be hard \nto find the one that addresses a particular design problem, especially if the \ncatalog is new and unfamiliar to you. Here are several different approaches to \nfinding the design pattern that's right for your problem: \n1. Consider how design patterns solve design problems. Section 1.6 discusses \nhow design patterns help you find appropriate objects, determine object",
     "source": "",
     "scores": {
-      "hybrid": "0.175",
-      "vector": "-0.040",
+      "hybrid": "0.185",
+      "vector": "-0.015",
       "bm25": "0.477",
       "title": "0.000",
       "wordnet": "0.000"
@@ -2262,8 +2211,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "design process so that it improves the design of your software.",
     "source": "",
     "scores": {
-      "hybrid": "0.155",
-      "vector": "-0.062",
+      "hybrid": "0.172",
+      "vector": "-0.020",
       "bm25": "0.450",
       "title": "0.000",
       "wordnet": "0.000"
@@ -2283,60 +2232,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "Other well-known names for the pattern, if any. \nMotivation  \nA scenario that illustrates a design problem and how the class and object \nstructures in the pattern solve the problem. The scenario will help you \nunderstand the more abstract description of the pattern that follows. \nApplicability  \nWhat are the situations in which the design pattern can be applied? \nWhat are examples of poor designs that the pattern can address? How can \nyou recognize these situations? \nStructure",
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n23 \nClearly there are many ways to organize design patterns. Having multiple ways \nof thinking about patterns will deepen your insight into what they do, how they \ncompare, and when to apply them. \n \n \nFigure 1.1:  Design pattern relationships \nHow Design Patterns Solve Design Problems \nDesign patterns solve many of the day-to-day problems object-oriented designers",
     "source": "",
     "scores": {
-      "hybrid": "0.149",
-      "vector": "-0.096",
-      "bm25": "0.469",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "design",
-      "pattern",
-      "factory",
-      "plan",
-      "create by mental act",
-      "match",
-      "mill",
-      "manufacturing plant",
-      "manufactory",
-      "plant"
-    ]
-  },
-  {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n122 \n \nApplication subclasses redefine an abstract CreateDocument operation on \nApplication to return the appropriate Document subclass. Once an Application \nsubclass is instantiated, it can then instantiate application-specific Documents \nwithout knowing their class. We call CreateDocument a factory method because it's \nresponsible for \"manufacturing\" an object. \nApplicability \nUse the Factory Method pattern when",
-    "source": "",
-    "scores": {
-      "hybrid": "0.141",
-      "vector": "-0.085",
-      "bm25": "0.439",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "design",
-      "pattern",
-      "factory",
-      "plan",
-      "create by mental act",
-      "match",
-      "mill",
-      "manufacturing plant",
-      "manufactory",
-      "plant"
-    ]
-  },
-  {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n13 \n1. The pattern name is a handle we can use to describe a design problem, its \nsolutions, and consequences in a word or two. Naming a pattern immediately \nincreases our design vocabulary. It lets us design at a higher level of \nabstraction. Having a vocabulary for patterns lets us talk about them with \nour colleagues, in our documentation, and even to ourselves. It makes it",
-    "source": "",
-    "scores": {
-      "hybrid": "0.140",
-      "vector": "-0.121",
-      "bm25": "0.471",
+      "hybrid": "0.153",
+      "vector": "-0.124",
+      "bm25": "0.506",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -2358,8 +2259,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n389 \nComputer scientists name and catalog algorithms and data structures,but we don't \noften name other kinds of patterns. Design patternsprovide a common vocabulary \nfor designers to use to communicate, document,and explore design alternatives. \nDesign patterns make a system seemless complex by letting you talk about it at \na higher level ofabstraction than that of a design notation or programming",
     "source": "",
     "scores": {
-      "hybrid": "0.138",
-      "vector": "-0.121",
+      "hybrid": "0.146",
+      "vector": "-0.100",
       "bm25": "0.465",
       "title": "0.000",
       "wordnet": "0.000"
@@ -2379,12 +2280,204 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n14 \nfocuses on a particular object-oriented design problem or issue. It describes \nwhen it applies, whether it can be applied in view of other design constraints, \nand the consequences and trade-offs of its use. Since we must eventually implement \nour designs, a design pattern also provides sample C++ and (sometimes) Smalltalk \ncode to illustrate an implementation.",
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n13 \n1. The pattern name is a handle we can use to describe a design problem, its \nsolutions, and consequences in a word or two. Naming a pattern immediately \nincreases our design vocabulary. It lets us design at a higher level of \nabstraction. Having a vocabulary for patterns lets us talk about them with \nour colleagues, in our documentation, and even to ourselves. It makes it",
     "source": "",
     "scores": {
-      "hybrid": "0.137",
-      "vector": "-0.104",
-      "bm25": "0.447",
+      "hybrid": "0.145",
+      "vector": "-0.109",
+      "bm25": "0.471",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "design",
+      "pattern",
+      "factory",
+      "plan",
+      "create by mental act",
+      "match",
+      "mill",
+      "manufacturing plant",
+      "manufactory",
+      "plant"
+    ]
+  },
+  {
+    "text": "the design patterns in this book have to be implemented each time they're \nused. Design patterns also explain the intent, trade-offs, and consequences \nof a design. \n2. Design patterns are smaller architectural elements than frameworks. A \ntypical framework contains several design patterns, but the reverse is never \ntrue. \n3. Design patterns are less specialized than frameworks. Frameworks always \nhave a particular application domain. A graphical editor framework might",
+    "source": "",
+    "scores": {
+      "hybrid": "0.144",
+      "vector": "-0.121",
+      "bm25": "0.481",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "design",
+      "pattern",
+      "factory",
+      "plan",
+      "create by mental act",
+      "match",
+      "mill",
+      "manufacturing plant",
+      "manufactory",
+      "plant"
+    ]
+  },
+  {
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n17 \nThe pattern's name conveys the essence of the pattern succinctly. A \ngood name is vital, because it will become part of your design vocabulary. \nThe pattern's classification reflects the scheme we introduce in Section \n1.5. \nIntent  \nA short statement that answers the following questions: What does the \ndesign pattern do? What is its rationale and intent? What particular design \nissue or problem does it address? \nAlso Known As",
+    "source": "",
+    "scores": {
+      "hybrid": "0.143",
+      "vector": "-0.128",
+      "bm25": "0.485",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "design",
+      "pattern",
+      "factory",
+      "plan",
+      "create by mental act",
+      "match",
+      "mill",
+      "manufacturing plant",
+      "manufactory",
+      "plant"
+    ]
+  },
+  {
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n43 \nPurpose Design Pattern Aspect(s) That Can Vary \nAbstract Factory (99) families of product objects \nBuilder (110) how a composite object gets created \nFactory Method (121) subclass of object that is instantiated \nPrototype (133) class of object that is instantiated \nCreational \nSingleton (144) the sole instance of a class \nAdapter (157) interface to an object \nBridge (171) implementation of an object",
+    "source": "",
+    "scores": {
+      "hybrid": "0.140",
+      "vector": "-0.106",
+      "bm25": "0.456",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "design",
+      "pattern",
+      "factory",
+      "plan",
+      "create by mental act",
+      "match",
+      "mill",
+      "manufacturing plant",
+      "manufactory",
+      "plant"
+    ]
+  },
+  {
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n399 \na request to another object. The delegate carries out the request on behalf \nof the original object. \n   \ndesign pattern \n \nA design pattern systematically names, motivates, and explains a general \ndesign that addresses a recurring design problem in object-oriented \nsystems. It describes the problem, the solution, when to apply the solution, \nand its consequences. It also gives implementation hints and examples. The",
+    "source": "",
+    "scores": {
+      "hybrid": "0.135",
+      "vector": "-0.136",
+      "bm25": "0.474",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "design",
+      "pattern",
+      "factory",
+      "plan",
+      "create by mental act",
+      "match",
+      "mill",
+      "manufacturing plant",
+      "manufactory",
+      "plant"
+    ]
+  },
+  {
+    "text": "force  a  problem into  a  design pattern when  a  custom approach will  be\ncleaner. Using design patterns doesn’t automatically improve a software\nsystem; it only does so if the design patterns fit. As with many ideas in\nsoftware design, the notion that design patterns are good doesn’t necessarily\nmean that more design patterns are better.\n19.6  Getters and setters\nIn  the  Java  programming community, getter and setter methods are  a",
+    "source": "",
+    "scores": {
+      "hybrid": "0.135",
+      "vector": "-0.151",
+      "bm25": "0.489",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "design",
+      "pattern",
+      "factory",
+      "plan",
+      "create by mental act",
+      "match",
+      "mill",
+      "manufacturing plant",
+      "manufactory",
+      "plant"
+    ]
+  },
+  {
+    "text": "How do we describe design patterns?  Graphical notations, while important and \nuseful, aren't sufficient. They simply capture the end product of the design \nprocess as relationships between classes and objects. To reuse the design, we \nmust also record the decisions, alternatives, and trade-offs that led to it. \nConcrete examples are important too, because they help you see the design in action. \nWe describe design patterns using a consistent format. Each pattern is divided",
+    "source": "",
+    "scores": {
+      "hybrid": "0.133",
+      "vector": "-0.124",
+      "bm25": "0.457",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "design",
+      "pattern",
+      "factory",
+      "plan",
+      "create by mental act",
+      "match",
+      "mill",
+      "manufacturing plant",
+      "manufactory",
+      "plant"
+    ]
+  },
+  {
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n12 \nThe purpose of this book is to record experience in designing object-oriented \nsoftware as design patterns. Each design pattern systematically names, explains, \nand evaluates an important and recurring design in object-oriented systems. Our \ngoal is to capture design experience in a form that people can use effectively. \nTo this end we have documented some of the most important design patterns and \npresent them as a catalog.",
+    "source": "",
+    "scores": {
+      "hybrid": "0.131",
+      "vector": "-0.152",
+      "bm25": "0.479",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "design",
+      "pattern",
+      "factory",
+      "plan",
+      "create by mental act",
+      "match",
+      "mill",
+      "manufacturing plant",
+      "manufactory",
+      "plant"
+    ]
+  },
+  {
+    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n122 \n \nApplication subclasses redefine an abstract CreateDocument operation on \nApplication to return the appropriate Document subclass. Once an Application \nsubclass is instantiated, it can then instantiate application-specific Documents \nwithout knowing their class. We call CreateDocument a factory method because it's \nresponsible for \"manufacturing\" an object. \nApplicability \nUse the Factory Method pattern when",
+    "source": "",
+    "scores": {
+      "hybrid": "0.129",
+      "vector": "-0.117",
+      "bm25": "0.439",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -2406,8 +2499,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n39 \nOr maybe any change would require modifying lots of existing subclasses. \nDesign patterns offer ways to modify classes in such circumstances.  \nDesign patterns: Adapter (157), Decorator (196), Visitor (366). \nThese examples reflect the flexibility that design patterns can help you build \ninto your software. How crucial such flexibility is depends on the kind of software",
     "source": "",
     "scores": {
-      "hybrid": "0.134",
-      "vector": "-0.124",
+      "hybrid": "0.128",
+      "vector": "-0.139",
       "bm25": "0.459",
       "title": "0.000",
       "wordnet": "0.000"
@@ -2430,8 +2523,8 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n132 \nRelated Patterns \nAbstract Factory (99) is often implemented with factory methods. The Motivation \nexample in the Abstract Factory pattern illustrates Factory Method as well. \nFactory methods are usually called within Template Methods (360). In the document \nexample above, NewDocument is a template method. \nPrototypes (133) don't require subclassing Creator. However, they often require",
     "source": "",
     "scores": {
-      "hybrid": "0.134",
-      "vector": "-0.141",
+      "hybrid": "0.128",
+      "vector": "-0.156",
       "bm25": "0.476",
       "title": "0.000",
       "wordnet": "0.000"
@@ -2451,132 +2544,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
     ]
   },
   {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n17 \nThe pattern's name conveys the essence of the pattern succinctly. A \ngood name is vital, because it will become part of your design vocabulary. \nThe pattern's classification reflects the scheme we introduce in Section \n1.5. \nIntent  \nA short statement that answers the following questions: What does the \ndesign pattern do? What is its rationale and intent? What particular design \nissue or problem does it address? \nAlso Known As",
+    "text": "objects (either simple or complex). Builder returns the product as a final step, \nbut as far as the Abstract Factory pattern is concerned, the product gets returned \nimmediately. \nA Composite (183) is what the builder often builds.",
     "source": "",
     "scores": {
-      "hybrid": "0.133",
-      "vector": "-0.152",
-      "bm25": "0.485",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "design",
-      "pattern",
-      "factory",
-      "plan",
-      "create by mental act",
-      "match",
-      "mill",
-      "manufacturing plant",
-      "manufactory",
-      "plant"
-    ]
-  },
-  {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n121 \nFactory Method \nIntent \nDefine an interface for creating an object, but let subclasses decide which class \nto instantiate. Factory Method lets a class defer instantiation to subclasses. \nAlso Known As \nVirtual Constructor \nMotivation \nFrameworks use abstract classes to define and maintain relationships between \nobjects. A framework is often responsible for creating these objects as well.",
-    "source": "",
-    "scores": {
-      "hybrid": "0.129",
-      "vector": "-0.069",
-      "bm25": "0.391",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "design",
-      "pattern",
-      "factory",
-      "plan",
-      "create by mental act",
-      "match",
-      "mill",
-      "manufacturing plant",
-      "manufactory",
-      "plant"
-    ]
-  },
-  {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n170 \n1\nCreateManipulator is an example of a Factory Method (121).",
-    "source": "",
-    "scores": {
-      "hybrid": "0.120",
-      "vector": "-0.138",
-      "bm25": "0.439",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "design",
-      "pattern",
-      "factory",
-      "plan",
-      "create by mental act",
-      "match",
-      "mill",
-      "manufacturing plant",
-      "manufactory",
-      "plant"
-    ]
-  },
-  {
-    "text": "How do we describe design patterns?  Graphical notations, while important and \nuseful, aren't sufficient. They simply capture the end product of the design \nprocess as relationships between classes and objects. To reuse the design, we \nmust also record the decisions, alternatives, and trade-offs that led to it. \nConcrete examples are important too, because they help you see the design in action. \nWe describe design patterns using a consistent format. Each pattern is divided",
-    "source": "",
-    "scores": {
-      "hybrid": "0.119",
-      "vector": "-0.159",
-      "bm25": "0.457",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "design",
-      "pattern",
-      "factory",
-      "plan",
-      "create by mental act",
-      "match",
-      "mill",
-      "manufacturing plant",
-      "manufactory",
-      "plant"
-    ]
-  },
-  {
-    "text": "that addresses them using design patterns is far more likely to achieve high levels \nof design and code reuse than one that doesn't. Mature frameworks usually \nincorporate several design patterns. The patterns help make the framework's \narchitecture suitable to many different applications without redesign. \nAn added benefit comes when the framework is documented with the design patterns \nit uses [BJ94]. People who know the patterns gain insight into the framework faster.",
-    "source": "",
-    "scores": {
-      "hybrid": "0.118",
-      "vector": "-0.168",
-      "bm25": "0.464",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "design",
-      "pattern",
-      "factory",
-      "plan",
-      "create by mental act",
-      "match",
-      "mill",
-      "manufacturing plant",
-      "manufactory",
-      "plant"
-    ]
-  },
-  {
-    "text": "Design Patterns: Elements of Reusable Object-Oriented Software \n46 \n2. A Case Study: Design a Document Editor \nThis chapter presents a case study in the design of a \n\"What-You-See-Is-What-You-Get\" (or \"WYSIWYG\") document editor called Lexi.\n1\n \nWe'llsee how design patterns capture solutions to design problems inLexi and \napplications like it. By the end of this chapter you willhave gained experience \nwith eight patterns, learning them byexample.",
-    "source": "",
-    "scores": {
-      "hybrid": "0.117",
-      "vector": "-0.154",
-      "bm25": "0.448",
+      "hybrid": "0.127",
+      "vector": "-0.063",
+      "bm25": "0.379",
       "title": "0.000",
       "wordnet": "0.000"
     },
@@ -2617,29 +2590,29 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
 {
   "document": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
   "document_hash": "4715d580120ee2b584ade03b0e6bb8cd66d0163e26d35779c586b44a7fe0ad8d",
-  "total_concepts": 92,
+  "total_concepts": 100,
   "primary_concepts": [
     "military strategy",
     "deception tactics",
-    "intelligence operations",
     "logistics and supply management",
-    "command and control",
-    "moral law and morale",
+    "intelligence and espionage",
     "terrain analysis",
+    "leadership and command",
+    "troop morale and moral law",
     "timing and tempo",
-    "economy of force and speed",
-    "combined arms and unit organization"
+    "maneuver warfare",
+    "risk management in warfare"
   ],
   "related_concepts": [],
   "categories": [
     "military strategy",
-    "defense studies",
+    "logistics and supply",
     "intelligence studies",
-    "logistics and supply chain",
-    "organizational leadership"
+    "leadership studies",
+    "decision theory"
   ],
-  "summary": "This excerpt from the introduction to Sun Tzu's \"The Art of War\" provides a historical biography of the ancient Chinese military strategist Sun Tzu, recounts his legendary demonstration of troop discipline by training the King of Wu's concubines, details his military achievements and legacy, and begins the first chapter on the vital strategic principles of warfare.\n\nKey Concepts: military strategy, deception tactics, intelligence operations, logistics and supply management, command and control, moral law and morale, terrain analysis, timing and tempo, economy of force and speed, combined arms and unit organization, discipline and law, victory without fighting, five factors framework, seven considerations forecasting, measurement estimation calculation balancing chain, direct and indirect maneuver methods, tactical dispositions, energy and momentum management, weak point exploitation, variation in tactics, maneuvering art, attack by stratagem, siege avoidance principle, foraging on enemy, signal and communications systems, types of terrain taxonomy, nine situations framework, spies and intelligence taxonomy, converted spy exploitation, doomed spy deception, surviving spy operations, local guide utilization, feints and baiting, simulated disorder technique, hold-out outlet tactic, burn-bridges commitment method, concentration and dispersion control, seizing advantageous ground, avoid uphill assault rule, river crossing tactics, camp placement and hygiene, forced marches and rapid mobility, supply-train protection, plunder allotment policy, using conquered foe augmentation, rewards and punishment certainty, officer selection and role assignment, training and rehearsal practice, signal discipline and mass synchronization, psychological operations, ambush and surprise tactics, holding and yielding strategy, isolation and interdiction, occupation of passes and chokepoints, water and fire element employment, attack by fire methods, seasonal and celestial timing, supply economy calculus, civil-military relations principle, authority clarity principle, psychology of moods and timetables, reading signs and indicators, camp security and counter-ambush, night-fighting and nocturnal signals, alliances and diplomatic manipulation, preventive attrition avoidance, psychological coercion of commanders, division and envelopment tactics, reserve utilization and economy, counterintelligence measures, morale cultivation techniques, leadership virtues framework, balance of chances assessment, use of psychology in pursuit restraint, tactical concealment and subdivision, use of local resources and environmental engineering, mood and provocation management, selection of engagement ratios, use of captured standards and flags, operational secrecy and need-to-know, risk calculus for protracted war, psychological bait and sacrifice, commanders as bulwark concept, controlling home front economy, psychological threshold management, integration of reconnaissance and planning, psychology of besieged and returning armies, use of ambulatory displays and theatrics, cumulative small maneuvers doctrine, unit signaling and password techniques, leader presence and composure, preventive sabotage and interdiction\nCategories: military strategy, defense studies, intelligence studies, logistics and supply chain, organizational leadership",
-  "_note": "Showing 10 of 92 concepts"
+  "summary": "This excerpt from the introduction to Sun Tzu's \"The Art of War\" recounts the ancient Chinese strategist's biography, including his legendary demonstration of military discipline by drilling palace concubines for King Ho Lu of Wu, his subsequent victories, references to his descendant Sun Pin, historical context, and the opening lines of the first chapter on the vital importance of warfare to the state.\n\nKey Concepts: military strategy, deception tactics, logistics and supply management, intelligence and espionage, terrain analysis, leadership and command, troop morale and moral law, timing and tempo, maneuver warfare, risk management in warfare, tactical adaptability, discipline and training, planning and forecasting, operational calculations, foraging and provisioning, force concentration and division, signal and communication systems, siege warfare principles, campaign economy, surprise and ambush tactics, feints and bait operations, encirclement and containment, supply line protection, alliance and coalition management, reconnaissance and scouting, camp organization, night operations, river crossing tactics, movement and maneuver doctrine, combined arms employment, direct and indirect maneuver framework, measurement estimation calculation framework, pre-battle contingency analysis, simulated disorder techniques, using captured enemy resources, reward and punishment system, unit subdivision and hierarchy, emergency retreat planning, occupying key positions, masking force strength, deception through displays, psychological warfare and provocation, reading environmental indicators, variability of tactics principle, operational secrecy management, tactical decision quality, energy and momentum management, campaigning on distant ground, prohibiting superstition for cohesion, mobilization and mustering, moral law concept, heaven as environmental factors, earth as operational geography, commander virtues framework, method and discipline construct, swift and heavy chariot organization, picul and li logistical units, mantlets and movable shelters, ramparts and mound siege works, halberds and battle-axes drill, drums gongs banners signaling, converted spies, inward spies, local spies, doomed spies, surviving spies, spy handling protocols, fire attack techniques, star-calendar for operations, wind and weather exploitation, water as tactical medium, anchoring and boat positioning, burning boats cooking-pots tactic, hiding disposition under disorder, baiting and enticement method, separating enemy forces, occupying intersecting highways, hemmed-in ground tactics, desperate ground tactics, entangling ground concept, accessible ground concept, temporizing ground concept, narrow pass defense, precipitous height control, camp placement sunny side rule, forced march effects, foraging on enemy principle, plunder allocation policy, attrition costs accounting, frontline reward prioritization, discipline enforcement protocols, leave outlet policy, avoid siege maxim, treat captured soldiers humanely, tactical use of noise and spectacle, reading dust and bird signs, maintaining lines of communication, concealment of dispositions, centralized versus delegated command, placing army beyond retreat\nCategories: military strategy, logistics and supply, intelligence studies, leadership studies, decision theory",
+  "_note": "Showing 10 of 100 concepts"
 }
 ```
 
@@ -2659,29 +2632,28 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
 {
   "document": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
   "document_hash": "dbb4b1747f756048f6b6d2f08035084c88a6e96f1485af0978d9840444deaf6d",
-  "total_concepts": 92,
+  "total_concepts": 79,
   "primary_concepts": [
-    "software complexity",
-    "dependencies in code",
-    "obscurity in design",
-    "change amplification",
-    "cognitive load in development",
-    "unknown unknowns",
-    "modular design principle",
-    "interface versus implementation",
-    "abstraction in software",
-    "deep module principle"
+    "complexity software",
+    "modular design",
+    "abstraction",
+    "information hiding",
+    "information leakage",
+    "deep module",
+    "shallow module",
+    "temporal decomposition",
+    "dependencies",
+    "obscurity"
   ],
   "related_concepts": [],
   "categories": [
     "software architecture",
     "software engineering",
-    "systems design",
-    "programming language design",
-    "human computer interaction"
+    "systems engineering",
+    "computer science education"
   ],
-  "summary": "This book outlines a philosophy of software design, emphasizing principles for managing complexity through deep modules, information hiding, strategic decomposition, and practical techniques like writing comments first and designing errors out of existence, drawn from the author's Stanford course and decades of experience.\n\nKey Concepts: software complexity, dependencies in code, obscurity in design, change amplification, cognitive load in development, unknown unknowns, modular design principle, interface versus implementation, abstraction in software, deep module principle, shallow module antipattern, information hiding, information leakage, temporal decomposition antipattern, general purpose module strategy, special purpose module tradeoff, pull complexity downward, make common case simple principle, defaults as interface design, pass-through method antipattern, decorator pattern risks, different layer different abstraction rule, pass-through variable antipattern, context object pattern, information overexposure, classitis antipattern, bring together versus separate decision, separate general purpose and special purpose code, red flag detection, design it twice practice, write comments first practice, comments for abstraction, comments for precision, comments for intuition, implementation comment guideline, interface comment guideline, comment repetition antipattern, implementation detail contamination antipattern, cross module documentation strategy, names as images principle, naming precision guideline, naming consistency guideline, hard to pick name red flag, comments first as design tool, tactical programming mindset, strategic programming mindset, tactical tornado antipattern, investment mindset in engineering, startups and design tradeoff, code reviews as learning, split versus join criterion, conjoined methods red flag, repetition red flag, undo infrastructure pattern, action object pattern, fence grouping technique, exceptions as complexity source, define errors out of existence, exception masking technique, exception aggregation technique, promote error to simpler recovery, crash on fatal condition, define special cases out of existence, mask versus aggregate design tradeoff, unit testing for refactoring, test driven development critique, design patterns guidance, getters and setters critique, consistency principle, style enforcement tooling, when in rome guideline, code should be obvious principle, whitespace and formatting guideline, event driven complexity, generic container antipattern, measuring before optimizing rule, critical path optimization, microbenchmark practice, ramcloud buffer optimization case study, cache and allocation awareness, latency cost model, design for performance tradeoff, modifying existing code strategy, keep comments near code guideline, avoid documentation duplication, check diffs before commit practice, higher level comments resilience, consistency enforcement in teams, when not to change conventions rule, pass through mitigation techniques, avoid getters and setters guideline, summarize red flags checklist\nCategories: software architecture, software engineering, systems design, programming language design, human computer interaction",
-  "_note": "Showing 10 of 92 concepts"
+  "summary": "This book presents a comprehensive philosophy of software design, emphasizing principles for managing complexity through effective problem decomposition, modular abstractions, information hiding, and strategic practices like writing insightful comments and designing for clarity, drawn from the author's Stanford course on the subject.\n\nKey Concepts: complexity software, modular design, abstraction, information hiding, information leakage, deep module, shallow module, temporal decomposition, dependencies, obscurity, change amplification, cognitive load, unknown unknowns, strategic programming, tactical programming, investment mindset, tactical tornado, design it twice, write comments first, interface comment, implementation comment, general-purpose module, special-purpose module, pull complexity downwards, pass-through method, pass-through variable, decorator pattern, context object, classitis, getters and setters, defaults in interfaces, design patterns application, unit testing, test-driven development, exception handling, define errors out of existence, exception masking, exception aggregation, crash on fatal errors, designnotes file, information hiding within class, somewhat general-purpose design, different layer different abstraction, pass-through variable mitigation, method splitting and factoring, conjoined methods, repetition red flag, overexposure, red flags checklist, comments for intuition, comments for precision, naming precision, naming consistency, hard to pick name indicator, comments as a design tool, maintain comments near code, avoid documentation duplication, check diffs for docs, consistency enforcement, coding style guidelines, code should be obvious, event-driven programming readability, generic containers anti-pattern, performance aware design, measure before modifying, design around the critical path, microbenchmarking, buffer optimization case study, unix deletion semantics, java substring critique, tcl unset lesson, undo history pattern, separate general-purpose and special-purpose, bring together when information shared, interface versus implementation distinction, simplicity over features, abstraction depth evaluation, pull complexity upward avoid, error promotion\nCategories: software architecture, software engineering, systems engineering, computer science education",
+  "_note": "Showing 10 of 79 concepts"
 }
 ```
 
@@ -2701,31 +2673,31 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
 {
   "document": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
   "document_hash": "bd8cbb7fb5d30c314ad3d323b8ef79113954f6122a798117c8aad32f382c330c",
-  "total_concepts": 177,
+  "total_concepts": 146,
   "primary_concepts": [
-    "system",
     "systems thinking",
-    "system structure",
-    "behavior over time",
-    "stock",
-    "flow",
-    "stocks and flows modeling",
+    "system definition",
+    "stocks and flows",
     "feedback loop",
-    "balancing feedback loop",
-    "reinforcing feedback loop"
+    "balancing feedback",
+    "reinforcing feedback",
+    "dynamic equilibrium",
+    "delays in feedback",
+    "buffer and capacity",
+    "resilience"
   ],
   "related_concepts": [],
   "categories": [
     "systems thinking",
     "system dynamics",
-    "environmental science",
+    "sustainability science",
     "organizational management",
-    "public policy",
+    "ecology",
     "complexity science",
-    "sustainability science"
+    "environmental studies"
   ],
-  "summary": "Thinking in Systems is a primer by Donella H. Meadows that introduces foundational concepts of systems thinking, including system structures, behaviors, surprises, traps, leverage points for intervention, and guidelines for living and creating change in a complex, interconnected world, drawing from decades of systems modeling and interdisciplinary wisdom.\n\nKey Concepts: system, systems thinking, system structure, behavior over time, stock, flow, stocks and flows modeling, feedback loop, balancing feedback loop, reinforcing feedback loop, dynamic equilibrium, time graph, delay, buffer, stock as memory, information flow, system boundary, purpose and function, mental model, bounded rationality, satisficing, emergent behavior, resilience, self-organization, hierarchy, suboptimization, shifting dominance, nonlinearity, threshold and tipping point, overshoot, carrying capacity, limits to growth, renewable resource dynamics, nonrenewable resource dynamics, regeneration rate, yield per unit capital, capital stock, investment fraction, depreciation and lifetime, population dynamics, aging chain, bathtub dynamics, thermostat structure, inventory management, perception delay, response delay, delivery delay, oscillation, exponential growth, doubling time heuristic, nonlinear feedback sensitivity, archetype, policy resistance, tragedy of the commons, drift to low performance, escalation, success to the successful, shifting the burden, rule beating, seeking the wrong goal, leverage point, places to intervene in a system, parameters and constants, stock and flow structure intervention, delay management, feedback strength, information transparency, rules and incentives design, self-organization capacity, system goals intervention, paradigm shift, transcending paradigms, exposing mental models, behavioral scenarios and testing, model boundary selection, sensitivity analysis, simplifying assumptions, event-level versus behavior-level thinking, intrinsic responsibility, mutual coercion mutually agreed upon, internalizing externalities, learning policies, transparency and whistleblower protection, language and framing, quality versus quantity focus, celebrating complexity, humility and error-embracing, expand time horizons, defy disciplinary boundaries, locate responsibility in systems, monitoring and feedback policies, model equations, clouds as modeling shorthand, systems archetype catalog, design for resilience, internal feedback versus external blame, ethics of system design, holism versus reductionism, systems lens, sustainability, global modeling, sustainable development, environmental stewardship, complexity, global commons, cultural change through publishing, organizational learning, interconnectedness, long-term thinking, citizen empowerment, conservation science, science communication, system dynamics modeling, scenario analysis, integrated assessment modeling, feedback loop analysis, ecological economics, organizational design for sustainability, participatory governance, environmental pedagogy, public advocacy through books, citizen climate action, toxic chemical assessment, slow money investing, life cycle thinking, strategic foresight, environmental policy analysis, interdisciplinary research methods, teaching environmental studies, public intellectual column writing, book catalog distribution, editorial curation for impact, stewardship narratives, public-facing scientific forewords, sustainability institutes, population and resource coupling, carrying capacity modeling, reinforcing feedback, balancing feedback, stock and flow structures, delay effects in systems, overshoot and collapse dynamics, environmental indicators, ecological footprint accounting, pollutant exposure pathways, regulatory risk assessment, food system resilience, local investment strategies, soil fertility management, holocene perspective, gaia hypothesis interpretation, science and intuition integration, conversations with scientists, public catalog marketing, foreword framing, book pricing strategy, accessibility in publishing, environmental narrative framing, consumer product toxicity, transdisciplinary synthesis, media outreach for sustainability, research fellowship recognition, academic teaching in practice, book-driven civic education, ethical stewardship frameworks, sustainability metrics design, holistic risk communication, stakeholder engagement practices, policy-relevant scholarship, narrative reflection, consumer empowerment, applied systems pedagogy, scientific foreword use, publishing as activism, community-supported investment, environmental history perspective, public-facing research dissemination\nCategories: systems thinking, system dynamics, environmental science, organizational management, public policy, complexity science, sustainability science",
-  "_note": "Showing 10 of 177 concepts"
+  "summary": "Thinking in Systems is a posthumously edited primer by Donella H. Meadows that introduces foundational concepts of systems thinking, including system structures, behaviors, surprises, traps, leverage points for intervention, and guidelines for living amid complexity, drawing from decades of systems dynamics research to empower readers in addressing real-world problems.\n\nKey Concepts: systems thinking, system definition, stocks and flows, feedback loop, balancing feedback, reinforcing feedback, dynamic equilibrium, delays in feedback, buffer and capacity, resilience, self-organization, hierarchy and modularity, system boundaries, behavior over time graph, archetypes of system structure, policy resistance, tragedy of the commons, shifting the burden and addiction, success to the successful, escalation dynamics, rule beating, seeking wrong goals, bounded rationality, satisficing behavior, information flow design, intrinsic responsibility, leverage points, parameters and constants, stock-and-flow structure, delay sensitivity, strength of balancing loops, strength of reinforcing loops, rules and incentives, paradigm and mindset, transcending paradigms, behavioral archetypes catalog, limits to growth, renewable resource constraint, nonrenewable resource depletion, overshoot and collapse, business cycles and inventory oscillation, perceived signal smoothing, reaction time and response smoothing, doubling time heuristic, supply and demand as feedback, externalities and missing feedback, privatization and regulation tradeoffs, feedback-rich monitoring, modeling and simulation, behavior-driven scenario analysis, mental models articulation, language shaping perception, time horizon expansion, ethical system design, living within limits, learning organizations, error-embracing experimentation, systems literacy education, fractal geometry and self-similarity, stock memory and momentum, nonlinearity and thresholds, dominance shifting, carrying capacity, co-evolution of systems and limits, system redesign and leverage sequencing, integrated policy packages, scenario robustness and uncertainty, ethical stewardship, participatory system governance, glossary of system definitions, model transparency and assumptions, leverage hierarchy, sustainable development, global modeling, environmental stewardship, cultural change through publishing, complexity, interdependence, planetary boundaries, ecological economics, citizen engagement, systems dynamics modeling, feedback loops, stocks and flows analysis, leverage points identification, organizational learning, scenario analysis, long-term forecasting, integrated assessment modeling, participatory modeling, policy analysis for sustainability, sustainability indicators, ecological footprinting, life cycle assessment, adaptive management, transdisciplinary education, environmental studies pedagogy, public science communication, environmental journalism, systems mapping, causal loop diagrams, boundary critique, social-ecological systems approach, model assumptions transparency, model validation and calibration, sensitivity analysis, network analysis for global issues, agent-based modeling, optimization under constraints, resource accounting, carrying capacity assessment, resilience assessment, commons governance, community-based sustainability planning, slow money investing, toxic chemistry awareness, food systems thinking, regenerative agriculture, ecological restoration methods, chemical exposure pathways, product stewardship, energy transition, carbon budget analysis, waste management techniques, sustainable finance instruments, farm fertility management, agroecology practices, demographic transition analysis, per capita resource use metrics, consumption pattern analysis, nonrenewable resource depletion modeling, renewable resource management, pollution accumulation dynamics, tipping points, exponential growth dynamics, delayed feedback effects, supply-demand feedback, permaculture principles, indicator-based evaluation, metric standardization for sustainability, participatory publishing strategies, catalog distribution channels, foreword as scholarly endorsement, column-based public reflection, educational outreach through books, interdisciplinary research translation\nCategories: systems thinking, system dynamics, sustainability science, organizational management, ecology, complexity science, environmental studies",
+  "_note": "Showing 10 of 146 concepts"
 }
 ```
 
@@ -2745,30 +2717,30 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
 {
   "document": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
   "document_hash": "ff90855c3cb784cd65dbd1583bad9ef4ea52607021baf3ce6a5196cb40d7de99",
-  "total_concepts": 162,
+  "total_concepts": 188,
   "primary_concepts": [
-    "abstract factory pattern",
-    "builder pattern",
-    "factory method pattern",
-    "prototype pattern",
-    "singleton pattern",
-    "adapter pattern",
-    "bridge pattern",
-    "composite pattern",
-    "decorator pattern",
-    "facade pattern"
+    "design pattern",
+    "pattern template",
+    "pattern naming",
+    "intent section",
+    "motivation section",
+    "applicability section",
+    "structure section",
+    "participants",
+    "collaborations",
+    "consequences section"
   ],
   "related_concepts": [],
   "categories": [
-    "software architecture",
     "object-oriented design",
-    "software engineering",
+    "software architecture",
     "human-computer interaction",
     "programming languages",
-    "user interface engineering"
+    "software engineering",
+    "user interface design"
   ],
-  "summary": "This document presents the table of contents and preface for \"Design Patterns: Elements of Reusable Object-Oriented Software,\" a foundational book introducing key object-oriented design patterns through an introductory overview, a document editor case study, a comprehensive catalog of creational, structural, and behavioral patterns, and supplementary materials like a glossary and notation guide, along with a CD-ROM edition preface highlighting the book's impact and hypertext benefits.\n\nKey Concepts: abstract factory pattern, builder pattern, factory method pattern, prototype pattern, singleton pattern, adapter pattern, bridge pattern, composite pattern, decorator pattern, facade pattern, flyweight pattern, proxy pattern, chain of responsibility pattern, command pattern, interpreter pattern, iterator pattern, mediator pattern, memento pattern, observer pattern, state pattern, strategy pattern, template method pattern, visitor pattern, model view controller, glyph abstraction, recursive composition, compositor, composition pattern, linebreaking algorithm, formatting strategy, compositor strategy, transparent enclosure, monoglyph, border decorator, scroller decorator, discretionary glyph, spelling checking visitor, hyphenation visitor, command history, undo redo mechanism, iterator types, preorder traversal, list iterator, null iterator, visitor traversal, separation of traversal and traversal actions, program to an interface, favor object composition over class inheritance, delegation, dynamic binding, polymorphism, encapsulation, abstraction, inheritance versus composition, interface inheritance, implementation inheritance, class and object scope, pattern classification by purpose and scope, pattern catalog organization, pattern template elements, applicability assessment, trade offs and consequences, design for change, loose coupling, tight coupling, coupling and cohesion, aggregation and acquaintance, runtime and compile-time structures, mixin class, parameterized types and generics, createiterator operation, prototype manager, clone operation and deep copy, prototype registration, lazy initialization, singleton registry, handle body idiom, reference counting for shared objects, caching for performance, facade versus mediator, decorator versus inheritance tradeoff, class adapter versus object adapter, pluggable adapters, two way adapter, factory as singleton, prototype versus abstract factory tradeoff, framework toolkit application distinction, inversion of control, template method usage, macro command, composite and iterator synergy, visitor tradeoffs, mediator pattern decoupling, memento encapsulation of state, proxy as surrogate, intrinsic and extrinsic state, design pattern, object oriented design, encapsulation principle, inheritance, high cohesion, separation of concerns, reuse strategy, refactoring, framework, flyweight factory, intrinsic state, extrinsic state, glyph context, b tree mapping, glyph factory, glyph composite structure, character flyweight, compact font mapping, font span, index-based lookup, lazy instantiation, virtual proxy, protection proxy, remote proxy, smart reference, operator overloading proxy, does not understand hook, copy on write, reference counting, persistent object loading, operator arrow forwarding, smalltalk message forwarding, undo redo history, command as first class object, undo state capture, memento caretaking, incremental mementos, change manager, directed acyclic graph manager, push versus pull notification, subject observer mapping, dangling observer handling, aspect based registration, template method hooks, factory method as primitive, double dispatch, multiple dispatch, traversal placement decision, internal iterator, external iterator, cursor iterator, robust iterator, iterator cleanup proxy, cursor based composite iteration, filtering traversal, iterator as internal traverser, command serialization, arguments bundling request object, handler successor link, help handler example, widget director, dialog creation template, view manager pattern, event subscription, delegation pattern, role based decomposition\nCategories: software architecture, object-oriented design, software engineering, human-computer interaction, programming languages, user interface engineering",
-  "_note": "Showing 10 of 162 concepts"
+  "summary": "This book, \"Design Patterns: Elements of Reusable Object-Oriented Software,\" provides an introduction to design patterns for object-oriented programming, a case study on designing a document editor, a detailed catalog of creational, structural, and behavioral patterns, discussions on their applications, and supplementary resources including a glossary, notation guide, foundation classes, and a preface to its CD-ROM edition.\n\nKey Concepts: design pattern, pattern template, pattern naming, intent section, motivation section, applicability section, structure section, participants, collaborations, consequences section, implementation section, sample code, known uses, related patterns, creational patterns, structural patterns, behavioral patterns, abstract factory, factory method, builder pattern, prototype pattern, singleton pattern, adapter pattern, bridge pattern, composite pattern, decorator pattern, facade pattern, flyweight pattern, proxy pattern, chain of responsibility, command pattern, interpreter pattern, iterator pattern, mediator pattern, memento pattern, observer pattern, state pattern, strategy pattern, template method, visitor pattern, mvc, glyph, recursive composition, composition versus inheritance, transparent enclosure, monoglyph, scroller, border decorator, compositor, composition glyph, formatting trade-off, discretionary glyph, spelling checking visitor, hyphenation visitor, iterator protocol, null iterator, preorder iterator, createiterator, traversal and traversal actions separation, visitor accept operation, double dispatch, command object, command history, reversible predicate, undo redo mechanism, memento interfaces, iterator state encapsulation, visitor tradeoffs, intrinsic state, extrinsic state, flyweight factory, clone semantics, prototype registry, parameterized factory method, factory as singleton, factory selection strategies, language influence on design, class versus object scope, class inheritance versus interface inheritance, program to an interface, favor composition over inheritance principle, delegation, mixin class, parameterized types, run time versus compile time structure, aggregation versus acquaintance, encapsulation, polymorphism, dynamic binding, software reuse mechanisms, delegation self-passing, reuse on levels: application toolkit framework, designing for change, causes of redesign, pattern selection process, how to use a pattern, pattern catalog organization, pattern interrelationships, notation and diagramming, foundation classes, lexi case study, document structure problem, formatting versus representation separation, embellishing user interface, supporting multiple look and feel, supporting multiple window systems, window implementation hiding, window system factory, ui controller as strategy, composition order effects, pluggable adapters, two way adapter, pattern community, hypertext edition, design patterns, object-oriented design, software architecture, separation of concerns, reusability, loose coupling, refactoring, pattern language, trade-offs and forces, glyphcontext, b-tree font mapping, glyphfactory, virtual proxy, remote proxy, protection proxy, smart reference, operator overloading for proxy, doesnotunderstand mechanism, copy-on-write, reference counting, invoker and receiver, macro command, undo and redo, simplecommand template, originator and caretaker, incremental mementos, abstract syntax tree, context object for interpretation, sharing terminal symbols, element accept operation, external iterator, internal iterator, polymorphic iterator factory, robust iterator, colleague classes, dialog director, subject and observer roles, push versus pull notification, change manager, chain of responsibility pattern, successor link, request as object, command chaining, state transitions, strategy as template parameter, template method pattern, hook operations, factory method pattern, factory patterns family, image proxy, imageptr, persistence and serialization, remote object identifiers, smart pointers and resource management, doesnotunderstand proxy pattern, unidraw command interpretation, thin client invoker, template-method inversion of control, dynamic dispatch limitations, iterators for composite structures, cursor-based iteration, memento-based iteration, observer reentrancy and consistency, aspect-based notification, change-coalescing, command logging for recovery, visitor traversal responsibility, toolkit and framework distinctions, iterators and exception safety, design vocabulary, black-box reuse, white-box reuse, role of documentation and examples, known uses and related patterns\nCategories: object-oriented design, software architecture, human-computer interaction, programming languages, software engineering, user interface design",
+  "_note": "Showing 10 of 188 concepts"
 }
 ```
 
@@ -2789,10 +2761,10 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
 ```json
 {
   "summary": {
-    "totalCategories": 21,
-    "categoriesReturned": 21,
+    "totalCategories": 20,
+    "categoriesReturned": 20,
     "rootCategories": 0,
-    "totalDocuments": 23,
+    "totalDocuments": 22,
     "sortedBy": "popularity",
     "searchQuery": null
   },
@@ -2846,13 +2818,13 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "relatedCategories": []
     },
     {
-      "id": 178677026,
-      "name": "defense studies",
-      "description": "Concepts and practices related to defense studies",
+      "id": 3581925764,
+      "name": "computer science education",
+      "description": "Concepts and practices related to computer science education",
       "aliases": [],
       "parent": null,
       "hierarchy": [
-        "defense studies"
+        "computer science education"
       ],
       "statistics": {
         "documents": 1,
@@ -2862,13 +2834,13 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "relatedCategories": []
     },
     {
-      "id": 1309507469,
-      "name": "environmental science",
-      "description": "Concepts and practices related to environmental science",
+      "id": 3753948276,
+      "name": "decision theory",
+      "description": "Concepts and practices related to decision theory",
       "aliases": [],
       "parent": null,
       "hierarchy": [
-        "environmental science"
+        "decision theory"
       ],
       "statistics": {
         "documents": 1,
@@ -2878,13 +2850,29 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "relatedCategories": []
     },
     {
-      "id": 3569476375,
-      "name": "human computer interaction",
-      "description": "Concepts and practices related to human computer interaction",
+      "id": 3070868771,
+      "name": "ecology",
+      "description": "Concepts and practices related to ecology",
       "aliases": [],
       "parent": null,
       "hierarchy": [
-        "human computer interaction"
+        "ecology"
+      ],
+      "statistics": {
+        "documents": 1,
+        "chunks": 0,
+        "concepts": 0
+      },
+      "relatedCategories": []
+    },
+    {
+      "id": 1210583398,
+      "name": "environmental studies",
+      "description": "Concepts and practices related to environmental studies",
+      "aliases": [],
+      "parent": null,
+      "hierarchy": [
+        "environmental studies"
       ],
       "statistics": {
         "documents": 1,
@@ -2926,13 +2914,29 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "relatedCategories": []
     },
     {
-      "id": 3636437145,
-      "name": "logistics and supply chain",
-      "description": "Concepts and practices related to logistics and supply chain",
+      "id": 1219398223,
+      "name": "leadership studies",
+      "description": "Concepts and practices related to leadership studies",
       "aliases": [],
       "parent": null,
       "hierarchy": [
-        "logistics and supply chain"
+        "leadership studies"
+      ],
+      "statistics": {
+        "documents": 1,
+        "chunks": 0,
+        "concepts": 0
+      },
+      "relatedCategories": []
+    },
+    {
+      "id": 1647311600,
+      "name": "logistics and supply",
+      "description": "Concepts and practices related to logistics and supply",
+      "aliases": [],
+      "parent": null,
+      "hierarchy": [
+        "logistics and supply"
       ],
       "statistics": {
         "documents": 1,
@@ -2974,22 +2978,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "relatedCategories": []
     },
     {
-      "id": 1167893166,
-      "name": "organizational leadership",
-      "description": "Concepts and practices related to organizational leadership",
-      "aliases": [],
-      "parent": null,
-      "hierarchy": [
-        "organizational leadership"
-      ],
-      "statistics": {
-        "documents": 1,
-        "chunks": 0,
-        "concepts": 0
-      },
-      "relatedCategories": []
-    },
-    {
       "id": 1573810230,
       "name": "organizational management",
       "description": "Concepts and practices related to organizational management",
@@ -3006,22 +2994,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "relatedCategories": []
     },
     {
-      "id": 3450474974,
-      "name": "programming language design",
-      "description": "Concepts and practices related to programming language design",
-      "aliases": [],
-      "parent": null,
-      "hierarchy": [
-        "programming language design"
-      ],
-      "statistics": {
-        "documents": 1,
-        "chunks": 0,
-        "concepts": 0
-      },
-      "relatedCategories": []
-    },
-    {
       "id": 2464887633,
       "name": "programming languages",
       "description": "Concepts and practices related to programming languages",
@@ -3029,22 +3001,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "parent": null,
       "hierarchy": [
         "programming languages"
-      ],
-      "statistics": {
-        "documents": 1,
-        "chunks": 0,
-        "concepts": 0
-      },
-      "relatedCategories": []
-    },
-    {
-      "id": 3183338954,
-      "name": "public policy",
-      "description": "Concepts and practices related to public policy",
-      "aliases": [],
-      "parent": null,
-      "hierarchy": [
-        "public policy"
       ],
       "statistics": {
         "documents": 1,
@@ -3086,13 +3042,13 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "relatedCategories": []
     },
     {
-      "id": 3124593461,
-      "name": "systems design",
-      "description": "Concepts and practices related to systems design",
+      "id": 3405947310,
+      "name": "systems engineering",
+      "description": "Concepts and practices related to systems engineering",
       "aliases": [],
       "parent": null,
       "hierarchy": [
-        "systems design"
+        "systems engineering"
       ],
       "statistics": {
         "documents": 1,
@@ -3118,13 +3074,13 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "relatedCategories": []
     },
     {
-      "id": 3580034254,
-      "name": "user interface engineering",
-      "description": "Concepts and practices related to user interface engineering",
+      "id": 2877534165,
+      "name": "user interface design",
+      "description": "Concepts and practices related to user interface design",
       "aliases": [],
       "parent": null,
       "hierarchy": [
-        "user interface engineering"
+        "user interface design"
       ],
       "statistics": {
         "documents": 1,
@@ -3174,7 +3130,7 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
   "documents": [
     {
       "title": "",
-      "preview": "This excerpt from the introduction to Sun Tzu's \"The Art of War\" provides a historical biography of the ancient Chinese military strategist Sun Tzu, recounts his legendary demonstration of troop disci...",
+      "preview": "This excerpt from the introduction to Sun Tzu's \"The Art of War\" recounts the ancient Chinese strategist's biography, including his legendary demonstration of military discipline by drilling palace co...",
       "primaryConcepts": []
     }
   ],
@@ -3218,12 +3174,12 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
   "documents": [
     {
       "title": "",
-      "preview": "This book outlines a philosophy of software design, emphasizing principles for managing complexity through deep modules, information hiding, strategic decomposition, and practical techniques like writ...",
+      "preview": "This book presents a comprehensive philosophy of software design, emphasizing principles for managing complexity through effective problem decomposition, modular abstractions, information hiding, and ...",
       "primaryConcepts": []
     },
     {
       "title": "",
-      "preview": "This document presents the table of contents and preface for \"Design Patterns: Elements of Reusable Object-Oriented Software,\" a foundational book introducing key object-oriented design patterns throu...",
+      "preview": "This book, \"Design Patterns: Elements of Reusable Object-Oriented Software,\" provides an introduction to design patterns for object-oriented programming, a case study on designing a document editor, a...",
       "primaryConcepts": []
     }
   ],
@@ -3267,7 +3223,7 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
   "documents": [
     {
       "title": "",
-      "preview": "Thinking in Systems is a primer by Donella H. Meadows that introduces foundational concepts of systems thinking, including system structures, behaviors, surprises, traps, leverage points for intervent...",
+      "preview": "Thinking in Systems is a posthumously edited primer by Donella H. Meadows that introduces foundational concepts of systems thinking, including system structures, behaviors, surprises, traps, leverage ...",
       "primaryConcepts": []
     }
   ],
@@ -3300,7 +3256,7 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "entity": "Category",
       "identifier": "design patterns"
     },
-    "timestamp": "2025-11-28T17:04:08.271Z"
+    "timestamp": "2025-11-28T17:26:28.633Z"
   }
 }
 ```

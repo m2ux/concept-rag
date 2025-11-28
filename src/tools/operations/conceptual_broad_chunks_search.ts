@@ -37,7 +37,7 @@ DO NOT USE for:
 - Searching within a single known document (use chunks_search instead)
 - Finding semantically-tagged concept discussions (use concept_search or concept_chunks)
 
-RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, title, and WordNet scores. May include false positives based on keyword matches.`;
+RETURNS: Top 20 chunks ranked by hybrid scoring (40% vector, 40% BM25, 20% WordNet - no title matching for chunks). May include false positives based on keyword matches.`;
   inputSchema = {
     type: "object" as const,
     properties: {
@@ -110,6 +110,7 @@ RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, title, a
     }
     
     // Format results for MCP response
+    // Note: Chunks don't use title scoring (40% vector, 40% BM25, 20% WordNet)
     // @ts-expect-error - Type narrowing limitation
     const formattedResults = result.value.map((r: SearchResult) => ({
       text: r.text,
@@ -118,7 +119,6 @@ RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, title, a
         hybrid: r.hybridScore.toFixed(3),
         vector: r.vectorScore.toFixed(3),
         bm25: r.bm25Score.toFixed(3),
-        title: r.titleScore.toFixed(3),
         wordnet: r.wordnetScore.toFixed(3)
       },
       matched_concepts: r.matchedConcepts,

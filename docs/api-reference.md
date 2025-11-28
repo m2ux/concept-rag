@@ -75,7 +75,7 @@ Search document summaries and metadata to discover relevant documents using sema
 
 ### `broad_chunks_search`
 
-Search across ALL document chunks using hybrid search (vector + BM25 + title + WordNet).
+Search across ALL document chunks using hybrid search (40% vector + 40% BM25 + 20% WordNet). Note: Title matching is NOT used for chunk search.
 
 **Use When:**
 - Comprehensive cross-document research on a topic
