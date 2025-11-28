@@ -24,10 +24,11 @@ export interface ExpandedQuery {
  * Calculate vector similarity score from distance.
  * 
  * @param distance - Vector distance from LanceDB (0 = identical, higher = less similar)
- * @returns Score from 0.0 to 1.0 (1.0 = perfect match)
+ * @returns Score from 0.0 to 1.0 (1.0 = perfect match, clamped to prevent negatives)
  */
 export function calculateVectorScore(distance: number): number {
-  return 1 - (distance || 0);
+  const score = 1 - (distance || 0);
+  return Math.max(0, Math.min(score, 1));  // Clamp to 0-1 range
 }
 
 /**
