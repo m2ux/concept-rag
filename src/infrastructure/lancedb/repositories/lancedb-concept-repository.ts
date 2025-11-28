@@ -1,13 +1,13 @@
 import * as lancedb from "@lancedb/lancedb";
 import { ConceptRepository } from '../../../domain/interfaces/repositories/concept-repository.js';
 import { Concept } from '../../../domain/models/index.js';
-import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } from '../../../domain/exceptions.js';
-import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
+import { ConceptNotFoundError, InvalidEmbeddingsError } from '../../../domain/exceptions.js';
+import { DatabaseError } from '../../../domain/exceptions/index.js';
 import { parseJsonField, escapeSqlString } from '../utils/field-parsers.js';
 import { validateConceptRow, detectVectorField } from '../utils/schema-validators.js';
 // @ts-expect-error - Type narrowing limitation
 import type { Option } from "../../../../__tests__/test-helpers/../../domain/functional/index.js";
-import { Some, None, fromNullable } from '../../../domain/functional/option.js';
+import { Some, None } from '../../../domain/functional/option.js';
 
 /**
  * LanceDB implementation of ConceptRepository
@@ -120,7 +120,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
     
     // Filter out the original concept and map to domain models
     return results
-      .filter((row: any) => row.concept.toLowerCase() !== conceptName.toLowerCase())
+      .filter((row: any) => (row.name || row.concept || '').toLowerCase() !== conceptName.toLowerCase())
       .slice(0, limit)
       .map((row: any) => this.mapRowToConcept(row));
   }
@@ -176,19 +176,45 @@ export class LanceDBConceptRepository implements ConceptRepository {
     const vectorField = detectVectorField(row);
     const embeddings = vectorField ? row[vectorField] : [];
     
+    // Helper to parse array fields (handles native arrays, Arrow Vectors, and JSON strings)
+    const parseArrayField = <T>(value: any): T[] => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      if (typeof value === 'object' && 'toArray' in value) {
+        // Arrow Vector - convert to JavaScript array
+        return Array.from(value.toArray());
+      }
+      if (typeof value === 'string') {
+        return parseJsonField<T>(value);
+      }
+      return [];
+    };
+    
+    // Parse catalog_ids (native array, Arrow Vector, or JSON string)
+    const catalogIds = parseArrayField<number>(row.catalog_ids);
+    
+    // Parse chunk_ids (native array, Arrow Vector, or JSON string)
+    const chunkIds = parseArrayField<number>(row.chunk_ids);
+    
+    // Parse adjacent_ids (co-occurrence) - native array, Arrow Vector, or JSON string
+    const adjacentIds = parseArrayField<number>(row.adjacent_ids);
+    
+    // Parse related_ids (lexical links) - native array, Arrow Vector, or JSON string
+    const relatedIds = parseArrayField<number>(row.related_ids);
+    
     return {
-      concept: row.concept || '',
-      conceptType: row.concept_type || 'thematic',
-      category: row.category || '',
-      sources: parseJsonField(row.sources),
-      relatedConcepts: parseJsonField(row.related_concepts),
-      synonyms: parseJsonField(row.synonyms),
-      broaderTerms: parseJsonField(row.broader_terms),
-      narrowerTerms: parseJsonField(row.narrower_terms),
-      embeddings,  // Now uses detected vector field
-      weight: row.weight || 0,
-      chunkCount: row.chunk_count || 0,
-      enrichmentSource: row.enrichment_source || 'corpus'
+      name: row.name || row.concept || '',  // Support both 'name' (new) and 'concept' (legacy)
+      summary: row.summary || '',
+      catalogIds,
+      chunkIds,
+      adjacentIds,
+      relatedIds,
+      relatedConcepts: parseArrayField(row.related_concepts),
+      synonyms: parseArrayField(row.synonyms),
+      broaderTerms: parseArrayField(row.broader_terms),
+      narrowerTerms: parseArrayField(row.narrower_terms),
+      embeddings,
+      weight: row.weight || 0
     };
   }
 }

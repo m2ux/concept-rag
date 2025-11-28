@@ -81,6 +81,17 @@ export interface CatalogRepository {
   search(query: SearchQuery): Promise<SearchResult[]>;
   
   /**
+   * Find a catalog entry by hash-based catalog ID.
+   * 
+   * Returns Option<SearchResult> for type-safe nullable handling.
+   * 
+   * @param catalogId - Hash-based document ID
+   * @returns Promise resolving to Some(entry) if found, None if not found
+   * @throws {Error} If database query fails
+   */
+  findById(catalogId: number): Promise<Option<SearchResult>>;
+  
+  /**
    * Find a catalog entry by source document path.
    * 
    * Returns Option<SearchResult> for type-safe nullable handling.

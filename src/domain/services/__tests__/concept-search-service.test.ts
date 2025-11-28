@@ -35,6 +35,10 @@ class MockChunkRepository implements ChunkRepository {
     return Promise.resolve([]);
   }
 
+  async findByCatalogId(catalogId: number, limit: number): Promise<Chunk[]> {
+    return Promise.resolve([]);
+  }
+
   async countChunks(): Promise<number> {
     return Promise.resolve(0);
   }
@@ -105,12 +109,11 @@ describe('ConceptSearchService', () => {
       const conceptName = 'dependency injection';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk about dependency injection',
-          source: '/docs/di.pdf',
           hash: 'hash1',
-          concepts: ['dependency injection'],
-          conceptDensity: 0.5
+          catalogId: 12345678,
+          conceptIds: [1003],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -138,12 +141,11 @@ describe('ConceptSearchService', () => {
       const conceptName = 'dependency injection';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk about DI',
-          source: '/docs/di.pdf',
           hash: 'hash1',
-          concepts: ['dependency injection'],
-          conceptDensity: 0.5
+          catalogId: 12345678,
+          conceptIds: [1003],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -167,12 +169,11 @@ describe('ConceptSearchService', () => {
       const conceptName = 'dependency injection';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk about DI',
-          source: '/docs/di.pdf',
           hash: 'hash1',
-          concepts: ['dependency injection'],
-          conceptDensity: 0.5
+          catalogId: 12345678,
+          conceptIds: [1003],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -318,20 +319,18 @@ describe('ConceptSearchService', () => {
       const conceptName = 'architecture';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk from typescript guide',
-          source: '/docs/typescript-guide.pdf',
           hash: 'hash1',
-          concepts: ['architecture'],
-          conceptDensity: 0.5
+          catalogId: 12345678,
+          conceptIds: [1001],
         },
         {
-          id: '2',
+          id: 2,
           text: 'Chunk from python guide',
-          source: '/docs/python-guide.pdf',
-          hash: 'hash2',
-          concepts: ['architecture'],
-          conceptDensity: 0.4
+          hash: 'hash1',
+          catalogId: 12345678,
+          conceptIds: [1001],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -347,7 +346,7 @@ describe('ConceptSearchService', () => {
       // VERIFY
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        expect(result.value.chunks[0].source).toContain('typescript');
+        expect(result.value.chunks[0].catalogId).toContain('typescript');
       }
     });
 
@@ -356,12 +355,11 @@ describe('ConceptSearchService', () => {
       const conceptName = 'design patterns';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk from TypeScript guide',
-          source: '/docs/TypeScript-Guide.pdf',
           hash: 'hash1',
-          concepts: ['design patterns'],
-          conceptDensity: 0.5
+          catalogId: 12345678,
+          conceptIds: [1006],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -382,20 +380,18 @@ describe('ConceptSearchService', () => {
       const conceptName = 'testing';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk 1',
-          source: '/docs/doc1.pdf',
           hash: 'hash1',
-          concepts: ['testing'],
-          conceptDensity: 0.5
+          catalogId: 12345678,
+          conceptIds: [1004],
         },
         {
-          id: '2',
+          id: 2,
           text: 'Chunk 2',
-          source: '/docs/doc2.pdf',
-          hash: 'hash2',
-          concepts: ['testing'],
-          conceptDensity: 0.4
+          hash: 'hash1',
+          catalogId: 12345678,
+          conceptIds: [1004],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -415,12 +411,11 @@ describe('ConceptSearchService', () => {
       const conceptName = 'architecture';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk',
-          source: '/docs/typescript.pdf',
           hash: 'hash1',
-          concepts: ['architecture'],
-          conceptDensity: 0.5
+          catalogId: 12345678,
+          conceptIds: [1001],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -443,28 +438,25 @@ describe('ConceptSearchService', () => {
       const conceptName = 'patterns';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
-          text: 'Low density',
-          source: '/docs/doc1.pdf',
+          id: 1,
+          text: 'Few concepts',
           hash: 'hash1',
-          concepts: ['patterns'],
-          conceptDensity: 0.3
+          catalogId: 12345678,
+          conceptIds: [1005],
         },
         {
-          id: '2',
-          text: 'High density',
-          source: '/docs/doc2.pdf',
-          hash: 'hash2',
-          concepts: ['patterns'],
-          conceptDensity: 0.8
+          id: 2,
+          text: 'Many concepts',
+          hash: 'hash1',
+          catalogId: 12345678,
+          conceptIds: [1005, 1002, 1001],
         },
         {
-          id: '3',
-          text: 'Medium density',
-          source: '/docs/doc3.pdf',
-          hash: 'hash3',
-          concepts: ['patterns'],
-          conceptDensity: 0.5
+          id: 3,
+          text: 'Some concepts',
+          hash: 'hash1',
+          catalogId: 12345678,
+          conceptIds: [1005, 1002],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -476,11 +468,10 @@ describe('ConceptSearchService', () => {
       });
 
       // VERIFY
-      // VERIFY
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        expect(result.value.chunks[1].conceptDensity).toBe(0.5);
-        expect(result.value.chunks[2].conceptDensity).toBe(0.3);
+        // Results should be sorted by concept count (most concepts first)
+        expect(result.value.chunks[0].conceptIds?.length).toBeGreaterThanOrEqual(result.value.chunks[1].conceptIds?.length || 0);
       }
     });
 
@@ -489,20 +480,18 @@ describe('ConceptSearchService', () => {
       const conceptName = 'testing';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
-          text: 'Chunk with lower density',
-          source: '/docs/doc1.pdf',
+          id: 1,
+          text: 'Short chunk', // Short text, fewer concepts = lower relevance
           hash: 'hash1',
-          concepts: ['testing'],
-          conceptDensity: 0.3
+          catalogId: 12345678,
+          conceptIds: [1004],
         },
         {
-          id: '2',
-          text: 'Chunk with higher density',
-          source: '/docs/doc2.pdf',
-          hash: 'hash2',
-          concepts: ['testing'],
-          conceptDensity: 0.8
+          id: 2,
+          text: 'A'.repeat(300), // Long text (qualifies for text length bonus) + more concepts
+          hash: 'hash1',
+          catalogId: 12345678,
+          conceptIds: [1004, 1007, 1008], // More concepts
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -517,7 +506,7 @@ describe('ConceptSearchService', () => {
       // VERIFY
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        // Chunk 2 has higher relevance (0.8*0.5+0.3=0.7) vs chunk 1 (0.3*0.5+0.3=0.45)
+        // Chunk 2 has higher relevance due to text length bonus and concept match
         expect(result.value.chunks[0].id).toBe('2');
       }
     });
@@ -527,20 +516,18 @@ describe('ConceptSearchService', () => {
       const conceptName = 'architecture';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk from Z document',
-          source: '/docs/z.pdf',
           hash: 'hash1',
-          concepts: ['architecture'],
-          conceptDensity: 0.5
+          catalogId: 12345678,
+          conceptIds: [1001],
         },
         {
-          id: '2',
+          id: 2,
           text: 'Chunk from A document',
-          source: '/docs/a.pdf',
-          hash: 'hash2',
-          concepts: ['architecture'],
-          conceptDensity: 0.8
+          hash: 'hash1',
+          catalogId: 12345678,
+          conceptIds: [1001],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -556,7 +543,7 @@ describe('ConceptSearchService', () => {
       // VERIFY
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        expect(result.value.chunks[1].source).toBe('/docs/z.pdf');
+        expect(result.value.chunks[1].catalogId).toBe('/docs/z.pdf');
       }
     });
 
@@ -565,19 +552,18 @@ describe('ConceptSearchService', () => {
       const conceptName = 'patterns';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk with density',
-          source: '/docs/doc1.pdf',
           hash: 'hash1',
-          concepts: ['patterns'],
-          conceptDensity: 0.5
+          catalogId: 12345678,
+          conceptIds: [1005],
         },
         {
-          id: '2',
+          id: 2,
           text: 'Chunk without density',
-          source: '/docs/doc2.pdf',
-          hash: 'hash2',
-          concepts: ['patterns']
+          hash: 'hash1',
+          catalogId: 12345678,
+          conceptIds: [1005]
           // conceptDensity is undefined
         }
       ];
@@ -603,12 +589,11 @@ describe('ConceptSearchService', () => {
       // SETUP
       const conceptName = 'testing';
       const mockChunks: Chunk[] = Array.from({ length: 20 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Chunk ${i}`,
-        source: `/docs/doc${i}.pdf`,
         hash: `hash${i}`,
-        concepts: ['testing'],
-        conceptDensity: 0.5
+        catalogId: 12345678,
+        conceptIds: [1004],
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
@@ -626,12 +611,12 @@ describe('ConceptSearchService', () => {
       // SETUP
       const conceptName = 'architecture';
       const mockChunks: Chunk[] = Array.from({ length: 30 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Chunk ${i}`,
         source: i < 15 ? '/docs/typescript.pdf' : '/docs/python.pdf',
         hash: `hash${i}`,
-        concepts: ['architecture'],
-        conceptDensity: 0.5
+        catalogId: 12345678,
+        conceptIds: [1001],
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
@@ -647,7 +632,7 @@ describe('ConceptSearchService', () => {
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
         expect(result.value.chunks.length).toBe(10);
-        expect(result.value.chunks.every(c => c.source.includes('typescript'))).toBe(true);
+        expect(result.value.chunks.every(c => c.catalogId > 0)).toBe(true);
       }
     });
 
@@ -656,12 +641,11 @@ describe('ConceptSearchService', () => {
       const conceptName = 'patterns';
       // Service requests limit * 2 = 10 chunks, so we'll return 10
       const mockChunks: Chunk[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Chunk ${i}`,
-        source: `/docs/doc${i}.pdf`,
         hash: `hash${i}`,
-        concepts: ['patterns'],
-        conceptDensity: 0.5
+        catalogId: 12345678,
+        conceptIds: [1005],
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
@@ -683,15 +667,14 @@ describe('ConceptSearchService', () => {
   });
 
   describe('calculateRelevance', () => {
-    it('should calculate relevance from density and occurrences', () => {
-      // SETUP
+    it('should calculate relevance from concept count and text length', () => {
+      // SETUP - Short text with concepts scores high on density (capped at 1)
       const chunk: Chunk = {
-        id: '1',
+        id: 1,
         text: 'Chunk with concept',
-        source: '/docs/doc.pdf',
         hash: 'hash1',
-        concepts: ['testing', 'testing'], // 2 occurrences
-        conceptDensity: 0.7
+          catalogId: 12345678,
+        conceptIds: [1001, 1002], // 2 concepts
       };
       const concept = 'testing';
 
@@ -699,19 +682,19 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // density * 0.5 + concept match 0.3 = 0.7 * 0.5 + 0.3 = 0.65
-      expect(relevance).toBeCloseTo(0.65, 2);
+      // Short text (18 chars), 2 concepts: normalizedDensity = min(2 / (18/500), 1) = 1
+      // score = 1 * 0.5 + 0.3 (concept match) = 0.8 (no text length bonus)
+      expect(relevance).toBeCloseTo(0.8, 2);
     });
 
     it('should include concept match bonus', () => {
-      // SETUP
+      // SETUP - Longer text with many concepts
       const chunk: Chunk = {
-        id: '1',
-        text: 'Chunk with many occurrences',
-        source: '/docs/doc.pdf',
+        id: 1,
+        text: 'A'.repeat(300), // 300 chars (qualifies for text length bonus)
         hash: 'hash1',
-        concepts: Array(10).fill('testing'), // 10 occurrences
-        conceptDensity: 0.5
+          catalogId: 12345678,
+        conceptIds: [1001, 1002, 1003], // 3 concepts
       };
       const concept = 'testing';
 
@@ -719,19 +702,19 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // density * 0.5 + concept match 0.3 = 0.5 * 0.5 + 0.3 = 0.55
-      expect(relevance).toBeCloseTo(0.55, 2);
+      // 300 chars, 3 concepts: normalizedDensity = min(3 / (300/500), 1) = min(5, 1) = 1
+      // score = 1 * 0.5 + 0.3 (concept match) + 0.2 (text length bonus) = 1.0
+      expect(relevance).toBeCloseTo(1.0, 2);
     });
 
-    it('should handle chunks with no occurrences', () => {
+    it('should handle chunks with no concepts', () => {
       // SETUP
       const chunk: Chunk = {
-        id: '1',
-        text: 'Chunk without concept',
-        source: '/docs/doc.pdf',
+        id: 1,
+        text: 'A'.repeat(300), // 300 chars
         hash: 'hash1',
-        concepts: [],
-        conceptDensity: 0.8
+          catalogId: 12345678,
+        conceptIds: [],
       };
       const concept = 'testing';
 
@@ -739,19 +722,19 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // density * 0.5 only = 0.8 * 0.5 = 0.4
-      expect(relevance).toBeCloseTo(0.4, 2);
+      // 0 concepts: normalizedDensity = 0, no concept match
+      // score = 0 + 0 + 0.2 (text length bonus) = 0.2
+      expect(relevance).toBeCloseTo(0.2, 2);
     });
 
-    it('should handle chunks with null density', () => {
+    it('should handle short chunks with no concepts', () => {
       // SETUP
       const chunk: Chunk = {
-        id: '1',
-        text: 'Chunk',
-        source: '/docs/doc.pdf',
+        id: 1,
+        text: 'Short',
         hash: 'hash1',
-        concepts: ['testing'],
-        // conceptDensity is undefined
+          catalogId: 12345678,
+        conceptIds: [1004],
       };
       const concept = 'testing';
 
@@ -759,19 +742,19 @@ describe('ConceptSearchService', () => {
       const relevance = service.calculateRelevance(chunk, concept);
 
       // VERIFY
-      // 0 * 0.5 + concept match 0.3 = 0.3
-      expect(relevance).toBeCloseTo(0.3, 2);
+      // Short text (5 chars), 1 concept: normalizedDensity = min(1 / (5/500), 1) = 1
+      // score = 1 * 0.5 + 0.3 (concept match) = 0.8 (no text length bonus)
+      expect(relevance).toBeCloseTo(0.8, 2);
     });
 
     it('should return value in 0-1 range', () => {
       // SETUP
       const chunk: Chunk = {
-        id: '1',
+        id: 1,
         text: 'Chunk',
-        source: '/docs/doc.pdf',
         hash: 'hash1',
-        concepts: ['testing'],
-        conceptDensity: 1.0
+          catalogId: 12345678,
+        conceptIds: [1004],
       };
       const concept = 'testing';
 

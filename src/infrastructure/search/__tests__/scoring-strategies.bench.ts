@@ -196,7 +196,7 @@ describe('Scoring Functions Performance Benchmarks', () => {
         vectorScore: 0.85,
         bm25Score: 0.72,
         titleScore: 0.90,
-        conceptScore: 0.68,
+        
         wordnetScore: 0.55
       };
       
@@ -220,7 +220,7 @@ describe('Scoring Functions Performance Benchmarks', () => {
         vectorScore: 0.85,
         bm25Score: 0.72,
         titleScore: 0.90,
-        conceptScore: 0.68,
+        
         wordnetScore: 0.55
       };
       
@@ -239,7 +239,7 @@ describe('Scoring Functions Performance Benchmarks', () => {
           vectorScore: vector,
           bm25Score: bm25,
           titleScore: title,
-          conceptScore: 0.68,
+          
           wordnetScore: 0.55
         });
         // Use result to prevent optimization

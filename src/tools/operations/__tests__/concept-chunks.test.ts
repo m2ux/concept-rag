@@ -1,7 +1,7 @@
 /**
- * Unit Tests for ConceptSearchTool
+ * Unit Tests for ConceptChunksTool
  * 
- * Tests the ConceptSearchTool using test doubles (fakes/mocks).
+ * Tests the ConceptChunksTool using test doubles (fakes/mocks).
  * Demonstrates dependency injection for testing as described in:
  * - "Continuous Delivery" (Humble & Farley), Chapter 4
  * - "Test Driven Development for Embedded C" (Grenning), Chapter 7
@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ConceptSearchTool } from '../concept_search.js';
+import { ConceptChunksTool } from '../concept_chunks.js';
 import { ConceptSearchService } from '../../../domain/services/index.js';
 import {
   FakeChunkRepository,
@@ -19,30 +19,29 @@ import {
   createTestConcept
 } from '../../../__tests__/test-helpers/index.js';
 
-describe('ConceptSearchTool', () => {
+describe('ConceptChunksTool', () => {
   let chunkRepo: FakeChunkRepository;
   let conceptRepo: FakeConceptRepository;
   let service: ConceptSearchService;
-  let tool: ConceptSearchTool;
+  let tool: ConceptChunksTool;
   
   beforeEach(() => {
     // SETUP - Fresh repositories and service for each test (test isolation)
     chunkRepo = new FakeChunkRepository();
     conceptRepo = new FakeConceptRepository();
     service = new ConceptSearchService(chunkRepo, conceptRepo);
-    tool = new ConceptSearchTool(service);
+    tool = new ConceptChunksTool(service);
   });
   
   describe('execute', () => {
     it('should find chunks by concept name', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'innovation', chunkCount: 3 });
       const testChunks = [
-        createTestChunk({ id: 'chunk-1', concepts: ['innovation'], text: 'Text about innovation' }),
-        createTestChunk({ id: 'chunk-2', concepts: ['innovation'], text: 'More innovation content' }),
-        createTestChunk({ id: 'chunk-3', concepts: ['innovation'], text: 'Innovation everywhere' })
+        createTestChunk({ id: 1001, conceptIds: [123456], text: 'Text about innovation' }),
+        createTestChunk({ id: 1002, conceptIds: [123456], text: 'More innovation content' }),
+        createTestChunk({ id: 1003, conceptIds: [123456], text: 'Innovation everywhere' })
       ];
-      
+      const testConcept = createTestConcept({ name: 'innovation' });
       conceptRepo.addConcept(testConcept);
       testChunks.forEach(chunk => chunkRepo.addChunk(chunk));
       
@@ -63,15 +62,14 @@ describe('ConceptSearchTool', () => {
     
     it('should respect limit parameter', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'testing', chunkCount: 10 });
       const testChunks = Array.from({ length: 10 }, (_, i) =>
         createTestChunk({
-          id: `chunk-${i}`,
-          concepts: ['testing'],
+          id: 5000 + i,
+          conceptIds: [345678],
           text: `Test chunk ${i}`
         })
       );
-      
+      const testConcept = createTestConcept({ name: 'innovation' });
       conceptRepo.addConcept(testConcept);
       testChunks.forEach(chunk => chunkRepo.addChunk(chunk));
       
@@ -97,7 +95,7 @@ describe('ConceptSearchTool', () => {
     
     it('should handle concept with no matching chunks', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'orphan', chunkCount: 0 });
+      const testConcept = createTestConcept({ name: 'innovation' });
       conceptRepo.addConcept(testConcept);
       // No chunks added
       
@@ -112,8 +110,8 @@ describe('ConceptSearchTool', () => {
     
     it('should be case-insensitive', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'innovation' });
-      const testChunk = createTestChunk({ concepts: ['innovation'] });
+      const testConcept = createTestConcept({ name: 'innovation' });
+      const testChunk = createTestChunk({ conceptIds: [123456] });
       
       conceptRepo.addConcept(testConcept);
       chunkRepo.addChunk(testChunk);
@@ -135,14 +133,14 @@ describe('ConceptSearchTool', () => {
     
     it('should filter chunks by concept correctly', async () => {
       // SETUP
-      const innovationConcept = createTestConcept({ concept: 'innovation' });
-      const creativityConcept = createTestConcept({ concept: 'creativity' });
+      const innovationConcept = createTestConcept({ name: 'innovation' });
+      const creativityConcept = createTestConcept({ name: 'creativity' });
       
       const chunks = [
-        createTestChunk({ id: 'chunk-1', concepts: ['innovation'] }),
-        createTestChunk({ id: 'chunk-2', concepts: ['creativity'] }),
-        createTestChunk({ id: 'chunk-3', concepts: ['innovation', 'creativity'] }),
-        createTestChunk({ id: 'chunk-4', concepts: ['other'] })
+        createTestChunk({ id: 1001, conceptIds: [123456] }),
+        createTestChunk({ id: 1002, conceptIds: [234567] }),
+        createTestChunk({ id: 1003, conceptIds: [123456, 234567] }),
+        createTestChunk({ id: 1004, conceptIds: [456789] })
       ];
       
       conceptRepo.addConcept(innovationConcept);
@@ -155,7 +153,7 @@ describe('ConceptSearchTool', () => {
       // VERIFY - Should only get chunks 1 and 3
       const parsedContent = JSON.parse(result.content[0].text);
       expect(parsedContent.results).toHaveLength(2);
-      // Note: ConceptSearchTool doesn't include IDs in results, check source instead
+      // Note: ConceptChunksTool doesn't include IDs in results, check source instead
       const sources = parsedContent.results.map((r: any) => r.source);
       expect(sources).toHaveLength(2);
     });
@@ -171,7 +169,7 @@ describe('ConceptSearchTool', () => {
     
     it('should handle negative limit', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'test' });
+      const testConcept = createTestConcept({ name: 'test' });
       conceptRepo.addConcept(testConcept);
       
       // EXERCISE
@@ -186,8 +184,8 @@ describe('ConceptSearchTool', () => {
     
     it('should handle very large limit', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'test' });
-      const testChunk = createTestChunk({ concepts: ['test'] });
+      const testConcept = createTestConcept({ name: 'test' });
+      const testChunk = createTestChunk({ conceptIds: [111222] });
       
       conceptRepo.addConcept(testConcept);
       chunkRepo.addChunk(testChunk);

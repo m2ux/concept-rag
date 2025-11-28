@@ -34,7 +34,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
           (chunkText, concepts, categories) => {
             const documentConcepts: ConceptMetadata = {
               primary_concepts: concepts,
-              related_concepts: [],
+
               categories: categories
             };
             
@@ -61,7 +61,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
               primary_concepts: primaryConcepts,
               // @ts-expect-error - Type narrowing limitation
               technical_terms: [],
-              related_concepts: [],
+
               categories: categories
             };
             
@@ -88,7 +88,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
             
             const documentConcepts: ConceptMetadata = {
               primary_concepts: validConcepts,
-              related_concepts: [],
+
               categories: categories
             };
             
@@ -113,7 +113,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
           (chunkText) => {
             const documentConcepts: ConceptMetadata = {
               primary_concepts: [],
-              related_concepts: [],
+
               categories: []
             };
             
@@ -138,7 +138,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
           (chunkText, concepts, categories) => {
             const documentConcepts: ConceptMetadata = {
               primary_concepts: concepts,
-              related_concepts: [],
+
               categories: categories
             };
             
@@ -178,7 +178,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
             }));
             const documentConcepts: ConceptMetadata = {
               primary_concepts: concepts,
-              related_concepts: [],
+
               categories: []
             };
             
@@ -214,7 +214,6 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
             }));
             const documentConcepts: ConceptMetadata = {
               primary_concepts: concepts,
-              related_concepts: [],
               categories: []
             };
             
@@ -223,11 +222,6 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
             for (const chunk of enriched) {
               expect(chunk).toHaveProperty('concepts');
               expect(Array.isArray(chunk.concepts)).toBe(true);
-              expect(chunk).toHaveProperty('concept_categories');
-              expect(Array.isArray(chunk.concept_categories)).toBe(true);
-              expect(chunk).toHaveProperty('concept_density');
-              expect(chunk.concept_density).toBeGreaterThanOrEqual(0);
-              expect(chunk.concept_density).toBeLessThanOrEqual(1);
             }
             
             return true;
@@ -253,7 +247,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
             }));
             const documentConcepts: ConceptMetadata = {
               primary_concepts: concepts,
-              related_concepts: [],
+
               categories: []
             };
             
@@ -282,7 +276,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
           (chunkText, concepts, categories) => {
             const documentConcepts: ConceptMetadata = {
               primary_concepts: concepts,
-              related_concepts: [],
+
               categories: categories
             };
             
@@ -307,7 +301,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
               primary_concepts: [],
               // @ts-expect-error - Type narrowing limitation
               technical_terms: [],
-              related_concepts: [],
+
               categories: []
             };
             
@@ -329,7 +323,7 @@ describe('Concept Chunk Matcher Property-Based Tests', () => {
           (concepts) => {
             const documentConcepts: ConceptMetadata = {
               primary_concepts: concepts,
-              related_concepts: [],
+
               categories: []
             };
             

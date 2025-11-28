@@ -5,21 +5,25 @@ import { Chunk } from './chunk.js';
  * 
  * Extends {@link Chunk} with scoring information from the hybrid search algorithm.
  * Results are ranked using a weighted combination of multiple signals:
- * - **Vector similarity**: Semantic understanding (25% weight)
- * - **BM25**: Keyword matching (25% weight)
- * - **Title matching**: Document relevance (20% weight)
- * - **Concept alignment**: Conceptual relevance (20% weight)
- * - **WordNet expansion**: Semantic enrichment (10% weight)
+ * - **Vector similarity**: Semantic understanding (30% weight)
+ * - **BM25**: Keyword matching (30% weight)
+ * - **Title matching**: Document relevance (25% weight)
+ * - **WordNet expansion**: Semantic enrichment (15% weight)
+ * 
+ * Note: Concept scoring was removed from hybrid search. Use concept_search
+ * or concept_chunks tools for concept-based discovery instead.
  * 
  * @example
  * ```typescript
  * const result: SearchResult = {
  *   // Chunk properties
- *   id: 'chunk-123',
+ *   id: 3847293847,  // hash-based integer
  *   text: 'Dependency injection is a design pattern...',
- *   source: '/docs/design-patterns.pdf',
+ *   catalogId: 12345678,
  *   hash: 'abc123',
- *   concepts: ['dependency injection', 'design patterns'],
+ *   conceptIds: [11111111, 22222222],
+ *   // Display fields (resolved from catalog)
+ *   source: '/docs/design-patterns.pdf',  // Optional, from catalog lookup
  *   
  *   // Scoring components
  *   distance: 0.15,
@@ -40,6 +44,19 @@ import { Chunk } from './chunk.js';
  * @see {@link SearchQuery} for query parameters
  */
 export interface SearchResult extends Chunk {
+  /** 
+   * Source document path (for display purposes).
+   * Chunks no longer store source - this is populated from catalog lookup or cache.
+   */
+  source?: string;
+  
+  /**
+   * Concept IDs associated with this document (for catalog entries).
+   * Foreign keys to the concepts table.
+   * For catalog entries only - chunks have their own conceptIds in the Chunk model.
+   */
+  documentConceptIds?: number[];
+  
   /** Vector distance from query (0 = identical, higher = more different) */
   distance: number;
   
@@ -52,7 +69,10 @@ export interface SearchResult extends Chunk {
   /** Title/source matching score (0-1, higher = query appears in title) */
   titleScore: number;
   
-  /** Concept alignment score (0-1, higher = more conceptual overlap) */
+  /** 
+   * Concept alignment score (deprecated, always 0).
+   * @deprecated Use concept_search or concept_chunks tools instead.
+   */
   conceptScore: number;
   
   /** WordNet semantic expansion score (0-1, higher = more synonym matches) */
@@ -61,7 +81,7 @@ export interface SearchResult extends Chunk {
   /**
    * Final hybrid score combining all signals (0-1, higher = more relevant).
    * 
-   * Formula: `0.25*vector + 0.25*bm25 + 0.20*title + 0.20*concept + 0.10*wordnet`
+   * Formula: `0.30*vector + 0.30*bm25 + 0.25*title + 0.15*wordnet`
    */
   hybridScore: number;
   

@@ -30,13 +30,13 @@ describe('ConceptualCatalogSearchTool', () => {
       // SETUP
       const testResults = [
         createTestSearchResult({
-          id: 'doc1',
+          id: 100001,
           source: '/test/doc1.pdf',
           text: 'Document about clean architecture and software design',
           hybridScore: 0.95
         }),
         createTestSearchResult({
-          id: 'doc2',
+          id: 100002,
           source: '/test/doc2.pdf',
           text: 'Another document about clean architecture patterns',
           hybridScore: 0.85
@@ -61,11 +61,11 @@ describe('ConceptualCatalogSearchTool', () => {
       expect(parsedContent[0].scores.hybrid).toBeDefined();
     });
     
-    it('should respect limit parameter (defaults to 5)', async () => {
+    it('should respect limit parameter (defaults to 10)', async () => {
       // SETUP
-      const testResults = Array.from({ length: 10 }, (_, i) =>
+      const testResults = Array.from({ length: 15 }, (_, i) =>
         createTestSearchResult({
-          id: `doc-${i}`,
+          id: 7000 + i,
           source: `/test/doc${i}.pdf`,
           text: `Test document ${i} about testing`
         })
@@ -77,7 +77,7 @@ describe('ConceptualCatalogSearchTool', () => {
       
       // VERIFY
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent).toHaveLength(5); // Default limit
+      expect(parsedContent).toHaveLength(10); // Default limit
     });
     
     it('should include debug information when debug is true', async () => {

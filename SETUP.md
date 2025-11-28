@@ -207,7 +207,7 @@ Try these queries to verify everything works:
    → Returns: Document summaries
 
 2. "Find information about innovation"
-   → Uses: concept_search
+   → Uses: concept_chunks
    → Returns: Concept-tagged chunks
 
 3. "How do organizations implement strategic planning?"

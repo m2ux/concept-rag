@@ -9,6 +9,7 @@
  */
 
 import { SimpleEmbeddingService } from '../../infrastructure/embeddings/simple-embedding-service.js';
+import { hashToId } from '../../infrastructure/utils/hash.js';
 
 // Singleton embedding service for test data generation
 const embeddingService = new SimpleEmbeddingService();
@@ -22,14 +23,15 @@ export interface IntegrationChunkData {
   source: string;
   vector: number[];
   
-  /** @deprecated Use concept_ids instead. Will be removed in v2.0.0 */
-  concepts: string; // JSON stringified array of concept names
+  /** Legacy field for backward compatibility */
+  concepts?: string; // JSON stringified array of concept names
   
-  /** Concept references using integer IDs (JSON stringified array of IDs) */
-  concept_ids?: string; // Optional during migration
+  /** Concept references using integer IDs (native array) */
+  concept_ids: number[];
   
-  concept_categories: string; // JSON stringified
-  concept_density: number;
+  /** Category references using integer IDs (native array) */
+  category_ids: number[];
+  
   chunk_index: number;
   hash?: string; // Optional
   
@@ -40,21 +42,16 @@ export interface IntegrationChunkData {
  * Integration test concept data (for LanceDB table)
  */
 export interface IntegrationConceptData {
-  id?: string; // Optional for LanceDB (auto-generated)
-  concept: string;
+  id?: number; // Optional for LanceDB (auto-generated)
+  name: string;
   vector: number[];
-  category: string;
   weight: number;
-  chunk_count: number;
   
-  /** @deprecated Use catalog_ids instead. Will be removed in v2.0.0 */
-  sources: string; // JSON stringified array of source paths
+  /** Document references using catalog entry IDs (native array) */
+  catalog_ids: number[];
   
-  /** Document references using catalog entry IDs (JSON stringified array of IDs) */
-  catalog_ids?: string; // Optional during migration
-  
-  related_concepts: string; // JSON stringified
-  concept_type?: string; // Optional for backward compatibility
+  /** Related concept references using integer IDs (native array) */
+  adjacent_ids: number[];
   
   [key: string]: unknown; // Index signature for LanceDB compatibility
 }
@@ -63,18 +60,16 @@ export interface IntegrationConceptData {
  * Integration test catalog data (for LanceDB table)
  */
 export interface IntegrationCatalogData {
-  id?: string; // Optional for LanceDB (auto-generated)
+  id?: number; // Optional for LanceDB (auto-generated)
   text: string;
   source: string;
   vector: number[];
   
-  /** @deprecated Use concept_ids instead. Will be removed in v2.0.0 */
-  concepts: string; // JSON stringified array of concept names
+  /** Legacy field for backward compatibility */
+  concepts?: string; // JSON stringified array of concept names
   
-  /** Concept references using integer IDs (JSON stringified array of IDs) */
-  concept_ids?: string; // Optional during migration
-  
-  concept_categories: string; // JSON stringified
+  /** Category references using integer IDs (native array) */
+  category_ids: number[];
   
   [key: string]: unknown; // Index signature for LanceDB compatibility
 }
@@ -86,13 +81,19 @@ export interface IntegrationCatalogData {
  * @returns Chunk data ready for LanceDB insertion
  */
 export function createIntegrationTestChunk(overrides?: Partial<IntegrationChunkData>): IntegrationChunkData {
+  // Use hash-based concept IDs that match the test concepts
+  const defaultConceptIds = [
+    hashToId('clean architecture'),
+    hashToId('repository pattern'),
+    hashToId('dependency injection')
+  ];
+  
   const defaults: IntegrationChunkData = {
     text: 'Clean architecture is a software design philosophy that emphasizes separation of concerns and dependency inversion.',
     source: '/docs/architecture/clean-architecture.pdf',
     vector: embeddingService.generateEmbedding('Clean architecture is a software design philosophy'),
-    concepts: JSON.stringify(['clean architecture', 'separation of concerns', 'dependency inversion']),
-    concept_categories: JSON.stringify(['Architecture Pattern', 'Software Design']),
-    concept_density: 0.15,
+    concept_ids: defaultConceptIds,
+    category_ids: [111111, 222222],
     chunk_index: 0
   };
   
@@ -106,15 +107,14 @@ export function createIntegrationTestChunk(overrides?: Partial<IntegrationChunkD
  * @returns Concept data ready for LanceDB insertion
  */
 export function createIntegrationTestConcept(overrides?: Partial<IntegrationConceptData>): IntegrationConceptData {
+  const conceptName = overrides?.name || 'clean architecture';
   const defaults: IntegrationConceptData = {
-    concept: 'clean architecture',
-    vector: embeddingService.generateEmbedding('clean architecture'),
-    category: 'Architecture Pattern',
+    id: hashToId(conceptName), // Hash-based ID for reliable cache lookups
+    name: conceptName,
+    vector: embeddingService.generateEmbedding(conceptName),
     weight: 0.85,
-    chunk_count: 5,
-    sources: JSON.stringify(['/docs/architecture/clean-architecture.pdf']),
-    related_concepts: JSON.stringify(['layered architecture', 'hexagonal architecture', 'onion architecture']),
-    concept_type: 'thematic'
+    catalog_ids: [12345678],
+    adjacent_ids: [11111111, 22222222, 33333333]
   };
   
   return { ...defaults, ...overrides };
@@ -127,12 +127,13 @@ export function createIntegrationTestConcept(overrides?: Partial<IntegrationConc
  * @returns Catalog data ready for LanceDB insertion
  */
 export function createIntegrationTestCatalogEntry(overrides?: Partial<IntegrationCatalogData>): IntegrationCatalogData {
+  const source = overrides?.source || '/docs/architecture/clean-architecture.pdf';
   const defaults: IntegrationCatalogData = {
+    id: hashToId(source), // Hash-based ID for reliable lookups
     text: 'Comprehensive guide to Clean Architecture principles and implementation patterns.',
-    source: '/docs/architecture/clean-architecture.pdf',
+    source,
     vector: embeddingService.generateEmbedding('Clean Architecture principles'),
-    concepts: JSON.stringify(['clean architecture', 'layered architecture', 'dependency inversion']),
-    concept_categories: JSON.stringify(['Architecture Pattern'])
+    category_ids: [111111]
   };
   
   return { ...defaults, ...overrides };
@@ -148,33 +149,29 @@ export function createStandardTestChunks(): IntegrationChunkData[] {
       text: 'Repository pattern provides an abstraction layer between the domain and data mapping layers.',
       source: '/docs/patterns/repository-pattern.pdf',
       vector: embeddingService.generateEmbedding('Repository pattern provides an abstraction layer'),
-      concepts: JSON.stringify(['repository pattern', 'abstraction', 'data mapping']),
-      concept_categories: JSON.stringify(['Design Pattern']),
-      concept_density: 0.12
+      concept_ids: [hashToId('repository pattern'), hashToId('clean architecture')],
+      category_ids: [333333]
     }),
     createIntegrationTestChunk({
       text: 'Dependency injection is a technique for achieving Inversion of Control between classes and their dependencies.',
       source: '/docs/patterns/dependency-injection.pdf',
       vector: embeddingService.generateEmbedding('Dependency injection is a technique'),
-      concepts: JSON.stringify(['dependency injection', 'inversion of control', 'ioc']),
-      concept_categories: JSON.stringify(['Design Pattern', 'SOLID Principles']),
-      concept_density: 0.18
+      concept_ids: [hashToId('dependency injection'), hashToId('solid principles')],
+      category_ids: [333333, 444444]
     }),
     createIntegrationTestChunk({
       text: 'SOLID principles are five design principles intended to make software designs more understandable, flexible and maintainable.',
       source: '/docs/principles/solid.pdf',
       vector: embeddingService.generateEmbedding('SOLID principles are five design principles'),
-      concepts: JSON.stringify(['solid principles', 'software design', 'maintainability']),
-      concept_categories: JSON.stringify(['Software Design', 'Best Practices']),
-      concept_density: 0.14
+      concept_ids: [hashToId('solid principles'), hashToId('clean architecture')],
+      category_ids: [555555, 666666]
     }),
     createIntegrationTestChunk({
       text: 'TypeScript provides static type checking for JavaScript, catching errors at compile time rather than runtime.',
       source: '/docs/languages/typescript.pdf',
       vector: embeddingService.generateEmbedding('TypeScript provides static type checking'),
-      concepts: JSON.stringify(['typescript', 'static typing', 'type safety']),
-      concept_categories: JSON.stringify(['Programming Language', 'Type System']),
-      concept_density: 0.16
+      concept_ids: [hashToId('typescript'), hashToId('dependency injection')],
+      category_ids: [777777, 888888]
     })
   ];
 }
@@ -186,40 +183,32 @@ export function createStandardTestConcepts(): IntegrationConceptData[] {
   return [
     createIntegrationTestConcept(),
     createIntegrationTestConcept({
-      concept: 'repository pattern',
+      name: 'repository pattern',
       vector: embeddingService.generateEmbedding('repository pattern'),
-      category: 'Design Pattern',
       weight: 0.78,
-      chunk_count: 3,
-      sources: JSON.stringify(['/docs/patterns/repository-pattern.pdf']),
-      related_concepts: JSON.stringify(['data access', 'abstraction layer', 'persistence'])
+      catalog_ids: [23456789],
+      adjacent_ids: [44444444, 55555555, 66666666]
     }),
     createIntegrationTestConcept({
-      concept: 'dependency injection',
+      name: 'dependency injection',
       vector: embeddingService.generateEmbedding('dependency injection'),
-      category: 'Design Pattern',
       weight: 0.82,
-      chunk_count: 4,
-      sources: JSON.stringify(['/docs/patterns/dependency-injection.pdf']),
-      related_concepts: JSON.stringify(['inversion of control', 'ioc container', 'di container'])
+      catalog_ids: [34567890],
+      adjacent_ids: [77777777, 88888888, 99999999]
     }),
     createIntegrationTestConcept({
-      concept: 'solid principles',
+      name: 'solid principles',
       vector: embeddingService.generateEmbedding('solid principles'),
-      category: 'Software Design',
       weight: 0.90,
-      chunk_count: 8,
-      sources: JSON.stringify(['/docs/principles/solid.pdf']),
-      related_concepts: JSON.stringify(['srp', 'ocp', 'lsp', 'isp', 'dip'])
+      catalog_ids: [45678901],
+      adjacent_ids: [10101010, 20202020, 30303030]
     }),
     createIntegrationTestConcept({
-      concept: 'typescript',
+      name: 'typescript',
       vector: embeddingService.generateEmbedding('typescript'),
-      category: 'Programming Language',
       weight: 0.75,
-      chunk_count: 10,
-      sources: JSON.stringify(['/docs/languages/typescript.pdf']),
-      related_concepts: JSON.stringify(['javascript', 'static typing', 'type inference'])
+      catalog_ids: [56789012],
+      adjacent_ids: [40404040, 50505050, 60606060]
     })
   ];
 }
@@ -234,29 +223,25 @@ export function createStandardTestCatalogEntries(): IntegrationCatalogData[] {
       text: 'Design patterns for modern software development including Repository and Factory patterns.',
       source: '/docs/patterns/repository-pattern.pdf',
       vector: embeddingService.generateEmbedding('Design patterns for modern software'),
-      concepts: JSON.stringify(['repository pattern', 'factory pattern', 'design patterns']),
-      concept_categories: JSON.stringify(['Design Pattern'])
+      category_ids: [333333]
     }),
     createIntegrationTestCatalogEntry({
       text: 'Understanding Dependency Injection and Inversion of Control in object-oriented programming.',
       source: '/docs/patterns/dependency-injection.pdf',
       vector: embeddingService.generateEmbedding('Dependency Injection and IoC'),
-      concepts: JSON.stringify(['dependency injection', 'inversion of control']),
-      concept_categories: JSON.stringify(['Design Pattern'])
+      category_ids: [333333]
     }),
     createIntegrationTestCatalogEntry({
       text: 'SOLID principles: Single Responsibility, Open-Closed, Liskov Substitution, Interface Segregation, Dependency Inversion.',
       source: '/docs/principles/solid.pdf',
       vector: embeddingService.generateEmbedding('SOLID principles SRP OCP LSP ISP DIP'),
-      concepts: JSON.stringify(['solid principles', 'srp', 'ocp', 'lsp', 'isp', 'dip']),
-      concept_categories: JSON.stringify(['Software Design'])
+      category_ids: [555555]
     }),
     createIntegrationTestCatalogEntry({
       text: 'TypeScript language features, type system, and best practices for type-safe JavaScript development.',
       source: '/docs/languages/typescript.pdf',
       vector: embeddingService.generateEmbedding('TypeScript language features type system'),
-      concepts: JSON.stringify(['typescript', 'static typing', 'type safety']),
-      concept_categories: JSON.stringify(['Programming Language'])
+      category_ids: [777777]
     })
   ];
 }

@@ -28,13 +28,7 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document about testing',
-        concepts: JSON.stringify({
-          primary_concepts: ['testing', 'quality assurance'],
-          technical_terms: ['unit test', 'integration test'],
-          related_concepts: ['test-driven development'],
-          categories: ['software engineering'],
-          summary: 'Document about testing practices'
-        })
+        conceptIds: [11111111, 22222222, 33333333, 44444444],
       });
       catalogRepo.addDocument(testDoc);
       
@@ -68,24 +62,23 @@ describe('DocumentConceptsExtractTool', () => {
       expect(parsedContent.error.message).toContain('not found');
     });
     
-    it('should return error when document has no concepts', async () => {
+    it('should return empty concepts when document has no concepts', async () => {
       // SETUP
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document without concepts',
-        concepts: undefined
+        conceptIds: undefined,
       });
       catalogRepo.addDocument(testDoc);
       
       // EXERCISE
       const result = await tool.execute({ document_query: 'doc' });
       
-      // VERIFY
-      expect(result.isError).toBe(true);
+      // VERIFY - Document exists but has no concepts, which is a valid state
+      expect(result.isError).toBe(false);
       const parsedContent = JSON.parse(result.content[0].text);
-      // Now returns structured error object
-      expect(parsedContent.error).toBeDefined();
-      expect(parsedContent.error.message).toContain('not found');
+      expect(parsedContent.primary_concepts).toEqual([]);
+      expect(parsedContent.total_concepts).toBe(0);
     });
     
     it('should format output as markdown when format is markdown', async () => {
@@ -93,13 +86,7 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document about testing',
-        concepts: JSON.stringify({
-          primary_concepts: ['testing'],
-          technical_terms: ['unit test'],
-          related_concepts: ['tdd'],
-          categories: ['software engineering'],
-          summary: 'Test document'
-        })
+        conceptIds: [11111111, 22222222, 33333333],
       });
       catalogRepo.addDocument(testDoc);
       
@@ -122,11 +109,7 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document',
-        concepts: JSON.stringify({
-          primary_concepts: ['testing'],
-          categories: ['software'],
-          summary: 'Test summary'
-        })
+        conceptIds: [11111111],
       });
       catalogRepo.addDocument(testDoc);
       

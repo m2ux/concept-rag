@@ -1,1224 +1,385 @@
 # Concept Lexicon
+
 ## Executive Summary
 
-This document catalogs concepts from the knowledge base that are directly applicable to the project.
+Concepts curated from the knowledge base for the Concept-RAG project. Categories identify the source domains from which concepts were derived. The flat concept list avoids duplication where concepts appear across multiple categories.
 
 ---
 
-## 1. Software Architecture & Design Patterns
+## Source Categories
 
-### Core Architecture Concepts
-- **Modular software architecture** - Layered architecture with clear separation of concerns
-- **Dependency injection** - Container-based DI pattern for loose coupling
-- **Repository pattern** - Data access layer abstraction for database operations
-- **Service layer** - Domain services encapsulate business logic
-- **Factory pattern** - Object creation patterns for complex instantiation
-- **Domain-driven design** - Domain models, bounded contexts, and ubiquitous language
-- **Layered architecture** - Clear separation: domain, infrastructure, application, tools
-- **Interface definition (IDL)** - Type definitions and contracts between layers
-- **API design and evolution** - MCP tool interfaces and versioning considerations
-- **Separation of concerns** - Clean boundaries between modules
-- **Component-based design** - Modular, composable architecture units
-- **Architectural characteristics** - The "-ilities" (scalability, reliability, performance, etc.)
-- **Architecture decision records (ADRs)** - Documenting architectural decisions and rationale
-- **Screaming architecture** - Domain-centric design where architecture reveals intent
-- **Ports and adapters** - Hexagonal architecture for testability
-- **Modular monolith** - Monolith with clear module boundaries
-- **Clean architecture** - Dependency rule and policy vs. details separation
-- **Evolutionary architecture** - Architecture that supports guided incremental change
-- **Bounded context** - Domain partitioning with explicit boundaries
-
-### Design Patterns
-- **Strategy pattern** - Algorithm selection (e.g., different search strategies)
-- **Adapter pattern** - Document loader abstractions for different file types
-- **Decorator pattern** - Enhancing search results with additional metadata
-- **Observer pattern** - Event-driven architectures for index updates
-- **Singleton pattern** - Cache and database connection management
-- **Template method pattern** - Common workflows with customizable steps
-- **Context object pattern** - Avoiding pass-through variables
-- **Factory method pattern** - Object creation abstraction
-- **Abstract factory** - Families of related objects
-- **Proxy pattern** - Controlling access to objects
-- **Façade pattern** - Simplified interface to complex subsystem
-- **Composite pattern** - Tree structures of objects
-- **Mediator pattern** - Reducing coupling between components
-- **Command pattern** - Encapsulating requests as objects
-- **State pattern** - State-dependent behavior
-- **Bridge pattern** - Separating abstraction from implementation
-- **Builder pattern** - Step-by-step object construction
-- **Chain of responsibility** - Passing requests along a handler chain
-- **Humble object pattern** - Separating testable from hard-to-test code
-
-### Architectural Principles
-- **Functional decomposition** - Breaking complex operations into smaller units
-- **Inversion of control** - Dependency inversion principle application
-- **Object-oriented design** - Class hierarchies and polymorphism
-- **Modular decomposition** - Library and module organization
-- **Interface specification** - Clear contracts between components
-- **Design for debugging** - Structured logging and error tracing
-- **Complexity management** - Strategic programming vs tactical programming
-- **Deep modules** - Modules with simple interfaces and rich functionality
-- **Information hiding** - Encapsulating implementation details
-- **Abstraction** - Hiding complexity behind simple interfaces
-- **Strategic programming** - Investing in design quality for long-term maintainability
-- **Tactical programming** - Short-term implementation focus (anti-pattern)
-- **Design it twice** - Exploring multiple design alternatives
-- **Pull complexity downward** - Moving complexity away from users/callers
-- **Define errors out of existence** - Designing APIs to eliminate error cases
-- **Obvious code principle** - Code should be self-explanatory
-- **SOLID principles** - Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion
-- **DRY principle** - Don't Repeat Yourself
-- **YAGNI** - You Aren't Gonna Need It (avoid speculative generality)
-- **KISS** - Keep It Simple, Stupid
-- **Law of Demeter** - Principle of least knowledge
-- **Acyclic dependencies principle** - Avoid circular dependencies
-- **Stable dependencies principle** - Depend on stable components
-- **Stable abstractions principle** - Abstract components should be stable
-- **Package by component** - Organization around business capabilities
-- **Package by feature** - Domain-centric organization
-- **Technical partitioning** - Layered organization (presentation/business/persistence)
-- **Domain partitioning** - Organization by business domain
-
-### Architectural Styles
-- **Microservices architecture** - Distributed, independently deployable services
-- **Service-oriented architecture (SOA)** - Service-based decomposition
-- **Event-driven architecture** - Asynchronous event-based communication
-- **Space-based architecture** - In-memory data grids for scalability
-- **Microkernel architecture** - Plugin-based extensible core
-- **Pipeline architecture** - Pipes and filters for data flow
-- **Broker topology** - Event routing through a message broker
-- **Mediator topology** - Centralized event orchestration
-- **Layered architecture** - Organized in horizontal layers
-- **Hexagonal architecture** - Ports and adapters pattern
-- **Onion architecture** - Dependency inversion in concentric layers
-- **Vertical slice architecture** - Feature-based organization
-- **Client-server architecture** - Request-response patterns
-- **Peer-to-peer architecture** - Distributed coordination without central authority
+| Category | Documents | Concepts |
+|----------|-----------|----------|
+| software engineering | 139 | 18,394 |
+| software architecture | 48 | 8,941 |
+| software testing | 13 | 2,318 |
+| devops and site reliability | 9 | 1,547 |
+| type systems | 4 | 678 |
+| natural language processing | 3 | 982 |
+| algorithms and data structures | 3 | 1,156 |
+| concurrency and parallelism | 4 | 1,247 |
 
 ---
 
-## 2. Testing & Verification
-
-### Testing Strategies
-- **Unit testing** - Component-level tests (project uses Vitest)
-- **Integration testing** - Testing component interactions
-- **System testing** - End-to-end workflow validation
-- **Acceptance testing** - Validating against user requirements
-- **Test automation** - Automated test suites
-- **Regression testing** - Preventing regressions during refactoring
-- **Test case design** - Systematic test coverage
-- **Test-driven development (TDD)** - Write tests before implementation
-- **Behavior-driven development (BDD)** - Specification through examples
-- **Performance testing** - Search performance benchmarks
-- **Load testing** - System behavior under load
-- **Stress testing** - System limits and breaking points
-- **Contract testing** - API contract validation between layers
-- **Property-based testing** - Testing general properties
-- **Mutation testing** - Testing the quality of tests
-- **Smoke testing** - Basic functionality verification
-- **Sanity testing** - Quick verification of specific functionality
-- **Exploratory testing** - Unscripted testing for discovery
-
-### Verification Techniques
-- **Design verification and validation** - Ensuring requirements are met
-- **Code inspection and review** - Peer review practices
-- **Fagan inspection** - Formal code inspection methodology
-- **Walkthroughs** - Informal review sessions
-- **Test coverage measurement** - Statement and branch coverage
-- **Branch coverage** - Exercising all decision branches
-- **Statement coverage** - Executing all statements
-- **Path coverage** - Covering all possible paths
-- **Loop coverage** - Testing loop conditions
-- **Design for testability** - Architecture that facilitates testing
-- **Test harness** - Testing infrastructure and fixtures
-- **Test fixtures** - Setup and teardown for tests
-- **Test scaffolding** - Support code for testing
-- **Functional testing (black-box)** - Testing against specifications
-- **Structural testing (white-box)** - Internal structure testing
-- **Grey-box testing** - Partial knowledge of internals
-- **Assertions** - Runtime correctness checks
-- **Preconditions and postconditions** - Contract-based verification
-- **Invariants** - Properties that always hold
-
-### Quality Assurance
-- **Software quality assurance** - Systematic quality activities
-- **Risk reduction** - Identifying and mitigating technical risks
-- **Cost of defects** - Early detection and correction
-- **Static code analysis** - Linting and type checking (TypeScript)
-- **Dynamic analysis** - Runtime behavior analysis
-- **Continuous integration** - Automated build and test pipelines
-- **Continuous delivery** - Automated deployment pipelines
-- **Defect tracking** - Systematic issue management
-- **Defect prevention** - Proactive quality measures
-- **Code metrics** - Quantitative quality measures
-- **Cyclomatic complexity** - Measuring code complexity
-- **Code coverage metrics** - Test effectiveness measurement
-- **Quality attributes** - Understandability, changeability, extensibility, reusability, testability, reliability
-- **Egoless programming** - Separating ego from code ownership
-- **Collective code ownership** - Team responsibility for quality
-
----
-
-## 3. Database & Search Systems
-
-### Database Concepts
-- **Vector databases** - LanceDB for embedding storage
-- **Relational databases** - Structured data with ACID properties
-- **Operational databases (OLTP)** - Transaction processing systems
-- **Analytical databases (OLAP)** - Decision support systems
-- **Indexing** - Efficient data retrieval strategies
-- **B-tree indexes** - Ordered data access
-- **Hash indexes** - Fast equality lookups
-- **Search algorithms** - Hybrid search (vector + BM25 + concept scoring)
-- **Data structures** - Optimized storage and retrieval
-- **Caching** - Performance optimization via caching layers
-- **Query optimization** - Efficient query execution
-- **Schema design** - Table structure and relationships
-- **Normalization** - Reducing redundancy and anomalies
-- **Normal forms** - 1NF, 2NF, 3NF, BCNF
-- **Denormalization** - Trading redundancy for performance
-- **Database systems** - CRUD operations and transactions
-- **Primary keys** - Unique row identifiers
-- **Foreign keys** - Referential integrity constraints
-- **Surrogate keys** - Artificial identifiers
-- **Composite keys** - Multi-column keys
-- **Candidate keys** - Potential primary keys
-- **Views** - Virtual tables
-- **Materialized views** - Pre-computed query results
-- **Triggers** - Automatic event-driven logic
-- **Stored procedures** - Database-resident logic
-- **Field specifications** - Data type, length, constraints
-- **Business rules** - Field-specific, relationship-specific
-- **Data integrity** - Field-level, table-level, relationship-level
-- **Referential integrity** - Foreign key constraints
-- **Entity integrity** - Primary key constraints
-- **Domain integrity** - Value constraints
-- **Validation tables** - Lookup tables for allowed values
-- **Linking tables** - Many-to-many relationship implementation
-- **Subset tables** - Category-specific views
-
-### Database Reliability Engineering
-- **Database reliability engineering (DBRE)** - Operational excellence for data
-- **Backup and recovery** - Data protection strategies
-- **Backup validation** - Ensuring recoverability
-- **Replication** - Data redundancy for availability
-- **Replication latency** - Lag between primary and replicas
-- **Replication drift** - Consistency challenges
-- **Failover** - Automatic recovery from failures
-- **High availability** - Minimizing downtime
-- **Data durability** - Preventing data loss
-- **Ephemeral storage** - Temporary, non-persistent data
-- **Schema change automation** - Safe, automated migrations
-- **Rolling schema changes** - Zero-downtime migrations
-- **Connection pooling** - Reusing database connections
-- **Query instrumentation** - Monitoring query performance
-- **Slow-query logging** - Identifying performance issues
-- **Query execution plans** - Understanding query behavior
-- **Optimizer statistics** - Query planner metadata
-- **Database asserts** - Integrity checks
-- **Corruption detection** - Data integrity validation
-- **Operational playbooks** - Runbooks for common scenarios
-
-### Search & Retrieval
-- **Semantic search** - Vector similarity search
-- **Vector embeddings** - Text-to-vector transformations
-- **Text embeddings** - Semantic vector representations
-- **Word embeddings** - Word-level vectors
-- **Sentence embeddings** - Document-level vectors
-- **Contextual embeddings** - Context-aware representations
-- **Transformer embeddings** - Attention-based embeddings
-- **Embedding normalization** - Vector normalization techniques
-- **Full-text search** - BM25 keyword matching
-- **Inverted index** - Efficient text search structure
-- **TF-IDF** - Term importance weighting
-- **BM25** - Probabilistic ranking function
-- **Hybrid search** - Combining multiple ranking signals
-- **Dense retrieval** - Vector-based semantic retrieval
-- **Sparse retrieval** - Keyword-based retrieval (BM25, TF-IDF)
-- **Retrieval-fusion techniques** - Combining multiple retrieval methods
-- **Ranking algorithms** - Score combination and normalization
-- **Query expansion** - WordNet-based synonym expansion
-- **Concept extraction** - NLP-based concept identification
-- **Fuzzy matching** - Approximate string matching
-- **Retrieval-augmented generation (RAG)** - Context-aware generation with retrieval
-- **Approximate nearest neighbor (ANN) search** - Efficient vector similarity search
-- **Similarity measures** - Cosine similarity, Euclidean distance, dot-product
-- **Vector index compression** - Product quantization, vector quantization
-- **Maximum inner product search (MIPS)** - Optimized vector search
-- **Inverted file indexing** - Efficient sparse retrieval
-- **Dynamic indexing** - Real-time index updates
-- **Incremental indexing** - Adding documents without full rebuild
-- **Vector store versioning** - Managing embedding model changes
-- **Dimensionality reduction** - PCA, UMAP, t-SNE for high-dimensional data
-- **Index sharding** - Distributing vector indices across nodes
-- **Re-ranking and rescoring** - Post-retrieval result refinement
-- **Contextual re-ranking** - Using context to improve ranking
-- **Evaluation metrics** - Precision@k, Recall@k, NDCG, MRR
-- **Mean reciprocal rank (MRR)** - Ranking quality metric
-- **Normalized discounted cumulative gain (NDCG)** - Graded relevance metric
-- **Hallucination mitigation** - Ensuring factual accuracy in RAG systems
-- **Source attribution** - Tracking document provenance
-- **Provenance tracking** - Document lineage and origin
-- **Knowledge-grounded generation** - Using retrieved knowledge for generation
-- **Context window management** - Handling token limits
-- **Retriever-generator pipelines** - Two-stage RAG architecture
-- **Real-time retrieval** - Low-latency search
-- **Batch retrieval** - Bulk query processing
-
-### Data Management
-- **Data locality** - Optimizing data placement for performance
-- **Partitioning and sharding** - Horizontal data distribution
-- **Range partitioning** - Distributing by value ranges
-- **Hash partitioning** - Consistent distribution strategies
-- **Consistent hashing** - Stable key distribution
-- **Data integrity** - Validation and constraints
-- **Schema evolution** - Versioning and migrations
-- **Change data capture (CDC)** - Tracking data changes
-- **Data lineage** - Tracking data origins and transformations
-- **Data provenance** - Understanding data history
-- **Data curation and governance** - Managing data quality
-- **Access control** - Managing document access
-- **Data ownership** - Clear responsibility for data
-- **Data isolation** - Preventing unauthorized access
-- **Full-cost accounting** - Comprehensive cost tracking
-
----
-
-## 4. TypeScript & Type Systems
-
-### TypeScript Language Features
-- **Type safety** - Static type checking for JavaScript
-- **Gradual typing** - Incremental adoption of types
-- **Static typing** - Compile-time type checking
-- **Type inference** - Automatic type deduction
-- **Structural typing** - Type compatibility based on structure
-- **Nominal typing** - Type compatibility based on name
-- **Duck typing** - Type compatibility via shape matching
-- **Type narrowing** - Refining types through control flow
-- **Control-flow-based type analysis** - Type refinement through code flow
-- **Type guards** - Runtime type checking functions
-- **User-defined type guards** - Custom type predicate functions
-- **Union types** - Types that can be one of several types
-- **Intersection types** - Types that combine multiple types
-- **Discriminated unions** - Tagged union types for type safety
-- **Tagged unions** - Unions with discriminant property
-- **Generics** - Parametric polymorphism
-- **Bounded polymorphism** - Generic constraints with `extends`
-- **Generic defaults** - Default type arguments
-- **Generic type inference** - Automatic type argument deduction
-- **Conditional types** - Types that depend on other types
-- **Distributive conditional types** - Distribution over union types
-- **The infer keyword** - Type inference in conditional types
-- **Mapped types** - Transforming types programmatically
-- **Index signatures** - Dynamic property access
-- **Template literal types** - String literal type manipulation
-- **Type aliases** - Named type definitions
-- **Type assertions** - Explicit type casting
-- **Non-null assertion operator (!)** - Asserting non-null values
-- **Const assertions (as const)** - Narrow literal types
-- **Literal types** - String, number, boolean literals
-- **Primitive types** - number, string, boolean, null, undefined, symbol, bigint
-- **any type** - Type system escape hatch
-- **unknown type** - Type-safe alternative to any
-- **never type** - Type for unreachable code
-- **void type** - Absence of return value
-- **Object types** - Structural object definitions
-- **Record type** - Key-value object types
-- **Tuple types** - Fixed-length arrays with typed elements
-- **Readonly arrays** - Immutable arrays
-- **Readonly properties** - Immutable object properties
-- **Rest parameters** - Variable-length argument lists
-- **Function call signatures** - Function type definitions
-- **Overloaded function signatures** - Multiple function signatures
-- **Contextual typing** - Type inference from context
-- **Excess property checking** - Strict object literal checking
-
-### Type System Concepts
-- **Variance** - Covariance, contravariance, invariance, bivariance
-- **Covariance** - Subtype in output position
-- **Contravariance** - Supertype in input position
-- **Invariance** - No subtype relationship
-- **Bivariance** - Both covariant and contravariant
-- **Function variance** - Variance in function parameters and returns
-- **Subtyping** - Type compatibility relationships
-- **Assignability rules** - When types are compatible
-- **Type widening** - Automatic type generalization
-- **Type erasure** - Types removed at runtime
-- **Nominal vs structural typing** - Type identity strategies
-- **Type branding** - Simulating nominal types in structural systems
-- **Definite assignment** - Ensuring variables are initialized
-- **Non-null assertions** - Asserting non-null values
-- **Exhaustiveness checking** - Ensuring all cases are handled
-- **Totality** - Handling all possible cases
-
-### TypeScript-Specific Patterns
-- **Declaration merging** - Combining multiple declarations
-- **Interface merging** - Multiple interface declarations merged
-- **Namespace merging** - Combining namespace declarations
-- **Module augmentation** - Extending existing modules
-- **Ambient declarations** - Type-only declarations for JavaScript
-- **Declaration files (.d.ts)** - Type definitions for libraries
-- **DefinitelyTyped** - Community type definitions repository
-- **@types packages** - Type definitions on npm
-- **Triple-slash directives** - Compiler directives
-- **Types directive** - Include type dependencies
-- **AMD-module directive** - AMD module naming
-- **Project references** - Multi-project TypeScript setups
-- **Composite projects** - Building multiple projects together
-- **Incremental compilation** - Faster rebuilds
-- **Declaration maps** - Mapping .d.ts to source
-
-### Type-Driven Development
-- **Type-driven design** - Using types to guide design
-- **Type-driven development** - Development led by type definitions
-- **Type-safe APIs** - APIs with compile-time guarantees
-- **Type-safe protocols** - Communication protocols with type safety
-- **Typed ORMs** - Database access with type safety
-- **Code generation from types** - Generating code from type definitions
-- **Schema-driven APIs** - APIs defined by schemas (OpenAPI, GraphQL)
-- **Code-generated APIs** - Types generated from API schemas
-- **Client-server type contract** - Shared types across boundaries
-
-### TypeScript Compiler & Tooling
-- **TypeScript compiler (tsc)** - Compiling TS to JS
-- **tsconfig.json** - TypeScript configuration
-- **Compiler options** - Strict mode, module system, target
-- **Strict type checking** - Enabling all strict flags
-- **noImplicitAny** - Requiring explicit any annotations
-- **strictNullChecks** - Null and undefined handling
-- **strictFunctionTypes** - Strict function parameter checking
-- **noImplicitThis** - Explicit this typing
-- **alwaysStrict** - Emit "use strict"
-- **Source maps** - Debugging support
-- **Module resolution** - How modules are found
-- **Module formats** - CommonJS, ES2015, AMD, UMD
-- **Compile target** - ES version to emit
-- **ESModule interop** - CommonJS/ES module compatibility
-- **AllowJS** - Mixing JavaScript and TypeScript
-- **JSDoc annotations** - Type information in JavaScript comments
-- **@ts-check** - Type checking JavaScript files
-- **Language services (tsserver)** - Editor integration
-- **Editor integration** - VSCode/IntelliSense support
-- **TSLint and linting** - Style and error checking
-- **Build artifacts** - Generated JavaScript output
-- **outDir** - Output directory configuration
-
----
-
-## 5. Distributed Systems & Scalability
-
-### Scalability Patterns
-- **Scalability** - Horizontal and vertical scaling strategies
-- **Horizontal scaling (scale out)** - Adding more machines
-- **Vertical scaling (scale up)** - Adding resources to existing machines
-- **Elastic scaling** - Dynamic resource adjustment
-- **Performance optimization** - Bottleneck identification and resolution
-- **Replication** - Data redundancy for availability
-- **Leader-based replication** - Single primary, multiple replicas
-- **Multi-leader replication** - Multiple primaries
-- **Leaderless replication** - Peer-to-peer replication
-- **Consistency models** - Eventual consistency patterns
-- **Strong consistency** - Linearizability guarantees
-- **Eventual consistency** - Relaxed consistency models
-- **Sequential consistency** - Program order preservation
-- **Causal consistency** - Cause-effect ordering
-- **Partitioning** - Data distribution across nodes
-- **Sharding** - Horizontal partitioning
-- **Shard rebalancing** - Redistribution of data
-- **Functional partitioning** - By business capability
-- **Load balancing** - Request distribution
-- **DNS load balancing** - Distribution via DNS
-- **L4 load balancing** - Transport layer distribution
-- **L7 load balancing** - Application layer distribution
-- **Geo load balancing** - Geographic distribution
-- **Caching strategies** - Multi-level caching
-- **In-process caching** - Local memory cache
-- **Out-of-process caching** - Distributed cache
-- **In-memory caching** - RAM-based storage
-- **Cache-aside pattern** - Lazy-loading cache
-- **Write-through cache** - Synchronous cache updates
-- **Write-back cache** - Asynchronous cache updates
-- **Cache eviction policies** - LRU, MRU, MFU, random
-- **Request coalescing** - Batching concurrent requests
-- **Sticky sessions** - Session affinity
-
-### Distributed System Concepts
-- **Distributed systems** - Multi-node architectures
-- **Communication** - Inter-process and inter-node messaging
-- **Coordination** - Distributed agreement protocols
-- **Inter-process communication (IPC)** - Local communication
-- **Remote procedure call (RPC)** - Remote invocation
-- **Network protocol stack** - Layered networking
-- **TCP reliability** - Reliable byte stream
-- **UDP tradeoffs** - Unreliable, low-latency datagram
-- **TLS/SSL** - Secure communication channels
-- **Transport layer security (TLS)** - Encryption in transit
-- **Three-way handshake** - TCP connection establishment
-- **Flow control** - Rate matching sender/receiver
-- **Congestion control** - Network congestion management
-- **Bandwidth-delay product** - Network capacity
-- **Service discovery** - Finding service endpoints
-- **DNS (Domain Name System)** - Name to address resolution
-- **CAP theorem** - Consistency, Availability, Partition tolerance tradeoffs
-- **PACELC** - Extended CAP theorem
-- **Fallacies of distributed computing** - Common false assumptions
-- **Network latency** - Communication delay
-- **Network reliability** - Dealing with failures
-- **Bandwidth considerations** - Throughput limitations
-- **Topology change management** - Dynamic network changes
-- **Heterogeneous networks** - Multiple network types
-
-### Reliability & Fault Tolerance
-- **Fault tolerance** - Graceful degradation
-- **Availability** - High-availability design
-- **Reliability** - Consistent correct operation
-- **Resiliency** - Recovery from failures
-- **Failure detection and recovery** - Error handling and retry logic
-- **Failure detection** - Heartbeats and timeouts
-- **Circuit breaker pattern** - Preventing cascade failures
-- **Open/closed/half-open states** - Circuit breaker states
-- **Retry semantics** - Exponential backoff with jitter
-- **Exponential backoff** - Progressive retry delays
-- **Retry amplification** - Cascading retry load
-- **Idempotence** - Safe retry of operations
-- **Deduplication** - Preventing duplicate processing
-- **At-least-once delivery** - Guaranteed delivery with possible duplicates
-- **At-most-once delivery** - No duplicates, possible loss
-- **Exactly-once delivery** - Neither duplicates nor loss
-- **Bulkhead pattern** - Isolating failures
-- **Watchdog timers** - Detecting hangs
-- **Health checks** - System status monitoring
-- **Active health checks** - Proactive polling
-- **Passive health checks** - Monitoring responses
-- **Chaos engineering** - Intentional failure injection
-- **Fault injection testing** - Systematic resilience testing
-
-### Consistency & Coordination
-- **Consistency** - Data consistency guarantees
-- **Transactions** - ACID properties where needed
-- **ACID properties** - Atomicity, Consistency, Isolation, Durability
-- **BASE properties** - Basically Available, Soft state, Eventual consistency
-- **Atomic operations** - All-or-nothing execution
-- **Distributed transactions** - Cross-component coordination
-- **Two-phase commit (2PC)** - Distributed transaction protocol
-- **Sagas** - Long-running transactions with compensation
-- **Compensating transactions** - Undo operations
-- **Consensus** - Agreement protocols
-- **Quorum** - Majority agreement
-- **Raft** - Consensus algorithm
-- **Leader election** - Coordinator selection
-- **Election terms** - Raft leader epochs
-- **Fencing tokens** - Preventing split-brain
-- **Leases** - Time-bounded locks
-- **System models** - Synchronous, asynchronous, partial synchrony
-- **Failure models** - Crash-stop, crash-recovery, Byzantine
-- **Time in distributed systems** - Clock synchronization
-- **Physical clocks** - Wall-clock time
-- **Clock drift and skew** - Clock inaccuracy
-- **NTP (Network Time Protocol)** - Clock synchronization
-- **Monotonic clocks** - Non-decreasing timers
-- **Logical clocks** - Lamport timestamps
-- **Vector clocks** - Causality tracking
-- **Happened-before relation** - Causal ordering
-
-### Communication Patterns
-- **Synchronous communication** - Request-response blocking
-- **Asynchronous communication** - Non-blocking messaging
-- **Request-response pattern** - Synchronous interaction
-- **Fire-and-forget** - Asynchronous one-way
-- **Message passing** - Decoupled communication
-- **Message queues** - Persistent message buffering
-- **Publish-subscribe (pub/sub)** - One-to-many messaging
-- **Topics** - Pub/sub channels
-- **Queues** - Point-to-point channels
-- **Dead-letter channel** - Failed message handling
-- **Message durability** - Persistent messages
-- **Visibility timeout** - Message processing window
-- **Message ordering** - FIFO guarantees
-- **Back pressure** - Flow control in streams
-- **Guaranteed delivery** - At-least-once semantics
-- **Client acknowledge mode** - Manual acknowledgment
-- **Orchestration** - Centralized workflow coordination
-- **Choreography** - Decentralized event-driven coordination
-- **Service orchestration** - Centralized service coordination
-- **Service choreography** - Event-based service collaboration
-
----
-
-## 6. Performance & Optimization
-
-### Optimization Techniques
-- **Performance optimization** - Systematic improvement
-- **Performance engineering** - Systematic performance design
-- **Profiling** - Identifying performance hotspots
-- **Benchmarking** - Performance measurement and comparison
-- **Microbenchmarking** - Fine-grained performance tests
-- **Caching** - Reducing redundant computation
-- **Lazy evaluation** - Deferred computation
-- **Memoization** - Result caching
-- **Batching** - Reducing operation overhead
-- **Streaming** - Processing large datasets incrementally
-- **Parallel processing** - Concurrent execution
-- **Task parallelism** - Different tasks concurrently
-- **Data parallelism** - Same task on different data
-- **Embarrassingly parallel** - No dependencies between tasks
-- **Manager/worker pattern** - Task distribution
-- **MapReduce** - Distributed data processing
-- **Fork/join** - Recursive task decomposition
-- **Pipeline parallelism** - Staged processing
-
-### Resource Management
-- **Memory management** - Heap and garbage collection awareness
-- **Resource-constrained design** - Efficient resource utilization
-- **Memory budgeting** - Allocation planning
-- **Cache coherency** - Cache invalidation strategies
-- **Connection pooling** - Reusing expensive connections
-- **Throttling and rate limiting** - Preventing resource exhaustion
-- **Rate limiting** - Request rate control
-- **Load shedding** - Graceful degradation under load
-- **Resource limits** - Constraining resource usage
-- **CPU utilization** - Processor usage monitoring
-- **Memory utilization** - RAM usage monitoring
-- **Network throughput** - Data transfer rate
-- **Storage I/O** - Disk read/write performance
-- **Disk capacity** - Available storage
-- **Steal time** - Virtualization overhead
-- **Noisy neighbor effects** - Resource contention in shared environments
-
-### Performance Measurement
-- **Latency** - Response time
-- **Throughput** - Request processing rate
-- **Utilization** - Resource usage percentage
-- **Saturation** - Queue depth
-- **Errors** - Error rate
-- **Percentiles** - P50, P95, P99 latency
-- **Histograms** - Distribution visualization
-- **Tail latency** - High percentile latency
-- **Outlier analysis** - Identifying anomalies
-- **Amdahl's law** - Speedup limits from parallelization
-- **Service level indicators (SLI)** - Measurable metrics
-- **Service level objectives (SLO)** - Target reliability
-- **Service level agreements (SLA)** - Contractual commitments
-- **Error budget** - Allowed failure rate
-- **Burn rate** - Rate of error budget consumption
-
-### Data Structures & Algorithms
-- **Data structures** - Efficient storage and access patterns
-- **Search algorithms** - Optimal search strategies
-- **Hash tables** - Fast lookups
-- **B-trees** - Ordered data access
-- **Bloom filters** - Space-efficient set membership
-- **Merkle trees** - Efficient data verification
-- **Log-structured merge (LSM) trees** - Write-optimized storage
-- **Consistent hashing** - Stable key distribution
-- **Ring hashing** - Consistent hashing variant
-- **Priority queues** - Ordered processing
-- **Heaps** - Efficient priority queue implementation
-- **Tries** - Prefix tree for strings
-
----
-
-## 7. API Design & Interfaces
-
-### API Patterns
-- **API design** - RESTful and tool-based interfaces
-- **RESTful HTTP** - Resource-oriented APIs
-- **HTTP methods** - GET, POST, PUT, DELETE, PATCH
-- **HTTP status codes** - Semantic response codes
-- **HTTP multiplexing** - Concurrent requests
-- **API versioning** - Backward compatibility
-- **Interface definition** - Contract specification
-- **OpenAPI/Swagger** - API specification format
-- **IDL (Interface Definition Language)** - Formal interface definition
-- **Request-response pattern** - Synchronous communication
-- **Content negotiation** - Format flexibility
-- **API gateway** - Unified entry point
-- **Routing and composition** - Request routing
-- **Translation and protocol bridging** - Format conversion
-- **Service discovery** - Dynamic service location
-- **Interface-oriented design** - Designing around interfaces
-- **Three Laws of Interfaces** - Interface design principles
-- **Interface contract** - Preconditions, postconditions, invariants
-- **Design by contract** - Formal interface specifications
-- **Interface granularity** - Minimal vs complete interfaces
-- **Minimal interface** - Simplest possible interface
-- **Complete interface** - All needed operations
-- **Interface cohesiveness** - Related operations grouped together
-- **Interface coupling** - Dependencies between interfaces
-- **Published interfaces** - Stable, versioned interfaces
-- **Interface discovery** - Service registry and directory services
-- **Pull interfaces** - Consumer-driven data access
-- **Push interfaces** - Provider-driven data delivery
-- **Stateful vs stateless interfaces** - Session management strategies
-- **Data interfaces** - Structured data exchange
-- **Service interfaces** - Operation-based interfaces
-- **Document-style interfaces** - XML/JSON document exchange
-- **Procedural interfaces** - Function call-based interfaces
-- **Authentication** - Identity verification
-- **Authorization** - Access control
-- **API evolution** - Managing API changes
-- **Deprecation strategies** - Phasing out old APIs
-
-### MCP Tool Design
-- **Tool interfaces** - Standardized tool definitions
-- **Parameter validation** - Input sanitization
-- **Error responses** - Structured error reporting
-- **Documentation** - Self-documenting APIs
-- **Tool composition** - Chaining operations
-- **Schema validation** - JSON schema enforcement
-
-### Integration Patterns
-- **Service-oriented architecture (SOA)** - Service-based decomposition
-- **Message passing** - Asynchronous communication
-- **Event-driven architecture** - Event sourcing patterns
-- **Event sourcing** - Append-only event log
-- **Publish-subscribe** - Decoupled messaging
-- **API composition** - Aggregating multiple services
-- **Consumer-driven contracts** - Testing interface compatibility
-- **Postel's Law** - Robustness principle (be liberal in what you accept)
-- **Tolerant reader** - Resilient to interface changes
-- **HATEOAS** - Hypermedia as the engine of application state
-- **Resource-oriented client architecture (ROCA)** - Web-first API design
-- **Adapter pattern** - Interface translation
-- **Facade pattern** - Simplified interface
-- **Proxy pattern** - Intermediary access control
-
----
-
-## 8. Concurrency & Synchronization
-
-### Concurrency Concepts
-- **Concurrency** - Parallel execution handling
-- **Parallelism** - Simultaneous execution
-- **Synchronization** - Coordinating concurrent operations
-- **Race condition mitigation** - Preventing data races
-- **Atomicity** - Indivisible operations
-- **Atomic operations** - Hardware-level indivisible operations
-- **Compare-and-swap (CAS)** - Atomic update operation
-- **Mutual exclusion** - Critical section protection
-- **Locks and mutexes** - Mutual exclusion primitives
-- **Semaphores** - Counting locks
-- **Barriers** - Collective synchronization
-- **Deadlock prevention** - Resource ordering
-- **Deadlock** - Circular wait condition
-- **Livelock** - Continuous state changes without progress
-- **Thread safety** - Safe concurrent access
-- **Thread-safe programming** - Designing for concurrency
-- **Flynn's taxonomy** - Parallel processing classifications
-- **SIMD/SIMT** - Single instruction, multiple data
-- **MIMD** - Multiple instruction, multiple data
-- **Threads and concurrency primitives** - OS-level threading
-- **POSIX threads (pthreads)** - Standard threading API
-- **OpenMP** - Parallel programming directives
-- **Thread lifecycle** - Creation, execution, termination
-- **Thread scheduling** - OS thread management
-- **Preemptive scheduling** - Forcible context switching
-- **Cooperative scheduling** - Voluntary yielding
-
-### Asynchronous Patterns
-- **Async/await** - JavaScript asynchronous programming
-- **Promises** - Future value representation
-- **Event loops** - Non-blocking I/O
-- **JavaScript event loop** - Browser/Node.js concurrency model
-- **Callbacks** - Asynchronous result handling
-- **Streaming** - Asynchronous data processing
-- **Async streams** - Asynchronous data flows
-- **Observables** - Reactive streams
-- **Event emitters** - Publish-subscribe for events
-- **Backpressure** - Flow control in streams
-- **Async functions** - Promise-based functions
-- **Async transpilation** - State machine transforms
-- **Async iterators** - Asynchronous iteration
-
-### Shared Memory and Message Passing
-- **Shared memory** - Common memory space
-- **Message passing** - Inter-process messaging
-- **MPI (Message Passing Interface)** - Distributed message passing
-- **Web Workers** - Browser-based parallelism
-- **Worker messaging** - Message-based communication
-- **Child processes** - OS process spawning
-- **Interprocess messaging** - Cross-process communication
-- **Transactional memory** - Optimistic concurrency
-- **Atoms** - Immutable value containers
-- **Immutability** - Unchanging data structures
-- **Segregation of mutability** - Isolating mutable state
-
----
-
-## 9. Error Handling & Reliability
-
-### Error Handling Strategies
-- **Exception handling** - Structured error management
-- **Error propagation** - Bubbling errors up the stack
-- **Validation** - Input validation and sanitization
-- **Graceful degradation** - Fallback mechanisms
-- **Error recovery** - Automatic retry and healing
-- **Logging and monitoring** - Observability
-- **Functional error handling** - Result/Either types instead of exceptions
-- **Option/Maybe types** - Nullable value handling
-- **Either/Try/Result patterns** - Error as value
-- **Error masking** - Hiding implementation details
-- **Error aggregation** - Combining multiple errors
-- **Crash-on-fatal** - Fail-fast error handling
-- **Define errors out of existence** - Designing APIs to avoid error cases
-- **Business exceptions** - Domain-specific errors
-- **Technology exceptions** - Infrastructure errors
-- **Exception aggregation** - Collecting multiple exceptions
-- **Exception masking** - Controlled error suppression
-- **Checked vs unchecked exceptions** - Compile-time vs runtime errors
-- **Defensive programming** - Anticipating failures
-- **Assertions** - Runtime correctness checks
-- **Input validation** - Sanitizing inputs
-- **Return value checking** - Validating results
-- **Short-circuit evaluation** - Early exit on failure
-
-### Domain Exceptions
-- **Custom exceptions** - Domain-specific error types
-- **Error hierarchies** - Structured exception taxonomy
-- **Error codes** - Standardized error identification
-- **Error messages** - User-friendly error descriptions
-
-### Reliability Patterns
-- **Fault injection testing** - Chaos engineering
-- **Fail-fast** - Early error detection
-- **Fail-safe** - Safe defaults
-- **Watchdog timers** - Detecting hangs
-- **Health checks** - System status monitoring
-- **Health endpoints** - Status API endpoints
-- **Postmortems** - Incident retrospectives
-- **Incident management** - Handling production issues
-- **Incident response** - Systematic failure handling
-- **On-call management** - Production support rotation
-- **Runbooks** - Operational procedures
-- **Mean time to detect (MTTD)** - Detection speed
-- **Mean time to repair (MTTR)** - Recovery speed
-- **Alerting** - Automated notifications
-- **Alert fatigue** - Too many alerts
-- **Toil elimination** - Automating manual work
-
----
-
-## 10. Development Practices & Tools
-
-### Development Workflow
-- **Incremental development** - Iterative implementation
-- **Iterative development** - Repeated refinement cycles
-- **Evolutionary development** - Adaptive design
-- **Code review** - Peer feedback
-- **Peer code review** - Collaborative quality assurance
-- **Pair programming** - Two programmers, one workstation
-- **Driver and navigator** - Pair programming roles
-- **Refactoring** - Code improvement
-- **Design iteration** - Evolving design
-- **Documentation** - Code and API documentation
-- **Version control** - Git-based workflow
-- **Branching strategies** - Git workflow patterns
-- **Merge conflicts** - Resolving concurrent changes
-- **Collision management** - Coordinating changes
-- **Source control workflows** - Lock-modify-unlock vs copy-modify-merge
-- **Collective ownership** - Team code ownership
-- **Egoless programming** - Depersonalized code review
-
-### Agile Methodologies
-- **Agile methodologies** - Iterative, adaptive development
-- **Extreme Programming (XP)** - Agile with engineering practices
-- **Scrum framework** - Sprint-based agile
-- **Kanban method** - Flow-based agile
-- **Crystal family** - Lightweight agile methods
-- **Lean software development** - Waste elimination
-- **User stories** - Requirements as user narratives
-- **Product backlog** - Prioritized feature list
-- **Sprint/iteration backlog** - Work for current iteration
-- **Minimum viable product (MVP)** - Minimal feature set
-- **INVEST criteria** - Good user story attributes
-- **Three Cs** - Card, Conversation, Confirmation
-- **SMART tasks** - Specific, Measurable, Achievable, Relevant, Time-bound
-- **Planning game** - Collaborative planning
-- **Release planning** - Long-term roadmap
-- **Daily stand-up** - Daily synchronization
-- **Sprint planning** - Iteration planning
-- **Sprint review** - Demonstration and feedback
-- **Sprint retrospective** - Process improvement
-- **Velocity** - Team throughput metric
-- **Continuous delivery** - Automated release pipeline
-- **On-site customer** - Direct customer involvement
-
-### Build & Deployment
-- **Compilation and linking** - TypeScript build process
-- **Transpilation** - Source-to-source compilation
-- **Downlevel compilation** - Targeting older JS versions
-- **Continuous integration** - Automated CI/CD
-- **Test automation** - Automated test execution
-- **Package management** - npm dependencies
-- **Configuration management** - Environment-specific config
-- **Deployment strategies** - Release management
-- **Canary releases** - Gradual rollout
-- **Phased rollouts** - Progressive deployment
-- **Blue-green deployment** - Zero-downtime switching
-- **Rollforward and rollback** - Deployment recovery
-- **Feature toggles** - Runtime feature flags
-- **Progressive delivery** - Controlled feature rollout
-- **Infrastructure as code** - Declarative infrastructure
-- **Containerization** - Docker-based packaging
-- **Container orchestration** - Kubernetes-based management
-- **Build automation** - Automated builds
-- **Build pipelines** - Multi-stage build process
-- **Artifact repositories** - Binary storage
-
-### Code Quality
-- **Coding standards** - Style guides and conventions
-- **Static analysis** - TypeScript type checking
-- **Static code analysis** - Automated code inspection
-- **Linting** - Code style enforcement
-- **Code metrics** - Complexity measurement
-- **Lines of code (LOC)** - Size metric
-- **Weighted methods per class (WMC)** - Complexity metric
-- **Cyclomatic complexity** - Decision point count
-- **Fan-in and fan-out** - Dependency metrics
-- **Coupling metrics** - Inter-module dependencies
-- **Cohesion metrics** - Intra-module relationships
-- **Technical debt** - Deferred quality work
-- **Design debt** - Architectural shortcuts
-- **Technical bankruptcy** - Overwhelming debt
-- **Principal and interest metaphor** - Debt accumulation
-- **Cost of change** - Modification difficulty
-- **Maintainability** - Long-term code health
-- **Code smells** - Indicators of design problems
-- **Design smells** - Architectural problems
-- **Anti-patterns** - Common design mistakes
-- **Overengineering** - Unnecessary complexity
-- **Speculative generality** - YAGNI violation
-- **Naming conventions** - Intent-revealing names
-- **Comments policy** - When and how to comment
-- **Intent-revealing code** - Self-documenting code
-- **Newspaper code principle** - High-level details first
-- **Step-down principle** - Top-to-bottom code organization
-- **Whitespace and formatting** - Readability through formatting
-- **ESLint and Prettier** - Automated code formatting
-- **Husky** - Git hooks for quality checks
-- **Clone detection** - Finding duplicate code
-- **Code clones** - Duplicated code
-- **Duplicate code** - Copy-paste programming
-- **Refactoring process** - Detect, plan, repay
-- **Behavior-preserving transformations** - Safe refactorings
-- **Composite refactorings** - Multi-step refactorings
-- **Extract class** - Splitting classes
-- **Inline class** - Merging classes
-- **Move method** - Relocating methods
-- **Move field** - Relocating fields
-- **Pull up method** - Moving to superclass
-- **Pull down method** - Moving to subclass
-- **Collapse hierarchy** - Removing unnecessary inheritance
-- **Extract superclass** - Creating parent class
-- **Replace inheritance with delegation** - Favoring composition
-
----
-
-## 11. System Design & Architecture
-
-### System Design Principles
-- **System architecture** - High-level system organization
-- **Component design** - Module boundaries
-- **Interface design** - Contract definition
-- **Abstraction layers** - Hiding complexity
-- **Encapsulation** - Information hiding
-- **Cohesion** - Single responsibility
-- **Coupling** - Minimizing dependencies
-- **Afferent coupling** - Incoming dependencies
-- **Efferent coupling** - Outgoing dependencies
-- **Instability metric** - Coupling-based stability
-- **Abstractness metric** - Abstraction level
-- **Distance from main sequence** - Balance metric
-- **Component granularity** - Size and scope
-- **Component cohesion** - Internal consistency
-- **Reuse-release equivalence principle** - Releasable units
-- **Common closure principle** - Change together, package together
-- **Common reuse principle** - Use together, package together
-- **Trade-off analysis** - Evaluating design decisions
-- **Architecture trade-offs** - Everything is a trade-off
-- **Least-worst architecture** - Optimal within constraints
-
-### Design Patterns for Systems
-- **Model-based design** - Domain modeling
-- **State machines** - Stateful behavior modeling
-- **Pipeline architecture** - Data flow processing
-- **Plugin architecture** - Extensibility patterns
-- **Microservices** - Service decomposition
-- **Service granularity** - Service size and scope
-- **Granularity disintegrators** - Reasons to split services
-- **Granularity integrators** - Reasons to combine services
-- **Database-per-service** - Data ownership per service
-- **Shared library vs shared service** - Code sharing tradeoffs
-- **Modular monolith** - Monolith with clear module boundaries
-- **Hexagonal architecture** - Ports and adapters pattern
-- **Onion architecture** - Dependency inversion layers
-- **Vertical-slice architecture** - Feature-based organization
-- **Message-based architectures** - Asynchronous communication
-- **Client-server architecture** - Request-response patterns
-- **Peer-to-peer architecture** - Distributed coordination
-- **Space-based architecture** - In-memory data grids
-- **Replicated in-memory data grid** - Distributed caching
-- **Near-cache** - Local cache with remote backing
-- **Replicated vs distributed caching** - Caching strategies
-
-### Systems Thinking
-- **Systems thinking** - Holistic perspective
-- **System structure** - Organization of elements
-- **System behavior** - Dynamic patterns
-- **Feedback loops** - Circular causality
-- **Balancing feedback** - Stabilizing loops
-- **Reinforcing feedback** - Amplifying loops
-- **Stocks** - Accumulators
-- **Flows** - Rates of change
-- **Delays** - Time lags
-- **Buffers** - Shock absorbers
-- **Leverage points** - High-impact interventions
-- **System archetypes** - Common patterns
-- **System traps** - Problematic patterns
-- **Tragedy of the commons** - Shared resource depletion
-- **Shifting the burden** - Dependency on interventions
-- **Success to the successful** - Winner-take-all dynamics
-- **Escalation** - Arms race dynamics
-- **Drift to low performance** - Eroding standards
-- **Policy resistance** - Unintended consequences
-- **Mental models** - Internal representations
-- **System boundaries** - Scope definition
-- **Resilience** - Adaptive capacity
-- **Self-organization** - Emergent order
-- **Hierarchy** - Nested subsystems
-- **Sustainability** - Long-term viability
-- **Holistic thinking** - Seeing the whole
-- **Interdependence** - Mutual relationships
-
-### Infrastructure Concepts
-- **Containerization** - Docker deployment
-- **Orchestration** - Service coordination
-- **Service mesh** - Inter-service communication
-- **Sidecar pattern** - Auxiliary service processes
-- **Cloud computing** - Cloud-native patterns
-- **Infrastructure as code** - Automated provisioning
-- **Ephemeral infrastructure** - Disposable resources
-- **Automation** - Eliminating manual processes
-- **Self-service platforms** - User-driven provisioning
-
----
-
-## 12. Domain-Specific Concepts
-
-### Natural Language Processing
-- **Text embeddings** - Semantic vector representations
-- **Tokenization** - Text segmentation
-- **Concept extraction** - Identifying key concepts
-- **Named entity recognition** - Entity identification
-- **Semantic similarity** - Measuring text relatedness
-- **Word vectors** - Word embeddings
-- **Word embeddings** - Distributed word representations
-- **Sentence embeddings** - Document-level vectors
-- **Contextual embeddings** - Context-aware representations
-- **Transformer embeddings** - Attention-based embeddings
-- **Embedding normalization** - Vector normalization techniques
-- **Session embeddings** - Conversation context vectors
-- **Conversational context retention** - Multi-turn dialogue state
-- **Conversational AI** - Dialogue systems
-- **Dialog management** - Conversation flow control
-- **Intent modeling** - Understanding user intent
-- **Intent classification** - Categorizing user requests
-- **Slot filling** - Extracting structured information
-- **Prompt engineering** - Designing effective prompts for LLMs
-- **Prompt templates** - Reusable prompt patterns
-- **Context window management** - Handling token limits
-- **Decoding strategies** - Beam search, top-k, nucleus sampling
-- **Beam search** - Multiple hypothesis decoding
-- **Top-k sampling** - Limiting token choices
-- **Nucleus sampling (top-p)** - Probability mass sampling
-- **Pre-trained language models** - Transfer learning for NLP
-- **Transformer-based generation** - Attention-based text generation
-- **Fine-tuning RAG models** - Domain adaptation
-
-### Information Retrieval
-- **Ranking** - Result ordering
-- **Relevance scoring** - Query-document matching
-- **Inverted index** - Efficient text search
-- **TF-IDF** - Term importance weighting
-- **BM25** - Probabilistic ranking
-- **Vector space model** - Geometric text representation
-
-### Knowledge Management
-- **Ontologies** - Concept hierarchies
-- **Taxonomies** - Classification schemes
-- **Knowledge graphs** - Relationship networks
-- **Metadata management** - Document properties
-- **Content organization** - Structuring information
-- **Document clustering** - Grouping similar documents
-- **Knowledge-grounded generation** - Using retrieved knowledge for generation
-- **Knowledge synthesis** - Combining information from multiple sources
-- **Data curation and governance** - Managing data quality
-- **Data lineage** - Tracking data origins and transformations
-- **Access control** - Managing document access
-- **Privacy-preserving retrieval** - Protecting sensitive information
-- **Differential privacy** - Privacy-preserving data access
-- **Federated learning** - Decentralized model training
-- **Explainability and interpretability** - Understanding system decisions
-- **Local explanations** - Example-based explanations
-- **Global model explanations** - System-wide behavior understanding
-- **Human-in-the-loop workflows** - User feedback integration
-- **User feedback integration** - Incorporating human judgment
-
-### Machine Learning Operations
-- **Machine learning operations (MLOps)** - ML model deployment
-- **Feature stores** - ML feature management
-- **Model versioning** - Embedding model evolution
-- **A/B testing** - Search quality experimentation
-- **User engagement metrics** - Measuring RAG system effectiveness
-- **Model and dataset drift detection** - Monitoring data quality
-- **Online learning** - Incremental model updates
-- **Observability** - Distributed tracing, metrics, logs
-- **Observability pillars** - Metrics, logs, traces
-- **Monitoring and telemetry** - System instrumentation
-- **Metrics** - Quantitative measurements
-- **Time-series metrics** - Time-indexed data
-- **Dimensional metrics** - Tagged metrics
-- **Logging** - Event recording
-- **Structured logging** - Parseable log events
-- **Log aggregation** - Centralized logging
-- **Distributed tracing** - Request flow tracking
-- **Trace context propagation** - Passing trace IDs
-- **Spans** - Unit of work in traces
-- **KPI dashboards** - Performance monitoring
-- **Dashboards and visualization** - Visual analytics
-- **Application performance monitoring (APM)** - Runtime monitoring
-- **Sampling resolution** - Metric granularity
-- **Metric retention** - Storage duration
-- **Pre-aggregation** - Computed rollups
-- **Anomaly detection** - Identifying outliers
-- **Deployment and MLOps** - Production ML systems
-
----
-
-## Application to Concept-RAG Project
-
-### Architecture Alignment
-The concept-RAG project demonstrates many of these concepts:
-
-1. **Layered Architecture**: Clear separation between domain, infrastructure, application, and tools layers
-2. **Repository Pattern**: Database access abstraction in infrastructure layer
-3. **Service Layer**: Domain services encapsulate business logic
-4. **Dependency Injection**: Container-based wiring in `application/container.ts`
-5. **Hybrid Search**: Combining vector, BM25, and concept-based ranking
-6. **Caching**: Multi-level caching for embeddings and results
-7. **MCP Tools**: Well-defined API for AI agent integration
-8. **Type Safety**: TypeScript for compile-time correctness
-9. **Modular Design**: Clear component boundaries
-10. **Strategic Programming**: Investment in long-term design quality
-
-### Testing Strategy
-The project leverages:
-- **Unit tests** for individual components
-- **Integration tests** for database and search operations
-- **Performance benchmarks** for search queries
-- **Contract tests** for MCP tool interfaces
-- **Test-driven development** where appropriate
-- **Automated CI/CD** for continuous validation
-
-### Scalability Considerations
-Future enhancements could include:
-- **Partitioning** for large document collections
-- **Replication** for read scalability
-- **Caching layers** for frequently accessed data
-- **Async processing** for heavy operations (concept extraction)
-- **Horizontal scaling** for increased load
-- **Load balancing** for request distribution
-
-### Quality Practices
-The project benefits from:
-- **TypeScript** for static type checking and type safety
-- **Type-driven development** - Using types to guide design
-- **Gradual typing** - Incremental adoption of types
-- **Linting** for code consistency (ESLint, Prettier)
-- **Modular design** for maintainability
-- **Clear interfaces** for testability
-- **Comprehensive error handling** for reliability
-- **Complexity management** - Strategic programming approach
-- **Deep modules** - Simple interfaces with rich functionality
-- **Information hiding** - Encapsulating implementation details
-- **Refactoring** - Continuous code improvement
-- **Technical debt management** - Tracking and addressing debt
-
----
-
-## Related Concepts for Future Exploration
-
-### Advanced Topics
-- **Distributed systems** - Multi-node deployment
-- **Consensus algorithms** - Distributed coordination (Raft, Paxos)
-- **Event sourcing** - Audit trail and replay
-- **CQRS** - Command-query responsibility segregation
-- **Domain-driven design** - Advanced modeling techniques
-- **Formal verification** - Correctness proofs
-- **Performance modeling** - Analytical performance prediction
-- **Capacity planning** - Resource forecasting
-- **Queuing theory** - Mathematical modeling of wait times
-- **Control theory** - Feedback-based system control
-
-### Specialized Areas
-- **Security** - Authentication, authorization, encryption
-- **Compliance** - Data governance, privacy regulations
-- **Privacy engineering** - Privacy-by-design principles
-- **Secure multiparty computation** - Privacy-preserving computation
-- **Edge computing** - Computation at network edge
-- **Serverless architectures** - Function-as-a-service
-- **Stream processing** - Real-time data processing
-- **Real-time analytics** - Low-latency insights
-- **Knowledge distillation** - Model compression
-- **Transfer learning** - Reusing learned representations
-- **Multi-modal integration** - Combining text, images, audio
-- **Graph neural networks** - Learning on graphs
-- **Causal inference** - Understanding cause-effect relationships
-- **Reinforcement learning** - Learning through interaction
-- **Curriculum learning** - Structured learning progression
+## Concepts
+
+- a/b testing [55,74,141,109]
+- abstraction [27,3,28,29,5,6,30,8,31,12,15,32,17,33,20,34,35,36,37]
+- acceptance testing [28,50,3,55,74,5,94,20,41,115,103,12]
+- amortized analysis [58]
+- arrange-act-assert (aaa) [55,21]
+- artifact promotion [42,65,66,74,55,129,104,112]
+- artifact repository [74,55,112,62,130]
+- async/await [84,97,17,85,136,37]
+- atomics [63]
+- authentication and authorization [55,93,74,96,18,19,101,21,69,102,64,57]
+- automated acceptance testing [74,55,21]
+- automated tests [55,74,96,112,18]
+- availability [78,73,74,8,9,11,75,43,18,19,20,41,77]
+- behavior-driven development [55,64]
+- behaviour-driven development [55,48]
+- bloom filters [30,74,8,9,82,88]
+- blue-green deployment [42,74,55,43,96,126,112,102]
+- blue-green deployments [42,74,55,43,126,21]
+- borrowing [63,158,17,162,26]
+- branching strategies [55,111]
+- branching workflows [65,55,111,112]
+- breadth-first search (bfs) [58,163]
+- build automation [128,42,74,55,96,112,119,130,77]
+- caching [3,55,8,9,99,41]
+- caching strategies [3,42,5,127,58,13,64]
+- canary releases [42,74,55,129,43,96,105,112]
+- canary releasing [42,74,55,43,112]
+- change management [27,139,72,28,50,74,55,144,104,151,131,143,62,36,46]
+- characterisation test [74,55,21,48]
+- checklists [55]
+- circuit breaker pattern [42,3,55,105,82,43,96,18,19]
+- closures [3,54,159,63,84,17,85,86,26]
+- cloud computing [128,80,74,8,9,88,100,154,155]
+- clustering [167,81]
+- code readability [55,74,96,112,104,109]
+- code reviews [67,55,111,62,125]
+- coding standards [5,15,62,4,20]
+- cohesion [27,42,3,5,6,43,11,44,20,41,45,46]
+- collective code ownership [55,74,96,112,109]
+- command-query responsibility segregation (cqrs) [4,55,96,105,18,19,20]
+- command-query separation (cqs) [4,55,96,18,19,20]
+- component testing [42,67,5,74,55,96,105,20,21]
+- component tests [42,74,55,96]
+- componentization [42,65,67,104,55,96,18,19,20]
+- concurrency [79,80,30,74,81,8,9,82,83,84,69,85,86]
+- condition variables [63,166]
+- configuration as code [42,42,72,74,55,129,104,43,96,126,109,77]
+- configuration drift [74,55,130]
+- configuration management [28,29,5,74,55,131,104,43,116,126,132,133,62,36,41,134,135,136,46]
+- consistency [79,80,30,74,87,8,9,88,89,90,82,18,19,20,69,91,41,77,86]
+- constructor injection [55,21]
+- contextual embeddings [154]
+- continuous delivery [28,50,66,65,72,3,42,74,55,129,7,43,96,105,126,112,62,109,123,77]
+- continuous deployment [42,67,74,55,43,96,105,112,104]
+- continuous improvement [95,28,50,139,72,74,55,140,141,94,104,20,62,109]
+- continuous integration [28,50,2,66,65,72,10,5,74,55,94,104,43,96,126,112,62,114,21,48,109,123,127,77]
+- continuous integration (ci) [128,42,65,67,5,72,10,74,55,104,82,43,96,105,126,112,62,20,114,21,123,77]
+- conway's law [74,55,96,104,18,64,41,109,110,86]
+- coupling [27,42,3,5,6,43,49,11,18,19,20]
+- cross-cutting concerns [55,104,20]
+- custom error types [63,26]
+- cycle time [42,72,3,5,55,74,47,17,127]
+- data locality [80,30,74,8,9,100,18,19,20]
+- data transfer object (dto) [55,64]
+- data-race freedom [63]
+- database migration [74,55,138,130,43,126,70]
+- declarative infrastructure [74,55,130]
+- decomposition [29,4,13,61,55,104,20,41,46]
+- decorator pattern [55,7,12,13,64]
+- defensive programming [5,54,15,20,55,21,56,57]
+- dependency injection [2,4,12,13,55,21]
+- dependency inversion principle [4,55,21,64]
+- dependency management [120,42,67,74,55,96,152,112,17]
+- deployment orchestration [74,55,82,137,43]
+- deployment pipeline [42,74,55,72,3,5,74,129,96,105,112,114,21]
+- depth-first search (dfs) [58,163]
+- devops culture [42,42,74,55,96,130,43,41]
+- dimensionality reduction [68]
+- distributed version control [74,55,130]
+- divide and conquer [58,163]
+- domain model [42,3,55,28,29,31,43,105,106]
+- encapsulation [27,28,29,4,7,13,55,12,14,41,86]
+- environment provisioning [74,55]
+- error handling with result [63]
+- executable specifications [74,55,31,29,119,36]
+- exploratory testing [74,113,117,41]
+- exponential backoff with jitter [82,8,9]
+- extensibility [27,2,3,5,7,15,11,51]
+- fault tolerance [28,72,73,74,38,8,9,75,11,18,19,20,69,76,77]
+- feature flags [42,65,55,129,43,96,112]
+- generics and parametric polymorphism [63,158,26]
+- git [55,111,11,20]
+- guard clause [55,48,26]
+- hash functions [163,164]
+- hash tables [163]
+- idempotence [92,93,30,74,8,9,82,18,19,20]
+- immutability [80,30,74,81,8,9,88,89,90,87,107,96,18,108,69,86]
+- infrastructure as code [55,42,74,129,111,130,100,41]
+- integration testing [28,2,66,65,5,11,96,43,18,19,20,21,113,53,41,77]
+- integration tests [42,74,55,105,96]
+- inverted index [3,58,81]
+- iterators and iterator adapters [63,160,17,85,26]
+- latency [42,42,55,74,96,105,82,100]
+- lifetimes [63,158,17,85,162,26]
+- liskov substitution principle [15,20,21,48,64]
+- load balancing [121,42,72,58,81,123,82,68,43,101,76]
+- lock-free synchronization [38,63]
+- maintainability [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26]
+- memoization [58,163,165]
+- memory safety [63,158,17,85,86,26]
+- mob programming [67,55,111]
+- monitoring and logging [74,55,141,109,126]
+- move semantics [161,63,158,17,85,162,26]
+- naming conventions [5,51,13,15,20,61]
+- newtype pattern [63,26]
+- nonfunctional testing [74,55,21]
+- object-oriented design [5,15,58,20,7,59,20,60]
+- option type [63,85]
+- outside-in development [55,74,96,112,21]
+- ownership [63,17,162]
+- pair programming [67,55,74,96,104,109,62,125]
+- parametrized tests [55,48]
+- parse-don't-validate [55,48]
+- pattern matching [63,26,157]
+- performance optimization [95,65,93,94,53,5,55,96,97,98,21,99,46,26,77]
+- performance testing [74,47,113]
+- portability [5,10,15,20]
+- ports and adapters (hexagonal) architecture [4,13,55,18,19,20,103]
+- postel's law [55,64]
+- precision and recall [81]
+- property-based testing [55,48,26]
+- pull requests [67,55,111,62,125,37]
+- readability [50,3,5,51,11,6,48,52]
+- recursion [3,58,163]
+- red-green-refactor [55,21]
+- refactoring [120,121,66,3,4,5,55,31,29,62,17,122,114,21,48,26,123]
+- regression testing [5,74,47,113,41]
+- reliability [5,8,9,38,7,11,39,18,19,20,40,12,41,16]
+- repository pattern [55,7,21]
+- reusability [53,3,5,6,7,15,8,38]
+- risk management [139,72,50,55,144,104,133,131,62,36,41,46]
+- rollback [67,5,74,55,111,130]
+- scalability [42,65,66,67,8,9,44,7,68,18,19,20,46,69,70,41,37,71]
+- scalability testing [74,55,20]
+- security testing [80,74,55,21,57]
+- semantic search [3,164,154]
+- semantic versioning [55,42,96,105]
+- separation of concerns [28,4,7,11,13,18,19,20,103,12]
+- small commits [42,74,55,96,112,111,119,109]
+- smoke testing [67,5,74,47]
+- smoke tests [74,55]
+- space complexity analysis [58]
+- static analysis [124,65,66,74,55,104,57]
+- static code analysis [74,55,7,11,18]
+- strangler pattern [42,4,55,104,96,69]
+- technical debt [42,3,55,74,96,104,109,64]
+- test automation [52,74,66,65,94,113,20,55,118]
+- test automation pyramid [55,74,96,112,109]
+- test coverage [66,55,74,5,47,113,21]
+- test data management [42,74,55,96,20,21]
+- test doubles [55,48,21]
+- test fixtures [74,55,21,48]
+- test harness [42,67,74,55,96,105,20,21]
+- test isolation [55,48,21]
+- test orchestration [55,48,21]
+- test-driven development [3,55,5,31,29,48,21]
+- test-driven development (tdd) [95,72,4,55,96,62,98,21,114,77]
+- testability [1,2,4,5,7,11,18,19,20,21,47,48]
+- thread pools [158,17,24]
+- throughput [128,42,42,72,55,74,96,105,82,126,112,43,102,62,70,77]
+- time complexity analysis [58]
+- tokenization [3,68]
+- trunk-based development [42,67,55,96,153,112]
+- type-driven design [55,156,13,48]
+- unit testing [28,50,2,4,5,7,11,13,96,43,18,19,20,21,47,113,48,114,77]
+- unit tests [42,74,55,96,21]
+- usability testing [74,55,94,47,103,115,116]
+- value object [55,31,105,17,106]
+- value stream mapping [55,141,109]
+- version control [28,50,74,55,94,104,43,116,62,36,41,46]
+- versioning [28,29,55,7,11,43,96,126,18,19,101]
+- vertical slice [55,48,109]
+- virtualization [74,55,130]
+- walking skeleton [55,48,21,26]
+- word embeddings [68]
+- zero-cost abstractions [63,158,17,85,86,26]
 
 ---
 
 ## Document Sources
 
-This lexicon was compiled from concepts extracted from the following knowledge base documents:
+The numbered references correspond to the source documents from which concepts were derived.
 
-### TypeScript & JavaScript
-- **Programming TypeScript: Making Your JavaScript Applications Scale** by Boris Cherny (O'Reilly Media, 2019)
-- **Effective TypeScript: 62 Specific Ways to Improve Your TypeScript** by Dan Vanderkam (O'Reilly Media, 2019)
-- **Introduction to Software Design and Architecture With TypeScript** by Khalil Stemmler
-
-### Software Architecture
-- **Fundamentals of Software Architecture: A Comprehensive Guide** by Neal Ford and Mark Richards (O'Reilly Media, 2020)
-- **Software Architecture for Developers: Technical Leadership** by Simon Brown (2022)
-- **Head First Software Architecture: A Learner's Guide to Architectural Thinking** by Raju Gandhi, Mark Richards, and Neal Ford (O'Reilly Media, 2024)
-- **Clean Architecture: A Craftsman's Guide to Software Structure and Design** by Robert C. Martin (Pearson, 2017)
-- **Software Development, Design, and Coding: With Patterns, Debugging, Unit Testing, and Refactoring** by John F. Dooley and Vera A. Kazakova (Apress, 2024)
-
-### Design Philosophy & Principles
-- **A Philosophy of Software Design** by John Ousterhout (Yaknyam Press, 2019)
-- **Refactoring for Software Design Smells: Managing Technical Debt** by Ganesh Samarthyam, Tushar Sharma, and Girish Suryanarayana (Morgan Kaufmann, 2015)
-
-### RAG & Vector Databases
-- **Utilizing Vector Databases to Enhance RAG Models** (Author unknown)
-
-### Distributed Systems
-- **Understanding Distributed Systems: What Every Developer Should Know** by Roberto Vitillo (2021)
-- **Distributed Systems for Practitioners** by Dimos Raptis (2020)
-- **Distributed Computing: 16th International Conference, DISC 2002** (Lecture Notes in Computer Science, 2002)
-
-### Interface & API Design
-- **Interface Oriented Design** by Ken Pugh (The Pragmatic Programmers, 2006)
-
-### Database Systems
-- **Database Design for Mere Mortals®, 25th Anniversary Edition** by Michael James Hernandez (Addison-Wesley, 2020)
-- **Database Reliability Engineering: Designing and Operating Resilient Datastores** by Laine Campbell and Charity Majors (O'Reilly Media, 2017)
-
-### Systems Thinking
-- **Thinking in Systems: A Primer** by Donella H. Meadows (Chelsea Green Publishing, 2008)
-
----
-
-**Last Updated:** November 23, 2025
-
-**End of Document**
+1. UML Tutorial - Finite State Machines
+2. Arc42 by Example: Software Architecture Documentation — Starke, Simons, Zörner, Müller (2023)
+3. Beautiful Code: Leading Programmers Explain How They Think — Oram, Wilson, Bentley, Kernighan
+4. Clean Architecture: A Craftsman's Guide to Software — Robert C. Martin (2017)
+5. Code Complete — Steve McConnell (1993)
+6. Database Systems: The Complete Book — Garcia-Molina, Ullman, Widom (2008)
+7. Design Patterns: Elements of Reusable Object-Oriented — Gamma, Helm, Johnson, Vlissides (2016)
+8. Designing Data-Intensive Applications — Martin Kleppmann (2015)
+9. Designing Data-Intensive Applications — Martin Kleppmann (2017)
+10. Embedded C - Traps And Pitfalls
+11. Fundamentals of Software Architecture — Richards, Ford (2020)
+12. Head First - Design Patterns
+13. Head First Software Architecture — Gandhi, Richards, Ford (2024)
+14. Introduction to Software Design and Architecture with TypeScript — Khalil Stemmler
+15. JSF-AV rules
+16. Refactoring: Improving the Design of Existing Code — Fowler, Beck
+17. Refactoring to Rust — Holmes, Mara (2024)
+18. Software Architecture: The Hard Parts — Ford, Richards, Sadalage, Dehghani (2021)
+19. Software Architecture: The Hard Parts — Ford, Richards, Sadalage, Dehghani (2021 epub)
+20. Software Development, Design, and Coding — Dooley, Kazakova (2024)
+21. Test Driven Development for Embedded C
+22. The Art of Unit Testing — Roy Osherove (2013)
+23. The Engineering Design of Systems — Buede, Miller
+24. The Rust Programming Language, 2nd Edition — Klabnik, Nichols (2022)
+25. Software Requirements (3rd Edition) — Wiegers, Beatty (2013)
+26. The Pragmatic Programmer: Your Journey to Mastery — Hunt, Thomas (2019)
+27. Understanding The UML (ebook - pdf)
+28. The UML User Guide — Addison Wesley
+29. UML Reference Manual — Addison Wesley
+30. Database Internals — Alex Petrov (2019)
+31. Domain-Driven Design — Eric Evans (2003)
+32. Network Programming with Rust — Abhishek Chanda (2018)
+33. Sams - Teach Yourself UML in 24 Hours (2004)
+34. Software Requirements Engineering, 2nd Edition — Thayer, Dorfman
+35. SQL Antipatterns — Bill Karwin
+36. Visual Models for Software Requirements — Beatty, Chen (2012)
+37. Zero to Production in Rust — Luca Palmieri (2024)
+38. Distributed Computing: 16th International Conference
+39. Enterprise Integration Patterns — Leymann, Roller (1999)
+40. Systems, Functions and Safety — Milan Z. Bjelica
+41. The Pragmatic Programmers - Interface Oriented Design (2006)
+42. Building Microservices — Sam Newman
+43. Microservices: Flexible Software Architecture — Eberhard Wolff (2016)
+44. Fundamentals of Software Architecture: A Comprehensive Guide — Ford, Richards (2020)
+45. Systems Analysis and Design — Tilley, Rosenblatt (2016)
+46. Site Reliability Engineering — Beyer, Jones, Petoff (2016)
+47. Effective Software Testing — Elfriede Dustin (2002)
+48. Code That Fits in Your Head — Mark Seemann (2021)
+49. Code That Fits in Your Head — Mark Seemann (2021)
+50. A Discipline for Software Engineering — Watts S. Humphrey
+51. Command-Line Rust — Ken Youens-Clark (2022)
+52. hungarian (embedded coding standards)
+53. Writing Effective Use Cases — Addison Wesley
+54. Embedded C
+55. Continuous Delivery — Humble, Farley
+56. The Art of Designing Embedded Systems — Jack G. Ganssle (2008)
+57. The Art of Software Security Assessment — Dowd, McDonald, Schuh (2006)
+58. Cracking the Coding Interview — Gayle Laakmann McDowell (2015)
+59. Prentice Hall, Applying UML and Patterns, 2Ed
+60. UML 2 for Dummies
+61. The C4 Model for Visualising Software Architecture — Simon Brown (2022)
+62. The Clean Coder — Robert C. Martin (2011)
+63. Programming Rust — Jim Blandy (2020)
+64. Software Architecture for Developers — Simon Brown (2022)
+65. CI/CD Design Patterns — Bajpai, Schildmeijer, Mishra (2024)
+66. CI/CD Unleashed — Tommy Clark (2025)
+67. Cmp Books - Embedded Systems Design
+68. Machine Learning Production Systems — Crowe, Hapke, Caveness, Zhu (2024)
+69. Understanding Distributed Systems — Roberto Vitillo (2021)
+70. Database Reliability Engineering — Campbell, Majors (2017)
+71. The Software Engineer's Guidebook — Gergely Orosz (2024)
+72. Building Secure and Reliable Systems — Heather Adkins (2020)
+73. Just Enough Software Architecture — George Fairbanks (2010)
+74. Continuous Delivery — Farley, Humble (DevOps edition)
+75. Learning Domain-Driven Design — Vladik Khononov (2021)
+76. Systems Performance — Brendan Gregg (2020)
+77. The Pragmatic Programmer — Hunt, Thomas (2nd edition)
+78. Applying Design for Six Sigma — Maass, McNair (2009)
+79. Atomic Transactions in Concurrent and Distributed Systems — Lynch, Merritt, Weihl
+80. Concurrency Control and Recovery in Database Systems — Bernstein, Hadzilacos, Goodman
+81. Database System Concepts ISE — Silberschatz, Korth, Sudarshan (2019)
+82. Distributed Systems with Node.js — Thomas Hunter II (2021)
+83. Distributed Systems for Practitioners — Dimos Raptis (2020)
+84. Asynchronous Programming in Rust — Carl Fredrik Samson (2024)
+85. Rust for Rustaceans — Jon Gjengset (2021)
+86. Transaction Processing: Concepts and Techniques — Gray, Reuter
+87. Maths & Stats - Abstract State Machines (2003)
+88. Mastering Blockchain — Imran Bashir (2018)
+89. Mastering Blockchain (3rd edition) — Imran Bashir (2020)
+90. Mastering Blockchain (4th edition) — Imran Bashir (2023)
+91. Software for Use — Constantine, Lockwood (1999)
+92. Automating DevOps with GitLab CI/CD Pipelines — Cowell, Lotz, Timberlake (2023)
+93. Grokking Continuous Delivery — Christie Wilson (2022)
+94. User Stories Applied — Mike Cohn (2004)
+95. Applying Design for Six Sigma — Maass, McNair (2009)
+96. Microservices Patterns — Chris Richardson (2018)
+97. Mastering TypeScript — Nathan Rozentals (2021)
+98. Test Driven Development by Example — Kent Beck
+99. Infrastructure as Code — Kief Morris (2016)
+100. Systems Engineering and Artificial Intelligence — Lawless, Mittu (2021)
+101. RESTful Web APIs — Richardson, Amundsen, Ruby (2013)
+102. Observability Engineering — Majors, Fong-Jones, Miranda (2022)
+103. Needs, Requirements, Verification, Validation Lifecycle — INCOSE (2022)
+104. Refactoring at Scale — Maude Lemaire (2020)
+105. Microservices Patterns — Chris Richardson (2018)
+106. Microservices Patterns — Chris Richardson (2018)
+107. Rust in Action (MEAP) — T.S. McNamara (2020)
+108. Software Architecture: The Hard Parts (Engineering edition)
+109. The DevOps Handbook — Gene Kim
+110. Measure What Matters — John Doerr (2018)
+111. DevOps Unleashed with Git and GitHub — Hattori, Drost-Fromm (2024)
+112. Grokking Continuous Delivery — Christie Wilson (2022)
+113. Effective Software Testing — Elfriede Dustin (2002)
+114. Test Driven Development for Embedded C
+115. Systems Engineering: System Design Principles and Models — Dahai Liu (2016)
+116. The Engineering Design of Systems — Buede, Miller
+117. The Pragmatic Programmer (Russian edition)
+118. Systems, Functions and Safety — Milan Z. Bjelica
+119. Software Requirements Engineering — Thayer, Dorfman
+120. UML Distilled, 3rd Ed — Addison Wesley (2003)
+121. AntiPatterns — Malveau, Brown, McCormick (2001)
+122. Refactoring for Software Design Smells — Samarthyam, Sharma, Suryanarayana (2015)
+123. Design It! — Michael Keeling (2017)
+124. Building Blockchain Apps — Michael Juntao Yuan (2019)
+125. Handbuch Automotive SPICE 4.0 — Levin, Benning, Lehmann (2024)
+126. Mastering GitHub Actions — Eric Chapman (2024)
+127. Continuous Integration (CI) and Continuous Delivery (CD) — Henry van Merode (2023)
+128. Automating DevOps with GitLab CI/CD Pipelines — Cowell, Lotz, Timberlake (2023)
+129. Continuous Delivery — Humble, Farley (original edition)
+130. Infrastructure as Code — Kief Morris (2016)
+131. Functional Safety From Scratch — Peter Clarke (2023)
+132. Safety Critical Systems Handbook — David J. Smith (2010)
+133. Systems Engineering Models — Badiru
+134. Systems Engineering: Fifty Lessons Learned — Howard Eisner (2021)
+135. Requirements Engineering — Axel van Lamsweerde (2009)
+136. Rust Programming by Example — Guillaume Gomez (2018)
+137. Learning GitHub Actions — Brent Laster (2023)
+138. Learning SQL — Alan Beaulieu (2020)
+139. BABOK v.3.0 — IIBA (2015)
+140. PMBOK Guide, 5th Ed
+141. The DevOps Handbook — Gene Kim
+142. Security Engineering — it-ebooks (2017)
+143. Fundamentals of Smart Contracts Security — Ma, Gorzny, Zulkoski (2018)
+144. Security Engineering — it-ebooks (2017)
+145. Dictionary Of Financial And Business Terms
+146. Project Management Practitioner's Handbook
+147. The Little Black Book of Project Management
+148. Database Reliability Engineering — Campbell, Majors (2017)
+149. Essential TypeScript 5 — Adam Freeman (2023)
+150. Continuous Integration (CI) and Continuous Delivery (CD) — Henry van Merode (2023)
+151. Database Reliability Engineering — Campbell, Majors (2017)
+152. Essential TypeScript 5 — Adam Freeman (2023)
+153. Continuous Integration (CI) and Continuous Delivery (CD) — Henry van Merode (2023)
+154. Utilizing Vector Databases to Enhance RAG Models
+155. Peer-to-Peer Systems and Applications — Steinmetz, Wehrle
+156. Node.js Design Patterns — Casciaro, Ng (2014)
+157. Rust Programming by Example — Guillaume Gomez (2018)
+158. Programming Rust Fast, Safe Systems Development, 3rd Ed — Blandy, Orendorff, Tindall (2025)
+159. Node.js Web Development — David Herron (2016)
+160. Rust in Action (MEAP) — T.S. McNamara (2020)
+161. Cryptography: Algorithms, Protocols, and Standards — Zoubir Z. Mammeri (2024)
+162. The Rust Performance Book
+163. Introduction to Algorithms, 3rd Edition — Cormen, Leiserson, Rivest
+164. Agentic Design Patterns — Antonio Gulli (2025)
+165. Think Complexity — Allen B. Downey (2012)
+166. The Art of Multiprocessor Programming — Herlihy, Shavit, Luchangco, Spear (2021)
+167. Database Modeling and Design — Jagadish, Lightstone, Teorey, Nadeau (2011)

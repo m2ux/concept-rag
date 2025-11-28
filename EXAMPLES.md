@@ -78,7 +78,7 @@ Found 8 documents:
 
 **Query**: "Find information about absorptive capacity"
 
-**Tool**: `concept_search`
+**Tool**: `concept_chunks`
 
 **Response**:
 ```
@@ -155,7 +155,7 @@ You're preparing a strategic plan and researching military strategy principles (
 #### Query 3: Research Deception
 ```
 "deception tactics"
-→ concept_search
+→ concept_chunks
 ```
 
 **Result**: 23 chunks across documents showing how different strategists approach deception.
@@ -238,7 +238,7 @@ chunks_search("refresh token expiration", source="/path/to/oauth_guide.pdf")
 #### Query 1: Find Error Handling Patterns
 ```
 "error handling"
-→ concept_search
+→ concept_chunks
 ```
 
 **Result**: All documented error handling approaches across your docs.
@@ -293,7 +293,7 @@ For each major competitor:
 
 ```
 "digital transformation"
-→ concept_search  
+→ concept_chunks  
 ```
 
 **Result**: Specific mentions of digital transformation across all competitors.
@@ -351,7 +351,7 @@ You're a student with textbooks, lecture notes, and research papers (80+ documen
 #### Query 3: Concept Deep Dive
 ```
 "overfitting"
-→ concept_search
+→ concept_chunks
 ```
 
 **Result**: Every mention of overfitting across all documents—perfect for understanding the concept deeply.
@@ -433,7 +433,7 @@ chunks_search("innovation paradox", source="/path/to/book.pdf")
 #### Query 1: Topic Exploration
 ```
 "design thinking"
-→ concept_search
+→ concept_chunks
 ```
 
 **Result**: All mentions of design thinking for comprehensive coverage.
@@ -475,7 +475,7 @@ Step 3: Identify Themes
 Step 4: Deep Research
   For each theme:
     "[theme concept]"
-    → concept_search
+    → concept_chunks
     
 Step 5: Synthesize
   "What do sources say about [specific question]?"
@@ -502,7 +502,7 @@ Step 3: Map Expert's Framework
 Step 4: Find Key Ideas
   For each major concept:
     "[concept]"
-    → concept_search within expert's work
+    → concept_chunks within expert's work
     
 Step 5: Cross-Reference
   "What other authors say about [expert's key concept]?"
@@ -526,7 +526,7 @@ Step 2: Extract Decision Framework
 Step 3: Gather Evidence
   For each criterion:
     "[criterion]"
-    → concept_search
+    → concept_chunks
     
 Step 4: Find Case Studies
   "case studies of [decision scenario]"
@@ -549,7 +549,7 @@ Step 6: Make Informed Decision
 ```
 1. catalog_search("strategy") → identify documents
 2. extract_concepts("Sun Tzu") → map concepts
-3. concept_search("deception") → deep dive
+3. concept_chunks("deception") → deep dive
 ```
 
 ❌ **Less Effective**:
@@ -562,7 +562,7 @@ Step 6: Make Informed Decision
 
 ✅ **Good**:
 ```
-- "innovation" → concept_search (high precision)
+- "innovation" → concept_chunks (high precision)
 - "What documents?" → catalog_search
 - "how do organizations innovate?" → broad_chunks_search
 ```
@@ -570,7 +570,7 @@ Step 6: Make Informed Decision
 ❌ **Less Effective**:
 ```
 - "innovation" → broad_chunks_search (lower precision)
-- "how do organizations innovate?" → concept_search (expects concept, not question)
+- "how do organizations innovate?" → concept_chunks (expects concept, not question)
 ```
 
 ### 3. Build on Previous Results

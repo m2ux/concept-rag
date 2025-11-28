@@ -32,6 +32,10 @@ class MockChunkRepository implements ChunkRepository {
     return Promise.resolve(chunks.slice(0, limit));
   }
 
+  async findByCatalogId(catalogId: number, limit: number): Promise<Chunk[]> {
+    return Promise.resolve([]);
+  }
+
   async countChunks(): Promise<number> {
     return Promise.resolve(0);
   }
@@ -66,10 +70,10 @@ describe('ChunkSearchService', () => {
       // SETUP
       const mockResults: SearchResult[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk about software architecture',
-          source: '/docs/architecture.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           distance: 0.2,
           vectorScore: 0.8,
           bm25Score: 0.7,
@@ -77,10 +81,7 @@ describe('ChunkSearchService', () => {
           conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.67,
-          concepts: {
-            primary_concepts: ['architecture'],
-            categories: ['software engineering']
-          }
+          conceptIds: [1001]
         }
       ];
       mockRepo.setSearchResults(mockResults);
@@ -103,10 +104,10 @@ describe('ChunkSearchService', () => {
       // SETUP
       const mockResults: SearchResult[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Test chunk',
-          source: '/test.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           distance: 0.2,
           vectorScore: 0.8,
           bm25Score: 0.7,
@@ -114,10 +115,7 @@ describe('ChunkSearchService', () => {
           conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.67,
-          concepts: {
-            primary_concepts: [],
-            categories: []
-          }
+          conceptIds: []
         }
       ];
       mockRepo.setSearchResults(mockResults);
@@ -188,10 +186,10 @@ describe('ChunkSearchService', () => {
     it('should respect limit parameter', async () => {
       // SETUP
       const mockResults: SearchResult[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Chunk ${i}`,
-        source: `/doc${i}.pdf`,
         hash: `hash${i}`,
+        catalogId: 12345678,
         distance: 0.2,
         vectorScore: 0.8,
         bm25Score: 0.7,
@@ -199,10 +197,7 @@ describe('ChunkSearchService', () => {
         conceptScore: 0.6,
         wordnetScore: 0.4,
         hybridScore: 0.67,
-        concepts: {
-          primary_concepts: [],
-          categories: []
-        }
+        conceptIds: []
       }));
       mockRepo.setSearchResults(mockResults);
 
@@ -223,20 +218,18 @@ describe('ChunkSearchService', () => {
       const sourcePath = '/docs/architecture.pdf';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'First chunk',
-          source: sourcePath,
           hash: 'hash1',
-          concepts: ['architecture'],
-          conceptDensity: 0.5
+          catalogId: 12345678,
+          conceptIds: [1001],
         },
         {
-          id: '2',
+          id: 2,
           text: 'Second chunk',
-          source: sourcePath,
-          hash: 'hash2',
-          concepts: ['design'],
-          conceptDensity: 0.4
+          hash: 'hash1',
+          catalogId: 12345678,
+          conceptIds: [1002],
         }
       ];
       mockRepo.setSourceChunks(sourcePath, mockChunks);
@@ -244,7 +237,6 @@ describe('ChunkSearchService', () => {
       // EXERCISE
       const result = await service.searchInSource({
         text: 'architecture',
-        source: sourcePath,
         limit: 10
       });
 
@@ -260,19 +252,17 @@ describe('ChunkSearchService', () => {
       // SETUP
       const sourcePath = '/docs/test.pdf';
       const mockChunks: Chunk[] = Array.from({ length: 20 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Chunk ${i}`,
-        source: sourcePath,
         hash: `hash${i}`,
-        concepts: [],
-        conceptDensity: 0.3
+        catalogId: 12345678,
+        conceptIds: [],
       }));
       mockRepo.setSourceChunks(sourcePath, mockChunks);
 
       // EXERCISE
       const result = await service.searchInSource({
         text: 'test',
-        source: sourcePath,
         limit: 5
       });
 
@@ -288,7 +278,6 @@ describe('ChunkSearchService', () => {
       // EXERCISE
       const result = await service.searchInSource({
         text: 'test',
-        source: sourcePath,
         limit: 10
       });
 
@@ -308,7 +297,6 @@ describe('ChunkSearchService', () => {
       // EXERCISE
       const result = await service.searchInSource({
         text: 'test',
-        source: sourcePath,
         limit: 10
       });
 
@@ -321,12 +309,11 @@ describe('ChunkSearchService', () => {
       const sourcePath = '/docs/specific.pdf';
       const mockChunks: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk from specific source',
-          source: sourcePath,
           hash: 'hash1',
-          concepts: [],
-          conceptDensity: 0.3
+          catalogId: 12345678,
+          conceptIds: [],
         }
       ];
       mockRepo.setSourceChunks(sourcePath, mockChunks);
@@ -334,7 +321,6 @@ describe('ChunkSearchService', () => {
       // EXERCISE
       const result = await service.searchInSource({
         text: 'test',
-        source: sourcePath,
         limit: 10
       });
 
@@ -342,7 +328,7 @@ describe('ChunkSearchService', () => {
       // VERIFY
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        expect(result.value[0].source).toBe(sourcePath);
+        expect(result.value[0].catalogId).toBe(sourcePath);
       }
     });
 
@@ -352,22 +338,20 @@ describe('ChunkSearchService', () => {
       const source2 = '/docs/doc2.pdf';
       const chunks1: Chunk[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Chunk from doc1',
-          source: source1,
           hash: 'hash1',
-          concepts: [],
-          conceptDensity: 0.3
+          catalogId: 12345678,
+          conceptIds: [],
         }
       ];
       const chunks2: Chunk[] = [
         {
-          id: '2',
+          id: 2,
           text: 'Chunk from doc2',
-          source: source2,
-          hash: 'hash2',
-          concepts: [],
-          conceptDensity: 0.3
+          hash: 'hash1',
+          catalogId: 12345678,
+          conceptIds: [],
         }
       ];
       mockRepo.setSourceChunks(source1, chunks1);
@@ -376,12 +360,10 @@ describe('ChunkSearchService', () => {
       // EXERCISE
       const results1 = await service.searchInSource({
         text: 'test',
-        source: source1,
         limit: 10
       });
       const results2 = await service.searchInSource({
         text: 'test',
-        source: source2,
         limit: 10
       });
 
@@ -389,9 +371,9 @@ describe('ChunkSearchService', () => {
       expect(isOk(results1)).toBe(true);
       expect(isOk(results2)).toBe(true);
       if (isOk(results1) && isOk(results2)) {
-        expect(results1.value[0].source).toBe(source1);
+        expect(results1.value[0].catalogId).toBe(source1);
         expect(results2.value.length).toBe(1);
-        expect(results2.value[0].source).toBe(source2);
+        expect(results2.value[0].catalogId).toBe(source2);
       }
     });
   });

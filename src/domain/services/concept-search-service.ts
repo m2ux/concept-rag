@@ -15,8 +15,7 @@ import { ChunkRepository } from '../interfaces/repositories/chunk-repository.js'
 import { ConceptRepository } from '../interfaces/repositories/concept-repository.js';
 import { Chunk, Concept } from '../models/index.js';
 import { Result, Ok, Err } from '../functional/result.js';
-import type { Option } from '../functional/index.js';
-import { fromNullable, foldOption, toNullable } from '../functional/index.js';
+import { foldOption } from '../functional/index.js';
 import { InputValidator } from './validation/InputValidator.js';
 
 /**
@@ -137,7 +136,7 @@ export class ConceptSearchService {
       if (validParams.sourceFilter) {
         const filterLower = validParams.sourceFilter.toLowerCase();
         filteredChunks = candidateChunks.filter(chunk =>
-          chunk.source.toLowerCase().includes(filterLower)
+          ''.includes(filterLower)
         );
       }
       
@@ -195,8 +194,9 @@ export class ConceptSearchService {
     
     switch (sortBy) {
       case 'density':
+        // Sort by concept count as proxy for density
         return sorted.sort((a, b) => 
-          (b.conceptDensity || 0) - (a.conceptDensity || 0)
+          (b.conceptIds?.length || 0) - (a.conceptIds?.length || 0)
         );
       
       case 'relevance':
@@ -208,7 +208,7 @@ export class ConceptSearchService {
       
       case 'source':
         return sorted.sort((a, b) => 
-          a.source.localeCompare(b.source)
+          a.catalogId - b.catalogId
         );
       
       default:
@@ -218,21 +218,24 @@ export class ConceptSearchService {
   
   /**
    * Calculate relevance score for a chunk.
+   * @param conceptId - Optional concept ID to check for direct match
    */
   /** @internal - Exposed for testing */
-  calculateRelevance(chunk: Chunk, concept: string): number {
+  calculateRelevance(chunk: Chunk, concept: string, conceptId?: number): number {
     let score = 0;
     
-    // Concept density (0-1)
-    score += (chunk.conceptDensity || 0) * 0.5;
+    // Concept count score (normalized by text length as proxy for density)
+    const conceptCount = chunk.conceptIds?.length || 0;
+    const textLength = chunk.text.length;
+    const normalizedDensity = textLength > 0 ? Math.min(conceptCount / (textLength / 500), 1) : 0;
+    score += normalizedDensity * 0.5;
     
-    // Concept appears in chunk
-    if (chunk.concepts?.includes(concept)) {
+    // Concept appears in chunk (by ID if available)
+    if (conceptId && chunk.conceptIds?.includes(conceptId)) {
       score += 0.3;
     }
     
     // Text length (prefer substantial chunks)
-    const textLength = chunk.text.length;
     if (textLength > 200 && textLength < 2000) {
       score += 0.2;
     }

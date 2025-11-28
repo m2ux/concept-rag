@@ -1,7 +1,11 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { CatalogRepository } from "../../domain/interfaces/repositories/catalog-repository.js";
+import { ChunkRepository } from "../../domain/interfaces/repositories/chunk-repository.js";
+import { ConceptRepository } from "../../domain/interfaces/repositories/concept-repository.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
 import { RecordNotFoundError } from "../../domain/exceptions/index.js";
+import { ConceptIdCache } from "../../infrastructure/cache/concept-id-cache.js";
+import { CategoryIdCache } from "../../infrastructure/cache/category-id-cache.js";
 
 export interface DocumentConceptsExtractParams extends ToolParams {
   document_query: string;
@@ -10,14 +14,18 @@ export interface DocumentConceptsExtractParams extends ToolParams {
 }
 
 /**
- * Extract all concepts from a specific document in the database
- * Uses vector search to find the document, then returns its concept metadata
+ * Extract all concepts from a specific document in the database.
+ * Derives concepts from chunk data and resolves IDs via caches.
  */
 export class DocumentConceptsExtractTool extends BaseTool<DocumentConceptsExtractParams> {
   private validator = new InputValidator();
   
   constructor(
-    private catalogRepo: CatalogRepository
+    private catalogRepo: CatalogRepository,
+    private _chunkRepo?: ChunkRepository,
+    private conceptRepo?: ConceptRepository,
+    private conceptIdCache?: ConceptIdCache,
+    private categoryIdCache?: CategoryIdCache
   ) {
     super();
   }
@@ -34,7 +42,7 @@ USE THIS TOOL WHEN:
 
 DO NOT USE for:
 - Searching for information (use catalog_search, chunks_search, or broad_chunks_search)
-- Finding where a concept is discussed (use concept_search)
+- Finding where a concept is discussed (use concept_chunks)
 - General document discovery (use catalog_search)
 
 RETURNS: Complete concept inventory (typically 80-150+ concepts) organized by type: primary_concepts, technical_terms, related_concepts. Also includes categories and document summary if requested.
@@ -86,18 +94,45 @@ OUTPUT FORMATS:
       // Take the best match
       const doc = results[0];
       
-      if (!doc.concepts) {
-        throw new RecordNotFoundError('Concepts', `document: ${doc.source}`);
+      // Get concepts - either from conceptIds (new) or concepts field (legacy)
+      let primaryConcepts: string[] = [];
+      let categories: string[] = [];
+      let relatedConcepts: string[] = [];
+      
+      if (doc.conceptIds && doc.conceptIds.length > 0 && this.conceptIdCache) {
+        // New format: resolve from IDs (convert to strings for cache lookup)
+        primaryConcepts = this.conceptIdCache.getNames(doc.conceptIds.map(id => String(id)));
+      }
+      
+      // Note: concepts string field was removed from Chunk model.
+      // All concept resolution is now done via conceptIds and ConceptIdCache.
+      if (primaryConcepts.length === 0) {
+        // Legacy fallback: check for any raw metadata fields
+        const rawDoc = doc as any;
+        if (rawDoc.concepts && typeof rawDoc.concepts === 'object' && rawDoc.concepts !== null) {
+          // Object format
+          primaryConcepts = rawDoc.concepts.primary_concepts || [];
+          relatedConcepts = rawDoc.concepts.related_concepts || [];
+        }
+      }
+      
+      // Categories are now derived from catalog.category_ids, not chunk
+      // Use categoryIdCache if available (would need to lookup via catalogId)
+      
+      // Derive related concepts from concept repository if available
+      if (relatedConcepts.length === 0 && this.conceptRepo && doc.conceptIds) {
+        relatedConcepts = await this.deriveRelatedConcepts(doc.conceptIds);
       }
 
-      // Parse concepts
-      const concepts = typeof doc.concepts === 'string' 
-        ? JSON.parse(doc.concepts) 
-        : doc.concepts;
+      const concepts = {
+        primary_concepts: primaryConcepts,
+        categories: categories,
+        related_concepts: relatedConcepts
+      };
 
       // Format output
       if (format === "markdown") {
-        const markdown = this.formatAsMarkdown(doc.source, concepts, includeSummary);
+        const markdown = this.formatAsMarkdown(doc.source || '', concepts, includeSummary);
         return {
           content: [{ type: "text" as const, text: markdown }],
           isError: false,
@@ -107,17 +142,14 @@ OUTPUT FORMATS:
         const response: any = {
           document: doc.source,
           document_hash: doc.hash,
-          total_concepts: (concepts.primary_concepts?.length || 0) + 
-                         (concepts.technical_terms?.length || 0) + 
-                         (concepts.related_concepts?.length || 0),
-          primary_concepts: concepts.primary_concepts || [],
-          technical_terms: concepts.technical_terms || [],
-          related_concepts: concepts.related_concepts || [],
+          total_concepts: primaryConcepts.length + relatedConcepts.length,
+          primary_concepts: primaryConcepts,
+          related_concepts: relatedConcepts,
         };
 
         if (includeSummary) {
-          response.categories = concepts.categories || [];
-          response.summary = concepts.summary || "";
+          response.categories = categories;
+          response.summary = doc.text || "";
         }
 
         return {
@@ -128,6 +160,32 @@ OUTPUT FORMATS:
     } catch (error) {
       return this.handleError(error);
     }
+  }
+  
+  /**
+   * Derive related concepts from the concepts in a document.
+   */
+  private async deriveRelatedConcepts(conceptIds: number[]): Promise<string[]> {
+    if (!this.conceptRepo) return [];
+    
+    const related = new Set<string>();
+    
+    for (const id of conceptIds.slice(0, 10)) { // Limit to first 10 to avoid too many queries
+      try {
+        const { isSome } = await import('../../domain/functional/option.js');
+        const conceptOpt = await this.conceptRepo.findById(id);
+        if (isSome(conceptOpt)) {
+          const concept = conceptOpt.value;
+          if (concept.relatedConcepts) {
+            concept.relatedConcepts.forEach(r => related.add(r));
+          }
+        }
+      } catch {
+        // Skip concepts that can't be found
+      }
+    }
+    
+    return Array.from(related).slice(0, 20);
   }
 
   private formatAsMarkdown(source: string, concepts: any, includeSummary: boolean): string {

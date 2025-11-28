@@ -17,7 +17,6 @@
  * - No reverse index needed (categories don't derive from concepts)
  */
 
-import type { CategoryRepository } from '../../domain/interfaces/category-repository.js';
 import type { Category } from '../../domain/models/category.js';
 import type { ICategoryIdCache, CategoryRepositoryForCache } from '../../domain/interfaces/caches/category-id-cache.js';
 

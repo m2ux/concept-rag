@@ -8,7 +8,7 @@ import {
   SearchError
 } from '../../domain/exceptions/index.js';
 import { InputValidator } from '../../domain/services/validation/index.js';
-import { ConceptSearchTool } from '../../tools/operations/concept_search.js';
+import { ConceptChunksTool } from '../../tools/operations/concept_chunks.js';
 import { ConceptualCatalogSearchTool } from '../../tools/operations/conceptual_catalog_search.js';
 import { ConceptualChunksSearchTool } from '../../tools/operations/conceptual_chunks_search.js';
 

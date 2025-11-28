@@ -15,20 +15,30 @@ A powerful RAG MCP server that enables LLMs to interact with local PDF/EPUB docu
 ---
 ## 📝 Available Tools
 
-The server provides eight specialized search tools.
+The server provides **11 specialized MCP tools** organized into four categories:
 
-| Tool | Best For | Use When | Example Query |
-|------|----------|----------|---------------|
-| `catalog_search` | Document discovery | Looking for documents by title, author, topic | `"What documents do I have about strategy?"` |
-| `concept_search` | Concept research (high precision) | Researching a specific concept | `"innovation"` → Returns concept-tagged chunks |
-| `broad_chunks_search` | Comprehensive cross-document search | Searching phrases, keywords, questions | `"How do organizations implement strategic planning?"` |
-| `chunks_search` | Single document search | You know the exact document path | After catalog_search, search within specific document |
-| `extract_concepts` | Concept export | Explicitly extracting/listing concepts | `"Extract concepts from Sun Tzu as markdown"` |
-| `category_search` 🆕 | Domain browsing | Browse documents by category | `"Show me software engineering documents"` |
-| `list_categories` 🆕 | Category discovery | Explore available domains | `"What categories do I have?"` |
-| `list_concepts_in_category` 🆕 | Domain concept analysis | Find concepts in a category | `"What concepts are in distributed systems?"` |
+### Content Discovery
+| Tool | Description                                       | Example Query |
+|------|---------------------------------------------------|---------------|
+| `catalog_search` | Fuzzy search documents by topic, title, or author | `"software architecture patterns"` |
+| `concept_search` | Fuzzy search concepts by name, meaning            | `"design patterns for loose coupling"` |
+| `broad_chunks_search` | Cross-document search (phrases, keywords, topics) | `"implementing dependency injection"` |
+| `chunks_search` | Search within a specific known document | `"SOLID principles"` + source path |
+| `category_search` | Browse documents by category/domain | `"software engineering"` |
 
-**For AI agents:** See [tool-selection-guide.md](tool-selection-guide.md) for the complete decision tree.
+### Content Analysis
+| Tool | Description | Example Query |
+|------|-------------|---------------|
+| `concept_chunks` | Find chunks tagged with a concept | `"innovation"` → semantically-tagged results |
+| `extract_concepts` | Export all concepts from a document | `"Clean Architecture"` |
+| `source_concepts` | Find documents where concept(s) appear (union) | `["TDD", "BDD"]` → all docs with either |
+| `concept_sources` | Get per-concept source lists (separate arrays) | `["TDD", "BDD"]` → sources for each |
+| `list_categories` | List all categories in your library | *(no query required)* |
+| `list_concepts_in_category` | Find concepts in a category | `"distributed systems"` |
+
+**📖 Full API documentation:** See [docs/api-reference.md](docs/api-reference.md) for complete parameter specs.
+
+**For AI agents:** See [tool-selection-guide.md](tool-selection-guide.md) for the decision tree.
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -141,9 +151,10 @@ src/
 ├── concepts/                     # Concept extraction & indexing
 │   ├── concept_extractor.ts      # LLM-based extraction
 │   ├── concept_index.ts          # Index builder
-│   └── query_expander.ts         # Query expansion
+│   ├── query_expander.ts         # Query expansion
+│   └── summary_generator.ts      # LLM summary generation
 ├── wordnet/                      # WordNet integration
-└── tools/                        # MCP tools (5 search operations)
+└── tools/                        # MCP tools (11 operations)
 ```
 
 ## 🏗️ Architecture
@@ -194,7 +205,7 @@ This project is forked from [lance-mcp](https://github.com/adiom-data/lance-mcp)
 - 📚 **Formal concept model** - Rigorous definition ensuring semantic matching and disambiguation
 - 🧠 **Enhanced concept extraction** - 80-150+ concepts per document (Claude Sonnet 4.5)
 - 🌐 **WordNet semantic enrichment** - Synonym expansion and hierarchical navigation
-- 🔍 **Multi-signal hybrid ranking** - Vector + BM25 + concept + title + WordNet
+- 🔍 **Multi-signal hybrid ranking** - Vector + BM25 + title + WordNet
 - 📖 **Large document support** - Multi-pass extraction for >100k token documents
 - ⚡ **Incremental seeding** - Fast updates for new/changed documents only
 - 🛡️ **Robust error handling** - Better JSON parsing, debug logging, OCR fallback

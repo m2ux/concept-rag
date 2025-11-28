@@ -44,6 +44,8 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
     // Initialize ConceptIdCache for integer ID resolution
     const { ConceptIdCache } = await import('../../infrastructure/cache/concept-id-cache.js');
     const conceptIdCache = ConceptIdCache.getInstance();
+    // Clear any existing cache (singleton might be initialized from previous test)
+    conceptIdCache.clear();
     await conceptIdCache.initialize(conceptRepo);
     
     chunkRepo = new LanceDBChunkRepository(
@@ -72,7 +74,8 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       expect(chunks).toBeDefined();
       expect(chunks.length).toBeGreaterThan(0);
       expect(chunks[0].text).toContain('architecture');
-      expect(chunks[0].concepts).toContain('clean architecture');
+      // Note: chunks no longer store concept names, only conceptIds (normalized schema)
+      expect(chunks[0].conceptIds).toBeDefined();
     });
     
     it('should respect limit parameter', async () => {
@@ -150,7 +153,7 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       // ASSERT: Verify chunks from specific source
       expect(chunks).toBeDefined();
       expect(chunks.length).toBeGreaterThan(0);
-      expect(chunks[0].source).toBe(sourcePath);
+      expect(chunks[0].catalogId).toBe(sourcePath);
     });
     
     it('should handle partial source matching', async () => {
@@ -163,7 +166,7 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       // ASSERT: Should find chunks with 'architecture' in source path
       expect(chunks).toBeDefined();
       expect(chunks.length).toBeGreaterThan(0);
-      expect(chunks[0].source).toContain('architecture');
+      expect(chunks[0].catalogId).toContain('architecture');
     });
     
     it('should return empty array for non-existent source', async () => {
@@ -254,7 +257,7 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       // ACT: Retrieve chunk
       const chunks = await chunkRepo.findBySource(sourcePath, 1);
       
-      // ASSERT: Verify all field mappings from LanceDB to domain model
+      // ASSERT: Verify all field mappings from LanceDB to domain model (normalized schema)
       expect(chunks.length).toBe(1);
       const chunk = chunks[0];
       
@@ -262,19 +265,13 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       expect(chunk.text).toBeDefined();
       expect(typeof chunk.text).toBe('string');
       
-      expect(chunk.source).toBeDefined();
-      expect(typeof chunk.source).toBe('string');
+      expect(chunk.catalogId).toBeDefined();
+      expect(typeof chunk.catalogId).toBe('string');
       
-      // Array fields (JSON deserialized)
-      expect(chunk.concepts).toBeDefined();
-      expect(Array.isArray(chunk.concepts)).toBe(true);
+      // Array fields (native arrays - normalized schema)
+      expect(chunk.conceptIds).toBeDefined();
+      expect(Array.isArray(chunk.conceptIds)).toBe(true);
       
-      expect(chunk.conceptCategories).toBeDefined();
-      expect(Array.isArray(chunk.conceptCategories)).toBe(true);
-      
-      // Number fields
-      expect(chunk.conceptDensity).toBeDefined();
-      expect(typeof chunk.conceptDensity).toBe('number');
       
       // embeddings is optional, but if present should be array of correct dimension
       if (chunk.embeddings) {
@@ -286,21 +283,16 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       }
     });
     
-    it('should parse JSON fields correctly', async () => {
-      // ARRANGE: Chunk with JSON-stringified array fields
+    it('should handle array fields correctly', async () => {
+      // ARRANGE: Chunk with array fields (normalized schema uses native arrays)
       const sourcePath = '/docs/principles/solid.pdf';
       
       // ACT: Retrieve chunk
       const chunks = await chunkRepo.findBySource(sourcePath, 1);
       const chunk = chunks[0];
       
-      // ASSERT: JSON fields should be deserialized to arrays
-      expect(Array.isArray(chunk.concepts)).toBe(true);
-      expect(chunk.concepts!.length).toBeGreaterThan(0);
-      expect(chunk.concepts).toContain('solid principles');
-      
-      expect(Array.isArray(chunk.conceptCategories)).toBe(true);
-      expect(chunk.conceptCategories!.length).toBeGreaterThan(0);
+      // ASSERT: ID-based array fields should be native arrays
+      expect(Array.isArray(chunk.conceptIds)).toBe(true);
     });
   });
   

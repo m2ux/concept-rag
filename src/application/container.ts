@@ -8,13 +8,18 @@ import { QueryExpander } from '../concepts/query_expander.js';
 import { 
   ConceptSearchService, 
   CatalogSearchService, 
-  ChunkSearchService 
+  ChunkSearchService,
+  ConceptSourcesService,
+  HierarchicalConceptService
 } from '../domain/services/index.js';
+import { ConceptChunksTool } from '../tools/operations/concept_chunks.js';
 import { ConceptSearchTool } from '../tools/operations/concept_search.js';
 import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_catalog_search.js';
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
 import { ConceptualBroadChunksSearchTool } from '../tools/operations/conceptual_broad_chunks_search.js';
 import { DocumentConceptsExtractTool } from '../tools/operations/document_concepts_extract.js';
+import { SourceConceptsTool } from '../tools/operations/source_concepts.js';
+import { ConceptSourcesTool } from '../tools/operations/concept_sources.js';
 import { CategorySearchTool } from '../tools/operations/category-search-tool.js';
 import { ListCategoriesTool } from '../tools/operations/list-categories-tool.js';
 import { ListConceptsInCategoryTool } from '../tools/operations/list-concepts-in-category-tool.js';
@@ -54,7 +59,7 @@ import * as defaults from '../config.js';
  * await container.initialize('~/.concept_rag');
  * 
  * // Use tools
- * const searchTool = container.getTool('concept_search');
+ * const searchTool = container.getTool('concept_chunks');
  * const result = await searchTool.execute({ concept: 'microservices', limit: 10 });
  * 
  * // Shutdown
@@ -169,14 +174,26 @@ export class ApplicationContainer {
     // 6. Create domain services (with repositories) - using Result-based error handling
     const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);
     const catalogSearchService = new CatalogSearchService(catalogRepo);
-    const chunkSearchService = new ChunkSearchService(chunkRepo);
+    const chunkSearchService = new ChunkSearchService(chunkRepo, catalogRepo);
+    const conceptSourcesService = new ConceptSourcesService(conceptRepo, catalogRepo);
+    
+    // 6a. Create HierarchicalConceptService (uses concept.catalogIds for document navigation)
+    const hierarchicalConceptService = new HierarchicalConceptService(
+      conceptRepo,
+      chunkRepo,
+      catalogRepo
+    );
+    console.error('✅ HierarchicalConceptService initialized');
     
     // 7. Create tools (with domain services)
-    this.tools.set('concept_search', new ConceptSearchTool(conceptSearchService));
+    this.tools.set('concept_chunks', new ConceptChunksTool(conceptSearchService));
+    this.tools.set('concept_search', new ConceptSearchTool(hierarchicalConceptService));
     this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogSearchService));
-    this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService));
+    this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService, catalogRepo));
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));
     this.tools.set('extract_concepts', new DocumentConceptsExtractTool(catalogRepo));
+    this.tools.set('concept_sources', new ConceptSourcesTool(conceptSourcesService));
+    this.tools.set('source_concepts', new SourceConceptsTool(conceptSourcesService));
     
     // 7a. Register category tools if categories table exists
     if (categoriesTable && this.categoryIdCache) {
@@ -193,7 +210,10 @@ export class ApplicationContainer {
    * Get a specific tool by name.
    * 
    * Available tools:
-   * - `concept_search`: Find chunks by concept name
+   * - `concept_search`: Fuzzy search concepts by summary/description
+   * - `concept_chunks`: Find chunks by concept name
+   * - `concept_sources`: Get sources for each concept separately (array of source arrays)
+   * - `source_concepts`: Find union of sources matching any concept (with concept attribution)
    * - `catalog_search`: Search document summaries
    * - `chunks_search`: Search within a specific document
    * - `broad_chunks_search`: Search all chunks with hybrid ranking
@@ -205,7 +225,7 @@ export class ApplicationContainer {
    * 
    * @example
    * ```typescript
-   * const searchTool = container.getTool('concept_search');
+   * const searchTool = container.getTool('concept_chunks');
    * const result = await searchTool.execute({
    *   concept: 'microservices',
    *   limit: 10

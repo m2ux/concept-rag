@@ -9,7 +9,6 @@ import {
   calculateVectorScore,
   calculateWeightedBM25,
   calculateTitleScore,
-  calculateConceptScore,
   calculateWordNetBonus,
   calculateHybridScore,
   getMatchedConcepts,
@@ -23,8 +22,10 @@ import {
  * - Vector similarity (semantic search via embeddings)
  * - BM25 keyword matching (lexical search)
  * - Title matching (document relevance)
- * - Concept scoring (conceptual alignment)
  * - WordNet expansion (semantic enrichment)
+ * 
+ * Note: Concept scoring was removed from hybrid search. Use the dedicated
+ * concept_search tool for concept-based discovery instead.
  * 
  * This service orchestrates query expansion, vector search, and multi-signal
  * scoring to provide high-quality search results.
@@ -111,7 +112,8 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         row.source || ''
       );
       const titleScore = calculateTitleScore(expanded.original_terms, row.source || '');
-      const conceptScore = calculateConceptScore(expanded, row);
+      // Concept scoring removed - use concept_search tool instead
+      const conceptScore = 0;  // Deprecated
       const wordnetScore = calculateWordNetBonus(expanded.wordnet_terms, row.text || '');
       
       // Calculate hybrid score
@@ -119,26 +121,32 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         vectorScore,
         bm25Score,
         titleScore,
-        conceptScore,
         wordnetScore
       });
+      
+      // Parse array fields (may be Arrow Vectors from LanceDB)
+      const parseArrayField = (value: any): number[] => {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'object' && 'toArray' in value) {
+          return Array.from(value.toArray());
+        }
+        return [];
+      };
       
       // Build enriched search result
       const result: SearchResult = {
         id: row.id || '',
         text: row.text || '',
-        source: row.source || '',
+        catalogId: row.catalog_id || 0,
         hash: row.hash || '',
-        // Preserve full concepts object (may be rich metadata for catalog, simple array for chunks)
-        concepts: row.concepts,
-        conceptCategories: this.parseConceptsField(row.concept_categories),
-        conceptDensity: row.concept_density || 0,
+        conceptIds: parseArrayField(row.concept_ids),
         embeddings: row.vector || [],
         distance: row._distance || 0,
         vectorScore,
         bm25Score,
         titleScore,
-        conceptScore,
+        conceptScore: 0,  // Deprecated - always 0
         wordnetScore,
         hybridScore,
         matchedConcepts: getMatchedConcepts(expanded, row),
@@ -169,21 +177,6 @@ export class ConceptualHybridSearchService implements HybridSearchService {
   
   // Helper methods
   
-  private parseConceptsField(field: any): string[] | undefined {
-    if (Array.isArray(field)) {
-      return field;
-    }
-    if (typeof field === 'string') {
-      try {
-        const parsed = JSON.parse(field);
-        return Array.isArray(parsed) ? parsed : undefined;
-      } catch (e) {
-        return undefined;
-      }
-    }
-    return undefined;
-  }
-  
   private printQueryExpansion(expanded: ExpandedQuery): void {
     console.error('\n🔍 Query Expansion:');
     console.error('  Original:', expanded.original_terms.join(', '));
@@ -195,12 +188,12 @@ export class ConceptualHybridSearchService implements HybridSearchService {
   private printDebugScores(results: SearchResult[]): void {
     console.error('\n📊 Top Results with Scores:\n');
     results.forEach((result, idx) => {
-      const filename = result.source.split('/').pop() || result.source;
+      const filename = (result.source || '').split('/').pop() || result.source || 'unknown';
       console.error(`${idx + 1}. ${filename}`);
       console.error(`   Vector: ${result.vectorScore.toFixed(3)}`);
       console.error(`   BM25: ${result.bm25Score.toFixed(3)}`);
       console.error(`   Title: ${result.titleScore.toFixed(3)}`);
-      console.error(`   Concept: ${result.conceptScore.toFixed(3)}`);
+      // Concept score removed
       console.error(`   WordNet: ${result.wordnetScore.toFixed(3)}`);
       console.error(`   ➜ Hybrid: ${result.hybridScore.toFixed(3)}`);
       if (result.matchedConcepts && result.matchedConcepts.length > 0) {

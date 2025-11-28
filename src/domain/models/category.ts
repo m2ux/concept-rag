@@ -29,6 +29,11 @@ export interface Category {
   description: string;
   
   /**
+   * LLM-generated one-sentence summary of the category
+   */
+  summary?: string;
+  
+  /**
    * Parent category ID for hierarchical organization (nullable for root categories)
    */
   parentCategoryId: number | null;

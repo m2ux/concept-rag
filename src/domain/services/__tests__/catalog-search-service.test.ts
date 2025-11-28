@@ -61,10 +61,11 @@ describe('CatalogSearchService', () => {
       // SETUP
       const mockResults: SearchResult[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Document about software architecture',
           source: '/docs/architecture.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           distance: 0.2,
           vectorScore: 0.8,
           bm25Score: 0.7,
@@ -72,10 +73,7 @@ describe('CatalogSearchService', () => {
           conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.72,
-          concepts: {
-            primary_concepts: ['architecture', 'design'],
-            categories: ['software engineering']
-          }
+          conceptIds: [1001, 1002]
         }
       ];
       mockRepo.setSearchResults(mockResults);
@@ -98,10 +96,11 @@ describe('CatalogSearchService', () => {
       // SETUP
       const mockResults: SearchResult[] = [
         {
-          id: '1',
+          id: 1,
           text: 'Test document',
           source: '/test.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           distance: 0.2,
           vectorScore: 0.8,
           bm25Score: 0.7,
@@ -109,16 +108,14 @@ describe('CatalogSearchService', () => {
           conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.67,
-          concepts: {
-            primary_concepts: [],
-            categories: []
-          }
+          conceptIds: []
         },
         {
-          id: '2',
+          id: 2,
           text: 'Another document',
           source: '/test2.pdf',
-          hash: 'hash2',
+          hash: 'hash1',
+          catalogId: 12345678,
           distance: 0.3,
           vectorScore: 0.7,
           bm25Score: 0.6,
@@ -126,10 +123,7 @@ describe('CatalogSearchService', () => {
           conceptScore: 0.5,
           wordnetScore: 0.3,
           hybridScore: 0.58,
-          concepts: {
-            primary_concepts: [],
-            categories: []
-          }
+          conceptIds: []
         }
       ];
       mockRepo.setSearchResults(mockResults);
@@ -201,10 +195,11 @@ describe('CatalogSearchService', () => {
     it('should respect limit parameter', async () => {
       // SETUP
       const mockResults: SearchResult[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Document ${i}`,
         source: `/doc${i}.pdf`,
         hash: `hash${i}`,
+        catalogId: 12345678,
         distance: 0.2,
         vectorScore: 0.8,
         bm25Score: 0.7,
@@ -212,10 +207,7 @@ describe('CatalogSearchService', () => {
         conceptScore: 0.6,
         wordnetScore: 0.4,
         hybridScore: 0.67,
-        concepts: {
-          primary_concepts: [],
-          categories: []
-        }
+        conceptIds: []
       }));
       mockRepo.setSearchResults(mockResults);
 
@@ -235,10 +227,11 @@ describe('CatalogSearchService', () => {
     it('should handle large result sets', async () => {
       // SETUP
       const mockResults: SearchResult[] = Array.from({ length: 100 }, (_, i) => ({
-        id: `${i}`,
+        id: i + 1000,
         text: `Document ${i}`,
         source: `/doc${i}.pdf`,
         hash: `hash${i}`,
+        catalogId: 12345678,
         distance: 0.2,
         vectorScore: 0.8,
         bm25Score: 0.7,
@@ -246,10 +239,7 @@ describe('CatalogSearchService', () => {
         conceptScore: 0.6,
         wordnetScore: 0.4,
         hybridScore: 0.67,
-        concepts: {
-          primary_concepts: [],
-          categories: []
-        }
+        conceptIds: []
       }));
       mockRepo.setSearchResults(mockResults);
 

@@ -91,6 +91,9 @@ export async function categorySearch(
   
   const documents = Array.from(uniqueDocs.values());
   
+  // Compute unique concepts dynamically from all documents
+  const uniqueConceptIds = await catalogRepo.getConceptsInCategory(categoryId);
+  
   // Limit results
   const limit = params.limit || 10;
   const limitedDocs = documents.slice(0, limit);
@@ -121,9 +124,9 @@ export async function categorySearch(
       relatedCategories
     },
     statistics: {
-      totalDocuments: categoryStats?.documentCount || 0,
+      totalDocuments: categoryStats?.documentCount || documents.length,
       totalChunks: categoryStats?.chunkCount || 0,
-      totalConcepts: categoryStats?.conceptCount || 0,
+      totalConcepts: uniqueConceptIds.length,
       documentsReturned: limitedDocs.length
     },
     documents: formattedDocs,

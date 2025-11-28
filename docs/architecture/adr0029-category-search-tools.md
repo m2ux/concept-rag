@@ -11,7 +11,7 @@
 
 ## Context and Problem Statement
 
-Users had 46 auto-extracted categories [ADR-0030] but no way to browse documents by category [Gap: missing functionality]. Existing tools were text-search focused (catalog_search, concept_search) but not category-focused [Limitation: no domain browsing]. Users needed domain-based navigation ("show me all distributed systems books") [Use case: category browsing].
+Users had 46 auto-extracted categories [ADR-0030] but no way to browse documents by category [Gap: missing functionality]. Existing tools were text-search focused (catalog_search, concept_chunks) but not category-focused [Limitation: no domain browsing]. Users needed domain-based navigation ("show me all distributed systems books") [Use case: category browsing].
 
 **The Core Problem:** How to enable users to discover and browse documents by domain/category? [Planning: `.ai/planning/2025-11-19-category-search-feature/05-category-search-tool.md`]
 

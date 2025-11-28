@@ -1,8 +1,11 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ChunkSearchService } from "../../domain/services/index.js";
+import { CatalogRepository } from "../../domain/interfaces/repositories/catalog-repository.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
-import { isErr } from "../../domain/functional/index.js";
+import { isErr, isSome } from "../../domain/functional/index.js";
 import { Chunk } from "../../domain/models/index.js";
+import { CatalogSourceCache } from "../../infrastructure/cache/catalog-source-cache.js";
+import { ConceptIdCache } from "../../infrastructure/cache/concept-id-cache.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
   text: string;
@@ -18,7 +21,8 @@ export class ConceptualChunksSearchTool extends BaseTool<ConceptualChunksSearchP
   private validator = new InputValidator();
   
   constructor(
-    private chunkSearchService: ChunkSearchService
+    private chunkSearchService: ChunkSearchService,
+    private catalogRepo: CatalogRepository
   ) {
     super();
   }
@@ -35,7 +39,7 @@ USE THIS TOOL WHEN:
 DO NOT USE for:
 - Finding which documents to search (use catalog_search first)
 - Searching across multiple documents (use broad_chunks_search)
-- Tracking a concept across your entire library (use concept_search)
+- Tracking a concept across your entire library (use concept_chunks)
 - When you don't know the document source path
 
 RETURNS: Top 5 chunks from the specified document, ranked by hybrid score with concept and WordNet expansion. Requires exact source path match.
@@ -84,10 +88,27 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
       };
     }
     
-    // Delegate to service (Result-based)
-    const result = await this.chunkSearchService.searchInSource({
-      text: params.text,
-      source: params.source,
+    // Resolve source path to catalog ID at the tool boundary
+    const catalogOpt = await this.catalogRepo.findBySource(params.source);
+    if (!isSome(catalogOpt)) {
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            error: {
+              type: 'not_found',
+              message: `Document not found: ${params.source}`
+            },
+            timestamp: new Date().toISOString()
+          })
+        }],
+        isError: true,
+      };
+    }
+    
+    // Delegate to service with catalog ID (normalized)
+    const result = await this.chunkSearchService.searchByCatalogId({
+      catalogId: catalogOpt.value.id,
       limit: 5,
       debug: params.debug || false
     });
@@ -118,14 +139,23 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
     }
     
     // Format results for MCP response
+    // Use cache to resolve catalogId → source (chunks no longer store source)
+    const sourceCache = CatalogSourceCache.getInstance();
+    const conceptCache = ConceptIdCache.getInstance();
     // @ts-expect-error - Type narrowing limitation
-    const formattedResults = result.value.map((r: Chunk) => ({
-      text: r.text,
-      source: r.source,
-      concept_density: r.conceptDensity,
-      concepts: r.concepts || [],
-      categories: r.conceptCategories || []
-    }));
+    const formattedResults = result.value.map((r: Chunk) => {
+      // Resolve concept names from IDs for display
+      const conceptNames = r.conceptIds 
+        ? conceptCache.getNames(r.conceptIds.map(id => String(id)))
+        : [];
+      
+      return {
+        text: r.text,
+        source: sourceCache.getSourceOrDefault(r.catalogId, params.source),
+        concepts: conceptNames,
+        concept_ids: r.conceptIds || [],
+      };
+    });
     
     return {
       content: [

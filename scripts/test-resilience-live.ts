@@ -74,7 +74,7 @@ async function main() {
     console.log('🧠 TEST 2: Concept Search with Resilience');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     
-    const conceptTool = container.getTool('concept_search');
+    const conceptTool = container.getTool('concept_chunks');
     const concepts = ['strategy', 'architecture', 'modularity'];
     
     for (const concept of concepts) {
