@@ -50,6 +50,11 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 | `hash` | `string` | SHA-256 content hash for deduplication |
 | `vector` | `Float32Array` | 384-dimensional embedding of summary |
 | `category_ids` | `number[]` | Native array of category integer IDs |
+| `origin_hash` | `string` | *Reserved:* Hash of original file before processing |
+| `author` | `string` | *Reserved:* Document author(s) |
+| `year` | `number` | *Reserved:* Publication year |
+| `publisher` | `string` | *Reserved:* Publisher name |
+| `isbn` | `string` | *Reserved:* ISBN (string for flexibility with hyphens/prefixes) |
 
 #### Example Record
 
@@ -60,7 +65,13 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
   summary: "Comprehensive guide to Clean Architecture principles...",
   hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   vector: Float32Array(384),
-  category_ids: [1847362847, 2938476523]
+  category_ids: [1847362847, 2938476523],
+  // Reserved bibliographic fields (for future use)
+  origin_hash: "",
+  author: "",
+  year: 0,
+  publisher: "",
+  isbn: ""
 }
 ```
 

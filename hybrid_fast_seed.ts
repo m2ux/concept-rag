@@ -1067,12 +1067,13 @@ async function createLanceTableWithSimpleEmbeddings(
             baseData.category_ids = [0]; // Will be overwritten below if categories exist
         }
         
-        // Add reserved bibliographic fields for catalog entries
+        // Add reserved bibliographic fields for catalog entries (for future use)
         if (isCatalog) {
-            baseData.author = '';
-            baseData.year = '';
-            baseData.publisher = '';
-            baseData.isbn = '';
+            baseData.origin_hash = '';  // Reserved: hash of original file before processing
+            baseData.author = '';       // Reserved: document author(s)
+            baseData.year = 0;          // Reserved: publication year
+            baseData.publisher = '';    // Reserved: publisher name
+            baseData.isbn = '';         // Reserved: ISBN (stored as string for flexibility)
         }
         
         // Add concept metadata if present (using native arrays)
