@@ -6,6 +6,9 @@
  * - Extracted concepts for conceptual navigation (via ID references)
  * - Metadata for filtering and organization
  * 
+ * Source path should be looked up via catalogId from the catalog table.
+ * The source field is deprecated and retained only for backward compatibility.
+ * 
  * @example
  * ```typescript
  * const chunk: Chunk = {
@@ -17,6 +20,9 @@
  *   categoryIds: [33333333],
  *   embeddings: [0.1, 0.2, ...]
  * };
+ * 
+ * // To get source path for display, use CatalogSourceCache:
+ * const source = CatalogSourceCache.getInstance().getSource(chunk.catalogId);
  * ```
  */
 export interface Chunk {
@@ -27,13 +33,13 @@ export interface Chunk {
   text: string;
   
   /** 
-   * @deprecated Use catalogId instead. Will be removed in future version.
-   * Source document path (for backward compatibility during migration)
+   * @deprecated Use CatalogSourceCache.getSource(catalogId) instead.
+   * Source field will be removed in a future version.
    */
   source?: string;
   
   /** Parent document ID (hash-based integer, matches catalog.id) */
-  catalogId?: number;
+  catalogId: number;
   
   /** Content hash for deduplication */
   hash: string;

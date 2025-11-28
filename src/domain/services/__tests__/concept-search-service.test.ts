@@ -113,6 +113,7 @@ describe('ConceptSearchService', () => {
           text: 'Chunk about dependency injection',
           source: '/docs/di.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['dependency injection'],
         }
       ];
@@ -145,6 +146,7 @@ describe('ConceptSearchService', () => {
           text: 'Chunk about DI',
           source: '/docs/di.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['dependency injection'],
         }
       ];
@@ -173,6 +175,7 @@ describe('ConceptSearchService', () => {
           text: 'Chunk about DI',
           source: '/docs/di.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['dependency injection'],
         }
       ];
@@ -323,13 +326,15 @@ describe('ConceptSearchService', () => {
           text: 'Chunk from typescript guide',
           source: '/docs/typescript-guide.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['architecture'],
         },
         {
           id: 2,
           text: 'Chunk from python guide',
           source: '/docs/python-guide.pdf',
-          hash: 'hash2',
+          hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['architecture'],
         }
       ];
@@ -359,6 +364,7 @@ describe('ConceptSearchService', () => {
           text: 'Chunk from TypeScript guide',
           source: '/docs/TypeScript-Guide.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['design patterns'],
         }
       ];
@@ -384,13 +390,15 @@ describe('ConceptSearchService', () => {
           text: 'Chunk 1',
           source: '/docs/doc1.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['testing'],
         },
         {
           id: 2,
           text: 'Chunk 2',
           source: '/docs/doc2.pdf',
-          hash: 'hash2',
+          hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['testing'],
         }
       ];
@@ -415,6 +423,7 @@ describe('ConceptSearchService', () => {
           text: 'Chunk',
           source: '/docs/typescript.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['architecture'],
         }
       ];
@@ -442,20 +451,23 @@ describe('ConceptSearchService', () => {
           text: 'Few concepts',
           source: '/docs/doc1.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['patterns'],
         },
         {
           id: 2,
           text: 'Many concepts',
           source: '/docs/doc2.pdf',
-          hash: 'hash2',
+          hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['patterns', 'design', 'architecture'],
         },
         {
           id: 3,
           text: 'Some concepts',
           source: '/docs/doc3.pdf',
-          hash: 'hash3',
+          hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['patterns', 'design'],
         }
       ];
@@ -484,13 +496,15 @@ describe('ConceptSearchService', () => {
           text: 'Short chunk', // Short text, fewer concepts = lower relevance
           source: '/docs/doc1.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['testing'],
         },
         {
           id: 2,
           text: 'A'.repeat(300), // Long text (qualifies for text length bonus) + more concepts
           source: '/docs/doc2.pdf',
-          hash: 'hash2',
+          hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['testing', 'software', 'development'], // More concepts
         }
       ];
@@ -520,13 +534,15 @@ describe('ConceptSearchService', () => {
           text: 'Chunk from Z document',
           source: '/docs/z.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['architecture'],
         },
         {
           id: 2,
           text: 'Chunk from A document',
           source: '/docs/a.pdf',
-          hash: 'hash2',
+          hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['architecture'],
         }
       ];
@@ -556,13 +572,15 @@ describe('ConceptSearchService', () => {
           text: 'Chunk with density',
           source: '/docs/doc1.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['patterns'],
         },
         {
           id: 2,
           text: 'Chunk without density',
           source: '/docs/doc2.pdf',
-          hash: 'hash2',
+          hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['patterns']
           // conceptDensity is undefined
         }
@@ -593,6 +611,7 @@ describe('ConceptSearchService', () => {
         text: `Chunk ${i}`,
         source: `/docs/doc${i}.pdf`,
         hash: `hash${i}`,
+        catalogId: 12345678,
         concepts: ['testing'],
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -615,6 +634,7 @@ describe('ConceptSearchService', () => {
         text: `Chunk ${i}`,
         source: i < 15 ? '/docs/typescript.pdf' : '/docs/python.pdf',
         hash: `hash${i}`,
+        catalogId: 12345678,
         concepts: ['architecture'],
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -644,6 +664,7 @@ describe('ConceptSearchService', () => {
         text: `Chunk ${i}`,
         source: `/docs/doc${i}.pdf`,
         hash: `hash${i}`,
+        catalogId: 12345678,
         concepts: ['patterns'],
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -673,6 +694,7 @@ describe('ConceptSearchService', () => {
         text: 'Chunk with concept',
         source: '/docs/doc.pdf',
         hash: 'hash1',
+          catalogId: 12345678,
         concepts: ['testing', 'other'], // 2 concepts
       };
       const concept = 'testing';
@@ -693,6 +715,7 @@ describe('ConceptSearchService', () => {
         text: 'A'.repeat(300), // 300 chars (qualifies for text length bonus)
         source: '/docs/doc.pdf',
         hash: 'hash1',
+          catalogId: 12345678,
         concepts: ['testing', 'other', 'third'], // 3 concepts
       };
       const concept = 'testing';
@@ -713,6 +736,7 @@ describe('ConceptSearchService', () => {
         text: 'A'.repeat(300), // 300 chars
         source: '/docs/doc.pdf',
         hash: 'hash1',
+          catalogId: 12345678,
         concepts: [],
       };
       const concept = 'testing';
@@ -733,6 +757,7 @@ describe('ConceptSearchService', () => {
         text: 'Short',
         source: '/docs/doc.pdf',
         hash: 'hash1',
+          catalogId: 12345678,
         concepts: ['testing'],
       };
       const concept = 'testing';
@@ -753,6 +778,7 @@ describe('ConceptSearchService', () => {
         text: 'Chunk',
         source: '/docs/doc.pdf',
         hash: 'hash1',
+          catalogId: 12345678,
         concepts: ['testing'],
       };
       const concept = 'testing';

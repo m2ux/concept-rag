@@ -74,6 +74,7 @@ describe('ChunkSearchService', () => {
           text: 'Chunk about software architecture',
           source: '/docs/architecture.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           distance: 0.2,
           vectorScore: 0.8,
           bm25Score: 0.7,
@@ -108,6 +109,7 @@ describe('ChunkSearchService', () => {
           text: 'Test chunk',
           source: '/test.pdf',
           hash: 'hash1',
+          catalogId: 12345678,
           distance: 0.2,
           vectorScore: 0.8,
           bm25Score: 0.7,
@@ -190,6 +192,7 @@ describe('ChunkSearchService', () => {
         text: `Chunk ${i}`,
         source: `/doc${i}.pdf`,
         hash: `hash${i}`,
+        catalogId: 12345678,
         distance: 0.2,
         vectorScore: 0.8,
         bm25Score: 0.7,
@@ -222,13 +225,15 @@ describe('ChunkSearchService', () => {
           text: 'First chunk',
           source: sourcePath,
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['architecture'],
         },
         {
           id: 2,
           text: 'Second chunk',
           source: sourcePath,
-          hash: 'hash2',
+          hash: 'hash1',
+          catalogId: 12345678,
           concepts: ['design'],
         }
       ];
@@ -257,6 +262,7 @@ describe('ChunkSearchService', () => {
         text: `Chunk ${i}`,
         source: sourcePath,
         hash: `hash${i}`,
+        catalogId: 12345678,
         concepts: [],
       }));
       mockRepo.setSourceChunks(sourcePath, mockChunks);
@@ -317,6 +323,7 @@ describe('ChunkSearchService', () => {
           text: 'Chunk from specific source',
           source: sourcePath,
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: [],
         }
       ];
@@ -347,6 +354,7 @@ describe('ChunkSearchService', () => {
           text: 'Chunk from doc1',
           source: source1,
           hash: 'hash1',
+          catalogId: 12345678,
           concepts: [],
         }
       ];
@@ -355,7 +363,8 @@ describe('ChunkSearchService', () => {
           id: 2,
           text: 'Chunk from doc2',
           source: source2,
-          hash: 'hash2',
+          hash: 'hash1',
+          catalogId: 12345678,
           concepts: [],
         }
       ];

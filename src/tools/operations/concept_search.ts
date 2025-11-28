@@ -1,4 +1,5 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
+import { CatalogSourceCache } from "../../infrastructure/cache/catalog-source-cache.js";
 import { HierarchicalConceptService, HierarchicalConceptResult, EnrichedChunk, SourceWithPages } from "../../domain/services/hierarchical-concept-service.js";
 
 export interface ConceptSearchParams extends ToolParams {
@@ -154,7 +155,7 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
     // Format chunks with enhanced metadata
     const chunks = result.chunks.map((e: EnrichedChunk) => ({
       text: e.chunk.text,
-      source: e.chunk.source,
+      source: CatalogSourceCache.getInstance().getSourceOrDefault(e.chunk.catalogId),
       page: e.pageNumber,
       concept_density: e.conceptDensity.toFixed(3),
       concepts: e.chunk.concepts?.slice(0, 10),

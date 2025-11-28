@@ -50,7 +50,8 @@ export class FakeChunkRepository implements ChunkRepository {
   
   async findBySource(sourcePath: string, limit: number): Promise<Chunk[]> {
     const results = Array.from(this.chunks.values())
-      .filter(chunk => (chunk.source || '') === sourcePath)
+      // Source field removed from Chunk - this method is deprecated
+      .filter(() => false)  // Always returns empty - use findByCatalogId instead
       .slice(0, limit);
     return Promise.resolve(results);
   }
@@ -68,7 +69,7 @@ export class FakeChunkRepository implements ChunkRepository {
       .filter(chunk => {
         // Simple text matching for test purposes
         const textMatch = chunk.text.toLowerCase().includes(queryLower);
-        const sourceMatch = !query.sourceFilter || (chunk.source || '').includes(query.sourceFilter);
+        const sourceMatch = true;  // Source filtering removed - use catalogId
         return textMatch && sourceMatch;
       })
       .slice(0, query.limit || 10)

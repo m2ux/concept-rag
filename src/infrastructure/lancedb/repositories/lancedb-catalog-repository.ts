@@ -143,6 +143,7 @@ export class LanceDBCatalogRepository implements CatalogRepository {
     
     return {
       id: doc.id,
+      catalogId: doc.id,  // For catalog entries, catalogId = id
       text: doc.summary || doc.text || '',  // 'summary' is new field name, 'text' for backward compat
       source: doc.source || doc.filename || '',  // Support both old and new field names
       hash: doc.hash,

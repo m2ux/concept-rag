@@ -19,9 +19,11 @@ import { Chunk } from './chunk.js';
  *   // Chunk properties
  *   id: 3847293847,  // hash-based integer
  *   text: 'Dependency injection is a design pattern...',
- *   source: '/docs/design-patterns.pdf',
+ *   catalogId: 12345678,
  *   hash: 'abc123',
  *   concepts: ['dependency injection', 'design patterns'],
+ *   // Display fields (resolved from catalog)
+ *   source: '/docs/design-patterns.pdf',  // Optional, from catalog lookup
  *   
  *   // Scoring components
  *   distance: 0.15,
@@ -42,6 +44,12 @@ import { Chunk } from './chunk.js';
  * @see {@link SearchQuery} for query parameters
  */
 export interface SearchResult extends Chunk {
+  /** 
+   * Source document path (for display purposes).
+   * Chunks no longer store source - this is populated from catalog lookup or cache.
+   */
+  source?: string;
+  
   /** Vector distance from query (0 = identical, higher = more different) */
   distance: number;
   

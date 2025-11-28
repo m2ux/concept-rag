@@ -31,7 +31,7 @@ describe('ConceptualChunksSearchTool', () => {
     // Add a default catalog entry for test documents
     catalogRepo.addDocument(createTestSearchResult({
       id: 12345678,
-      source: '/test/doc.pdf',
+      
       text: 'Test document'
     }));
   });
@@ -42,14 +42,14 @@ describe('ConceptualChunksSearchTool', () => {
       const testChunks = [
         createTestChunk({
           id: 1001,
-          source: '/test/doc.pdf',
+          
           catalogId: 12345678,  // matches catalog entry
           text: 'First chunk about testing',
           concepts: ['testing']
         }),
         createTestChunk({
           id: 1002,
-          source: '/test/doc.pdf',
+          
           catalogId: 12345678,  // matches catalog entry
           text: 'Second chunk',
           concepts: ['testing']
@@ -81,7 +81,7 @@ describe('ConceptualChunksSearchTool', () => {
       const testChunks = Array.from({ length: 10 }, (_, i) =>
         createTestChunk({
           id: 5000 + i,
-          source: '/test/doc.pdf',
+          
           catalogId: 12345678,  // matches catalog entry
           text: `Chunk ${i}`
         })
@@ -103,7 +103,7 @@ describe('ConceptualChunksSearchTool', () => {
       // SETUP
       const testChunk = createTestChunk({
         id: 1001,
-        source: '/test/doc.pdf',
+        
         catalogId: 12345678,  // matches catalog entry
         text: 'Test chunk',
         concepts: ['testing', 'unit tests'],

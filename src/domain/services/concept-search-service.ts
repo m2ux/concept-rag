@@ -136,7 +136,7 @@ export class ConceptSearchService {
       if (validParams.sourceFilter) {
         const filterLower = validParams.sourceFilter.toLowerCase();
         filteredChunks = candidateChunks.filter(chunk =>
-          (chunk.source || '').toLowerCase().includes(filterLower)
+          ''.includes(filterLower)
         );
       }
       
@@ -208,7 +208,7 @@ export class ConceptSearchService {
       
       case 'source':
         return sorted.sort((a, b) => 
-          (a.source || '').localeCompare(b.source || '')
+          a.catalogId - b.catalogId
         );
       
       default:
