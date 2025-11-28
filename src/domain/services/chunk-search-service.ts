@@ -12,9 +12,11 @@
  */
 
 import { ChunkRepository } from '../interfaces/repositories/chunk-repository.js';
+import { CatalogRepository } from '../interfaces/repositories/catalog-repository.js';
 import { Chunk, SearchResult } from '../models/index.js';
 import { Result, Ok, Err } from '../functional/result.js';
 import { InputValidator } from './validation/InputValidator.js';
+import { isSome } from '../functional/option.js';
 
 /**
  * Parameters for broad chunk search (across all documents).
@@ -65,7 +67,10 @@ export type SearchError =
 export class ChunkSearchService {
   private validator = new InputValidator();
   
-  constructor(private chunkRepo: ChunkRepository) {}
+  constructor(
+    private chunkRepo: ChunkRepository,
+    private catalogRepo?: CatalogRepository
+  ) {}
   
   /**
    * Search across all chunks in all documents.
@@ -173,10 +178,27 @@ export class ChunkSearchService {
     
     // Execute search with error handling
     try {
-      const chunks = await this.chunkRepo.findBySource(
-        validParams.source,
-        validParams.limit
-      );
+      let chunks: Chunk[];
+      
+      // Prefer normalized lookup via catalogId when catalogRepo is available
+      if (this.catalogRepo) {
+        const catalogOpt = await this.catalogRepo.findBySource(validParams.source);
+        if (isSome(catalogOpt)) {
+          chunks = await this.chunkRepo.findByCatalogId(catalogOpt.value.id, validParams.limit);
+        } else {
+          // Source not found in catalog
+          return Err({
+            type: 'not_found',
+            resource: validParams.source
+          });
+        }
+      } else {
+        // Fallback to source-based lookup (deprecated path)
+        chunks = await this.chunkRepo.findBySource(
+          validParams.source,
+          validParams.limit
+        );
+      }
       
       return Ok(chunks);
     } catch (error) {

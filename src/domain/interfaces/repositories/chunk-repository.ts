@@ -82,10 +82,19 @@ export interface ChunkRepository {
    * @returns Promise resolving to chunks from the specified source
    * @throws {Error} If database query fails
    * 
+   * @deprecated Use findByCatalogId for normalized lookups. This method is retained
+   * for backward compatibility but will be removed in a future version.
+   * 
    * @example
    * ```typescript
+   * // Deprecated - prefer findByCatalogId:
    * const chunks = await chunkRepo.findBySource('/docs/architecture.pdf', 100);
-   * console.log(`Document has ${chunks.length} chunks`);
+   * 
+   * // Preferred:
+   * const catalogOpt = await catalogRepo.findBySource('/docs/architecture.pdf');
+   * if (isSome(catalogOpt)) {
+   *   const chunks = await chunkRepo.findByCatalogId(catalogOpt.value.id, 100);
+   * }
    * ```
    */
   findBySource(sourcePath: string, limit: number): Promise<Chunk[]>;

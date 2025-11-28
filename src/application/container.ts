@@ -191,7 +191,7 @@ export class ApplicationContainer {
     // 6. Create domain services (with repositories) - using Result-based error handling
     const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);
     const catalogSearchService = new CatalogSearchService(catalogRepo);
-    const chunkSearchService = new ChunkSearchService(chunkRepo);
+    const chunkSearchService = new ChunkSearchService(chunkRepo, catalogRepo);
     const conceptSourcesService = new ConceptSourcesService(conceptRepo, catalogRepo);
     
     // 6a. Create HierarchicalConceptService if pages table exists
