@@ -1,5 +1,5 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
-import { HierarchicalConceptService, HierarchicalConceptResult, EnrichedChunk, SourceWithPages } from "../../domain/services/hierarchical-concept-service.js";
+import { ConceptSearchService, ConceptSearchResult, EnrichedChunk, SourceWithPages } from "../../domain/services/concept-search-service.js";
 
 export interface ConceptSearchParams extends ToolParams {
   /** The concept to search for */
@@ -28,7 +28,7 @@ export interface ConceptSearchParams extends ToolParams {
  */
 export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
   constructor(
-    private hierarchicalService: HierarchicalConceptService
+    private conceptSearchService: ConceptSearchService
   ) {
     super();
   }
@@ -103,7 +103,7 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
     
     try {
       // Perform hierarchical search
-      const result = await this.hierarchicalService.search({
+      const result = await this.conceptSearchService.search({
         concept: params.concept,
         maxSources,
         maxChunks: maxSources * 3, // ~3 chunks per source
@@ -143,7 +143,7 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
   /**
    * Format hierarchical result for LLM consumption.
    */
-  private formatResult(result: HierarchicalConceptResult, debug?: boolean) {
+  private formatResult(result: ConceptSearchResult, debug?: boolean) {
     // Format sources with page context
     const sources = result.sources.map((s: SourceWithPages) => ({
       title: s.title,
@@ -191,7 +191,18 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
         total_chunks: result.totalChunks,
         sources_returned: result.sources.length,
         chunks_returned: result.chunks.length
-      }
+      },
+      
+      // Hybrid search scores (debug mode only)
+      ...(debug && result.scores ? {
+        hybrid_scores: {
+          overall: result.scores.hybridScore.toFixed(3),
+          name_match: result.scores.nameScore.toFixed(3),
+          vector: result.scores.vectorScore.toFixed(3),
+          bm25_summary: result.scores.bm25Score.toFixed(3),
+          synonym_match: result.scores.wordnetScore.toFixed(3)
+        }
+      } : {})
     };
   }
 }

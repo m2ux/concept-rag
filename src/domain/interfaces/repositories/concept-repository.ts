@@ -174,5 +174,50 @@ export interface ConceptRepository {
    * ```
    */
   findAll(): Promise<Concept[]>;
+  
+  /**
+   * Search concepts using hybrid scoring (vector + name + summary + synonyms).
+   * 
+   * Combines multiple signals for comprehensive concept discovery:
+   * - 40% Name matching (exact/partial match on concept name)
+   * - 30% Vector similarity (semantic similarity)
+   * - 20% BM25 (keyword matching in summary)
+   * - 10% Synonym/hierarchy matching
+   * 
+   * **Use Cases**:
+   * - Fuzzy concept lookup when exact name unknown
+   * - Finding related concepts by topic
+   * - Concept discovery and exploration
+   * 
+   * @param queryText - Search query (natural language or keywords)
+   * @param queryVector - Pre-computed query embedding (384-dim)
+   * @param limit - Maximum concepts to return
+   * @returns Promise resolving to concepts with hybrid scores
+   */
+  searchByHybrid?(
+    queryText: string,
+    queryVector: number[],
+    limit: number
+  ): Promise<ScoredConcept[]>;
+}
+
+/**
+ * Concept with hybrid search scores for ranking.
+ */
+export interface ScoredConcept extends Concept {
+  /** Overall hybrid score (0-1) */
+  hybridScore: number;
+  
+  /** Vector similarity score (0-1) */
+  vectorScore: number;
+  
+  /** BM25 keyword score on summary (0-1) */
+  bm25Score: number;
+  
+  /** Name matching score (0-1) */
+  nameScore: number;
+  
+  /** WordNet/synonym matching score (0-1) */
+  wordnetScore: number;
 }
 

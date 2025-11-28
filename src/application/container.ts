@@ -9,8 +9,7 @@ import {
   ConceptSearchService, 
   CatalogSearchService, 
   ChunkSearchService,
-  ConceptSourcesService,
-  HierarchicalConceptService
+  ConceptSourcesService
 } from '../domain/services/index.js';
 import { ConceptSearchTool } from '../tools/operations/concept_search.js';
 import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_catalog_search.js';
@@ -160,21 +159,21 @@ export class ApplicationContainer {
     }
     
     // 6. Create domain services (with repositories) - using Result-based error handling
-    const conceptSearchService = new ConceptSearchService(chunkRepo, conceptRepo);
     const catalogSearchService = new CatalogSearchService(catalogRepo);
     const chunkSearchService = new ChunkSearchService(chunkRepo, catalogRepo);
     const conceptSourcesService = new ConceptSourcesService(conceptRepo, catalogRepo);
     
-    // 6a. Create HierarchicalConceptService (uses concept.catalogIds for document navigation)
-    const hierarchicalConceptService = new HierarchicalConceptService(
+    // 6a. Create ConceptSearchService with hybrid search support
+    const conceptSearchService = new ConceptSearchService(
       conceptRepo,
       chunkRepo,
-      catalogRepo
+      catalogRepo,
+      embeddingService  // Enable hybrid concept search (vector + name + summary + synonyms)
     );
-    console.error('✅ HierarchicalConceptService initialized');
+    console.error('✅ ConceptSearchService initialized (hybrid search enabled)');
     
     // 7. Create tools (with domain services)
-    this.tools.set('concept_search', new ConceptSearchTool(hierarchicalConceptService));
+    this.tools.set('concept_search', new ConceptSearchTool(conceptSearchService));
     this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogSearchService));
     this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService, catalogRepo));
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));

@@ -280,8 +280,73 @@ export function calculateChunkHybridScore(components: ScoreComponents): number {
 }
 
 /**
+ * Calculate hybrid score for concept search.
+ * 
+ * Applies weighted combination optimized for concept discovery:
+ * - 40% Name matching (exact/partial concept name match is primary)
+ * - 30% Vector similarity (semantic similarity to find related concepts)
+ * - 20% BM25 (keyword matching in concept summary)
+ * - 10% WordNet (synonym/hierarchy expansion)
+ * 
+ * Note: For concepts, we use nameScore in the titleScore slot since concepts
+ * don't have titles - they have names.
+ * 
+ * @param components - Individual score components (titleScore = nameScore)
+ * @returns Final hybrid score from 0.0 to 1.0
+ */
+export function calculateConceptHybridScore(components: ScoreComponents): number {
+  return (
+    (components.titleScore * 0.40) +  // Name score (most important for concepts)
+    (components.vectorScore * 0.30) +
+    (components.bm25Score * 0.20) +
+    (components.wordnetScore * 0.10)
+  );
+}
+
+/**
+ * Calculate synonym matching bonus for concept search.
+ * 
+ * Boosts score when query terms match concept synonyms or hierarchy terms.
+ * 
+ * @param queryTerms - Original query terms
+ * @param synonyms - Concept synonyms
+ * @param broaderTerms - Concept hypernyms (broader terms)
+ * @param narrowerTerms - Concept hyponyms (narrower terms)
+ * @returns Score from 0.0 to 1.0
+ */
+export function calculateSynonymMatchScore(
+  queryTerms: string[],
+  synonyms: string[],
+  broaderTerms: string[],
+  narrowerTerms: string[]
+): number {
+  if (queryTerms.length === 0) return 0;
+  
+  const allRelated = [
+    ...synonyms.map(s => s.toLowerCase()),
+    ...broaderTerms.map(s => s.toLowerCase()),
+    ...narrowerTerms.map(s => s.toLowerCase())
+  ];
+  
+  if (allRelated.length === 0) return 0;
+  
+  let matches = 0;
+  for (const term of queryTerms) {
+    const termLower = term.toLowerCase();
+    for (const related of allRelated) {
+      if (related.includes(termLower) || termLower.includes(related)) {
+        matches++;
+        break;
+      }
+    }
+  }
+  
+  return Math.min(matches / queryTerms.length, 1.0);
+}
+
+/**
  * Calculate hybrid score (legacy - defaults to catalog scoring).
- * @deprecated Use calculateCatalogHybridScore or calculateChunkHybridScore instead
+ * @deprecated Use calculateCatalogHybridScore, calculateChunkHybridScore, or calculateConceptHybridScore instead
  */
 export function calculateHybridScore(components: ScoreComponents): number {
   return calculateCatalogHybridScore(components);

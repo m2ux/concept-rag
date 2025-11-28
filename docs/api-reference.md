@@ -152,9 +152,15 @@ Search within a single known document using hybrid search.
 
 ### `concept_search`
 
-Find chunks associated with a concept, organized by source documents (hierarchical view).
+Find chunks associated with a concept, organized by source documents.
 
-Uses **fuzzy matching** to find the concept (exact match prioritized, then partial matches), then retrieves all chunks that were tagged with that concept during extraction.
+Uses **hybrid scoring** to find the best matching concept:
+- 40% Name matching (exact/partial concept name match)
+- 30% Vector similarity (semantic search)
+- 20% BM25 (keyword matching in concept summary)
+- 10% Synonym/hierarchy matching (WordNet relations)
+
+Then retrieves all chunks that were tagged with that concept during extraction.
 
 **Use When:**
 - Searching for a conceptual topic (e.g., "innovation", "leadership", "strategic thinking")

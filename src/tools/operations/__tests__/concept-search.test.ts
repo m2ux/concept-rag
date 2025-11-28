@@ -3,13 +3,13 @@
  * 
  * Tests the ConceptSearchTool using test doubles (fakes/mocks).
  * 
- * NOTE: ConceptSearchTool uses HierarchicalConceptService internally.
+ * NOTE: ConceptSearchTool uses ConceptSearchService internally.
  * The service name will be consolidated to ConceptSearchService in a future refactor.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ConceptSearchTool } from '../concept_search.js';
-import { HierarchicalConceptService } from '../../../domain/services/hierarchical-concept-service.js';
+import { ConceptSearchService } from '../../../domain/services/concept-search-service.js';
 import {
   FakeChunkRepository,
   FakeConceptRepository,
@@ -22,7 +22,7 @@ describe('ConceptSearchTool', () => {
   let chunkRepo: FakeChunkRepository;
   let conceptRepo: FakeConceptRepository;
   let catalogRepo: FakeCatalogRepository;
-  let service: HierarchicalConceptService;
+  let service: ConceptSearchService;
   let tool: ConceptSearchTool;
   
   beforeEach(() => {
@@ -30,7 +30,7 @@ describe('ConceptSearchTool', () => {
     chunkRepo = new FakeChunkRepository();
     conceptRepo = new FakeConceptRepository();
     catalogRepo = new FakeCatalogRepository();
-    service = new HierarchicalConceptService(conceptRepo, chunkRepo, catalogRepo);
+    service = new ConceptSearchService(conceptRepo, chunkRepo, catalogRepo);
     tool = new ConceptSearchTool(service);
   });
   
@@ -61,7 +61,7 @@ describe('ConceptSearchTool', () => {
       };
       catalogRepo = new FakeCatalogRepository([catalogEntry]);
       // Recreate service with updated catalogRepo
-      service = new HierarchicalConceptService(conceptRepo, chunkRepo, catalogRepo);
+      service = new ConceptSearchService(conceptRepo, chunkRepo, catalogRepo);
       tool = new ConceptSearchTool(service);
       
       // Create chunks linked to catalog
@@ -83,7 +83,7 @@ describe('ConceptSearchTool', () => {
       
       const parsedContent = JSON.parse(result.content[0].text);
       expect(parsedContent.concept).toBe('innovation');
-      // HierarchicalConceptService returns 'chunks' not 'results'
+      // ConceptSearchService returns 'chunks' not 'results'
       expect(parsedContent.chunks).toBeDefined();
     });
     

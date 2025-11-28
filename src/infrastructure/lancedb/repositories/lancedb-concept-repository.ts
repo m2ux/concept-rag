@@ -1,10 +1,18 @@
 import * as lancedb from "@lancedb/lancedb";
-import { ConceptRepository } from '../../../domain/interfaces/repositories/concept-repository.js';
+import { ConceptRepository, ScoredConcept } from '../../../domain/interfaces/repositories/concept-repository.js';
 import { Concept } from '../../../domain/models/index.js';
 import { ConceptNotFoundError, InvalidEmbeddingsError } from '../../../domain/exceptions.js';
 import { DatabaseError } from '../../../domain/exceptions/index.js';
 import { parseJsonField, escapeSqlString } from '../utils/field-parsers.js';
 import { validateConceptRow, detectVectorField } from '../utils/schema-validators.js';
+import {
+  calculateVectorScore,
+  calculateWeightedBM25,
+  calculateNameScore,
+  calculateSynonymMatchScore,
+  calculateConceptHybridScore,
+  type ExpandedQuery
+} from '../../search/scoring-strategies.js';
 // @ts-expect-error - Type narrowing limitation
 import type { Option } from "../../../../__tests__/test-helpers/../../domain/functional/index.js";
 import { Some, None } from '../../../domain/functional/option.js';
@@ -186,6 +194,95 @@ export class LanceDBConceptRepository implements ConceptRepository {
       const errorMessage = error instanceof Error ? error.message : String(error);
       throw new DatabaseError(
         `Failed to load all concepts from database: ${errorMessage}`,
+        'query',
+        error instanceof Error ? error : new Error(String(error))
+      );
+    }
+  }
+  
+  /**
+   * Search concepts using hybrid scoring.
+   * 
+   * Combines:
+   * - 40% Name matching (exact/partial concept name match)
+   * - 30% Vector similarity (semantic search)
+   * - 20% BM25 (keyword matching in summary)
+   * - 10% Synonym/hierarchy matching
+   * 
+   * @param queryText - Search query
+   * @param queryVector - Pre-computed query embedding
+   * @param limit - Maximum results to return
+   * @returns Concepts with hybrid scores, sorted by score descending
+   */
+  async searchByHybrid(
+    queryText: string,
+    queryVector: number[],
+    limit: number
+  ): Promise<ScoredConcept[]> {
+    try {
+      // Step 1: Vector search to get candidate concepts
+      const vectorResults = await this.conceptsTable
+        .vectorSearch(queryVector)
+        .limit(limit * 3)  // Get 3x results for reranking
+        .toArray();
+      
+      // Tokenize query for scoring
+      const queryTerms = queryText.toLowerCase().split(/\s+/).filter(t => t.length > 0);
+      const weights = new Map<string, number>();
+      queryTerms.forEach(term => weights.set(term, 1.0));
+      
+      // Step 2: Score each result
+      const scoredResults: ScoredConcept[] = vectorResults.map((row: any) => {
+        const concept = this.mapRowToConcept(row);
+        const conceptName = concept.name;
+        const summary = concept.summary || '';
+        
+        // Calculate individual scores
+        const vectorScore = calculateVectorScore(row._distance || 0);
+        
+        // BM25 on summary text
+        const bm25Score = calculateWeightedBM25(
+          queryTerms,
+          weights,
+          summary,
+          conceptName
+        );
+        
+        // Name matching score (high weight for exact matches)
+        const nameScore = calculateNameScore(queryTerms, conceptName);
+        
+        // Synonym/hierarchy matching
+        const wordnetScore = calculateSynonymMatchScore(
+          queryTerms,
+          concept.synonyms || [],
+          concept.broaderTerms || [],
+          concept.narrowerTerms || []
+        );
+        
+        // Calculate hybrid score with concept-specific weights
+        const hybridScore = calculateConceptHybridScore({
+          vectorScore,
+          bm25Score,
+          titleScore: nameScore,  // titleScore slot holds nameScore for concepts
+          wordnetScore
+        });
+        
+        return {
+          ...concept,
+          hybridScore,
+          vectorScore,
+          bm25Score,
+          nameScore,
+          wordnetScore
+        };
+      });
+      
+      // Step 3: Sort by hybrid score and limit
+      scoredResults.sort((a, b) => b.hybridScore - a.hybridScore);
+      return scoredResults.slice(0, limit);
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to search concepts by hybrid: ${error instanceof Error ? error.message : String(error)}`,
         'query',
         error instanceof Error ? error : new Error(String(error))
       );
