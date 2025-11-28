@@ -217,7 +217,7 @@ export class ApplicationContainer {
       console.error('⚠️  concept_search tool requires pages table (run seed_pages_table.ts first)');
     }
     this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogSearchService));
-    this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService));
+    this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService, catalogRepo));
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));
     this.tools.set('extract_concepts', new DocumentConceptsExtractTool(catalogRepo));
     this.tools.set('concept_sources', new ConceptSourcesTool(conceptSourcesService));

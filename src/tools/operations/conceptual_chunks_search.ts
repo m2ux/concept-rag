@@ -1,7 +1,8 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ChunkSearchService } from "../../domain/services/index.js";
+import { CatalogRepository } from "../../domain/interfaces/repositories/catalog-repository.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
-import { isErr } from "../../domain/functional/index.js";
+import { isErr, isSome } from "../../domain/functional/index.js";
 import { Chunk } from "../../domain/models/index.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
@@ -18,7 +19,8 @@ export class ConceptualChunksSearchTool extends BaseTool<ConceptualChunksSearchP
   private validator = new InputValidator();
   
   constructor(
-    private chunkSearchService: ChunkSearchService
+    private chunkSearchService: ChunkSearchService,
+    private catalogRepo: CatalogRepository
   ) {
     super();
   }
@@ -84,10 +86,27 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
       };
     }
     
-    // Delegate to service (Result-based)
-    const result = await this.chunkSearchService.searchInSource({
-      text: params.text,
-      source: params.source,
+    // Resolve source path to catalog ID at the tool boundary
+    const catalogOpt = await this.catalogRepo.findBySource(params.source);
+    if (!isSome(catalogOpt)) {
+      return {
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            error: {
+              type: 'not_found',
+              message: `Document not found: ${params.source}`
+            },
+            timestamp: new Date().toISOString()
+          })
+        }],
+        isError: true,
+      };
+    }
+    
+    // Delegate to service with catalog ID (normalized)
+    const result = await this.chunkSearchService.searchByCatalogId({
+      catalogId: catalogOpt.value.id,
       limit: 5,
       debug: params.debug || false
     });

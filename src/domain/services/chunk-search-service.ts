@@ -34,6 +34,7 @@ export interface BroadChunkSearchParams {
 
 /**
  * Parameters for targeted chunk search (within one document).
+ * @deprecated Use CatalogIdChunkSearchParams with searchByCatalogId instead
  */
 export interface TargetedChunkSearchParams {
   /** Search query text */
@@ -41,6 +42,21 @@ export interface TargetedChunkSearchParams {
   
   /** Source document path (exact match) */
   source: string;
+  
+  /** Maximum results to return */
+  limit: number;
+  
+  /** Enable debug output */
+  debug?: boolean;
+}
+
+/**
+ * Parameters for chunk search by catalog ID (normalized).
+ * Preferred over TargetedChunkSearchParams.
+ */
+export interface CatalogIdChunkSearchParams {
+  /** Catalog ID of the document */
+  catalogId: number;
   
   /** Maximum results to return */
   limit: number;
@@ -211,6 +227,61 @@ export class ChunkSearchService {
           });
         }
         
+        if (error.constructor.name === 'DatabaseError') {
+          return Err({
+            type: 'database',
+            message: error.message
+          });
+        }
+      }
+      
+      return Err({
+        type: 'unknown',
+        message: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+  
+  /**
+   * Search chunks within a document by catalog ID (normalized).
+   * 
+   * This is the preferred method - catalog ID should be resolved at the
+   * tool boundary, not passed through the service layer.
+   * 
+   * @param params - Search parameters with catalogId
+   * @returns Result containing chunks or error
+   * 
+   * @example
+   * ```typescript
+   * // At tool boundary, resolve source to catalogId first:
+   * const catalogOpt = await catalogRepo.findBySource('/docs/ddd.pdf');
+   * if (isSome(catalogOpt)) {
+   *   const result = await service.searchByCatalogId({
+   *     catalogId: catalogOpt.value.id,
+   *     limit: 20
+   *   });
+   * }
+   * ```
+   */
+  async searchByCatalogId(
+    params: CatalogIdChunkSearchParams
+  ): Promise<Result<Chunk[], SearchError>> {
+    // Validate catalogId
+    if (!params.catalogId || params.catalogId <= 0) {
+      return Err({
+        type: 'validation',
+        field: 'catalogId',
+        message: 'Valid catalogId is required'
+      });
+    }
+    
+    const limit = params.limit || 10;
+    
+    try {
+      const chunks = await this.chunkRepo.findByCatalogId(params.catalogId, limit);
+      return Ok(chunks);
+    } catch (error) {
+      if (error instanceof Error) {
         if (error.constructor.name === 'DatabaseError') {
           return Err({
             type: 'database',

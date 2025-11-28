@@ -7,6 +7,10 @@ export interface ChunksSearchParams extends ToolParams {
   source?: string;
 }
 
+/**
+ * @deprecated Use ConceptualChunksSearchTool instead, which uses normalized catalog IDs.
+ * This tool uses legacy source path filtering after search results are returned.
+ */
 export class SimpleChunksSearchTool extends BaseTool<ChunksSearchParams> {
   private validator = new InputValidator();
   

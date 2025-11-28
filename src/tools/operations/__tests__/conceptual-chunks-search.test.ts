@@ -10,19 +10,30 @@ import { ConceptualChunksSearchTool } from '../conceptual_chunks_search.js';
 import { ChunkSearchService } from '../../../domain/services/index.js';
 import {
   FakeChunkRepository,
-  createTestChunk
+  FakeCatalogRepository,
+  createTestChunk,
+  createTestSearchResult
 } from '../../../__tests__/test-helpers/index.js';
 
 describe('ConceptualChunksSearchTool', () => {
   let chunkRepo: FakeChunkRepository;
+  let catalogRepo: FakeCatalogRepository;
   let service: ChunkSearchService;
   let tool: ConceptualChunksSearchTool;
   
   beforeEach(() => {
     // SETUP - Fresh repositories and service for each test
     chunkRepo = new FakeChunkRepository();
-    service = new ChunkSearchService(chunkRepo);
-    tool = new ConceptualChunksSearchTool(service);
+    catalogRepo = new FakeCatalogRepository();
+    service = new ChunkSearchService(chunkRepo, catalogRepo);
+    tool = new ConceptualChunksSearchTool(service, catalogRepo);
+    
+    // Add a default catalog entry for test documents
+    catalogRepo.addDocument(createTestSearchResult({
+      id: 12345678,
+      source: '/test/doc.pdf',
+      text: 'Test document'
+    }));
   });
   
   describe('execute', () => {
@@ -32,12 +43,14 @@ describe('ConceptualChunksSearchTool', () => {
         createTestChunk({
           id: 1001,
           source: '/test/doc.pdf',
+          catalogId: 12345678,  // matches catalog entry
           text: 'First chunk about testing',
           concepts: ['testing']
         }),
         createTestChunk({
           id: 1002,
           source: '/test/doc.pdf',
+          catalogId: 12345678,  // matches catalog entry
           text: 'Second chunk',
           concepts: ['testing']
         })
@@ -69,6 +82,7 @@ describe('ConceptualChunksSearchTool', () => {
         createTestChunk({
           id: 5000 + i,
           source: '/test/doc.pdf',
+          catalogId: 12345678,  // matches catalog entry
           text: `Chunk ${i}`
         })
       );
@@ -90,6 +104,7 @@ describe('ConceptualChunksSearchTool', () => {
       const testChunk = createTestChunk({
         id: 1001,
         source: '/test/doc.pdf',
+        catalogId: 12345678,  // matches catalog entry
         text: 'Test chunk',
         concepts: ['testing', 'unit tests'],
         conceptIds: [111111, 222222],
@@ -126,7 +141,7 @@ describe('ConceptualChunksSearchTool', () => {
     
     it('should handle errors gracefully', async () => {
       // SETUP - Simulate error
-      chunkRepo.findBySource = async () => {
+      chunkRepo.findByCatalogId = async () => {
         throw new Error('Database error');
       };
       
