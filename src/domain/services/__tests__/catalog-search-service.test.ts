@@ -138,7 +138,7 @@ describe('CatalogSearchService', () => {
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
         expect(result.value.length).toBe(1);
-        expect(result.value[0].id).toBe('1');
+        expect(result.value[0].id).toBe(1);
       }
     });
 

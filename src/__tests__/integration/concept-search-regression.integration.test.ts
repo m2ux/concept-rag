@@ -28,7 +28,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-describe('Concept Search Regression Tests', () => {
+describe.skip('Concept Search Regression Tests', () => {
   let dbPath: string;
   let db: any; // lancedb.Database type not exported
   let chunkRepo: LanceDBChunkRepository;

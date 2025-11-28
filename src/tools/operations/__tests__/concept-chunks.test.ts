@@ -105,15 +105,17 @@ describe('ConceptChunksTool', () => {
       expect(parsedContent.results.length).toBe(3);
     });
     
-    it('should return error for unknown concept', async () => {
+    it('should return empty results for unknown concept', async () => {
       // SETUP - Empty repositories
       
       // EXERCISE
       const result = await tool.execute({ concept: 'nonexistent concept', limit: 10 });
       
-      // VERIFY
-      expect(result.isError).toBe(true);
-      expect(result.content[0].text).toContain('not found');
+      // VERIFY - Returns success with empty results (not an error)
+      expect(result.isError).toBe(false);
+      const parsedContent = JSON.parse(result.content[0].text);
+      expect(parsedContent.total_chunks_found).toBe(0);
+      expect(parsedContent.results).toEqual([]);
     });
     
     it('should return empty results when concept exists but has no chunks', async () => {

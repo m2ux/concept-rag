@@ -179,6 +179,17 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
         sources_count: metadata.catalogIds?.length || 0
         };
         
+        // Add synonyms and related terms from concept metadata
+        if (metadata.synonyms?.length) {
+          response.synonyms = metadata.synonyms;
+        }
+        if (metadata.broaderTerms?.length) {
+          response.broader_terms = metadata.broaderTerms;
+        }
+        if (metadata.narrowerTerms?.length) {
+          response.narrower_terms = metadata.narrowerTerms;
+        }
+        
       // Add related concepts
       if (result.relatedConcepts.length > 0) {
         response.related_concepts = result.relatedConcepts;
