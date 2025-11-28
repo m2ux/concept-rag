@@ -88,7 +88,7 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 | `text` | `string` | Chunk text content (typically 100-500 words) |
 | `hash` | `string` | Content hash for deduplication |
 | `vector` | `Float32Array` | 384-dimensional embedding |
-| `concept_ids` | `number[]` | Native array of concept integer IDs |
+| `concept_ids` | `number[]` | Native array of concept integer IDs (for concept-chunk linkage) |
 | `chunk_index` | `number` | Sequential index within document |
 | `page_number` | `number` | Page number in source document (from PDF loader) |
 | `concept_density` | `number` | Density of concepts in chunk (0-1) |
