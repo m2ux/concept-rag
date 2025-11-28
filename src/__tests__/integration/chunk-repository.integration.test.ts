@@ -153,7 +153,7 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       // ASSERT: Verify chunks from specific source
       expect(chunks).toBeDefined();
       expect(chunks.length).toBeGreaterThan(0);
-      expect(chunks[0].source).toBe(sourcePath);
+      expect(chunks[0].catalogId).toBe(sourcePath);
     });
     
     it('should handle partial source matching', async () => {
@@ -166,7 +166,7 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       // ASSERT: Should find chunks with 'architecture' in source path
       expect(chunks).toBeDefined();
       expect(chunks.length).toBeGreaterThan(0);
-      expect(chunks[0].source).toContain('architecture');
+      expect(chunks[0].catalogId).toContain('architecture');
     });
     
     it('should return empty array for non-existent source', async () => {
@@ -265,8 +265,8 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       expect(chunk.text).toBeDefined();
       expect(typeof chunk.text).toBe('string');
       
-      expect(chunk.source).toBeDefined();
-      expect(typeof chunk.source).toBe('string');
+      expect(chunk.catalogId).toBeDefined();
+      expect(typeof chunk.catalogId).toBe('string');
       
       // Array fields (native arrays - normalized schema)
       expect(chunk.conceptIds).toBeDefined();

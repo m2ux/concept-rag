@@ -33,10 +33,6 @@ export interface Chunk {
   text: string;
   
   /** 
-   * @deprecated Use CatalogSourceCache.getSource(catalogId) instead.
-   * Source field will be removed in a future version.
-   */
-  source?: string;
   
   /** Parent document ID (hash-based integer, matches catalog.id) */
   catalogId: number;

@@ -111,7 +111,6 @@ describe('ConceptSearchService', () => {
         {
           id: 1,
           text: 'Chunk about dependency injection',
-          source: '/docs/di.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['dependency injection'],
@@ -144,7 +143,6 @@ describe('ConceptSearchService', () => {
         {
           id: 1,
           text: 'Chunk about DI',
-          source: '/docs/di.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['dependency injection'],
@@ -173,7 +171,6 @@ describe('ConceptSearchService', () => {
         {
           id: 1,
           text: 'Chunk about DI',
-          source: '/docs/di.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['dependency injection'],
@@ -324,7 +321,6 @@ describe('ConceptSearchService', () => {
         {
           id: 1,
           text: 'Chunk from typescript guide',
-          source: '/docs/typescript-guide.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['architecture'],
@@ -332,7 +328,6 @@ describe('ConceptSearchService', () => {
         {
           id: 2,
           text: 'Chunk from python guide',
-          source: '/docs/python-guide.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['architecture'],
@@ -351,7 +346,7 @@ describe('ConceptSearchService', () => {
       // VERIFY
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        expect(result.value.chunks[0].source).toContain('typescript');
+        expect(result.value.chunks[0].catalogId).toContain('typescript');
       }
     });
 
@@ -362,7 +357,6 @@ describe('ConceptSearchService', () => {
         {
           id: 1,
           text: 'Chunk from TypeScript guide',
-          source: '/docs/TypeScript-Guide.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['design patterns'],
@@ -388,7 +382,6 @@ describe('ConceptSearchService', () => {
         {
           id: 1,
           text: 'Chunk 1',
-          source: '/docs/doc1.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['testing'],
@@ -396,7 +389,6 @@ describe('ConceptSearchService', () => {
         {
           id: 2,
           text: 'Chunk 2',
-          source: '/docs/doc2.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['testing'],
@@ -421,7 +413,6 @@ describe('ConceptSearchService', () => {
         {
           id: 1,
           text: 'Chunk',
-          source: '/docs/typescript.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['architecture'],
@@ -449,7 +440,6 @@ describe('ConceptSearchService', () => {
         {
           id: 1,
           text: 'Few concepts',
-          source: '/docs/doc1.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['patterns'],
@@ -457,7 +447,6 @@ describe('ConceptSearchService', () => {
         {
           id: 2,
           text: 'Many concepts',
-          source: '/docs/doc2.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['patterns', 'design', 'architecture'],
@@ -465,7 +454,6 @@ describe('ConceptSearchService', () => {
         {
           id: 3,
           text: 'Some concepts',
-          source: '/docs/doc3.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['patterns', 'design'],
@@ -494,7 +482,6 @@ describe('ConceptSearchService', () => {
         {
           id: 1,
           text: 'Short chunk', // Short text, fewer concepts = lower relevance
-          source: '/docs/doc1.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['testing'],
@@ -502,7 +489,6 @@ describe('ConceptSearchService', () => {
         {
           id: 2,
           text: 'A'.repeat(300), // Long text (qualifies for text length bonus) + more concepts
-          source: '/docs/doc2.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['testing', 'software', 'development'], // More concepts
@@ -532,7 +518,6 @@ describe('ConceptSearchService', () => {
         {
           id: 1,
           text: 'Chunk from Z document',
-          source: '/docs/z.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['architecture'],
@@ -540,7 +525,6 @@ describe('ConceptSearchService', () => {
         {
           id: 2,
           text: 'Chunk from A document',
-          source: '/docs/a.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['architecture'],
@@ -559,7 +543,7 @@ describe('ConceptSearchService', () => {
       // VERIFY
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        expect(result.value.chunks[1].source).toBe('/docs/z.pdf');
+        expect(result.value.chunks[1].catalogId).toBe('/docs/z.pdf');
       }
     });
 
@@ -570,7 +554,6 @@ describe('ConceptSearchService', () => {
         {
           id: 1,
           text: 'Chunk with density',
-          source: '/docs/doc1.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['patterns'],
@@ -578,7 +561,6 @@ describe('ConceptSearchService', () => {
         {
           id: 2,
           text: 'Chunk without density',
-          source: '/docs/doc2.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['patterns']
@@ -609,7 +591,6 @@ describe('ConceptSearchService', () => {
       const mockChunks: Chunk[] = Array.from({ length: 20 }, (_, i) => ({
         id: i + 1000,
         text: `Chunk ${i}`,
-        source: `/docs/doc${i}.pdf`,
         hash: `hash${i}`,
         catalogId: 12345678,
         concepts: ['testing'],
@@ -651,7 +632,7 @@ describe('ConceptSearchService', () => {
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
         expect(result.value.chunks.length).toBe(10);
-        expect(result.value.chunks.every(c => c.source?.includes('typescript'))).toBe(true);
+        expect(result.value.chunks.every(c => c.catalogId > 0)).toBe(true);
       }
     });
 
@@ -662,7 +643,6 @@ describe('ConceptSearchService', () => {
       const mockChunks: Chunk[] = Array.from({ length: 10 }, (_, i) => ({
         id: i + 1000,
         text: `Chunk ${i}`,
-        source: `/docs/doc${i}.pdf`,
         hash: `hash${i}`,
         catalogId: 12345678,
         concepts: ['patterns'],
@@ -692,7 +672,6 @@ describe('ConceptSearchService', () => {
       const chunk: Chunk = {
         id: 1,
         text: 'Chunk with concept',
-        source: '/docs/doc.pdf',
         hash: 'hash1',
           catalogId: 12345678,
         concepts: ['testing', 'other'], // 2 concepts
@@ -713,7 +692,6 @@ describe('ConceptSearchService', () => {
       const chunk: Chunk = {
         id: 1,
         text: 'A'.repeat(300), // 300 chars (qualifies for text length bonus)
-        source: '/docs/doc.pdf',
         hash: 'hash1',
           catalogId: 12345678,
         concepts: ['testing', 'other', 'third'], // 3 concepts
@@ -734,7 +712,6 @@ describe('ConceptSearchService', () => {
       const chunk: Chunk = {
         id: 1,
         text: 'A'.repeat(300), // 300 chars
-        source: '/docs/doc.pdf',
         hash: 'hash1',
           catalogId: 12345678,
         concepts: [],
@@ -755,7 +732,6 @@ describe('ConceptSearchService', () => {
       const chunk: Chunk = {
         id: 1,
         text: 'Short',
-        source: '/docs/doc.pdf',
         hash: 'hash1',
           catalogId: 12345678,
         concepts: ['testing'],
@@ -776,7 +752,6 @@ describe('ConceptSearchService', () => {
       const chunk: Chunk = {
         id: 1,
         text: 'Chunk',
-        source: '/docs/doc.pdf',
         hash: 'hash1',
           catalogId: 12345678,
         concepts: ['testing'],

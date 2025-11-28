@@ -233,7 +233,6 @@ export class LanceDBChunkRepository implements ChunkRepository {
     return {
       id: typeof row.id === 'number' ? row.id : parseInt(row.id) || 0,
       text: row.text || '',
-      source: row.source || "",
       catalogId: row.catalog_id || 0,
       hash: row.hash || '',
       concepts,  // Resolved from conceptIds for API compatibility

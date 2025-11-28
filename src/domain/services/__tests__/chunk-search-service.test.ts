@@ -72,7 +72,6 @@ describe('ChunkSearchService', () => {
         {
           id: 1,
           text: 'Chunk about software architecture',
-          source: '/docs/architecture.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           distance: 0.2,
@@ -107,7 +106,6 @@ describe('ChunkSearchService', () => {
         {
           id: 1,
           text: 'Test chunk',
-          source: '/test.pdf',
           hash: 'hash1',
           catalogId: 12345678,
           distance: 0.2,
@@ -190,7 +188,6 @@ describe('ChunkSearchService', () => {
       const mockResults: SearchResult[] = Array.from({ length: 10 }, (_, i) => ({
         id: i + 1000,
         text: `Chunk ${i}`,
-        source: `/doc${i}.pdf`,
         hash: `hash${i}`,
         catalogId: 12345678,
         distance: 0.2,
@@ -223,7 +220,6 @@ describe('ChunkSearchService', () => {
         {
           id: 1,
           text: 'First chunk',
-          source: sourcePath,
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['architecture'],
@@ -231,7 +227,6 @@ describe('ChunkSearchService', () => {
         {
           id: 2,
           text: 'Second chunk',
-          source: sourcePath,
           hash: 'hash1',
           catalogId: 12345678,
           concepts: ['design'],
@@ -242,7 +237,6 @@ describe('ChunkSearchService', () => {
       // EXERCISE
       const result = await service.searchInSource({
         text: 'architecture',
-        source: sourcePath,
         limit: 10
       });
 
@@ -260,7 +254,6 @@ describe('ChunkSearchService', () => {
       const mockChunks: Chunk[] = Array.from({ length: 20 }, (_, i) => ({
         id: i + 1000,
         text: `Chunk ${i}`,
-        source: sourcePath,
         hash: `hash${i}`,
         catalogId: 12345678,
         concepts: [],
@@ -270,7 +263,6 @@ describe('ChunkSearchService', () => {
       // EXERCISE
       const result = await service.searchInSource({
         text: 'test',
-        source: sourcePath,
         limit: 5
       });
 
@@ -286,7 +278,6 @@ describe('ChunkSearchService', () => {
       // EXERCISE
       const result = await service.searchInSource({
         text: 'test',
-        source: sourcePath,
         limit: 10
       });
 
@@ -306,7 +297,6 @@ describe('ChunkSearchService', () => {
       // EXERCISE
       const result = await service.searchInSource({
         text: 'test',
-        source: sourcePath,
         limit: 10
       });
 
@@ -321,7 +311,6 @@ describe('ChunkSearchService', () => {
         {
           id: 1,
           text: 'Chunk from specific source',
-          source: sourcePath,
           hash: 'hash1',
           catalogId: 12345678,
           concepts: [],
@@ -332,7 +321,6 @@ describe('ChunkSearchService', () => {
       // EXERCISE
       const result = await service.searchInSource({
         text: 'test',
-        source: sourcePath,
         limit: 10
       });
 
@@ -340,7 +328,7 @@ describe('ChunkSearchService', () => {
       // VERIFY
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
-        expect(result.value[0].source).toBe(sourcePath);
+        expect(result.value[0].catalogId).toBe(sourcePath);
       }
     });
 
@@ -352,7 +340,6 @@ describe('ChunkSearchService', () => {
         {
           id: 1,
           text: 'Chunk from doc1',
-          source: source1,
           hash: 'hash1',
           catalogId: 12345678,
           concepts: [],
@@ -362,7 +349,6 @@ describe('ChunkSearchService', () => {
         {
           id: 2,
           text: 'Chunk from doc2',
-          source: source2,
           hash: 'hash1',
           catalogId: 12345678,
           concepts: [],
@@ -374,12 +360,10 @@ describe('ChunkSearchService', () => {
       // EXERCISE
       const results1 = await service.searchInSource({
         text: 'test',
-        source: source1,
         limit: 10
       });
       const results2 = await service.searchInSource({
         text: 'test',
-        source: source2,
         limit: 10
       });
 
@@ -387,9 +371,9 @@ describe('ChunkSearchService', () => {
       expect(isOk(results1)).toBe(true);
       expect(isOk(results2)).toBe(true);
       if (isOk(results1) && isOk(results2)) {
-        expect(results1.value[0].source).toBe(source1);
+        expect(results1.value[0].catalogId).toBe(source1);
         expect(results2.value.length).toBe(1);
-        expect(results2.value[0].source).toBe(source2);
+        expect(results2.value[0].catalogId).toBe(source2);
       }
     });
   });

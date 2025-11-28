@@ -48,7 +48,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-abstract-1',
         text: 'The theory of exaptive bootstrapping explains how innovations occur in cascades through positive feedback dynamics in agent-artifact space.',
-        source: '/test/complexity-innovation.pdf',
         hash: 'hash-abstract-1',
         loc: '{}',
         vector: createSimpleEmbedding('exaptive bootstrapping theory innovation'),
@@ -58,7 +57,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-abstract-2',
         text: 'The ideality index represents the ratio of useful functions to harmful effects in a technical system.',
-        source: '/test/triz-methodology.pdf',
         hash: 'hash-abstract-2',
         loc: '{}',
         vector: createSimpleEmbedding('ideality index triz technical systems'),
@@ -68,7 +66,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-abstract-3',
         text: 'Dialectical thinking involves understanding contradictions and their resolution through synthesis.',
-        source: '/test/philosophy-dialectics.pdf',
         hash: 'hash-abstract-3',
         loc: '{}',
         vector: createSimpleEmbedding('dialectical thinking contradictions philosophy'),
@@ -78,7 +75,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-abstract-4',
         text: 'Another paragraph discussing exaptive bootstrapping and its role in socio-technical transitions.',
-        source: '/test/complexity-innovation.pdf',
         hash: 'hash-abstract-4',
         loc: '{}',
         vector: createSimpleEmbedding('exaptive bootstrapping socio-technical transitions'),
@@ -90,7 +86,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-medium-1',
         text: 'A REST API provides a standardized interface for client-server communication using HTTP methods.',
-        source: '/test/web-architecture.pdf',
         hash: 'hash-medium-1',
         loc: '{}',
         vector: createSimpleEmbedding('REST API interface HTTP'),
@@ -100,7 +95,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-medium-2',
         text: 'The repository pattern abstracts data access logic from business logic.',
-        source: '/test/design-patterns.pdf',
         hash: 'hash-medium-2',
         loc: '{}',
         vector: createSimpleEmbedding('repository pattern data access'),
@@ -110,7 +104,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-medium-3',
         text: 'Dependency injection enables loose coupling by providing dependencies externally.',
-        source: '/test/solid-principles.pdf',
         hash: 'hash-medium-3',
         loc: '{}',
         vector: createSimpleEmbedding('dependency injection loose coupling'),
@@ -120,7 +113,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-medium-4',
         text: 'Another section about dependency injection and its benefits for testability.',
-        source: '/test/testing-strategies.pdf',
         hash: 'hash-medium-4',
         loc: '{}',
         vector: createSimpleEmbedding('dependency injection testability'),
@@ -130,7 +122,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-medium-5',
         text: 'The API interface defines the contract between different software components.',
-        source: '/test/interface-design.pdf',
         hash: 'hash-medium-5',
         loc: '{}',
         vector: createSimpleEmbedding('API interface contract components'),
@@ -142,7 +133,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-low-1',
         text: 'React.useState is a hook that lets you add state to function components.',
-        source: '/test/react-hooks.pdf',
         hash: 'hash-low-1',
         loc: '{}',
         vector: createSimpleEmbedding('React.useState hook state management'),
@@ -152,7 +142,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-low-2',
         text: 'PostgreSQL transaction isolation levels include Read Committed and Serializable.',
-        source: '/test/postgres-transactions.pdf',
         hash: 'hash-low-2',
         loc: '{}',
         vector: createSimpleEmbedding('PostgreSQL transaction isolation'),
@@ -162,7 +151,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-low-3',
         text: 'The typescript.compilerOptions.strict flag enables all strict type checking options.',
-        source: '/test/typescript-config.pdf',
         hash: 'hash-low-3',
         loc: '{}',
         vector: createSimpleEmbedding('TypeScript strict mode compiler options'),
@@ -172,7 +160,6 @@ describe('Concept Search Regression Tests', () => {
       {
         id: 'chunk-low-4',
         text: 'Using React.useState multiple times allows you to manage multiple state variables independently.',
-        source: '/test/react-patterns.pdf',
         hash: 'hash-low-4',
         loc: '{}',
         vector: createSimpleEmbedding('React.useState multiple state variables'),
@@ -317,7 +304,7 @@ describe('Concept Search Regression Tests', () => {
       });
       
       // Verify they're from the correct source
-      expect(results[0].source).toBe('/test/complexity-innovation.pdf');
+      expect(results[0].catalogId).toBe('/test/complexity-innovation.pdf');
     });
     
     it('should find chunks for "ideality index"', async () => {
