@@ -148,7 +148,6 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
     // Format sources with page context and match type
     const sources = result.sources.map((s: SourceWithPages) => ({
       title: s.title,
-      source: s.source,
       pages: s.pageNumbers,
       match_type: s.matchType,  // 'primary' or 'related'
       via_concept: s.viaConcept,  // If 'related', the concept that linked here
