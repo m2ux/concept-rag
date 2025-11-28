@@ -9,6 +9,7 @@ export interface ScoreComponents {
   vectorScore: number;
   bm25Score: number;
   titleScore: number;
+  conceptScore: number;
   wordnetScore: number;
 }
 
@@ -209,6 +210,56 @@ export function calculateConceptScore(
 }
 
 /**
+ * Calculate concept names score from derived field.
+ * 
+ * Scores documents based on matching between query terms and concept_names array.
+ * This uses the derived field from v7 schema (no cache lookups needed).
+ * 
+ * @param queryTerms - Query terms to match against
+ * @param conceptNames - Array of concept names from the document
+ * @returns Score from 0.0 to 1.0
+ */
+export function calculateConceptNamesScore(
+  queryTerms: string[],
+  conceptNames: string[]
+): number {
+  if (!conceptNames || conceptNames.length === 0 || queryTerms.length === 0) return 0;
+  
+  let matches = 0;
+  let exactMatches = 0;
+  
+  const conceptsLower = conceptNames.map(c => c.toLowerCase());
+  
+  for (const term of queryTerms) {
+    const termLower = term.toLowerCase();
+    
+    for (const concept of conceptsLower) {
+      // Exact match - highest value
+      if (concept === termLower) {
+        exactMatches++;
+        break;
+      }
+      // Concept contains query term
+      else if (concept.includes(termLower)) {
+        matches++;
+        break;
+      }
+      // Query term contains concept (e.g., query "dependency injection patterns" matches concept "dependency injection")
+      else if (termLower.includes(concept) && concept.length > 3) {
+        matches += 0.5;
+        break;
+      }
+    }
+  }
+  
+  // Exact matches are worth 2x
+  const totalScore = (exactMatches * 2) + matches;
+  
+  // Normalize by number of query terms
+  return Math.min(totalScore / (queryTerms.length * 2), 1.0);
+}
+
+/**
  * Calculate WordNet bonus score.
  * 
  * Rewards documents that contain synonyms and related terms from WordNet.
@@ -240,23 +291,22 @@ export function calculateWordNetBonus(
  * Calculate final hybrid score from component scores.
  * 
  * Applies weighted combination of all scoring signals:
- * - 30% Vector similarity (semantic understanding)
- * - 30% BM25 (keyword relevance)
- * - 25% Title matching (document relevance)
- * - 15% WordNet (semantic enrichment)
- * 
- * Note: Concept scoring was removed - use concept_search tool instead
- * for concept-based discovery.
+ * - 25% Vector similarity (semantic understanding)
+ * - 25% BM25 (keyword relevance)
+ * - 20% Title matching (document relevance)
+ * - 20% Concept matching (concept_names field)
+ * - 10% WordNet (semantic enrichment)
  * 
  * @param components - Individual score components
  * @returns Final hybrid score from 0.0 to 1.0
  */
 export function calculateHybridScore(components: ScoreComponents): number {
   return (
-    (components.vectorScore * 0.30) +
-    (components.bm25Score * 0.30) +
-    (components.titleScore * 0.25) +
-    (components.wordnetScore * 0.15)
+    (components.vectorScore * 0.25) +
+    (components.bm25Score * 0.25) +
+    (components.titleScore * 0.20) +
+    (components.conceptScore * 0.20) +
+    (components.wordnetScore * 0.10)
   );
 }
 

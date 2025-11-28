@@ -5,7 +5,7 @@ export interface ConceptSearchParams extends ToolParams {
   /** The concept to search for */
   concept: string;
   
-  /** Maximum sources to return (default: 5) */
+  /** Maximum sources to return (default: 20) */
   limit?: number;
   
   /** Optional source path filter */
@@ -34,11 +34,12 @@ export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
   }
   
   name = "concept_search";
-  description = `Find all chunks tagged with a specific concept from the concept-enriched index. 
-  
+  description = `Find chunks associated with a concept, organized by source documents (hierarchical view).
+
+Uses fuzzy matching to find the concept (exact match prioritized, then partial matches), then retrieves all chunks that were tagged with that concept during extraction.
+
 USE THIS TOOL WHEN:
 - Searching for a conceptual topic (e.g., "innovation", "leadership", "strategic thinking")
-- You want semantically-tagged, high-precision results about a concept
 - Tracking where and how a concept is discussed across your library
 - Research queries focused on understanding a specific concept
 
@@ -47,10 +48,10 @@ DO NOT USE for:
 - Finding documents by title (use catalog_search instead)
 - Searching within a known document (use chunks_search instead)
 
-RETURNS: Concept-tagged chunks with concept_density scores, related concepts, and semantic categories. Results include:
+RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
 - Concept metadata: summary, synonyms, broader/narrower terms
 - Source documents: paths, page numbers where concept appears
-- Enriched chunks: text with page numbers and concept density ranking`;
+- Chunks: text with page numbers and concept density ranking`;
 
   inputSchema = {
     type: "object" as const,
@@ -61,8 +62,8 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       },
       limit: {
         type: "number",
-        description: "Maximum number of sources to return (default: 5)",
-        default: 5
+        description: "Maximum number of sources to return (default: 20)",
+        default: 20
       },
       source_filter: {
         type: "string",
@@ -96,7 +97,7 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       };
     }
     
-    const maxSources = params.limit || 5;
+    const maxSources = params.limit || 20;
     
     console.error(`🔍 Hierarchical concept search: "${params.concept}"`);
     

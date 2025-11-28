@@ -107,7 +107,7 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
     // Delegate to service with catalog ID (normalized)
     const result = await this.chunkSearchService.searchByCatalogId({
       catalogId: catalogOpt.value.id,
-      limit: 5,
+      limit: 20,
       debug: params.debug || false
     });
     

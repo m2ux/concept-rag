@@ -76,19 +76,24 @@ OUTPUT FORMATS:
       const format = params.format || "json";
       const includeSummary = params.include_summary !== false;
 
-      // Use repository to find document
+      // Step 1: Search to find matching document (hybrid search for best match)
       console.error(`🔍 Searching for document: "${params.document_query}"`);
-      const results = await this.catalogRepo.search({
+      const searchResults = await this.catalogRepo.search({
         text: params.document_query,
         limit: 10
       });
 
-      if (results.length === 0) {
+      if (searchResults.length === 0) {
         throw new RecordNotFoundError('Document', params.document_query);
       }
 
-      // Take the best match
-      const doc = results[0];
+      // Step 2: Get full document record with all derived fields via direct lookup
+      const matchedDoc = searchResults[0];
+      const { isSome } = await import('../../domain/functional/option.js');
+      const fullDocOpt = await this.catalogRepo.findById(matchedDoc.catalogId || matchedDoc.id as number);
+      
+      // Use full document if found, otherwise fall back to search result
+      const doc = isSome(fullDocOpt) ? fullDocOpt.value : matchedDoc;
       
       // Get concepts - use derived fields directly (new schema)
       let primaryConcepts: string[] = [];

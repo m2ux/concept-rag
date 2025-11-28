@@ -80,7 +80,7 @@ RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, title, a
     // Delegate to service (Result-based)
     const result = await this.chunkSearchService.searchBroad({
       text: params.text,
-      limit: 10,
+      limit: 20,
       debug: params.debug || false
     });
     

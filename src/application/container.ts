@@ -12,7 +12,6 @@ import {
   ConceptSourcesService,
   HierarchicalConceptService
 } from '../domain/services/index.js';
-import { ConceptChunksTool } from '../tools/operations/concept_chunks.js';
 import { ConceptSearchTool } from '../tools/operations/concept_search.js';
 import { ConceptualCatalogSearchTool } from '../tools/operations/conceptual_catalog_search.js';
 import { ConceptualChunksSearchTool } from '../tools/operations/conceptual_chunks_search.js';
@@ -175,7 +174,6 @@ export class ApplicationContainer {
     console.error('✅ HierarchicalConceptService initialized');
     
     // 7. Create tools (with domain services)
-    this.tools.set('concept_chunks', new ConceptChunksTool(conceptSearchService));
     this.tools.set('concept_search', new ConceptSearchTool(hierarchicalConceptService));
     this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogSearchService));
     this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService, catalogRepo));

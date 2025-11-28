@@ -2,16 +2,19 @@
 
 This document provides a comprehensive API specification for all MCP tools available in Concept-RAG.
 
+**Schema Version:** v7 (November 2025)  
+**Key Features:** Derived text fields (`concept_names`, `catalog_title`), no ID mapping caches needed.
+
 ---
 
 ## Overview
 
-Concept-RAG provides **11 MCP tools** organized into four categories:
+Concept-RAG provides **10 MCP tools** organized into four categories:
 
 | Category | Tools | Purpose |
 |----------|-------|---------|
 | **Document Discovery** | `catalog_search` | Find documents by title, author, topic |
-| **Content Search** | `broad_chunks_search`, `chunks_search`, `concept_chunks` | Search within document content |
+| **Content Search** | `broad_chunks_search`, `chunks_search` | Search within document content |
 | **Concept Analysis** | `concept_search`, `extract_concepts`, `source_concepts`, `concept_sources` | Analyze and track concepts |
 | **Category Browsing** | `category_search`, `list_categories`, `list_concepts_in_category` | Browse by domain/category |
 
@@ -39,10 +42,13 @@ Search document summaries and metadata to discover relevant documents using sema
 | `text` | string | ✅ | - | Search query - topics, titles, authors, or keywords |
 | `debug` | boolean | ❌ | `false` | Show query expansion and score breakdown |
 
+> **Note:** Results are limited to 10 documents (hardcoded). No `limit` parameter available.
+
 **Returns:** Top 10 documents with:
-- Document summary/preview
-- Hybrid scores (vector + BM25 + title matching)
-- Matched concepts
+- Document summary/preview (first 200 chars)
+- Hybrid scores (vector, BM25, title, concept, wordnet)
+- Matched concepts from `concept_names` field
+- Expanded search terms
 - Source path
 
 **Example:**
@@ -56,7 +62,12 @@ Search document summaries and metadata to discover relevant documents using sema
 **How It Works:**
 1. Converts query to a vector embedding
 2. Performs semantic search against document summaries
-3. Re-ranks results using BM25, title matching, and WordNet expansion
+3. Re-ranks results using weighted combination:
+   - 25% Vector similarity (semantic understanding)
+   - 25% BM25 (keyword relevance)
+   - 20% Title matching (document title/filename)
+   - 20% Concept matching (against `concept_names` field)
+   - 10% WordNet expansion (synonyms and related terms)
 
 ---
 
@@ -78,10 +89,14 @@ Search across ALL document chunks using hybrid search (vector + BM25 + title + W
 | `text` | string | ✅ | - | Search query - topics, phrases, keywords |
 | `debug` | boolean | ❌ | `false` | Show query expansion and score breakdown |
 
-**Returns:** Top 10 chunks ranked by hybrid scoring with:
+> **Note:** Results are limited to 20 chunks (hardcoded). No `limit` parameter available.
+
+**Returns:** Top 20 chunks ranked by hybrid scoring with:
 - Text content
-- Source document path
-- Score components (vector, BM25, title, WordNet)
+- Source document path (`catalog_title`)
+- Score components (vector, BM25, title, concept, WordNet)
+- Matched concepts
+- Expanded search terms
 
 **Example:**
 ```json
@@ -90,6 +105,10 @@ Search across ALL document chunks using hybrid search (vector + BM25 + title + W
   "debug": true
 }
 ```
+
+**How It Works:**
+Same 5-signal hybrid scoring as `catalog_search`:
+- 25% Vector, 25% BM25, 20% Title, 20% Concept, 10% WordNet
 
 ---
 
@@ -110,7 +129,12 @@ Search within a single known document using hybrid search.
 | `source` | string | ✅ | - | Full file path of the source document |
 | `debug` | boolean | ❌ | `false` | Show debug information |
 
-**Returns:** Top 5 chunks from the specified document with hybrid scores.
+> **Note:** Results are limited to 20 chunks (hardcoded). No `limit` parameter available.
+
+**Returns:** Top 20 chunks from the specified document with:
+- Text content
+- Hybrid scores (vector, BM25, title, WordNet)
+- Expanded search terms
 
 **Example:**
 ```json
@@ -124,86 +148,52 @@ Search within a single known document using hybrid search.
 
 ---
 
-### `concept_chunks`
+## Concept Analysis
 
-Find all chunks tagged with a specific concept from the concept-enriched index.
+### `concept_search`
+
+Find chunks associated with a concept, organized by source documents (hierarchical view).
+
+Uses **fuzzy matching** to find the concept (exact match prioritized, then partial matches), then retrieves all chunks that were tagged with that concept during extraction.
 
 **Use When:**
-- Researching a specific conceptual topic (e.g., "innovation", "leadership")
-- Need semantically-tagged, high-precision results
-- Tracking where a concept is discussed across your library
+- Searching for a conceptual topic (e.g., "innovation", "leadership", "strategic thinking")
+- Tracking where and how a concept is discussed across your library
+- Research queries focused on understanding a specific concept
+
+**Do NOT Use For:**
+- Keyword searches or exact phrase matching (use `broad_chunks_search` instead)
+- Finding documents by title (use `catalog_search` instead)
+- Searching within a known document (use `chunks_search` instead)
 
 **Parameters:**
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| `concept` | string | ✅ | - | Conceptual term to search for (single word or short phrase) |
-| `limit` | number | ❌ | `10` | Maximum results to return |
-| `source_filter` | string | ❌ | - | Filter to documents containing this text in path |
+| `concept` | string | ✅ | - | Conceptual term to search for (e.g., 'innovation' not 'innovation process') |
+| `limit` | number | ❌ | `20` | Maximum number of sources to return |
+| `source_filter` | string | ❌ | - | Filter results to documents containing this text in path |
+| `debug` | boolean | ❌ | `false` | Show debug information |
 
-**Returns:** Concept-tagged chunks with:
-- Related concepts
-- Semantic categories
-- Source attribution
+**Returns:** Concept-tagged chunks organized by source with:
+- Concept metadata (summary, synonyms, broader/narrower terms)
+- Source documents with paths and page numbers
+- Enriched chunks with concept density ranking
 
 **Example:**
 ```json
 {
   "concept": "dependency injection",
-  "limit": 15,
-  "source_filter": "Programming"
-}
-```
-
-**Note:** Use conceptual terms, not phrases. Good: "innovation", "leadership", "TDD". Avoid: "innovation process", "leadership in organizations".
-
----
-
-## Concept Analysis
-
-### `concept_search`
-
-Search for concepts by their summary/description using semantic similarity.
-
-**Use When:**
-- Looking for concepts by description or meaning (not exact name)
-- Finding concepts related to a topic or theme
-- Discovering what concepts exist in your library about a subject
-- Fuzzy/semantic search over concept definitions
-
-**Do NOT Use For:**
-- Finding chunks tagged with a specific concept (use `concept_chunks` instead)
-- Finding documents by title (use `catalog_search` instead)
-- Exact concept name lookup (use `source_concepts` or `concept_sources`)
-
-**Parameters:**
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `text` | string | ✅ | - | Search query - topic, description, or keywords |
-| `limit` | number | ❌ | `10` | Maximum results to return |
-| `debug` | boolean | ❌ | `false` | Show query expansion and score breakdown |
-
-**Returns:** Top 10 concepts with:
-- Concept name and summary
-- Document and chunk counts
-- Related concepts and synonyms
-- Hybrid scores (vector + BM25 + name matching)
-
-**Example:**
-```json
-{
-  "text": "design patterns for loose coupling",
-  "limit": 10,
+  "limit": 5,
   "debug": false
 }
 ```
 
 **How It Works:**
-1. Converts query to a vector embedding
-2. Performs semantic search against concept summaries
-3. Re-ranks results using BM25, **concept name matching**, and WordNet expansion
-4. Concept name matches boost scores (exact match = highest boost)
+1. Finds concept by exact name match or fuzzy search
+2. Retrieves all chunks tagged with the concept
+3. Groups chunks by source document
+4. Returns hierarchical view: concept → documents → chunks
 
 ---
 
@@ -436,7 +426,7 @@ What do you want to find?
 ├── Content (specific passages)
 │   ├── Across all documents → broad_chunks_search
 │   ├── Within one document → chunks_search
-│   └── By concept tag → concept_chunks
+│   └── By concept → concept_search
 │
 ├── Concepts
 │   ├── Find concepts by description → concept_search
@@ -472,7 +462,7 @@ extract_concepts → understand document's conceptual structure
 ```
 concept_search → find concepts by description
     ↓
-concept_chunks → find where concept is discussed
+concept_search → find where concept is discussed
     ↓
 source_concepts → get source attribution
 ```
@@ -519,7 +509,6 @@ All tools return structured error responses:
 | `broad_chunks_search` | 100-500ms |
 | `chunks_search` | 50-150ms |
 | `concept_search` | 50-200ms |
-| `concept_chunks` | 50-200ms |
 | `extract_concepts` | 100-300ms |
 | `category_search` | 30-130ms |
 | `list_categories` | 10-50ms |

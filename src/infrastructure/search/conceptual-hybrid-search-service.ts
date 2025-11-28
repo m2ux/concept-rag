@@ -9,6 +9,7 @@ import {
   calculateVectorScore,
   calculateWeightedBM25,
   calculateTitleScore,
+  calculateConceptNamesScore,
   calculateWordNetBonus,
   calculateHybridScore,
   getMatchedConcepts,
@@ -22,10 +23,8 @@ import {
  * - Vector similarity (semantic search via embeddings)
  * - BM25 keyword matching (lexical search)
  * - Title matching (document relevance)
+ * - Concept matching (uses concept_names derived field)
  * - WordNet expansion (semantic enrichment)
- * 
- * Note: Concept scoring was removed from hybrid search. Use the dedicated
- * concept_search tool for concept-based discovery instead.
  * 
  * This service orchestrates query expansion, vector search, and multi-signal
  * scoring to provide high-quality search results.
@@ -103,6 +102,20 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     
     // Step 3: Score each result with all ranking signals
     const scoredResults = vectorResults.map((row: any) => {
+      // Parse concept_names early for scoring
+      const parseStringArray = (value: any): string[] => {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'object' && 'toArray' in value) {
+          return Array.from(value.toArray());
+        }
+        if (typeof value === 'string') {
+          try { return JSON.parse(value); } catch { return []; }
+        }
+        return [];
+      };
+      const conceptNames = parseStringArray(row.concept_names);
+      
       // Calculate individual scores
       const vectorScore = calculateVectorScore(row._distance || 0);
       const bm25Score = calculateWeightedBM25(
@@ -112,8 +125,8 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         row.source || ''
       );
       const titleScore = calculateTitleScore(expanded.original_terms, row.source || '');
-      // Concept scoring removed - use concept_search tool instead
-      const conceptScore = 0;  // Deprecated
+      // Concept scoring restored - uses concept_names derived field
+      const conceptScore = calculateConceptNamesScore(expanded.original_terms, conceptNames);
       const wordnetScore = calculateWordNetBonus(expanded.wordnet_terms, row.text || '');
       
       // Calculate hybrid score
@@ -121,6 +134,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         vectorScore,
         bm25Score,
         titleScore,
+        conceptScore,
         wordnetScore
       });
       
@@ -134,6 +148,19 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         return [];
       };
       
+      // Parse string array fields (for derived text fields)
+      const parseStringArrayField = (value: any): string[] => {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'object' && 'toArray' in value) {
+          return Array.from(value.toArray());
+        }
+        if (typeof value === 'string') {
+          try { return JSON.parse(value); } catch { return []; }
+        }
+        return [];
+      };
+      
       // Build enriched search result
       const result: SearchResult = {
         id: row.id || '',
@@ -142,12 +169,15 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         catalogId: row.catalog_id || row.id || 0,
         hash: row.hash || '',
         conceptIds: parseArrayField(row.concept_ids),
+        conceptNames: parseStringArrayField(row.concept_names),  // DERIVED: for display
+        categoryIds: parseArrayField(row.category_ids),
+        categoryNames: parseStringArrayField(row.category_names),  // DERIVED: for display
         embeddings: row.vector || [],
         distance: row._distance || 0,
         vectorScore,
         bm25Score,
         titleScore,
-        conceptScore: 0,  // Deprecated - always 0
+        conceptScore,  // From concept_names derived field
         wordnetScore,
         hybridScore,
         matchedConcepts: getMatchedConcepts(expanded, row),
@@ -194,7 +224,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       console.error(`   Vector: ${result.vectorScore.toFixed(3)}`);
       console.error(`   BM25: ${result.bm25Score.toFixed(3)}`);
       console.error(`   Title: ${result.titleScore.toFixed(3)}`);
-      // Concept score removed
+      console.error(`   Concept: ${result.conceptScore.toFixed(3)}`);
       console.error(`   WordNet: ${result.wordnetScore.toFixed(3)}`);
       console.error(`   ➜ Hybrid: ${result.hybridScore.toFixed(3)}`);
       if (result.matchedConcepts && result.matchedConcepts.length > 0) {

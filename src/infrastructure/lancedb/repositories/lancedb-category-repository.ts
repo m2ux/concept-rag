@@ -212,7 +212,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
     const byAlias = await this.findByAlias(nameOrIdOrAlias);
     if (byAlias) return byAlias;
     
-    // Try as name
+    // Try as exact name
     const byName = await this.findByName(nameOrIdOrAlias);
     if (byName) return byName;
     
@@ -221,6 +221,13 @@ export class LanceDBCategoryRepository implements CategoryRepository {
     if (!isNaN(numericId)) {
       const byId = await this.findById(numericId);
       if (byId) return byId;
+    }
+    
+    // Fallback: fuzzy search by name (partial match)
+    const matches = await this.searchByName(nameOrIdOrAlias);
+    if (matches.length > 0) {
+      // Return the best match (first result from searchByName)
+      return matches[0];
     }
     
     return null;
