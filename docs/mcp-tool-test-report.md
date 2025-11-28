@@ -1,6 +1,6 @@
 # MCP Tool Test Report - Detailed Output
 
-**Generated:** 2025-11-28T17:54:20.359Z
+**Generated:** 2025-11-28T17:58:24.953Z
 **Database:** ./test_db
 
 ---
@@ -300,11 +300,11 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
 [
   {
     "source": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
-    "text_preview": "...",
+    "text_preview": "This excerpt from the introduction to Sun Tzu's \"The Art of War\" recounts the ancient Chinese strategist's biography, including his legendary demonstration of military discipline by drilling palace co...",
     "scores": {
-      "hybrid": "0.403",
+      "hybrid": "0.370",
       "vector": "0.000",
-      "bm25": "0.511",
+      "bm25": "0.400",
       "title": "1.000",
       "wordnet": "0.000"
     },
@@ -334,13 +334,47 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
 [
   {
     "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
-    "text_preview": "...",
+    "text_preview": "This book presents a comprehensive philosophy of software design, emphasizing principles for managing complexity through effective problem decomposition, modular abstractions, information hiding, and ...",
     "scores": {
-      "hybrid": "0.361",
+      "hybrid": "0.343",
       "vector": "0.000",
-      "bm25": "0.369",
+      "bm25": "0.310",
       "title": "1.000",
       "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "architecture",
+      "computer architecture",
+      "structure"
+    ]
+  },
+  {
+    "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
+    "text_preview": "This book, \"Design Patterns: Elements of Reusable Object-Oriented Software,\" provides an introduction to design patterns for object-oriented programming, a case study on designing a document editor, a...",
+    "scores": {
+      "hybrid": "0.198",
+      "vector": "0.000",
+      "bm25": "0.411",
+      "title": "0.000",
+      "wordnet": "0.500"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "architecture",
+      "computer architecture",
+      "structure"
+    ]
+  },
+  {
+    "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
+    "text_preview": "Thinking in Systems is a posthumously edited primer by Donella H. Meadows that introduces foundational concepts of systems thinking, including system structures, behaviors, surprises, traps, leverage ...",
+    "scores": {
+      "hybrid": "0.136",
+      "vector": "0.000",
+      "bm25": "0.202",
+      "title": "0.000",
+      "wordnet": "0.500"
     },
     "matched_concepts": [],
     "expanded_terms": [
@@ -368,12 +402,60 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
 [
   {
     "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
-    "text_preview": "...",
+    "text_preview": "Thinking in Systems is a posthumously edited primer by Donella H. Meadows that introduces foundational concepts of systems thinking, including system structures, behaviors, surprises, traps, leverage ...",
     "scores": {
-      "hybrid": "0.267",
+      "hybrid": "0.307",
       "vector": "0.000",
-      "bm25": "0.475",
+      "bm25": "0.608",
       "title": "0.500",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "system",
+      "plan of action"
+    ]
+  },
+  {
+    "source": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
+    "text_preview": "This excerpt from the introduction to Sun Tzu's \"The Art of War\" recounts the ancient Chinese strategist's biography, including his legendary demonstration of military discipline by drilling palace co...",
+    "scores": {
+      "hybrid": "0.109",
+      "vector": "0.000",
+      "bm25": "0.363",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "system",
+      "plan of action"
+    ]
+  },
+  {
+    "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
+    "text_preview": "This book, \"Design Patterns: Elements of Reusable Object-Oriented Software,\" provides an introduction to design patterns for object-oriented programming, a case study on designing a document editor, a...",
+    "scores": {
+      "hybrid": "0.102",
+      "vector": "0.000",
+      "bm25": "0.340",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "system",
+      "plan of action"
+    ]
+  },
+  {
+    "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
+    "text_preview": "This book presents a comprehensive philosophy of software design, emphasizing principles for managing complexity through effective problem decomposition, modular abstractions, information hiding, and ...",
+    "scores": {
+      "hybrid": "0.093",
+      "vector": "0.000",
+      "bm25": "0.309",
+      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -401,12 +483,44 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
 [
   {
     "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
-    "text_preview": "...",
+    "text_preview": "This book, \"Design Patterns: Elements of Reusable Object-Oriented Software,\" provides an introduction to design patterns for object-oriented programming, a case study on designing a document editor, a...",
     "scores": {
-      "hybrid": "0.262",
+      "hybrid": "0.327",
       "vector": "0.000",
-      "bm25": "0.458",
+      "bm25": "0.673",
       "title": "0.500",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "pattern",
+      "match"
+    ]
+  },
+  {
+    "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
+    "text_preview": "This book presents a comprehensive philosophy of software design, emphasizing principles for managing complexity through effective problem decomposition, modular abstractions, information hiding, and ...",
+    "scores": {
+      "hybrid": "0.138",
+      "vector": "0.000",
+      "bm25": "0.462",
+      "title": "0.000",
+      "wordnet": "0.000"
+    },
+    "matched_concepts": [],
+    "expanded_terms": [
+      "pattern",
+      "match"
+    ]
+  },
+  {
+    "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
+    "text_preview": "Thinking in Systems is a posthumously edited primer by Donella H. Meadows that introduces foundational concepts of systems thinking, including system structures, behaviors, surprises, traps, leverage ...",
+    "scores": {
+      "hybrid": "0.096",
+      "vector": "0.000",
+      "bm25": "0.322",
+      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2982,7 +3096,7 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "entity": "Category",
       "identifier": "design patterns"
     },
-    "timestamp": "2025-11-28T17:55:08.748Z"
+    "timestamp": "2025-11-28T17:59:16.506Z"
   }
 }
 ```
