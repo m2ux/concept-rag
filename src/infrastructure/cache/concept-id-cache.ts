@@ -1,24 +1,36 @@
 /**
  * In-memory cache for bidirectional concept ID ↔ name mapping.
  * 
+ * **STATUS: OPTIONAL for runtime queries (since schema v7)**
+ * 
+ * With the introduction of derived `concept_names` fields in chunks and catalog tables,
+ * this cache is now **optional for most query-time operations**. Tools should:
+ * 1. First check if `chunk.conceptNames` or `doc.conceptNames` is populated
+ * 2. Only fall back to cache resolution for backward compatibility with older databases
+ * 
+ * **Primary use cases for this cache:**
+ * - Regeneration scripts (`scripts/rebuild_derived_names.ts`)
+ * - Backward compatibility with databases lacking derived name fields
+ * - Batch ID resolution during seeding operations
+ * 
  * Provides O(1) lookup performance for converting between database IDs
  * and human-readable concept names, eliminating the need for database queries.
  * 
  * Uses singleton pattern to ensure single source of truth across the application.
  * 
+ * @see {@link scripts/rebuild_derived_names.ts} - Uses cache for regeneration
+ * @see {@link docs/database-schema.md} - Derived fields documentation
+ * 
  * @example
  * ```typescript
- * const cache = ConceptIdCache.getInstance();
- * await cache.initialize(conceptRepository);
+ * // PREFERRED: Use derived field directly
+ * const conceptNames = chunk.conceptNames || [];
  * 
- * // Get ID from name
- * const id = cache.getId("API gateway");      // "123"
- * 
- * // Get name from ID
- * const name = cache.getName("123");          // "API gateway"
- * 
- * // Batch operations
- * const names = cache.getNames(["123", "456"]);   // ["API gateway", "microservices"]
+ * // FALLBACK: Use cache for backward compatibility
+ * if (conceptNames.length === 0 && chunk.conceptIds) {
+ *   const cache = ConceptIdCache.getInstance();
+ *   conceptNames = cache.getNames(chunk.conceptIds.map(String));
+ * }
  * ```
  */
 

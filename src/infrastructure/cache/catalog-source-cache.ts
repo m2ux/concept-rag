@@ -1,21 +1,34 @@
 /**
  * In-memory cache for catalog ID → source path mapping.
  * 
+ * **STATUS: OPTIONAL for concept lookups (since schema v7)**
+ * 
+ * With the introduction of derived `catalog_titles` field in the concepts table,
+ * this cache is now **optional for concept-to-source resolution**. Tools should:
+ * 1. First check if `concept.catalogTitles` is populated for document listings
+ * 2. Use this cache primarily for chunk → source resolution (chunks don't store source)
+ * 
+ * **Primary use cases for this cache:**
+ * - Resolving chunk.catalogId → source path (chunks don't store source)
+ * - Regeneration scripts (`scripts/rebuild_derived_names.ts`)
+ * - Backward compatibility with databases lacking derived name fields
+ * 
  * Provides O(1) lookup for resolving catalog IDs to source paths,
  * used when displaying chunk results (chunks no longer store source).
  * 
  * Uses singleton pattern to ensure single source of truth across the application.
  * 
+ * @see {@link scripts/rebuild_derived_names.ts} - Uses cache for regeneration
+ * @see {@link docs/database-schema.md} - Derived fields documentation
+ * 
  * @example
  * ```typescript
+ * // For concepts: PREFERRED - use derived field directly
+ * const sources = concept.catalogTitles || [];
+ * 
+ * // For chunks: still need cache (chunks don't store source)
  * const cache = CatalogSourceCache.getInstance();
- * await cache.initialize(catalogRepository);
- * 
- * // Get source from catalog ID
- * const source = cache.getSource(12345678);  // "/path/to/doc.pdf"
- * 
- * // Batch lookup
- * const sources = cache.getSources([123, 456, 789]);
+ * const source = cache.getSource(chunk.catalogId);
  * ```
  */
 

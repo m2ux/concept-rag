@@ -155,15 +155,23 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
     
     // Format chunks with enhanced metadata
     const conceptCache = ConceptIdCache.getInstance();
+    const sourceCache = CatalogSourceCache.getInstance();
     const chunks = result.chunks.map((e: EnrichedChunk) => {
-      // Resolve concept names from IDs for display
-      const conceptNames = e.chunk.conceptIds 
-        ? conceptCache.getNames(e.chunk.conceptIds.map(id => String(id))).slice(0, 10)
-        : [];
+      // Use derived concept_names if available, fallback to cache resolution
+      let conceptNames: string[];
+      if (e.chunk.conceptNames && e.chunk.conceptNames.length > 0 && e.chunk.conceptNames[0] !== '') {
+        // Use pre-populated derived field (new schema)
+        conceptNames = e.chunk.conceptNames.slice(0, 10);
+      } else if (e.chunk.conceptIds) {
+        // Fallback: resolve via cache (backward compatibility)
+        conceptNames = conceptCache.getNames(e.chunk.conceptIds.map(id => String(id))).slice(0, 10);
+      } else {
+        conceptNames = [];
+      }
       
       return {
         text: e.chunk.text,
-        source: CatalogSourceCache.getInstance().getSourceOrDefault(e.chunk.catalogId),
+        source: sourceCache.getSourceOrDefault(e.chunk.catalogId),
         page: e.pageNumber,
         concept_density: e.conceptDensity.toFixed(3),
         concepts: conceptNames,

@@ -139,12 +139,20 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
    * Pure presentation logic - converts domain model to MCP JSON format.
    */
   private formatMCPResponse(result: any) {
-    // Format chunk results - resolve concept names from IDs for display
+    // Format chunk results - use derived concept_names if available, fallback to cache
     const conceptCache = ConceptIdCache.getInstance();
     const formattedChunks = result.chunks.map((chunk: any) => {
-      const conceptNames = chunk.conceptIds 
-        ? conceptCache.getNames(chunk.conceptIds.map((id: number) => String(id)))
-        : [];
+      // Use derived concept_names if available, fallback to cache resolution
+      let conceptNames: string[];
+      if (chunk.conceptNames && chunk.conceptNames.length > 0 && chunk.conceptNames[0] !== '') {
+        // Use pre-populated derived field (new schema)
+        conceptNames = chunk.conceptNames;
+      } else if (chunk.conceptIds) {
+        // Fallback: resolve via cache (backward compatibility)
+        conceptNames = conceptCache.getNames(chunk.conceptIds.map((id: number) => String(id)));
+      } else {
+        conceptNames = [];
+      }
       
       return {
         text: chunk.text,

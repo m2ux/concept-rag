@@ -139,15 +139,22 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
     }
     
     // Format results for MCP response
-    // Use cache to resolve catalogId → source (chunks no longer store source)
+    // Use derived fields if available, fallback to cache resolution
     const sourceCache = CatalogSourceCache.getInstance();
     const conceptCache = ConceptIdCache.getInstance();
     // @ts-expect-error - Type narrowing limitation
     const formattedResults = result.value.map((r: Chunk) => {
-      // Resolve concept names from IDs for display
-      const conceptNames = r.conceptIds 
-        ? conceptCache.getNames(r.conceptIds.map(id => String(id)))
-        : [];
+      // Use derived concept_names if available, fallback to cache resolution
+      let conceptNames: string[];
+      if (r.conceptNames && r.conceptNames.length > 0 && r.conceptNames[0] !== '') {
+        // Use pre-populated derived field (new schema)
+        conceptNames = r.conceptNames;
+      } else if (r.conceptIds) {
+        // Fallback: resolve via cache (backward compatibility)
+        conceptNames = conceptCache.getNames(r.conceptIds.map(id => String(id)));
+      } else {
+        conceptNames = [];
+      }
       
       return {
         text: r.text,

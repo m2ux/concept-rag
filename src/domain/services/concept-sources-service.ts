@@ -178,10 +178,14 @@ export class ConceptSourcesService {
         foundConcepts.push(conceptInput);
         const concept = conceptOpt.value;
         
-        // Get sources from catalogIds (new schema) or legacy sources field
-        const sourcePaths: string[] = [];
-        if (concept.catalogIds && concept.catalogIds.length > 0) {
-          // New schema: look up catalog entries by ID to get source paths
+        // Get sources - use derived catalogTitles if available, fallback to ID lookup
+        let sourcePaths: string[] = [];
+        
+        if (concept.catalogTitles && concept.catalogTitles.length > 0 && concept.catalogTitles[0] !== '') {
+          // Use pre-computed derived field (new schema) - no catalog lookup needed
+          sourcePaths = concept.catalogTitles;
+        } else if (concept.catalogIds && concept.catalogIds.length > 0) {
+          // Fallback: look up catalog entries by ID to get source paths
           // Get all catalog entries to find by ID (ideally would use findById)
           const catalogResults = await this.catalogRepo.search({ 
             text: '', 

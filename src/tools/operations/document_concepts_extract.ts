@@ -94,14 +94,22 @@ OUTPUT FORMATS:
       // Take the best match
       const doc = results[0];
       
-      // Get concepts - either from conceptIds (new) or concepts field (legacy)
+      // Get concepts - use derived fields if available, fallback to cache resolution
       let primaryConcepts: string[] = [];
       let categories: string[] = [];
       let relatedConcepts: string[] = [];
       
-      if (doc.conceptIds && doc.conceptIds.length > 0 && this.conceptIdCache) {
-        // New format: resolve from IDs (convert to strings for cache lookup)
+      // Use derived concept_names if available (new schema)
+      if (doc.conceptNames && doc.conceptNames.length > 0 && doc.conceptNames[0] !== '') {
+        primaryConcepts = doc.conceptNames;
+      } else if (doc.conceptIds && doc.conceptIds.length > 0 && this.conceptIdCache) {
+        // Fallback: resolve from IDs via cache (backward compatibility)
         primaryConcepts = this.conceptIdCache.getNames(doc.conceptIds.map(id => String(id)));
+      }
+      
+      // Use derived category_names if available (new schema)
+      if (doc.categoryNames && doc.categoryNames.length > 0 && doc.categoryNames[0] !== '') {
+        categories = doc.categoryNames;
       }
       
       // Note: concepts string field was removed from Chunk model.
