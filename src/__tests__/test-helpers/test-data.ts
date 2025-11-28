@@ -38,7 +38,7 @@ export function createTestChunk(overrides?: Partial<Chunk>): Chunk {
  */
 export function createTestConcept(overrides?: Partial<Concept>): Concept {
   return {
-    concept: 'innovation',
+    name: 'innovation',
     catalogIds: [12345678, 87654321],
     adjacentIds: [11111111, 22222222, 33333333],
     relatedConcepts: ['creativity', 'disruption', 'change'],
@@ -110,7 +110,7 @@ export function createTestChunks(count: number, overrides?: Partial<Chunk>): Chu
 export function createTestConcepts(count: number, baseWord: string = 'concept'): Concept[] {
   return Array.from({ length: count }, (_, i) =>
     createTestConcept({
-      concept: `${baseWord}-${i + 1}`,
+      name: `${baseWord}-${i + 1}`,
       weight: 1.0 - (i * 0.1)
     })
   );

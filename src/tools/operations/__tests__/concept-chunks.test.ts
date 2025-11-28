@@ -41,12 +41,12 @@ describe('ConceptChunksTool', () => {
         createTestChunk({ id: 1002, concepts: ['innovation'], text: 'More innovation content' }),
         createTestChunk({ id: 1003, concepts: ['innovation'], text: 'Innovation everywhere' })
       ];
-      const testConcept = createTestConcept({ concept: 'innovation' });
+      const testConcept = createTestConcept({ name: 'innovation' });
       conceptRepo.addConcept(testConcept);
       testChunks.forEach(chunk => chunkRepo.addChunk(chunk));
       
       // EXERCISE
-      const result = await tool.execute({ concept: 'innovation', limit: 10 });
+      const result = await tool.execute({ name: 'innovation', limit: 10 });
       
       // VERIFY
       expect(result).toBeDefined();
@@ -69,12 +69,12 @@ describe('ConceptChunksTool', () => {
           text: `Test chunk ${i}`
         })
       );
-      const testConcept = createTestConcept({ concept: 'innovation' });
+      const testConcept = createTestConcept({ name: 'innovation' });
       conceptRepo.addConcept(testConcept);
       testChunks.forEach(chunk => chunkRepo.addChunk(chunk));
       
       // EXERCISE
-      const result = await tool.execute({ concept: 'testing', limit: 5 });
+      const result = await tool.execute({ name: 'testing', limit: 5 });
       
       // VERIFY
       const parsedContent = JSON.parse(result.content[0].text);
@@ -85,7 +85,7 @@ describe('ConceptChunksTool', () => {
       // SETUP - No concepts or chunks added
       
       // EXERCISE
-      const result = await tool.execute({ concept: 'nonexistent', limit: 10 });
+      const result = await tool.execute({ name: 'nonexistent', limit: 10 });
       
       // VERIFY
       const parsedContent = JSON.parse(result.content[0].text);
@@ -95,12 +95,12 @@ describe('ConceptChunksTool', () => {
     
     it('should handle concept with no matching chunks', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'innovation' });
+      const testConcept = createTestConcept({ name: 'innovation' });
       conceptRepo.addConcept(testConcept);
       // No chunks added
       
       // EXERCISE
-      const result = await tool.execute({ concept: 'orphan', limit: 10 });
+      const result = await tool.execute({ name: 'orphan', limit: 10 });
       
       // VERIFY
       const parsedContent = JSON.parse(result.content[0].text);
@@ -110,16 +110,16 @@ describe('ConceptChunksTool', () => {
     
     it('should be case-insensitive', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'innovation' });
+      const testConcept = createTestConcept({ name: 'innovation' });
       const testChunk = createTestChunk({ concepts: ['innovation'] });
       
       conceptRepo.addConcept(testConcept);
       chunkRepo.addChunk(testChunk);
       
       // EXERCISE - Search with different case
-      const result1 = await tool.execute({ concept: 'INNOVATION', limit: 10 });
-      const result2 = await tool.execute({ concept: 'Innovation', limit: 10 });
-      const result3 = await tool.execute({ concept: 'innovation', limit: 10 });
+      const result1 = await tool.execute({ name: 'INNOVATION', limit: 10 });
+      const result2 = await tool.execute({ name: 'Innovation', limit: 10 });
+      const result3 = await tool.execute({ name: 'innovation', limit: 10 });
       
       // VERIFY - All should return same results
       const content1 = JSON.parse(result1.content[0].text);
@@ -133,8 +133,8 @@ describe('ConceptChunksTool', () => {
     
     it('should filter chunks by concept correctly', async () => {
       // SETUP
-      const innovationConcept = createTestConcept({ concept: 'innovation' });
-      const creativityConcept = createTestConcept({ concept: 'creativity' });
+      const innovationConcept = createTestConcept({ name: 'innovation' });
+      const creativityConcept = createTestConcept({ name: 'creativity' });
       
       const chunks = [
         createTestChunk({ id: 1001, concepts: ['innovation'] }),
@@ -148,7 +148,7 @@ describe('ConceptChunksTool', () => {
       chunks.forEach(chunk => chunkRepo.addChunk(chunk));
       
       // EXERCISE
-      const result = await tool.execute({ concept: 'innovation', limit: 10 });
+      const result = await tool.execute({ name: 'innovation', limit: 10 });
       
       // VERIFY - Should only get chunks 1 and 3
       const parsedContent = JSON.parse(result.content[0].text);
@@ -163,17 +163,17 @@ describe('ConceptChunksTool', () => {
     it('should handle missing concept parameter gracefully', async () => {
       // EXERCISE & VERIFY
       await expect(
-        tool.execute({ concept: '', limit: 10 })
+        tool.execute({ name: '', limit: 10 })
       ).resolves.toBeDefined();
     });
     
     it('should handle negative limit', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'test' });
+      const testConcept = createTestConcept({ name: 'test' });
       conceptRepo.addConcept(testConcept);
       
       // EXERCISE
-      const result = await tool.execute({ concept: 'test', limit: -5 });
+      const result = await tool.execute({ name: 'test', limit: -5 });
       
       // VERIFY - Should return error due to validation
       expect(result.isError).toBe(true);
@@ -184,14 +184,14 @@ describe('ConceptChunksTool', () => {
     
     it('should handle very large limit', async () => {
       // SETUP
-      const testConcept = createTestConcept({ concept: 'test' });
+      const testConcept = createTestConcept({ name: 'test' });
       const testChunk = createTestChunk({ concepts: ['test'] });
       
       conceptRepo.addConcept(testConcept);
       chunkRepo.addChunk(testChunk);
       
       // EXERCISE
-      const result = await tool.execute({ concept: 'test', limit: 10000 });
+      const result = await tool.execute({ name: 'test', limit: 10000 });
       
       // VERIFY - Should return error due to validation (limit out of range)
       expect(result.isError).toBe(true);

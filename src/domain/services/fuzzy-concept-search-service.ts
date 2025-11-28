@@ -172,7 +172,7 @@ export class FuzzyConceptSearchService {
         const synonyms = parseArrayField(row.synonyms);
         
         // Get concept name and summary
-        const conceptName = row.concept || '';
+        const conceptName = row.name || row.concept || '';  // Support both 'name' (new) and 'concept' (legacy)
         const summary = row.summary || '';
         
         // Calculate individual scores using concept-specific fields

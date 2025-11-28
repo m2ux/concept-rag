@@ -68,7 +68,7 @@ describe('ConceptEnricher', () => {
       // SETUP
       const concepts: ConceptRecord[] = [
         {
-          concept: 'architecture',
+          name: 'architecture',
           catalog_ids: [12345678],
           related_concepts: [],
           embeddings: [0.1, 0.2, 0.3],
@@ -102,7 +102,7 @@ describe('ConceptEnricher', () => {
       // SETUP
       const concepts: ConceptRecord[] = [
         {
-          concept: 'testing',
+          name: 'testing',
           catalog_ids: [],
           related_concepts: [],
           embeddings: [],
@@ -135,7 +135,7 @@ describe('ConceptEnricher', () => {
       // SETUP
       const concepts: ConceptRecord[] = [
         {
-          concept: 'pattern',
+          name: 'pattern',
           catalog_ids: [],
           related_concepts: [],
           embeddings: [],
@@ -168,7 +168,7 @@ describe('ConceptEnricher', () => {
       // SETUP
       const concepts: ConceptRecord[] = [
         {
-          concept: 'design',
+          name: 'design',
           catalog_ids: [],
           related_concepts: [],
           embeddings: [],
@@ -201,7 +201,7 @@ describe('ConceptEnricher', () => {
       // SETUP
       const concepts: ConceptRecord[] = [
         {
-          concept: 'nonexistent concept',
+          name: 'nonexistent concept',
           catalog_ids: [],
           related_concepts: [],
           embeddings: [],
@@ -223,14 +223,14 @@ describe('ConceptEnricher', () => {
       // SETUP
       const concepts: ConceptRecord[] = [
         {
-          concept: 'error concept',
+          name: 'error concept',
           catalog_ids: [],
           related_concepts: [],
           embeddings: [],
           weight: 1
         },
         {
-          concept: 'valid concept',
+          name: 'valid concept',
           catalog_ids: [],
           related_concepts: [],
           embeddings: [],
@@ -276,14 +276,14 @@ describe('ConceptEnricher', () => {
       // SETUP
       const concepts: ConceptRecord[] = [
         {
-          concept: 'architecture',
+          name: 'architecture',
           catalog_ids: [],
           related_concepts: [],
           embeddings: [],
           weight: 10
         },
         {
-          concept: 'design',
+          name: 'design',
           catalog_ids: [],
           related_concepts: [],
           embeddings: [],
@@ -324,7 +324,7 @@ describe('ConceptEnricher', () => {
       // SETUP
       const concepts: ConceptRecord[] = [
         {
-          concept: 'test',
+          name: 'test',
           catalog_ids: [],
           related_concepts: [],
           embeddings: [],
@@ -356,7 +356,7 @@ describe('ConceptEnricher', () => {
     it('should enrich a single concept with WordNet data', async () => {
       // SETUP
       const concept: ConceptRecord = {
-        concept: 'architecture',
+        name: 'architecture',
         catalog_ids: [],
         related_concepts: [],
         embeddings: [],
@@ -388,7 +388,7 @@ describe('ConceptEnricher', () => {
     it('should handle concept not found in WordNet', async () => {
       // SETUP
       const concept: ConceptRecord = {
-        concept: 'nonexistent',
+        name: 'nonexistent',
         catalog_ids: [],
         related_concepts: [],
         embeddings: [],
@@ -405,7 +405,7 @@ describe('ConceptEnricher', () => {
     it('should handle errors gracefully', async () => {
       // SETUP
       const concept: ConceptRecord = {
-        concept: 'error concept',
+        name: 'error concept',
         catalog_ids: [],
         related_concepts: [],
         embeddings: [],
@@ -428,7 +428,7 @@ describe('ConceptEnricher', () => {
     it('should limit synonyms to top 5', async () => {
       // SETUP
       const concept: ConceptRecord = {
-        concept: 'test',
+        name: 'test',
         catalog_ids: [],
         related_concepts: [],
         embeddings: [],

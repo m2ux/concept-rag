@@ -120,7 +120,7 @@ export class FakeConceptRepository implements ConceptRepository {
   
   constructor(initialConcepts: Concept[] = []) {
     initialConcepts.forEach(concept => {
-      this.concepts.set(concept.concept.toLowerCase(), concept);
+      this.concepts.set(concept.name.toLowerCase(), concept);
       // Assuming concepts have an id property (will need to add if not)
       if ('id' in concept) {
         this.conceptsById.set((concept as any).id, concept);
@@ -162,7 +162,7 @@ export class FakeConceptRepository implements ConceptRepository {
     const queryLower = queryText.toLowerCase();
     const results = Array.from(this.concepts.values())
       .filter(concept => 
-        concept.concept.toLowerCase().includes(queryLower) ||
+        concept.name.toLowerCase().includes(queryLower) ||
         concept.synonyms?.some(s => s.toLowerCase().includes(queryLower))
       )
       .slice(0, limit);
@@ -176,7 +176,7 @@ export class FakeConceptRepository implements ConceptRepository {
   
   // Test helpers
   addConcept(concept: Concept): void {
-    this.concepts.set(concept.concept.toLowerCase(), concept);
+    this.concepts.set(concept.name.toLowerCase(), concept);
   }
   
   clear(): void {

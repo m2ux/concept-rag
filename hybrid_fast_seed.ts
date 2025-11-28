@@ -1583,7 +1583,7 @@ async function rebuildConceptIndexFromExistingData(
     
     // Add chunk_ids to concept records
     for (const record of conceptRecords) {
-        const conceptId = hashToId(record.concept);
+        const conceptId = hashToId(record.name);
         const chunkIds = conceptToChunkIds.get(conceptId) || [];
         record.chunk_ids = chunkIds;
     }
@@ -1597,7 +1597,7 @@ async function rebuildConceptIndexFromExistingData(
     
     // Add summaries to concept records
     for (const record of conceptRecords) {
-        const summary = conceptSummaries.get(record.concept.toLowerCase());
+        const summary = conceptSummaries.get(record.name.toLowerCase());
         if (summary) {
             record.summary = summary;
         }

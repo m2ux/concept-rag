@@ -88,7 +88,7 @@ export async function listConceptsInCategory(
         const concept = conceptOption.value;
         concepts.push({
           id: conceptId,
-          name: concept.concept,
+          name: concept.name,
           documentCount: concept.catalogIds?.length || 0,
           weight: concept.weight || 0
         });

@@ -79,7 +79,7 @@ export class ConceptIndexBuilder {
         
         if (!map.has(key)) {
             map.set(key, {
-                concept: key,
+                name: key,
                 catalog_ids: [],
                 related_concepts: [],
                 adjacent_ids: [],
@@ -210,7 +210,7 @@ export class ConceptIndexBuilder {
         
         const data = concepts.map((concept) => {
             // Generate hash-based integer ID from concept name (stable across rebuilds)
-            const conceptId = hashToId(concept.concept);
+            const conceptId = hashToId(concept.name);
             
             // Ensure array fields have at least one element for LanceDB type inference
             // Empty arrays cause "Cannot infer list vector from empty array" errors
@@ -221,7 +221,7 @@ export class ConceptIndexBuilder {
             
             return {
                 id: conceptId,  // Hash-based integer ID (stable)
-                concept: concept.concept,
+                name: concept.name,  // Renamed from 'concept' to 'name'
                 summary: concept.summary || '',  // LLM-generated summary
                 catalog_ids: ensureNonEmpty(concept.catalog_ids, 0),  // Native array of hash-based IDs
                 chunk_ids: ensureNonEmpty(concept.chunk_ids, 0),  // Chunk IDs for fast lookups  // Native array of hash-based IDs

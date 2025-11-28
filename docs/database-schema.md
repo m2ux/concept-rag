@@ -122,7 +122,7 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | `number` | Hash-based integer ID (FNV-1a of concept name) |
-| `concept` | `string` | Concept name (unique, lowercase, e.g., "dependency injection") |
+| `name` | `string` | Concept name (unique, lowercase, e.g., "dependency injection") |
 | `summary` | `string` | LLM-generated one-sentence summary of the concept |
 | `catalog_ids` | `number[]` | Native array of catalog entry integer IDs |
 | `chunk_ids` | `number[]` | Native array of chunk IDs where concept appears |
@@ -149,7 +149,7 @@ Two types of concept relationships:
 ```typescript
 {
   id: 3847293847,
-  concept: "clean architecture",
+  name: "clean architecture",
   summary: "A software design approach that separates concerns into layers...",
   catalog_ids: [1029384756, 2938475612],
   chunk_ids: [123456, 234567, 345678],
@@ -386,6 +386,7 @@ await chunksTable.createIndex("vector", {
 ### Concepts Table Changes
 | Change | Details |
 |--------|---------|
+| `concept` → `name` | Renamed for consistency |
 | `related_concept_ids` → `adjacent_ids` | Renamed for clarity (co-occurrence) |
 | `related_ids` | **Added** - Lexical links (shared words) |
 | `chunk_ids` | **Added** - Direct chunk references |

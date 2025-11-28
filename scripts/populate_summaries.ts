@@ -170,7 +170,7 @@ async function saveConceptsIncremental(
     const updatedSummary = updates.get(row.id);
     return {
       id: row.id,
-      concept: row.concept || '',
+      name: row.name || row.concept || '',  // Support both 'name' (new) and 'concept' (legacy)
       summary: updatedSummary ?? row.summary ?? '',
       catalog_ids: toNumberArray(row.catalog_ids),
       chunk_ids: toNumberArray(row.chunk_ids),

@@ -120,7 +120,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
     
     // Filter out the original concept and map to domain models
     return results
-      .filter((row: any) => row.concept.toLowerCase() !== conceptName.toLowerCase())
+      .filter((row: any) => (row.name || row.concept || '').toLowerCase() !== conceptName.toLowerCase())
       .slice(0, limit)
       .map((row: any) => this.mapRowToConcept(row));
   }
@@ -203,7 +203,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
     const relatedIds = parseArrayField<number>(row.related_ids);
     
     return {
-      concept: row.concept || '',
+      name: row.name || row.concept || '',  // Support both 'name' (new) and 'concept' (legacy)
       summary: row.summary || '',
       catalogIds,
       chunkIds,

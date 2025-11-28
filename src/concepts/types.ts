@@ -10,7 +10,7 @@ export type ConceptType = 'thematic' | 'terminology';
  * Concept record for building the concept index.
  */
 export interface ConceptRecord {
-    concept: string;
+    name: string;
     summary?: string;
     catalog_ids: number[];
     chunk_ids?: number[];

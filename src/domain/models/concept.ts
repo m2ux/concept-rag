@@ -10,7 +10,7 @@
  * @example
  * ```typescript
  * const concept: Concept = {
- *   concept: 'machine learning',
+ *   name: 'machine learning',
  *   catalogIds: [12345678, 87654321],
  *   adjacentIds: [11111111, 22222222],  // co-occurrence
  *   relatedIds: [33333333, 44444444],   // lexical links
@@ -25,7 +25,7 @@
  */
 export interface Concept {
   /** The concept name (e.g., 'dependency injection', 'REST API') */
-  concept: string;
+  name: string;
   
   /** LLM-generated one-sentence summary of the concept */
   summary?: string;

@@ -43,7 +43,7 @@ export interface IntegrationChunkData {
  */
 export interface IntegrationConceptData {
   id?: number; // Optional for LanceDB (auto-generated)
-  concept: string;
+  name: string;
   vector: number[];
   weight: number;
   
@@ -107,10 +107,10 @@ export function createIntegrationTestChunk(overrides?: Partial<IntegrationChunkD
  * @returns Concept data ready for LanceDB insertion
  */
 export function createIntegrationTestConcept(overrides?: Partial<IntegrationConceptData>): IntegrationConceptData {
-  const conceptName = overrides?.concept || 'clean architecture';
+  const conceptName = overrides?.name || 'clean architecture';
   const defaults: IntegrationConceptData = {
     id: hashToId(conceptName), // Hash-based ID for reliable cache lookups
-    concept: conceptName,
+    name: conceptName,
     vector: embeddingService.generateEmbedding(conceptName),
     weight: 0.85,
     catalog_ids: [12345678],
@@ -183,28 +183,28 @@ export function createStandardTestConcepts(): IntegrationConceptData[] {
   return [
     createIntegrationTestConcept(),
     createIntegrationTestConcept({
-      concept: 'repository pattern',
+      name: 'repository pattern',
       vector: embeddingService.generateEmbedding('repository pattern'),
       weight: 0.78,
       catalog_ids: [23456789],
       adjacent_ids: [44444444, 55555555, 66666666]
     }),
     createIntegrationTestConcept({
-      concept: 'dependency injection',
+      name: 'dependency injection',
       vector: embeddingService.generateEmbedding('dependency injection'),
       weight: 0.82,
       catalog_ids: [34567890],
       adjacent_ids: [77777777, 88888888, 99999999]
     }),
     createIntegrationTestConcept({
-      concept: 'solid principles',
+      name: 'solid principles',
       vector: embeddingService.generateEmbedding('solid principles'),
       weight: 0.90,
       catalog_ids: [45678901],
       adjacent_ids: [10101010, 20202020, 30303030]
     }),
     createIntegrationTestConcept({
-      concept: 'typescript',
+      name: 'typescript',
       vector: embeddingService.generateEmbedding('typescript'),
       weight: 0.75,
       catalog_ids: [56789012],

@@ -35,12 +35,12 @@ describe('ConceptSourcesTool', () => {
       catalogRepo.addDocument(createTestSearchResult({ id: 23456789, source: '/books/clean-code.pdf' }));
       
       const testConcept = createTestConcept({
-        concept: 'tdd',
+        name: 'tdd',
         catalogIds: [12345678, 23456789]
       });
       conceptRepo.addConcept(testConcept);
       
-      const result = await tool.execute({ concept: 'tdd' });
+      const result = await tool.execute({ name: 'tdd' });
       
       expect(result.isError).toBe(false);
       const parsed = JSON.parse(result.content[0].text);
@@ -51,7 +51,7 @@ describe('ConceptSourcesTool', () => {
     });
     
     it('should return empty array for not found concept', async () => {
-      const result = await tool.execute({ concept: 'nonexistent' });
+      const result = await tool.execute({ name: 'nonexistent' });
       
       expect(result.isError).toBe(false);
       const parsed = JSON.parse(result.content[0].text);
@@ -70,11 +70,11 @@ describe('ConceptSourcesTool', () => {
       catalogRepo.addDocument(createTestSearchResult({ id: 34567890, source: '/books/book-c.pdf' }));
       
       const concept1 = createTestConcept({
-        concept: 'tdd',
+        name: 'tdd',
         catalogIds: [12345678, 23456789]
       });
       const concept2 = createTestConcept({
-        concept: 'di',
+        name: 'di',
         catalogIds: [12345678, 23456789, 34567890]
       });
       conceptRepo.addConcept(concept1);
@@ -102,15 +102,15 @@ describe('ConceptSourcesTool', () => {
       catalogRepo.addDocument(createTestSearchResult({ id: 33333333, source: '/books/third-book.pdf' }));
       
       const concept1 = createTestConcept({
-        concept: 'first',
+        name: 'first',
         catalogIds: [11111111]
       });
       const concept2 = createTestConcept({
-        concept: 'second',
+        name: 'second',
         catalogIds: [22222222]
       });
       const concept3 = createTestConcept({
-        concept: 'third',
+        name: 'third',
         catalogIds: [33333333]
       });
       conceptRepo.addConcept(concept1);
@@ -135,7 +135,7 @@ describe('ConceptSourcesTool', () => {
       catalogRepo.addDocument(createTestSearchResult({ id: 12345678, source: '/books/exists-book.pdf' }));
       
       const testConcept = createTestConcept({
-        concept: 'exists',
+        name: 'exists',
         catalogIds: [12345678]
       });
       conceptRepo.addConcept(testConcept);
@@ -154,12 +154,12 @@ describe('ConceptSourcesTool', () => {
       catalogRepo.addDocument(createTestSearchResult({ id: 12345678, source: '/books/test-book.pdf' }));
       
       const testConcept = createTestConcept({
-        concept: 'test',
+        name: 'test',
         catalogIds: [12345678]
       });
       conceptRepo.addConcept(testConcept);
       
-      const result = await tool.execute({ concept: 'test' });
+      const result = await tool.execute({ name: 'test' });
       const parsed = JSON.parse(result.content[0].text);
       
       const source = parsed.results[0][0];
@@ -171,7 +171,7 @@ describe('ConceptSourcesTool', () => {
   
   describe('validation', () => {
     it('should reject empty concept string', async () => {
-      const result = await tool.execute({ concept: '' });
+      const result = await tool.execute({ name: '' });
       expect(result.isError).toBe(true);
     });
     

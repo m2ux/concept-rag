@@ -231,7 +231,7 @@ async function main() {
     
     return {
       id: row.id,
-      concept: row.concept,
+      name: row.name || row.concept,  // Support both 'name' (new) and 'concept' (legacy)
       summary: row.summary || '',
       catalog_ids: ensureNonEmpty(parseArray(row.catalog_ids), 0),
       chunk_ids: ensureNonEmpty(parseArray(row.chunk_ids), 0),
