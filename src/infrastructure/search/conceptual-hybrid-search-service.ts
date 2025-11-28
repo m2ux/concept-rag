@@ -103,16 +103,19 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     
     // Step 3: Score each result with all ranking signals
     const scoredResults = vectorResults.map((row: any) => {
+      // Get searchable text (chunks use 'text', catalog uses 'summary')
+      const searchableText = row.text || row.summary || '';
+      
       // Calculate individual scores
       const vectorScore = calculateVectorScore(row._distance || 0);
       const bm25Score = calculateWeightedBM25(
         expanded.all_terms,
         expanded.weights,
-        row.text || '',
+        searchableText,
         row.source || ''
       );
       const titleScore = calculateTitleScore(expanded.original_terms, row.source || '');
-      const wordnetScore = calculateWordNetBonus(expanded.wordnet_terms, row.text || '');
+      const wordnetScore = calculateWordNetBonus(expanded.wordnet_terms, searchableText);
       
       // Calculate hybrid score based on collection type
       // Chunks don't have meaningful titles - use chunk-specific scoring
@@ -149,7 +152,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       // Build enriched search result
       const result: SearchResult = {
         id: row.id || '',
-        text: row.text || '',
+        text: searchableText,  // Use text for chunks, summary for catalog
         source: row.source || '',  // Source document path
         catalogId: row.catalog_id || row.id || 0,
         hash: row.hash || '',
