@@ -1312,7 +1312,7 @@ async function createOptimizedIndex(
     }
 }
 
-async function processDocuments(rawDocs: Document[]) {
+async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpoint) {
     const docsBySource = rawDocs.reduce((acc: Record<string, Document[]>, doc: Document) => {
         const source = doc.metadata.source;
         if (!acc[source]) {
@@ -1326,6 +1326,9 @@ async function processDocuments(rawDocs: Document[]) {
     
     // Initialize concept extractor
     const conceptExtractor = new ConceptExtractor(process.env.OPENROUTER_API_KEY || '');
+    
+    // Track documents for checkpoint updates
+    const processedInThisRun: Array<{hash: string, source: string}> = [];
 
     for (const [source, docs] of Object.entries(docsBySource)) {
         // Use existing hash from document metadata if available (for consistency)
@@ -1388,13 +1391,16 @@ Categories: ${concepts.categories.join(', ')}
         
         catalogRecords.push(catalogRecord);
         
+        // Track for checkpoint update
+        processedInThisRun.push({ hash, source });
+        
         // Debug logging for OCR persistence troubleshooting
         if (process.env.DEBUG_OCR && isOcrProcessed) {
             console.log(`📝 Creating catalog record for OCR'd document: hash=${hash.slice(0, 8)}..., source=${sourceBasename}`);
         }
     }
 
-    return catalogRecords;
+    return { catalogRecords, processedInThisRun };
 }
 
 async function getDatabaseSize(dbPath: string): Promise<string> {
@@ -1919,7 +1925,7 @@ async function hybridFastSeed() {
     }
 
     console.log("🚀 Creating catalog with LLM summaries...");
-    const catalogRecords = await processDocuments(rawDocs);
+    const { catalogRecords, processedInThisRun } = await processDocuments(rawDocs, seedingCheckpoint);
     
     if (catalogRecords.length > 0) {
         console.log("📊 Creating catalog table with fast local embeddings...");
@@ -2045,6 +2051,15 @@ async function hybridFastSeed() {
         console.log(`📊 Creating ${newChunksToCreate.length} new chunks...`);
         // Pass sourceToCatalogIdMap so chunks get proper catalog_id foreign key
         await createLanceTableWithSimpleEmbeddings(db, newChunksToCreate, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined, sourceToCatalogIdMap);
+        
+        // Update checkpoint after chunks are written successfully
+        // This marks each document as fully processed (catalog + chunks)
+        console.log(`📋 Updating checkpoint for ${processedInThisRun.length} newly processed documents...`);
+        for (const { hash, source } of processedInThisRun) {
+            await seedingCheckpoint.markProcessed(hash, source, false);
+        }
+        await seedingCheckpoint.save();
+        console.log(`✅ Checkpoint updated`);
     }
     
     // Update existing chunks with new concept metadata
