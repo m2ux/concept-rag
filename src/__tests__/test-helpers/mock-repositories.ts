@@ -86,7 +86,6 @@ export class FakeChunkRepository implements ChunkRepository {
       vectorScore: 0.8,
       bm25Score: 0.7,
       titleScore: 0.5,
-      conceptScore: 0.6,
       wordnetScore: 0.4,
       hybridScore: 0.67
     };

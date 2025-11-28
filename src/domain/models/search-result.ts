@@ -30,7 +30,6 @@ import { Chunk } from './chunk.js';
  *   vectorScore: 0.85,
  *   bm25Score: 0.72,
  *   titleScore: 0.90,
- *   conceptScore: 0.68,
  *   wordnetScore: 0.45,
  *   hybridScore: 0.74, // Weighted combination
  *   
@@ -69,12 +68,6 @@ export interface SearchResult extends Chunk {
   /** Title/source matching score (0-1, higher = query appears in title) */
   titleScore: number;
   
-  /** 
-   * Concept alignment score (deprecated, always 0).
-   * @deprecated Use concept_search or concept_chunks tools instead.
-   */
-  conceptScore: number;
-  
   /** WordNet semantic expansion score (0-1, higher = more synonym matches) */
   wordnetScore: number;
   
@@ -82,6 +75,8 @@ export interface SearchResult extends Chunk {
    * Final hybrid score combining all signals (0-1, higher = more relevant).
    * 
    * Formula: `0.30*vector + 0.30*bm25 + 0.25*title + 0.15*wordnet`
+   * 
+   * Note: Concept scoring removed - use concept_search tool for concept-based discovery.
    */
   hybridScore: number;
   

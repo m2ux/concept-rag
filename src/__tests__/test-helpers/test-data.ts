@@ -63,7 +63,6 @@ export function createTestSearchResult(overrides?: Partial<SearchResult>): Searc
     vectorScore: 0.75,
     bm25Score: 0.8,
     titleScore: 0.5,
-    conceptScore: 0.9,
     wordnetScore: 0.6,
     hybridScore: 0.77,
     ...overrides

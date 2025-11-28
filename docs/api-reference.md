@@ -46,7 +46,7 @@ Search document summaries and metadata to discover relevant documents using sema
 
 **Returns:** Top 10 documents with:
 - Document summary/preview (first 200 chars)
-- Hybrid scores (vector, BM25, title, concept, wordnet)
+- Hybrid scores (vector, BM25, title, wordnet)
 - Matched concepts from `concept_names` field
 - Expanded search terms
 - Source path
@@ -107,8 +107,8 @@ Search across ALL document chunks using hybrid search (vector + BM25 + title + W
 ```
 
 **How It Works:**
-Same 5-signal hybrid scoring as `catalog_search`:
-- 25% Vector, 25% BM25, 20% Title, 20% Concept, 10% WordNet
+Same 4-signal hybrid scoring as `catalog_search`:
+- 30% Vector, 30% BM25, 25% Title, 15% WordNet
 
 ---
 

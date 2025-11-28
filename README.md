@@ -17,23 +17,22 @@ A powerful RAG MCP server that enables LLMs to interact with local PDF/EPUB docu
 
 The server provides **11 specialized MCP tools** organized into four categories:
 
-### Content Discovery
+### Content Analysis
 | Tool | Description                                       | Example Query |
 |------|---------------------------------------------------|---------------|
 | `catalog_search` | Fuzzy search documents by topic, title, or author | `"software architecture patterns"` |
-| `concept_search` | Fuzzy search concepts by name, meaning            | `"design patterns for loose coupling"` |
 | `broad_chunks_search` | Cross-document search (phrases, keywords, topics) | `"implementing dependency injection"` |
 | `chunks_search` | Search within a specific known document | `"SOLID principles"` + source path |
 | `category_search` | Browse documents by category/domain | `"software engineering"` |
+| `list_categories` | List all categories in your library | *(no query required)* |
 
-### Content Analysis
+### Concept Analysis
 | Tool | Description | Example Query |
 |------|-------------|---------------|
-| `concept_chunks` | Find chunks tagged with a concept | `"innovation"` → semantically-tagged results |
+| `concept_search` | Fuzzy search concepts by name, meaning            | `"design patterns for loose coupling"` |
 | `extract_concepts` | Export all concepts from a document | `"Clean Architecture"` |
 | `source_concepts` | Find documents where concept(s) appear (union) | `["TDD", "BDD"]` → all docs with either |
 | `concept_sources` | Get per-concept source lists (separate arrays) | `["TDD", "BDD"]` → sources for each |
-| `list_categories` | List all categories in your library | *(no query required)* |
 | `list_concepts_in_category` | Find concepts in a category | `"distributed systems"` |
 
 **📖 Full API documentation:** See [docs/api-reference.md](docs/api-reference.md) for complete parameter specs.

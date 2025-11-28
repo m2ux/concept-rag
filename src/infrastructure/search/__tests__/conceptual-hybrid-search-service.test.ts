@@ -163,7 +163,6 @@ describe('ConceptualHybridSearchService', () => {
       expect(result.vectorScore).toBeDefined();
       expect(result.bm25Score).toBeDefined();
       expect(result.titleScore).toBeDefined();
-      expect(result.conceptScore).toBeDefined();
       expect(result.wordnetScore).toBeDefined();
       expect(result.hybridScore).toBeDefined();
       expect(result.matchedConcepts).toBeDefined();
@@ -391,8 +390,6 @@ describe('ConceptualHybridSearchService', () => {
       expect(result.titleScore).toBeLessThanOrEqual(1.0);
 
       // Concept score should be calculated
-      expect(result.conceptScore).toBeGreaterThanOrEqual(0);
-      expect(result.conceptScore).toBeLessThanOrEqual(1.0);
 
       // WordNet score should be calculated
       expect(result.wordnetScore).toBeGreaterThanOrEqual(0);

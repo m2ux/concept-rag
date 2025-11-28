@@ -56,7 +56,6 @@ describe('ConceptSearchTool', () => {
         vectorScore: 0,
         bm25Score: 0,
         titleScore: 0,
-        conceptScore: 0,
         wordnetScore: 0,
         catalogId: catalogId
       };

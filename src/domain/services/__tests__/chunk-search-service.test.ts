@@ -78,7 +78,6 @@ describe('ChunkSearchService', () => {
           vectorScore: 0.8,
           bm25Score: 0.7,
           titleScore: 0.5,
-          conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.67,
           conceptIds: [1001]
@@ -112,7 +111,6 @@ describe('ChunkSearchService', () => {
           vectorScore: 0.8,
           bm25Score: 0.7,
           titleScore: 0.5,
-          conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.67,
           conceptIds: []
@@ -194,7 +192,6 @@ describe('ChunkSearchService', () => {
         vectorScore: 0.8,
         bm25Score: 0.7,
         titleScore: 0.5,
-        conceptScore: 0.6,
         wordnetScore: 0.4,
         hybridScore: 0.67,
         conceptIds: []

@@ -118,7 +118,6 @@ RETURNS: Top 10 documents with text previews, hybrid scores (including strong ti
         vector: r.vectorScore.toFixed(3),
         bm25: r.bm25Score.toFixed(3),
         title: r.titleScore.toFixed(3),
-        concept: r.conceptScore.toFixed(3),
         wordnet: r.wordnetScore.toFixed(3)
       },
       matched_concepts: r.matchedConcepts,

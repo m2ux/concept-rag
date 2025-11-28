@@ -194,7 +194,6 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       vectorScore: 0,
       bm25Score: 0,
       titleScore: 1.0,
-      conceptScore: 0,
       wordnetScore: 0
     };
   }

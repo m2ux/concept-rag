@@ -70,7 +70,6 @@ describe('CatalogSearchService', () => {
           vectorScore: 0.8,
           bm25Score: 0.7,
           titleScore: 0.9,
-          conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.72,
           conceptIds: [1001, 1002]
@@ -105,7 +104,6 @@ describe('CatalogSearchService', () => {
           vectorScore: 0.8,
           bm25Score: 0.7,
           titleScore: 0.5,
-          conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.67,
           conceptIds: []
@@ -120,7 +118,6 @@ describe('CatalogSearchService', () => {
           vectorScore: 0.7,
           bm25Score: 0.6,
           titleScore: 0.4,
-          conceptScore: 0.5,
           wordnetScore: 0.3,
           hybridScore: 0.58,
           conceptIds: []
@@ -204,7 +201,6 @@ describe('CatalogSearchService', () => {
         vectorScore: 0.8,
         bm25Score: 0.7,
         titleScore: 0.5,
-        conceptScore: 0.6,
         wordnetScore: 0.4,
         hybridScore: 0.67,
         conceptIds: []
@@ -236,7 +232,6 @@ describe('CatalogSearchService', () => {
         vectorScore: 0.8,
         bm25Score: 0.7,
         titleScore: 0.5,
-        conceptScore: 0.6,
         wordnetScore: 0.4,
         hybridScore: 0.67,
         conceptIds: []

@@ -190,7 +190,7 @@ describe('LanceDBCatalogRepository - Integration Tests', () => {
       expect(typeof doc.vectorScore).toBe('number');
       expect(typeof doc.bm25Score).toBe('number');
       expect(typeof doc.titleScore).toBe('number');
-      expect(typeof doc.conceptScore).toBe('number');
+      
       expect(typeof doc.wordnetScore).toBe('number');
     });
     
