@@ -122,7 +122,6 @@ RETURNS: Top 10 documents with text previews, hybrid scores (including strong ti
           title: r.titleScore.toFixed(3),
           wordnet: r.wordnetScore.toFixed(3)
         },
-        matched_concepts: r.matchedConcepts,
         expanded_terms: r.expandedTerms
       }));
     

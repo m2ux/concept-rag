@@ -123,7 +123,6 @@ RETURNS: Top 20 chunks ranked by hybrid scoring (40% vector, 40% BM25, 20% WordN
           bm25: r.bm25Score.toFixed(3),
           wordnet: r.wordnetScore.toFixed(3)
         },
-        matched_concepts: r.matchedConcepts,
         expanded_terms: r.expandedTerms
       }));
     
