@@ -1,6 +1,6 @@
 # MCP Tool Test Report - Detailed Output
 
-**Generated:** 2025-11-28T18:11:54.325Z
+**Generated:** 2025-11-28T18:13:05.657Z
 **Database:** ./test_db
 
 ---
@@ -3233,7 +3233,7 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "entity": "Category",
       "identifier": "design patterns"
     },
-    "timestamp": "2025-11-28T18:12:45.424Z"
+    "timestamp": "2025-11-28T18:13:57.486Z"
   }
 }
 ```
