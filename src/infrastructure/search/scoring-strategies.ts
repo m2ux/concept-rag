@@ -402,16 +402,32 @@ export function getMatchedConcepts(
   result: any
 ): string[] {
   try {
-    const metadata = result.concepts;
-    if (!metadata) return [];
+    // New schema: concept_names is a direct array field on the row
+    let allConcepts: string[] = [];
     
-    const allConcepts = metadata.primary_concepts || [];
+    if (result.concept_names) {
+      // Handle Arrow Vector or regular array
+      if (Array.isArray(result.concept_names)) {
+        allConcepts = result.concept_names;
+      } else if (typeof result.concept_names === 'object' && 'toArray' in result.concept_names) {
+        allConcepts = Array.from(result.concept_names.toArray());
+      }
+    }
+    // Legacy fallback: concepts.primary_concepts
+    else if (result.concepts?.primary_concepts) {
+      allConcepts = result.concepts.primary_concepts;
+    }
+    
+    if (allConcepts.length === 0) return [];
+    
     const matched: string[] = [];
     
     for (const queryConcept of expanded.all_terms) {
+      const queryLower = queryConcept.toLowerCase();
       for (const docConcept of allConcepts) {
-        if (docConcept.toLowerCase().includes(queryConcept) || 
-            queryConcept.includes(docConcept.toLowerCase())) {
+        if (!docConcept || docConcept === '') continue;
+        const docLower = docConcept.toLowerCase();
+        if (docLower.includes(queryLower) || queryLower.includes(docLower)) {
           matched.push(docConcept);
         }
       }

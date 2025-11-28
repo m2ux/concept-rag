@@ -402,7 +402,7 @@ async function main() {
         const report = await generateReport(container);
         
         // Write report to file
-        const reportPath = 'docs/mcp-tool-test-report.md';
+        const reportPath = '.ai/planning/2025-11-28-schema-redesign/mcp-tool-test-report.md';
         fs.writeFileSync(reportPath, report);
         
         console.log(`✅ Report written to ${reportPath}`);
