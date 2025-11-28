@@ -17,7 +17,6 @@
  *   catalogId: 12345678,
  *   hash: 'abc123',
  *   conceptIds: [11111111, 22222222],
- *   categoryIds: [33333333],
  *   embeddings: [0.1, 0.2, ...]
  * };
  * 
@@ -50,9 +49,6 @@ export interface Chunk {
   
   /** Hash-based concept IDs - primary authoritative field */
   conceptIds?: number[];
-  
-  /** Hash-based category IDs - primary authoritative field */
-  categoryIds?: number[];
   
   /** 384-dimensional vector embedding for semantic similarity search */
   embeddings?: number[];

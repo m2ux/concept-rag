@@ -25,7 +25,6 @@ export function createTestChunk(overrides?: Partial<Chunk>): Chunk {
     hash: 'abc123def456',
     concepts: ['innovation', 'creativity', 'software development'],
     conceptIds: [123456, 234567, 345678],
-    categoryIds: [111111, 222222, 333333],
     ...overrides
   };
 }

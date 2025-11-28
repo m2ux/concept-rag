@@ -30,7 +30,6 @@ describe('DocumentConceptsExtractTool', () => {
         text: 'Document about testing',
         concepts: ['testing', 'quality assurance', 'unit test', 'integration test'],
         conceptIds: [11111111, 22222222, 33333333, 44444444],
-        categoryIds: [55555555]
       });
       catalogRepo.addDocument(testDoc);
       
@@ -91,7 +90,6 @@ describe('DocumentConceptsExtractTool', () => {
         text: 'Document about testing',
         concepts: ['testing', 'unit test', 'tdd'],
         conceptIds: [11111111, 22222222, 33333333],
-        categoryIds: [44444444]
       });
       catalogRepo.addDocument(testDoc);
       
@@ -116,7 +114,6 @@ describe('DocumentConceptsExtractTool', () => {
         text: 'Document',
         concepts: ['testing'],
         conceptIds: [11111111],
-        categoryIds: [22222222]
       });
       catalogRepo.addDocument(testDoc);
       

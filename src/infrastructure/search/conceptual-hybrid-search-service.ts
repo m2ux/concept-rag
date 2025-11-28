@@ -142,7 +142,6 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         hash: row.hash || '',
         concepts: row.concepts,
         conceptIds: parseArrayField(row.concept_ids),
-        categoryIds: parseArrayField(row.category_ids),
         embeddings: row.vector || [],
         distance: row._distance || 0,
         vectorScore,

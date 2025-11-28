@@ -272,8 +272,6 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       expect(chunk.conceptIds).toBeDefined();
       expect(Array.isArray(chunk.conceptIds)).toBe(true);
       
-      expect(chunk.categoryIds).toBeDefined();
-      expect(Array.isArray(chunk.categoryIds)).toBe(true);
       
       // embeddings is optional, but if present should be array of correct dimension
       if (chunk.embeddings) {
@@ -295,7 +293,6 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       
       // ASSERT: ID-based array fields should be native arrays
       expect(Array.isArray(chunk.conceptIds)).toBe(true);
-      expect(Array.isArray(chunk.categoryIds)).toBe(true);
     });
   });
   

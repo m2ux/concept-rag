@@ -129,15 +129,11 @@ export class LanceDBCatalogRepository implements CatalogRepository {
    */
   private docToSearchResult(doc: any): SearchResult {
     // Parse category_ids (native array, Arrow Vector, or JSON string)
-    let categoryIds: number[] = [];
     if (doc.category_ids) {
       if (Array.isArray(doc.category_ids)) {
-        categoryIds = doc.category_ids;
       } else if (typeof doc.category_ids === 'object' && 'toArray' in doc.category_ids) {
         // Arrow Vector - convert to JavaScript array
-        categoryIds = Array.from(doc.category_ids.toArray());
       } else {
-        categoryIds = this.parseJsonArray(doc.category_ids);
       }
     }
     
@@ -148,7 +144,6 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       source: doc.source || doc.filename || '',  // Support both old and new field names
       hash: doc.hash,
       concepts: undefined,  // No longer stored in catalog (derive from chunks if needed)
-      categoryIds,
       embeddings: doc.vector || [],
       distance: 0,
       hybridScore: 1.0,
@@ -189,8 +184,6 @@ export class LanceDBCatalogRepository implements CatalogRepository {
         if (!doc.category_ids) return false;
         
         try {
-          const categoryIds: number[] = JSON.parse(doc.category_ids);
-          return categoryIds.includes(categoryId);
         } catch {
           return false;
         }

@@ -1061,10 +1061,10 @@ async function createLanceTableWithSimpleEmbeddings(
             baseData.text = doc.pageContent;
             // Extract page_number from loc.pageNumber (LangChain format) or direct field
             baseData.page_number = doc.metadata.page_number ?? doc.metadata.loc?.pageNumber ?? 1;
-            // ALWAYS include concept_ids and category_ids for chunks schema (LanceDB needs consistent schema)
+            // ALWAYS include concept_ids for chunks schema (LanceDB needs consistent schema)
             // Use placeholder [0] for empty arrays to enable LanceDB type inference
             baseData.concept_ids = [0];  // Will be overwritten below if concepts exist
-            baseData.category_ids = [0]; // Will be overwritten below if categories exist
+
         }
         
         // Add reserved bibliographic fields for catalog entries (for future use)
@@ -1078,20 +1078,23 @@ async function createLanceTableWithSimpleEmbeddings(
         
         // Add concept metadata if present (using native arrays)
         if (doc.metadata.concepts) {
-            // Extract categories and generate hash-based category IDs
-            let categories: string[] = [];
-            if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.categories) {
-                categories = doc.metadata.concepts.categories;
-            } else if (doc.metadata.concept_categories) {
-                categories = doc.metadata.concept_categories;
-            }
-            
-            if (categories.length > 0) {
-                // Generate hash-based category IDs (native array)
-                const categoryIds = categories.map((cat: string) => 
-                    categoryIdMap.get(cat) || hashToId(cat)
-                );
-                baseData.category_ids = categoryIds;
+            // Extract categories and generate hash-based category IDs (CATALOG ONLY)
+            // Chunks don't store category_ids - use catalog_id to lookup categories
+            if (isCatalog) {
+                let categories: string[] = [];
+                if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.categories) {
+                    categories = doc.metadata.concepts.categories;
+                } else if (doc.metadata.concept_categories) {
+                    categories = doc.metadata.concept_categories;
+                }
+                
+                if (categories.length > 0) {
+                    // Generate hash-based category IDs (native array)
+                    const categoryIds = categories.map((cat: string) => 
+                        categoryIdMap.get(cat) || hashToId(cat)
+                    );
+                    baseData.category_ids = categoryIds;
+                }
             }
             
             // Only add concept_ids to chunks, NOT catalog (concepts are derived from chunks)
@@ -1980,28 +1983,12 @@ async function hybridFastSeed() {
             // LanceDB doesn't support batch updates, so we need to delete and recreate
             // This is more efficient than individual updates for large batches
             const chunkIds = batch.map(c => c.metadata.chunkId);
-            // Build category ID map for this batch
-            const batchCategories = new Set<string>();
-            batch.forEach(doc => {
-                if (doc.metadata.concept_categories) {
-                    doc.metadata.concept_categories.forEach((cat: string) => batchCategories.add(cat));
-                }
-            });
-            const batchCategoryIdMap = buildCategoryIdMap(batchCategories);
             
             const chunkData = batch.map((doc, idx) => {
                 // Build concept IDs (native array)
                 let conceptIds: number[] = [];
                 if (doc.metadata.concepts && Array.isArray(doc.metadata.concepts) && doc.metadata.concepts.length > 0) {
                     conceptIds = doc.metadata.concepts.map((name: string) => hashToId(name));
-                }
-                
-                // Build category IDs (native array)
-                let categoryIds: number[] = [];
-                if (doc.metadata.concept_categories && doc.metadata.concept_categories.length > 0) {
-                    categoryIds = doc.metadata.concept_categories.map((cat: string) => 
-                        batchCategoryIdMap.get(cat) || hashToId(cat)
-                    );
                 }
                 
                 const data: any = {
@@ -2011,8 +1998,7 @@ async function hybridFastSeed() {
                     catalog_id: sourceToCatalogId.get(doc.metadata.source) || 0,
                     page_number: doc.metadata.page_number || 1,
                     vector: createSimpleEmbedding(doc.pageContent),
-                    concept_ids: conceptIds,
-                    category_ids: categoryIds
+                    concept_ids: conceptIds
                 };
                 
                 return data;

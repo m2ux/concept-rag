@@ -89,24 +89,24 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 | `hash` | `string` | Content hash for deduplication |
 | `vector` | `Float32Array` | 384-dimensional embedding |
 | `concept_ids` | `number[]` | Native array of concept integer IDs |
-| `category_ids` | `number[]` | Native array of category integer IDs |
 | `chunk_index` | `number` | Sequential index within document |
 | `page_number` | `number` | Page number in source document (from PDF loader) |
 | `concept_density` | `number` | Density of concepts in chunk (0-1) |
 
 > **Note:** The `source` field was removed in v4. Use `catalog_id` to lookup the source path from the catalog table. At runtime, use `CatalogSourceCache` for efficient `catalogId` → `source` resolution.
+> 
+> **Note:** The `category_ids` field was removed - use `catalog_id` → `catalog.category_ids` for category lookup.
 
 #### Example Record
 
 ```typescript
 {
   id: 2938475612,  // hash-based integer
-  catalog_id: 3847293847,  // REQUIRED - lookup source from catalog
+  catalog_id: 3847293847,  // REQUIRED - lookup source and categories from catalog
   text: "Clean architecture emphasizes separation of concerns...",
   hash: "def456",
   vector: Float32Array(384),
   concept_ids: [3847293847, 1928374652, 2837465928],
-  category_ids: [1847362847],
   chunk_index: 15,
   page_number: 15,  // directly from PDF loader
   concept_density: 0.75
@@ -238,7 +238,6 @@ Catalog (1) ──────< (N) Chunks       // One document has many chunks
 Catalog (1) ──────< (N) Pages        // One document has many pages (via catalog_id)
 Catalog (N) >─────< (N) Categories   // Documents belong to categories (via category_ids)
 Chunks (N) >──────< (N) Concepts     // Chunks tagged with concepts (via concept_ids)
-Chunks (N) >──────< (N) Categories   // Chunks tagged with categories (via category_ids)
 Pages (N) >───────< (N) Concepts     // Pages contain concepts (via concept_ids)
 Concepts (N) >────< (N) Catalog      // Concepts appear in documents (via catalog_ids)
 Concepts (N) >────< (N) Concepts     // Adjacent concepts (via adjacent_ids)
@@ -396,6 +395,7 @@ await chunksTable.createIndex("vector", {
 |--------|---------|
 | `source` | **Removed** - Use `catalog_id` to lookup source from catalog |
 | `loc` | **Removed** - Page info now in `page_number` directly |
+| `category_ids` | **Removed** - Use `catalog_id` → `catalog.category_ids` |
 | `catalog_id` | **Now required** - Foreign key to catalog table |
 | `page_number` | **Added** - Populated directly from PDF loader |
 | `concept_density` | **Restored** - For ranking |

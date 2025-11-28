@@ -196,19 +196,6 @@ export class LanceDBChunkRepository implements ChunkRepository {
     // Resolve concepts via cache (convert numeric IDs to strings for cache lookup)
     const concepts = this.conceptIdCache.getNames(conceptIds.map(id => String(id)));
     
-    // Parse category_ids (native array in normalized schema, JSON string in legacy, or Arrow Vector)
-    let categoryIds: number[] = [];
-    if (row.category_ids) {
-      if (Array.isArray(row.category_ids)) {
-        categoryIds = row.category_ids;
-      } else if (typeof row.category_ids === 'object' && row.category_ids !== null && 'toArray' in row.category_ids) {
-        // Arrow Vector - convert to JavaScript array
-        categoryIds = Array.from(row.category_ids.toArray());
-      } else if (typeof row.category_ids === 'string') {
-        // JSON string
-        categoryIds = parseJsonField<number>(row.category_ids);
-      }
-    }
     
     // Parse page_number directly (loc field removed in schema v4)
     let pageNumber: number | undefined;
@@ -229,7 +216,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
       hash: row.hash || '',
       concepts,  // Resolved from conceptIds for API compatibility
       conceptIds,
-      categoryIds,
+
       embeddings,  // May be undefined if no vector field found
       pageNumber,
       conceptDensity

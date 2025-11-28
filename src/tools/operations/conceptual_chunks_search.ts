@@ -146,7 +146,6 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
       source: sourceCache.getSourceOrDefault(r.catalogId, params.source),
       concepts: r.concepts || [],
       concept_ids: r.conceptIds || [],
-      category_ids: r.categoryIds || []
     }));
     
     return {
