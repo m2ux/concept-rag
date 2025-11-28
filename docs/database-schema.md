@@ -3,7 +3,7 @@
 **Last Updated:** 2025-11-28  
 **Database:** LanceDB (embedded vector database)  
 **Embedding Model:** all-MiniLM-L6-v2 (384 dimensions)  
-**Schema Version:** Normalized v3 (added pages table, lexical linking)
+**Schema Version:** Normalized v4 (source removed from chunks, catalogId required)
 
 ## Overview
 
@@ -73,7 +73,7 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | `number` | Hash-based integer ID (FNV-1a of source-hash-index) |
-| `catalog_id` | `number` | Hash-based catalog entry ID (foreign key) - use to lookup source |
+| `catalog_id` | `number` | **Required.** Hash-based catalog entry ID (foreign key to catalog) |
 | `text` | `string` | Chunk text content (typically 100-500 words) |
 | `hash` | `string` | Content hash for deduplication |
 | `loc` | `string` | JSON-stringified location metadata (page, offset) |
@@ -84,12 +84,14 @@ Concept-RAG uses a five-table normalized architecture optimized for concept-heav
 | `page_number` | `number` | Page number for hierarchical retrieval |
 | `concept_density` | `number` | Density of concepts in chunk (0-1) |
 
+> **Note:** The `source` field was removed in v4. Use `catalog_id` to lookup the source path from the catalog table. At runtime, use `CatalogSourceCache` for efficient `catalogId` → `source` resolution.
+
 #### Example Record
 
 ```typescript
 {
   id: 2938475612,  // hash-based integer
-  catalog_id: 3847293847,  // use to lookup source from catalog
+  catalog_id: 3847293847,  // REQUIRED - lookup source from catalog
   text: "Clean architecture emphasizes separation of concerns...",
   hash: "def456",
   loc: '{"pageNumber":15,"from":1200,"to":1850}',
@@ -356,6 +358,7 @@ await chunksTable.createIndex("vector", {
 | 2025-11-19 | Added categories table (four-table architecture) | ADR-0028 |
 | 2025-11-26 | Schema normalization (redundant field removal) | ADR-0043 |
 | 2025-11-28 | Added pages table, lexical linking (five-table architecture) | - |
+| 2025-11-28 | Removed `source` from chunks, `catalog_id` required | - |
 
 ---
 
@@ -381,8 +384,25 @@ await chunksTable.createIndex("vector", {
 ### Chunks Table Changes
 | Change | Details |
 |--------|---------|
+| `source` | **Removed** - Use `catalog_id` to lookup source from catalog |
+| `catalog_id` | **Now required** - Foreign key to catalog table |
 | `page_number` | **Added** - For hierarchical retrieval |
 | `concept_density` | **Restored** - For ranking |
+
+### Source Resolution (v4)
+
+With `source` removed from chunks, use the `CatalogSourceCache` for display:
+
+```typescript
+import { CatalogSourceCache } from './infrastructure/cache/catalog-source-cache.js';
+
+// Initialize once at startup
+const cache = CatalogSourceCache.getInstance();
+await cache.initialize(catalogRepo);
+
+// Resolve catalogId to source path
+const sourcePath = cache.getSource(chunk.catalogId);
+```
 
 ---
 
@@ -417,6 +437,7 @@ npx tsx scripts/validate_normalized_schema.ts ~/.concept_rag
 - [ADR-0043: Schema Normalization](architecture/adr0043-schema-normalization.md)
 - Domain Models: `src/domain/models/`
 - Schema Validators: `src/infrastructure/lancedb/utils/schema-validators.ts`
+- Source Cache: `src/infrastructure/cache/catalog-source-cache.ts`
 - Migration Script: `scripts/migrate_to_normalized_schema.ts`
 - Pages Seeding: `scripts/seed_pages_table.ts`
 - Lexical Linking: `scripts/link_related_concepts.ts`
