@@ -114,7 +114,7 @@ RETURNS: Top 10 documents with text previews, hybrid scores (including strong ti
       .filter((r: SearchResult) => r.hybridScore > 0)
       .map((r: SearchResult) => ({
         source: r.source,
-        text_preview: r.text.slice(0, 200) + '...',
+        summary: r.text,  // Full summary (not truncated)
         scores: {
           hybrid: r.hybridScore.toFixed(3),
           vector: r.vectorScore.toFixed(3),
