@@ -1,6 +1,6 @@
 # MCP Tool Test Report - Detailed Output
 
-**Generated:** 2025-11-28T17:25:40.722Z
+**Generated:** 2025-11-28T17:37:37.768Z
 **Database:** ./test_db
 
 ---
@@ -27,6 +27,7 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
   "concept": "military strategy",
   "concept_id": 455274635,
   "summary": "Systematic planning and conduct of armed conflict to achieve political objectives with minimal cost. In this document it encompasses deception, terrain exploitation, logistics, timing, force disposition, and unified command as methods to secure victory while preserving the state's resources and people.",
+  "match_score": "0.953",
   "related_concepts": [],
   "synonyms": [
     ""
@@ -72,6 +73,7 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
   "concept": "software architecture",
   "concept_id": 3503213995,
   "summary": "High-level organization of a software system describing components, their relationships, and interaction protocols. The text shows how patterns help architects structure subsystems, reduce coupling, and evolve frameworks by capturing recurrent collaboration strategies.",
+  "match_score": "0.965",
   "related_concepts": [],
   "synonyms": [
     ""
@@ -117,6 +119,7 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
   "concept": "feedback loop",
   "concept_id": 2255290044,
   "summary": "A feedback loop is a causal chain where a stock influences flows that in turn change that same stock, closing the loop. The book emphasizes feedback loops as the primary mechanism by which systems generate characteristic behaviors like regulation, growth, oscillation, and collapse.",
+  "match_score": "0.979",
   "related_concepts": [],
   "synonyms": [
     ""
@@ -185,6 +188,7 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
   "concept": "decorator pattern",
   "concept_id": 3086272672,
   "summary": "A wrapper object that presents the same interface as a wrapped object to add behavior, often producing many small shallow classes. The author acknowledges decorators’ usefulness but warns of overuse, recommending composition or combining buffering-like defaults into core classes when the feature is universally needed.",
+  "match_score": "0.957",
   "related_concepts": [],
   "synonyms": [
     ""
@@ -310,57 +314,6 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
       "state of war",
       "hostility"
     ]
-  },
-  {
-    "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.265",
-      "vector": "-0.883",
-      "bm25": "0.000",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "war",
-      "state of war",
-      "hostility"
-    ]
-  },
-  {
-    "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.271",
-      "vector": "-0.904",
-      "bm25": "0.000",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "war",
-      "state of war",
-      "hostility"
-    ]
-  },
-  {
-    "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.273",
-      "vector": "-0.911",
-      "bm25": "0.000",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "war",
-      "state of war",
-      "hostility"
-    ]
   }
 ]
 ```
@@ -387,57 +340,6 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
       "vector": "-0.488",
       "bm25": "0.369",
       "title": "1.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "architecture",
-      "computer architecture",
-      "structure"
-    ]
-  },
-  {
-    "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.158",
-      "vector": "-0.526",
-      "bm25": "0.000",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "architecture",
-      "computer architecture",
-      "structure"
-    ]
-  },
-  {
-    "source": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.169",
-      "vector": "-0.562",
-      "bm25": "0.000",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "architecture",
-      "computer architecture",
-      "structure"
-    ]
-  },
-  {
-    "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.177",
-      "vector": "-0.592",
-      "bm25": "0.000",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -479,54 +381,6 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
       "system",
       "plan of action"
     ]
-  },
-  {
-    "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.228",
-      "vector": "-0.759",
-      "bm25": "0.000",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "system",
-      "plan of action"
-    ]
-  },
-  {
-    "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.233",
-      "vector": "-0.776",
-      "bm25": "0.000",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "system",
-      "plan of action"
-    ]
-  },
-  {
-    "source": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.242",
-      "vector": "-0.806",
-      "bm25": "0.000",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "system",
-      "plan of action"
-    ]
   }
 ]
 ```
@@ -553,54 +407,6 @@ Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet
       "vector": "-0.520",
       "bm25": "0.458",
       "title": "0.500",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "pattern",
-      "match"
-    ]
-  },
-  {
-    "source": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.208",
-      "vector": "-0.692",
-      "bm25": "0.000",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "pattern",
-      "match"
-    ]
-  },
-  {
-    "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.208",
-      "vector": "-0.693",
-      "bm25": "0.000",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "pattern",
-      "match"
-    ]
-  },
-  {
-    "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
-    "text_preview": "...",
-    "scores": {
-      "hybrid": "-0.218",
-      "vector": "-0.728",
-      "bm25": "0.000",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -640,7 +446,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.117",
       "vector": "-0.161",
       "bm25": "0.454",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -664,7 +469,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.111",
       "vector": "-0.136",
       "bm25": "0.413",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -688,7 +492,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.091",
       "vector": "-0.197",
       "bm25": "0.424",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -712,7 +515,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.087",
       "vector": "-0.199",
       "bm25": "0.415",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -736,7 +538,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.066",
       "vector": "-0.273",
       "bm25": "0.438",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -760,7 +561,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.048",
       "vector": "-0.292",
       "bm25": "0.411",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -784,7 +584,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.046",
       "vector": "-0.316",
       "bm25": "0.432",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -808,7 +607,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.035",
       "vector": "-0.283",
       "bm25": "0.370",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -832,7 +630,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.032",
       "vector": "-0.178",
       "bm25": "0.258",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -856,7 +653,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.027",
       "vector": "-0.349",
       "bm25": "0.416",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -880,7 +676,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.020",
       "vector": "-0.373",
       "bm25": "0.423",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -904,7 +699,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.016",
       "vector": "-0.367",
       "bm25": "0.407",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -928,7 +722,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.009",
       "vector": "-0.385",
       "bm25": "0.408",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -952,7 +745,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.005",
       "vector": "-0.291",
       "bm25": "0.304",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -976,7 +768,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.003",
       "vector": "-0.361",
       "bm25": "0.367",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -1000,104 +791,7 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.000",
       "vector": "-0.326",
       "bm25": "0.271",
-      "title": "0.000",
       "wordnet": "0.111"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "military",
-      "strategy",
-      "victory",
-      "armed forces",
-      "armed services",
-      "military machine",
-      "war machine",
-      "force",
-      "military science",
-      "triumph"
-    ]
-  },
-  {
-    "text": "is the negation of civil order!\"  The unpalatable fact remains, however, that\neven Imperial wishes must be subordinated to military necessity.]",
-    "source": "",
-    "scores": {
-      "hybrid": "-0.002",
-      "vector": "-0.358",
-      "bm25": "0.352",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "military",
-      "strategy",
-      "victory",
-      "armed forces",
-      "armed services",
-      "military machine",
-      "war machine",
-      "force",
-      "military science",
-      "triumph"
-    ]
-  },
-  {
-    "text": "[Ts`ao Kung's note is, freely translated:   \"The military sphere and the\ncivil  sphere  are  wholly  distinct;  you  can't  handle  an  army  in  kid  gloves.\"\nAnd Chang Yu says:   \"Humanity and justice are the principles on which to\ngovern a state, but not an army;  opportunism and flexibility,  on the other\nhand,  are military rather than civil virtues to assimilate the governing of an\narmy\"--to that of a State, understood.]",
-    "source": "",
-    "scores": {
-      "hybrid": "-0.007",
-      "vector": "-0.373",
-      "bm25": "0.356",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "military",
-      "strategy",
-      "victory",
-      "armed forces",
-      "armed services",
-      "military machine",
-      "war machine",
-      "force",
-      "military science",
-      "triumph"
-    ]
-  },
-  {
-    "text": "military  classic,\"  and  Wang  Hsi,    \"an  old  book  on  war.\"    Considering  the\nenormous  amount  of  fighting  that  had  gone  on  for  centuries  before  Sun\nTzu's time between the various kingdoms and principalities of China, it is\nnot  in  itself  improbable  that  a  collection  of  military  maxims  should  have\nbeen made and written down at some earlier period.]\nOn the field of battle,\n     [Implied, though not actually in the Chinese.]",
-    "source": "",
-    "scores": {
-      "hybrid": "-0.008",
-      "vector": "-0.378",
-      "bm25": "0.358",
-      "title": "0.000",
-      "wordnet": "0.000"
-    },
-    "matched_concepts": [],
-    "expanded_terms": [
-      "military",
-      "strategy",
-      "victory",
-      "armed forces",
-      "armed services",
-      "military machine",
-      "war machine",
-      "force",
-      "military science",
-      "triumph"
-    ]
-  },
-  {
-    "text": "and    'a  spear'  (cessation  of  hostilities).    Military  prowess  is  seen  in  the\nrepression   of   cruelty,  the calling in of   weapons,   the preservation of the",
-    "source": "",
-    "scores": {
-      "hybrid": "-0.015",
-      "vector": "-0.383",
-      "bm25": "0.346",
-      "title": "0.000",
-      "wordnet": "0.000"
     },
     "matched_concepts": [],
     "expanded_terms": [
@@ -1138,7 +832,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.165",
       "vector": "-0.076",
       "bm25": "0.438",
-      "title": "0.000",
       "wordnet": "0.100"
     },
     "matched_concepts": [],
@@ -1162,7 +855,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.163",
       "vector": "0.017",
       "bm25": "0.391",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -1186,7 +878,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.150",
       "vector": "-0.025",
       "bm25": "0.400",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -1210,7 +901,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.149",
       "vector": "-0.065",
       "bm25": "0.437",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -1234,7 +924,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.148",
       "vector": "-0.035",
       "bm25": "0.255",
-      "title": "0.000",
       "wordnet": "0.300"
     },
     "matched_concepts": [],
@@ -1258,7 +947,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.142",
       "vector": "-0.091",
       "bm25": "0.445",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -1282,7 +970,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.138",
       "vector": "-0.053",
       "bm25": "0.399",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -1306,7 +993,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.135",
       "vector": "0.030",
       "bm25": "0.257",
-      "title": "0.000",
       "wordnet": "0.100"
     },
     "matched_concepts": [],
@@ -1330,7 +1016,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.130",
       "vector": "-0.002",
       "bm25": "0.227",
-      "title": "0.000",
       "wordnet": "0.200"
     },
     "matched_concepts": [],
@@ -1354,7 +1039,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.128",
       "vector": "-0.044",
       "bm25": "0.365",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -1378,7 +1062,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.120",
       "vector": "-0.011",
       "bm25": "0.260",
-      "title": "0.000",
       "wordnet": "0.100"
     },
     "matched_concepts": [],
@@ -1402,7 +1085,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.119",
       "vector": "-0.053",
       "bm25": "0.252",
-      "title": "0.000",
       "wordnet": "0.200"
     },
     "matched_concepts": [],
@@ -1426,7 +1108,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.119",
       "vector": "-0.013",
       "bm25": "0.260",
-      "title": "0.000",
       "wordnet": "0.100"
     },
     "matched_concepts": [],
@@ -1450,7 +1131,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.097",
       "vector": "-0.035",
       "bm25": "0.227",
-      "title": "0.000",
       "wordnet": "0.100"
     },
     "matched_concepts": [],
@@ -1474,7 +1154,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.097",
       "vector": "-0.032",
       "bm25": "0.224",
-      "title": "0.000",
       "wordnet": "0.100"
     },
     "matched_concepts": [],
@@ -1498,7 +1177,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.094",
       "vector": "-0.039",
       "bm25": "0.273",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -1522,7 +1200,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.093",
       "vector": "-0.053",
       "bm25": "0.285",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -1546,7 +1223,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.089",
       "vector": "-0.063",
       "bm25": "0.286",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -1570,7 +1246,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.088",
       "vector": "-0.046",
       "bm25": "0.216",
-      "title": "0.000",
       "wordnet": "0.100"
     },
     "matched_concepts": [],
@@ -1594,7 +1269,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.086",
       "vector": "-0.065",
       "bm25": "0.231",
-      "title": "0.000",
       "wordnet": "0.100"
     },
     "matched_concepts": [],
@@ -1636,7 +1310,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.288",
       "vector": "0.005",
       "bm25": "0.515",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -1658,7 +1331,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.286",
       "vector": "-0.025",
       "bm25": "0.540",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -1680,7 +1352,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.277",
       "vector": "0.003",
       "bm25": "0.490",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -1702,7 +1373,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.270",
       "vector": "-0.023",
       "bm25": "0.498",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -1724,7 +1394,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.270",
       "vector": "0.020",
       "bm25": "0.454",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -1746,7 +1415,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.264",
       "vector": "-0.061",
       "bm25": "0.521",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -1768,7 +1436,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.254",
       "vector": "-0.095",
       "bm25": "0.531",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -1790,7 +1457,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.252",
       "vector": "-0.078",
       "bm25": "0.508",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -1812,7 +1478,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.248",
       "vector": "-0.058",
       "bm25": "0.478",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -1834,7 +1499,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.234",
       "vector": "-0.051",
       "bm25": "0.436",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -1856,7 +1520,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.221",
       "vector": "0.041",
       "bm25": "0.413",
-      "title": "0.000",
       "wordnet": "0.200"
     },
     "matched_concepts": [],
@@ -1878,7 +1541,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.220",
       "vector": "0.013",
       "bm25": "0.438",
-      "title": "0.000",
       "wordnet": "0.200"
     },
     "matched_concepts": [],
@@ -1900,7 +1562,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.204",
       "vector": "-0.007",
       "bm25": "0.317",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -1922,7 +1583,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.199",
       "vector": "0.089",
       "bm25": "0.309",
-      "title": "0.000",
       "wordnet": "0.200"
     },
     "matched_concepts": [],
@@ -1944,7 +1604,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.198",
       "vector": "0.113",
       "bm25": "0.282",
-      "title": "0.000",
       "wordnet": "0.200"
     },
     "matched_concepts": [],
@@ -1966,7 +1625,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.193",
       "vector": "-0.039",
       "bm25": "0.422",
-      "title": "0.000",
       "wordnet": "0.200"
     },
     "matched_concepts": [],
@@ -1988,7 +1646,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.189",
       "vector": "0.024",
       "bm25": "0.348",
-      "title": "0.000",
       "wordnet": "0.200"
     },
     "matched_concepts": [],
@@ -2010,7 +1667,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.189",
       "vector": "0.026",
       "bm25": "0.346",
-      "title": "0.000",
       "wordnet": "0.200"
     },
     "matched_concepts": [],
@@ -2032,7 +1688,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.178",
       "vector": "-0.090",
       "bm25": "0.336",
-      "title": "0.000",
       "wordnet": "0.400"
     },
     "matched_concepts": [],
@@ -2054,7 +1709,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.172",
       "vector": "0.037",
       "bm25": "0.292",
-      "title": "0.000",
       "wordnet": "0.200"
     },
     "matched_concepts": [],
@@ -2094,7 +1748,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.259",
       "vector": "0.161",
       "bm25": "0.488",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2118,7 +1771,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.228",
       "vector": "0.081",
       "bm25": "0.488",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2142,7 +1794,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.220",
       "vector": "0.033",
       "bm25": "0.516",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2166,7 +1817,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.201",
       "vector": "-0.003",
       "bm25": "0.505",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2190,7 +1840,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.185",
       "vector": "-0.015",
       "bm25": "0.477",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2214,7 +1863,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.172",
       "vector": "-0.020",
       "bm25": "0.450",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2238,7 +1886,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.153",
       "vector": "-0.124",
       "bm25": "0.506",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2262,7 +1909,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.146",
       "vector": "-0.100",
       "bm25": "0.465",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2286,7 +1932,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.145",
       "vector": "-0.109",
       "bm25": "0.471",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2310,7 +1955,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.144",
       "vector": "-0.121",
       "bm25": "0.481",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2334,7 +1978,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.143",
       "vector": "-0.128",
       "bm25": "0.485",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2358,7 +2001,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.140",
       "vector": "-0.106",
       "bm25": "0.456",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2382,7 +2024,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.135",
       "vector": "-0.136",
       "bm25": "0.474",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2406,7 +2047,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.135",
       "vector": "-0.151",
       "bm25": "0.489",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2430,7 +2070,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.133",
       "vector": "-0.124",
       "bm25": "0.457",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2454,7 +2093,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.131",
       "vector": "-0.152",
       "bm25": "0.479",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2478,7 +2116,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.129",
       "vector": "-0.117",
       "bm25": "0.439",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2502,7 +2139,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.128",
       "vector": "-0.139",
       "bm25": "0.459",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2526,7 +2162,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.128",
       "vector": "-0.156",
       "bm25": "0.476",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -2550,7 +2185,6 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "hybrid": "0.127",
       "vector": "-0.063",
       "bm25": "0.379",
-      "title": "0.000",
       "wordnet": "0.000"
     },
     "matched_concepts": [],
@@ -3256,7 +2890,7 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "entity": "Category",
       "identifier": "design patterns"
     },
-    "timestamp": "2025-11-28T17:26:28.633Z"
+    "timestamp": "2025-11-28T17:38:26.066Z"
   }
 }
 ```
