@@ -107,8 +107,8 @@ Search across ALL document chunks using hybrid search (vector + BM25 + title + W
 ```
 
 **How It Works:**
-Same 4-signal hybrid scoring as `catalog_search`:
-- 30% Vector, 30% BM25, 25% Title, 15% WordNet
+Uses 3-signal hybrid scoring optimized for text passages:
+- 40% Vector, 40% BM25, 20% WordNet (title scoring excluded for chunks)
 
 ---
 

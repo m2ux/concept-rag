@@ -10,7 +10,8 @@ import {
   calculateWeightedBM25,
   calculateTitleScore,
   calculateWordNetBonus,
-  calculateHybridScore,
+  calculateCatalogHybridScore,
+  calculateChunkHybridScore,
   getMatchedConcepts,
   type ExpandedQuery
 } from './scoring-strategies.js';
@@ -111,16 +112,16 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         row.source || ''
       );
       const titleScore = calculateTitleScore(expanded.original_terms, row.source || '');
-      // Concept scoring removed - use concept_search tool instead
       const wordnetScore = calculateWordNetBonus(expanded.wordnet_terms, row.text || '');
       
-      // Calculate hybrid score
-      const hybridScore = calculateHybridScore({
-        vectorScore,
-        bm25Score,
-        titleScore,
-        wordnetScore
-      });
+      // Calculate hybrid score based on collection type
+      // Chunks don't have meaningful titles - use chunk-specific scoring
+      const collectionName = collection.getName().toLowerCase();
+      const isChunkSearch = collectionName.includes('chunk');
+      
+      const hybridScore = isChunkSearch
+        ? calculateChunkHybridScore({ vectorScore, bm25Score, titleScore, wordnetScore })
+        : calculateCatalogHybridScore({ vectorScore, bm25Score, titleScore, wordnetScore });
       
       // Parse array fields (may be Arrow Vectors from LanceDB)
       const parseArrayField = (value: any): number[] => {

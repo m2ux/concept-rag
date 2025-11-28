@@ -237,26 +237,54 @@ export function calculateWordNetBonus(
 }
 
 /**
- * Calculate final hybrid score from component scores.
+ * Calculate hybrid score for catalog/document search.
  * 
- * Applies weighted combination of all scoring signals:
+ * Applies weighted combination optimized for document discovery:
  * - 30% Vector similarity (semantic understanding)
  * - 30% BM25 (keyword relevance)
- * - 25% Title matching (document relevance)
+ * - 25% Title matching (document title/filename relevance)
  * - 15% WordNet (semantic enrichment)
- * 
- * Note: Concept scoring removed - use concept_search tool for concept-based discovery.
  * 
  * @param components - Individual score components
  * @returns Final hybrid score from 0.0 to 1.0
  */
-export function calculateHybridScore(components: ScoreComponents): number {
+export function calculateCatalogHybridScore(components: ScoreComponents): number {
   return (
     (components.vectorScore * 0.30) +
     (components.bm25Score * 0.30) +
     (components.titleScore * 0.25) +
     (components.wordnetScore * 0.15)
   );
+}
+
+/**
+ * Calculate hybrid score for chunk search.
+ * 
+ * Applies weighted combination optimized for text passage retrieval:
+ * - 40% Vector similarity (semantic understanding - primary signal)
+ * - 40% BM25 (keyword relevance - critical for specific terms)
+ * - 20% WordNet (semantic enrichment)
+ * 
+ * Note: Title scoring excluded - chunks don't have meaningful titles.
+ * The catalog_title field is for display only, not relevance ranking.
+ * 
+ * @param components - Individual score components (titleScore ignored)
+ * @returns Final hybrid score from 0.0 to 1.0
+ */
+export function calculateChunkHybridScore(components: ScoreComponents): number {
+  return (
+    (components.vectorScore * 0.40) +
+    (components.bm25Score * 0.40) +
+    (components.wordnetScore * 0.20)
+  );
+}
+
+/**
+ * Calculate hybrid score (legacy - defaults to catalog scoring).
+ * @deprecated Use calculateCatalogHybridScore or calculateChunkHybridScore instead
+ */
+export function calculateHybridScore(components: ScoreComponents): number {
+  return calculateCatalogHybridScore(components);
 }
 
 /**
