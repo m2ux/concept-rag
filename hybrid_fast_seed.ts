@@ -1120,10 +1120,15 @@ async function createLanceTableWithSimpleEmbeddings(
             if (!isCatalog) {
                 let chunkConceptNames: string[] = [];
                 // Check Array.isArray FIRST since arrays are also objects
+                // Handle both old (string[]) and new (ExtractedConcept[]) formats
                 if (Array.isArray(doc.metadata.concepts)) {
-                    chunkConceptNames = doc.metadata.concepts;
+                    chunkConceptNames = doc.metadata.concepts.map((c: any) => 
+                        typeof c === 'string' ? c : (c.name || '')
+                    ).filter((n: string) => n);
                 } else if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.primary_concepts) {
-                    chunkConceptNames = doc.metadata.concepts.primary_concepts;
+                    chunkConceptNames = doc.metadata.concepts.primary_concepts.map((c: any) => 
+                        typeof c === 'string' ? c : (c.name || '')
+                    ).filter((n: string) => n);
                 }
                 
                 if (chunkConceptNames.length > 0) {
@@ -1140,9 +1145,12 @@ async function createLanceTableWithSimpleEmbeddings(
             // Populate concept_names and category_names for catalog (DERIVED fields)
             if (isCatalog && doc.metadata.concepts) {
                 // Extract primary concepts for concept_names
+                // Handle both old (string[]) and new (ExtractedConcept[]) formats
                 let catalogConceptNames: string[] = [];
                 if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.primary_concepts) {
-                    catalogConceptNames = doc.metadata.concepts.primary_concepts;
+                    catalogConceptNames = doc.metadata.concepts.primary_concepts.map((c: any) => 
+                        typeof c === 'string' ? c : (c.name || '')
+                    ).filter((n: string) => n);
                 }
                 if (catalogConceptNames.length > 0) {
                     // Store concept_ids and concept_names together
@@ -1331,11 +1339,16 @@ async function processDocuments(rawDocs: Document[]) {
             console.log(`⚠️  Continuing with empty concepts for this document`);
         }
         
+        // Extract concept names for display (handle both string[] and ExtractedConcept[] formats)
+        const conceptNames = concepts.primary_concepts.map((c: any) => 
+            typeof c === 'string' ? c : (c.name || '')
+        ).filter((n: string) => n);
+        
         // Include concepts in the embedded content for better vector search
         const enrichedContent = `
 ${contentOverview}
 
-Key Concepts: ${concepts.primary_concepts.join(', ')}
+Key Concepts: ${conceptNames.join(', ')}
 Categories: ${concepts.categories.join(', ')}
 `.trim();
         

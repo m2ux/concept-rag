@@ -187,8 +187,12 @@ export class ConceptIndexBuilder {
             if (!metadata) continue;
             
             // Collect all terms from this document
+            // Handle both string and ExtractedConcept formats
             const allTerms = (metadata.primary_concepts || [])
-                .map(t => t.toLowerCase().trim())
+                .map(t => {
+                    const name = typeof t === 'string' ? t : (t.name || '');
+                    return name.toLowerCase().trim();
+                })
                 .filter(t => t);
             
             // Count co-occurrences (undirected graph)

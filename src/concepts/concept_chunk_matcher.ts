@@ -1,5 +1,12 @@
 import { Document } from "@langchain/core/documents";
-import { ConceptMetadata, ChunkWithConcepts } from "./types.js";
+import { ConceptMetadata, ChunkWithConcepts, ExtractedConcept } from "./types.js";
+
+/**
+ * Extract concept name from either a string or ExtractedConcept object
+ */
+function getConceptName(concept: string | ExtractedConcept): string {
+    return typeof concept === 'string' ? concept : (concept.name || '');
+}
 
 /**
  * Matches document-level concepts to individual chunks
@@ -21,9 +28,11 @@ export class ConceptChunkMatcher {
         const matchedCategories = new Set<string>();
         
         // Check primary concepts (fuzzy matching)
+        // Handle both string and ExtractedConcept formats
         for (const concept of documentConcepts.primary_concepts || []) {
-            if (this.conceptMatchesText(concept, chunkLower, 0.7)) {
-                matchedConcepts.add(concept);
+            const conceptName = getConceptName(concept);
+            if (conceptName && this.conceptMatchesText(conceptName, chunkLower, 0.7)) {
+                matchedConcepts.add(conceptName);
             }
         }
         
