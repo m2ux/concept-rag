@@ -203,7 +203,7 @@ function validateArgs() {
         console.error("  --resume: Resume from checkpoint (skip already processed documents)");
         console.error("  --clean-checkpoint: Clear checkpoint and start fresh");
         console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
-        console.error("  --max-docs N: Limit processing to first N documents (useful for testing)");
+        console.error("  --max-docs N: Process at most N NEW documents (skips already processed, enables batching)");
         process.exit(1);
     }
     
@@ -795,13 +795,7 @@ async function loadDocumentsWithErrorHandling(
         
         const supportedExtensions = loaderFactory.getSupportedExtensions();
         console.log(`🔍 Recursively scanning ${filesDir} for document files (${supportedExtensions.join(', ')})...`);
-        let documentFiles = await findDocumentFilesRecursively(filesDir, supportedExtensions);
-        
-        // Apply --max-docs limit if specified
-        if (maxDocs && maxDocs > 0 && documentFiles.length > maxDocs) {
-            console.log(`📊 Limiting to first ${maxDocs} of ${documentFiles.length} documents (--max-docs)`);
-            documentFiles = documentFiles.slice(0, maxDocs);
-        }
+        const documentFiles = await findDocumentFilesRecursively(filesDir, supportedExtensions);
         
         if (!skipExistsCheck && catalogTable) {
             console.log(`📊 Processing ${documentFiles.length} documents...`);
@@ -809,7 +803,14 @@ async function loadDocumentsWithErrorHandling(
             console.log(`📚 Found ${documentFiles.length} document files`);
         }
         
-        for (const docFile of documentFiles) {
+        // Track newly processed count for --max-docs (skipped docs don't count)
+        let newlyProcessedCount = 0;
+        if (maxDocs && maxDocs > 0) {
+            console.log(`📊 Will process up to ${maxDocs} NEW documents (--max-docs), skipping already processed`);
+        }
+        
+        // Use labeled loop so we can break from nested try/catch
+        documentLoop: for (const docFile of documentFiles) {
             const relativePath = path.relative(filesDir, docFile);
             
             // Calculate hash first (available for all cases)
@@ -969,6 +970,13 @@ async function loadDocumentsWithErrorHandling(
                     contentInfo = `${docs.length} docs`;
                 }
                 console.log(`  📥[${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
+                
+                // Check --max-docs limit (only counts newly processed, not skipped)
+                newlyProcessedCount++;
+                if (maxDocs && maxDocs > 0 && newlyProcessedCount >= maxDocs) {
+                    console.log(`\n📊 Reached --max-docs limit (${maxDocs}). Stopping document loading.`);
+                    break documentLoop;
+                }
             } catch (error: any) {
                 const errorMsg = error?.message || String(error);
                 const fileExt = path.extname(docFile).toLowerCase();
@@ -998,6 +1006,13 @@ async function loadDocumentsWithErrorHandling(
                             if (success) {
                                 console.log(`✅ ${hashDisplay} ${truncateFilePath(relativePath)} (${totalPages} pages, ${totalChars} chars, OCR)`);
                                 ocrSuccessful = true;
+                                
+                                // Check --max-docs limit for OCR success
+                                newlyProcessedCount++;
+                                if (maxDocs && maxDocs > 0 && newlyProcessedCount >= maxDocs) {
+                                    console.log(`\n📊 Reached --max-docs limit (${maxDocs}). Stopping document loading.`);
+                                    break documentLoop;
+                                }
                             } else {
                                 console.log(`⚠️ ${hashDisplay} ${truncateFilePath(relativePath)} (OCR: low quality text extracted)`);
                             }
