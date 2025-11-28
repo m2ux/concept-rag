@@ -172,7 +172,10 @@ console.log = (...args: any[]) => {
     }
 };
 
-const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume", "with-wordnet"]});
+const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {
+    boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume", "with-wordnet"],
+    string: ["dbpath", "filesdir", "max-docs"]
+});
 
 const databaseDir = argv["dbpath"] || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag");
 const filesDir = argv["filesdir"];
@@ -181,6 +184,7 @@ const rebuildConcepts = argv["rebuild-concepts"];
 const autoReseed = argv["auto-reseed"];
 const cleanCheckpoint = argv["clean-checkpoint"];
 const resumeMode = argv["resume"];
+const maxDocs = argv["max-docs"] ? parseInt(argv["max-docs"], 10) : undefined;
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
 function validateArgs() {
@@ -199,6 +203,7 @@ function validateArgs() {
         console.error("  --resume: Resume from checkpoint (skip already processed documents)");
         console.error("  --clean-checkpoint: Clear checkpoint and start fresh");
         console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
+        console.error("  --max-docs N: Limit processing to first N documents (useful for testing)");
         process.exit(1);
     }
     
@@ -211,6 +216,9 @@ function validateArgs() {
     console.log(`🔄 Overwrite mode: ${overwrite}`);
     if (resumeMode) {
         console.log(`🔄 Resume mode: enabled`);
+    }
+    if (maxDocs) {
+        console.log(`📊 Max documents: ${maxDocs}`);
     }
 }
 
@@ -787,7 +795,13 @@ async function loadDocumentsWithErrorHandling(
         
         const supportedExtensions = loaderFactory.getSupportedExtensions();
         console.log(`🔍 Recursively scanning ${filesDir} for document files (${supportedExtensions.join(', ')})...`);
-        const documentFiles = await findDocumentFilesRecursively(filesDir, supportedExtensions);
+        let documentFiles = await findDocumentFilesRecursively(filesDir, supportedExtensions);
+        
+        // Apply --max-docs limit if specified
+        if (maxDocs && maxDocs > 0 && documentFiles.length > maxDocs) {
+            console.log(`📊 Limiting to first ${maxDocs} of ${documentFiles.length} documents (--max-docs)`);
+            documentFiles = documentFiles.slice(0, maxDocs);
+        }
         
         if (!skipExistsCheck && catalogTable) {
             console.log(`📊 Processing ${documentFiles.length} documents...`);
