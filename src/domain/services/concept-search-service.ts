@@ -45,6 +45,12 @@ export interface SourceWithPages {
   
   /** Text previews from relevant chunks */
   pagePreviews: string[];
+  
+  /** How this document matched: 'primary' (direct concept) or 'related' (via related concept) */
+  matchType: 'primary' | 'related';
+  
+  /** If matchType is 'related', the concept that linked to this document */
+  viaConcept?: string;
 }
 
 /**
@@ -225,17 +231,54 @@ export class ConceptSearchService {
       conceptId = hashToId(matchedConcept.name.toLowerCase().trim());
     }
     
-    const totalDocuments = catalogIds.length;
+    // 2. Expand to include documents from related concepts
+    // Build a map of catalogId → { matchType, viaConcept }
+    const catalogSourceMap = new Map<number, { matchType: 'primary' | 'related'; viaConcept?: string }>();
     
-    // 2. Build sources from catalogIds
+    // Add primary concept's documents
+    for (const catId of catalogIds) {
+      catalogSourceMap.set(catId, { matchType: 'primary' });
+    }
+    
+    // Look up related concepts and add their documents
+    const relatedConceptNames = conceptData.relatedConcepts || [];
+    for (const relatedName of relatedConceptNames) {
+      if (!relatedName) continue;
+      
+      // Find the related concept
+      const relatedOpt = await this.conceptRepo.findByName(relatedName);
+      if (isSome(relatedOpt)) {
+        const relatedConcept = relatedOpt.value;
+        const relatedCatalogIds = relatedConcept.catalogIds || [];
+        
+        // Add related concept's documents (if not already from primary)
+        for (const catId of relatedCatalogIds) {
+          if (!catalogSourceMap.has(catId)) {
+            catalogSourceMap.set(catId, { matchType: 'related', viaConcept: relatedName });
+          }
+        }
+      }
+    }
+    
+    // Get all unique catalog IDs (primary first, then related)
+    const allCatalogIds = Array.from(catalogSourceMap.keys());
+    const primaryIds = allCatalogIds.filter(id => catalogSourceMap.get(id)?.matchType === 'primary');
+    const relatedIds = allCatalogIds.filter(id => catalogSourceMap.get(id)?.matchType === 'related');
+    const orderedCatalogIds = [...primaryIds, ...relatedIds];
+    
+    const totalDocuments = orderedCatalogIds.length;
+    
+    // 3. Build sources from catalogIds
     const sources: SourceWithPages[] = [];
     const enrichedChunks: EnrichedChunk[] = [];
     let totalChunks = 0;
     
     // Limit to maxSources
-    const limitedCatalogIds = catalogIds.slice(0, maxSources);
+    const limitedCatalogIds = orderedCatalogIds.slice(0, maxSources);
     
     for (const catalogId of limitedCatalogIds) {
+      const sourceInfo = catalogSourceMap.get(catalogId)!;
+      
       // Get document metadata
       const catalogOpt = await this.catalogRepo.findById(catalogId);
       const source = isSome(catalogOpt) && catalogOpt.value.source 
@@ -247,9 +290,14 @@ export class ConceptSearchService {
       const docChunks = await this.chunkRepo.findByCatalogId(catalogId, 100);
       totalChunks += docChunks.length;
       
-      // Filter to chunks with this concept
+      // For primary matches, filter to chunks with primary concept
+      // For related matches, filter to chunks with the related concept
+      const targetConceptId = sourceInfo.matchType === 'primary' 
+        ? conceptId 
+        : hashToId((sourceInfo.viaConcept || '').toLowerCase().trim());
+      
       const conceptChunks = docChunks
-        .filter(chunk => chunk.conceptIds?.includes(conceptId))
+        .filter(chunk => chunk.conceptIds?.includes(targetConceptId))
         .slice(0, chunksPerSource);
       
       // Collect page numbers from chunks
@@ -261,7 +309,9 @@ export class ConceptSearchService {
         source,
         title,
         pageNumbers,
-        pagePreviews: conceptChunks.slice(0, 3).map(c => c.text.substring(0, 200))
+        pagePreviews: conceptChunks.slice(0, 3).map(c => c.text.substring(0, 200)),
+        matchType: sourceInfo.matchType,
+        viaConcept: sourceInfo.viaConcept
       });
       
       // Enrich chunks with hierarchical metadata

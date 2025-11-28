@@ -1,6 +1,6 @@
 # MCP Tool Test Report - Detailed Output
 
-**Generated:** 2025-11-28T17:58:24.953Z
+**Generated:** 2025-11-28T18:11:54.325Z
 **Database:** ./test_db
 
 ---
@@ -28,7 +28,11 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
   "concept_id": 455274635,
   "summary": "Systematic planning and conduct of armed conflict to achieve political objectives with minimal cost. In this document it encompasses deception, terrain exploitation, logistics, timing, force disposition, and unified command as methods to secure victory while preserving the state's resources and people.",
   "match_score": "0.953",
-  "related_concepts": [],
+  "related_concepts": [
+    "strategy pattern",
+    "ui controller as strategy",
+    "strategy as template parameter"
+  ],
   "synonyms": [
     ""
   ],
@@ -42,15 +46,74 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
     {
       "title": "Sun Tzu - Art Of War",
       "source": "sample-docs/Philosophy/Sun Tzu - Art Of War.pdf",
-      "pages": []
+      "pages": [],
+      "match_type": "primary"
+    },
+    {
+      "title": "Design Patterns Elements of Reusable Object-Oriented - Gamma, Erich;Helm, Richard;Johnson, Ralph E ;Vlissides, John - Uttar Pradesh, India, 2016 - 9780201633610 - 2121300da35565356b45a1b90df80e9d - Anna’s Archive",
+      "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
+      "pages": [
+        10,
+        16
+      ],
+      "match_type": "related",
+      "via_concept": "strategy pattern"
     }
   ],
-  "chunks": [],
+  "chunks": [
+    {
+      "text": "problems. Somepeople read the catalog through first and then use aproblem-directed \napproach to apply the patterns to their projects. \nIf you aren't an experienced object-oriented designer, then start withthe simplest \nand most common patterns: \n• Abstract Factory (page 99) \n• Adapter (157) \n• Composite (183) \n• Decorator (196) \n• Factory Method (121) \n• Observer (326) \n• Strategy (349) \n• Template Method (360) \nIt's hard to find an object-oriented system that doesn't use at leasta couple",
+      "title": "Design Patterns Elements of Reusable Object-Oriented",
+      "page": 10,
+      "concept_density": "2.133",
+      "concepts": [
+        "design pattern",
+        "pattern template",
+        "related patterns",
+        "abstract factory",
+        "factory method",
+        "adapter pattern",
+        "composite pattern",
+        "decorator pattern",
+        "observer pattern",
+        "strategy pattern"
+      ]
+    },
+    {
+      "text": "to replace the algorithm either statically or dynamically, when you have a lot \nof variants of the algorithm, or when the algorithm has complex data structures \nthat you want to encapsulate. \nMVC uses other design patterns, such as Factory Method (121) to specify the default \ncontroller class for a view and Decorator (196) to add scrolling to a view. But \nthe main relationships in MVC are given by the Observer, Composite, and Strategy \ndesign patterns. \nDescribing Design Patterns",
+      "title": "Design Patterns Elements of Reusable Object-Oriented",
+      "page": 16,
+      "concept_density": "1.667",
+      "concepts": [
+        "design pattern",
+        "related patterns",
+        "abstract factory",
+        "factory method",
+        "composite pattern",
+        "decorator pattern",
+        "observer pattern",
+        "strategy pattern",
+        "mvc",
+        "border decorator"
+      ]
+    },
+    {
+      "text": "a different kind of controller. It's even possible to change a view's controller \nat run-time to let the view change the way it responds to user input. For example, \na view can be disabled so that it doesn't accept input simply by giving it a \ncontroller that ignores input events. \nThe View-Controller relationship is an example of the Strategy (349) design pattern. \nA Strategy is an object that represents an algorithm. It's useful when you want",
+      "title": "Design Patterns Elements of Reusable Object-Oriented",
+      "page": 16,
+      "concept_density": "0.395",
+      "concepts": [
+        "design pattern",
+        "strategy pattern",
+        "pattern interrelationships"
+      ]
+    }
+  ],
   "stats": {
-    "total_documents": 1,
-    "total_chunks": 100,
-    "sources_returned": 1,
-    "chunks_returned": 0
+    "total_documents": 2,
+    "total_chunks": 200,
+    "sources_returned": 2,
+    "chunks_returned": 3
   }
 }
 ```
@@ -74,7 +137,10 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
   "concept_id": 3503213995,
   "summary": "High-level organization of a software system describing components, their relationships, and interaction protocols. The text shows how patterns help architects structure subsystems, reduce coupling, and evolve frameworks by capturing recurrent collaboration strategies.",
   "match_score": "0.965",
-  "related_concepts": [],
+  "related_concepts": [
+    "complexity software",
+    "software reuse mechanisms"
+  ],
   "synonyms": [
     ""
   ],
@@ -88,15 +154,55 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
     {
       "title": "Design Patterns Elements of Reusable Object-Oriented - Gamma, Erich;Helm, Richard;Johnson, Ralph E ;Vlissides, John - Uttar Pradesh, India, 2016 - 9780201633610 - 2121300da35565356b45a1b90df80e9d - Anna’s Archive",
       "source": "sample-docs/Programming/_Design Patterns_ Elements of Reusable Object-Oriented -- Gamma, Erich;Helm, Richard;Johnson, Ralph E_;Vlissides, John -- Uttar Pradesh, India, 2016 -- 9780201633610 -- 2121300da35565356b45a1b90df80e9d -- Anna’s Archive.pdf",
-      "pages": []
+      "pages": [],
+      "match_type": "primary"
+    },
+    {
+      "title": "Clean Architecture A Craftsman's Guide to Software - Robert C Martin - Robert C Martin Series, 1st Edition, September 10, 2017 - Pearson - 9780134494166 - 29f880be2248b1d30f3d956a037bb366 - Anna’s Archive",
+      "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
+      "pages": [
+        12,
+        13,
+        14
+      ],
+      "match_type": "related",
+      "via_concept": "complexity software"
     }
   ],
-  "chunks": [],
+  "chunks": [
+    {
+      "text": "complexity.  This  book is  an  opinion piece, so  some readers will disagree\nwith some of  my suggestions. If  you do disagree, try to  understand why.\nI’m interested in  hearing about things that work for you, things that don’t\nwork, and any other ideas you may have about software design. I hope that\nthe ensuing conversations will improve our collective understanding of\nsoftware design.  I  will incorporate what I  learn in  future editions of  this\nbook.",
+      "title": "Clean Architecture A Craftsman's Guide to Software",
+      "page": 12,
+      "concept_density": "0.133",
+      "concepts": [
+        "complexity software"
+      ]
+    },
+    {
+      "text": "Chapter 1\nIntroduction\n(It’s All About Complexity)\nWriting computer software is one of the purest creative activities in the\nhistory of the human race. Programmers aren’t  bound by  practical\nlimitations such  as the laws of physics; we can create exciting virtual\nworlds with behaviors that could never exist in the real world.\nProgramming doesn’t require great physical skill or coordination, like ballet\nor basketball. All programming requires is a creative mind and the ability to",
+      "title": "Clean Architecture A Craftsman's Guide to Software",
+      "page": 14,
+      "concept_density": "0.133",
+      "concepts": [
+        "complexity software"
+      ]
+    },
+    {
+      "text": "If for some reason the software-design-book Google Group should disappear\nin the future, search on the Web for my home page; it will contain updated\ninstructions for how to  communicate about the book. Please don’t  send\nbook-related email to my personal email address.\nI recommend that you take the suggestions in this book with a grain of\nsalt. The overall goal is to reduce complexity; this is more important than\nany particular principle or idea you read here. If you try an idea from this",
+      "title": "Clean Architecture A Craftsman's Guide to Software",
+      "page": 13,
+      "concept_density": "0.118",
+      "concepts": [
+        "complexity software"
+      ]
+    }
+  ],
   "stats": {
-    "total_documents": 1,
-    "total_chunks": 100,
-    "sources_returned": 1,
-    "chunks_returned": 0
+    "total_documents": 2,
+    "total_chunks": 200,
+    "sources_returned": 2,
+    "chunks_returned": 3
   }
 }
 ```
@@ -120,7 +226,17 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
   "concept_id": 2255290044,
   "summary": "A feedback loop is a causal chain where a stock influences flows that in turn change that same stock, closing the loop. The book emphasizes feedback loops as the primary mechanism by which systems generate characteristic behaviors like regulation, growth, oscillation, and collapse.",
   "match_score": "0.979",
-  "related_concepts": [],
+  "related_concepts": [
+    "balancing feedback",
+    "reinforcing feedback",
+    "delays in feedback",
+    "supply and demand as feedback",
+    "externalities and missing feedback",
+    "feedback-rich monitoring",
+    "feedback loops",
+    "delayed feedback effects",
+    "supply-demand feedback"
+  ],
   "synonyms": [
     ""
   ],
@@ -136,7 +252,8 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
       "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
       "pages": [
         1
-      ]
+      ],
+      "match_type": "primary"
     }
   ],
   "chunks": [
@@ -189,7 +306,18 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
   "concept_id": 3086272672,
   "summary": "A wrapper object that presents the same interface as a wrapped object to add behavior, often producing many small shallow classes. The author acknowledges decorators’ usefulness but warns of overuse, recommending composition or combining buffering-like defaults into core classes when the feature is universally needed.",
   "match_score": "0.957",
-  "related_concepts": [],
+  "related_concepts": [
+    "border decorator",
+    "generic containers anti-pattern",
+    "undo history pattern",
+    "consumption pattern analysis",
+    "design pattern",
+    "pattern template",
+    "pattern naming",
+    "builder pattern",
+    "prototype pattern",
+    "singleton pattern"
+  ],
   "synonyms": [
     ""
   ],
@@ -203,7 +331,8 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
     {
       "title": "Clean Architecture A Craftsman's Guide to Software - Robert C Martin - Robert C Martin Series, 1st Edition, September 10, 2017 - Pearson - 9780134494166 - 29f880be2248b1d30f3d956a037bb366 - Anna’s Archive",
       "source": "sample-docs/Programming/Clean Architecture_ A Craftsman's Guide to Software -- Robert C_ Martin -- Robert C_ Martin Series, 1st Edition, September 10, 2017 -- Pearson -- 9780134494166 -- 29f880be2248b1d30f3d956a037bb366 -- Anna’s Archive.pdf",
-      "pages": []
+      "pages": [],
+      "match_type": "primary"
     },
     {
       "title": "Design Patterns Elements of Reusable Object-Oriented - Gamma, Erich;Helm, Richard;Johnson, Ralph E ;Vlissides, John - Uttar Pradesh, India, 2016 - 9780201633610 - 2121300da35565356b45a1b90df80e9d - Anna’s Archive",
@@ -212,7 +341,15 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
         3,
         10,
         16
-      ]
+      ],
+      "match_type": "primary"
+    },
+    {
+      "title": "Thinking in Systems - Meadows, Donella H - 2008 - Chelsea Green Publishing - 9781603580052 - 65f9216dde8878346246dd88ded41946 - Anna’s Archive",
+      "source": "sample-docs/Programming/Thinking in Systems -- Meadows, Donella H -- 2008 -- Chelsea Green Publishing -- 9781603580052 -- 65f9216dde8878346246dd88ded41946 -- Anna’s Archive.epub",
+      "pages": [],
+      "match_type": "related",
+      "via_concept": "consumption pattern analysis"
     }
   ],
   "chunks": [
@@ -270,9 +407,9 @@ Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms
     }
   ],
   "stats": {
-    "total_documents": 2,
-    "total_chunks": 200,
-    "sources_returned": 2,
+    "total_documents": 3,
+    "total_chunks": 300,
+    "sources_returned": 3,
     "chunks_returned": 3
   }
 }
@@ -3096,7 +3233,7 @@ Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)
       "entity": "Category",
       "identifier": "design patterns"
     },
-    "timestamp": "2025-11-28T17:59:16.506Z"
+    "timestamp": "2025-11-28T18:12:45.424Z"
   }
 }
 ```

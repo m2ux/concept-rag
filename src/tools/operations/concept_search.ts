@@ -36,7 +36,8 @@ export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
   name = "concept_search";
   description = `Find chunks associated with a concept, organized by source documents (hierarchical view).
 
-Uses fuzzy matching to find the concept (exact match prioritized, then partial matches), then retrieves all chunks that were tagged with that concept during extraction.
+Uses fuzzy matching to find the concept, then **expands to include documents from lexically-related concepts**.
+For example: "software architecture" → also finds documents via "complexity software", "software design".
 
 USE THIS TOOL WHEN:
 - Searching for a conceptual topic (e.g., "innovation", "leadership", "strategic thinking")
@@ -50,7 +51,7 @@ DO NOT USE for:
 
 RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
 - Concept metadata: summary, synonyms, broader/narrower terms
-- Source documents: paths, page numbers where concept appears
+- Source documents with match_type: 'primary' (direct) or 'related' (via linked concept)
 - Chunks: text with page numbers and concept density ranking`;
 
   inputSchema = {
@@ -144,11 +145,13 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
    * Format hierarchical result for LLM consumption.
    */
   private formatResult(result: ConceptSearchResult, debug?: boolean) {
-    // Format sources with page context
+    // Format sources with page context and match type
     const sources = result.sources.map((s: SourceWithPages) => ({
       title: s.title,
       source: s.source,
       pages: s.pageNumbers,
+      match_type: s.matchType,  // 'primary' or 'related'
+      via_concept: s.viaConcept,  // If 'related', the concept that linked here
       page_previews: debug ? s.pagePreviews : undefined
     }));
     
