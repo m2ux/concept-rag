@@ -108,21 +108,23 @@ RETURNS: Top 10 documents with text previews, hybrid scores (including strong ti
       };
     }
     
-    // Format results for MCP response
+    // Format results for MCP response, filtering out zero/negative scores
     // @ts-expect-error - Type narrowing limitation
-    const formattedResults = result.value.map((r: SearchResult) => ({
-      source: r.source,
-      text_preview: r.text.slice(0, 200) + '...',
-      scores: {
-        hybrid: r.hybridScore.toFixed(3),
-        vector: r.vectorScore.toFixed(3),
-        bm25: r.bm25Score.toFixed(3),
-        title: r.titleScore.toFixed(3),
-        wordnet: r.wordnetScore.toFixed(3)
-      },
-      matched_concepts: r.matchedConcepts,
-      expanded_terms: r.expandedTerms
-    }));
+    const formattedResults = result.value
+      .filter((r: SearchResult) => r.hybridScore > 0)
+      .map((r: SearchResult) => ({
+        source: r.source,
+        text_preview: r.text.slice(0, 200) + '...',
+        scores: {
+          hybrid: r.hybridScore.toFixed(3),
+          vector: r.vectorScore.toFixed(3),
+          bm25: r.bm25Score.toFixed(3),
+          title: r.titleScore.toFixed(3),
+          wordnet: r.wordnetScore.toFixed(3)
+        },
+        matched_concepts: r.matchedConcepts,
+        expanded_terms: r.expandedTerms
+      }));
     
     return {
       content: [
