@@ -40,7 +40,7 @@ describe('ConceptSourcesTool', () => {
       });
       conceptRepo.addConcept(testConcept);
       
-      const result = await tool.execute({ name: 'tdd' });
+      const result = await tool.execute({ concept: 'tdd' });
       
       expect(result.isError).toBe(false);
       const parsed = JSON.parse(result.content[0].text);
@@ -51,7 +51,7 @@ describe('ConceptSourcesTool', () => {
     });
     
     it('should return empty array for not found concept', async () => {
-      const result = await tool.execute({ name: 'nonexistent' });
+      const result = await tool.execute({ concept: 'nonexistent' });
       
       expect(result.isError).toBe(false);
       const parsed = JSON.parse(result.content[0].text);
@@ -159,7 +159,7 @@ describe('ConceptSourcesTool', () => {
       });
       conceptRepo.addConcept(testConcept);
       
-      const result = await tool.execute({ name: 'test' });
+      const result = await tool.execute({ concept: 'test' });
       const parsed = JSON.parse(result.content[0].text);
       
       const source = parsed.results[0][0];
@@ -171,7 +171,7 @@ describe('ConceptSourcesTool', () => {
   
   describe('validation', () => {
     it('should reject empty concept string', async () => {
-      const result = await tool.execute({ name: '' });
+      const result = await tool.execute({ concept: '' });
       expect(result.isError).toBe(true);
     });
     

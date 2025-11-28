@@ -28,7 +28,6 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document about testing',
-        concepts: ['testing', 'quality assurance', 'unit test', 'integration test'],
         conceptIds: [11111111, 22222222, 33333333, 44444444],
       });
       catalogRepo.addDocument(testDoc);
@@ -68,8 +67,7 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document without concepts',
-        concepts: undefined,
-        conceptIds: undefined
+        conceptIds: undefined,
       });
       catalogRepo.addDocument(testDoc);
       
@@ -88,7 +86,6 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document about testing',
-        concepts: ['testing', 'unit test', 'tdd'],
         conceptIds: [11111111, 22222222, 33333333],
       });
       catalogRepo.addDocument(testDoc);
@@ -112,7 +109,6 @@ describe('DocumentConceptsExtractTool', () => {
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document',
-        concepts: ['testing'],
         conceptIds: [11111111],
       });
       catalogRepo.addDocument(testDoc);

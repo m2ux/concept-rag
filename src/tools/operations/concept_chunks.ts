@@ -2,6 +2,7 @@ import { BaseTool, ToolParams } from "../base/tool.js";
 import { ConceptSearchService } from "../../domain/services/index.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
 import { isSome, isErr } from "../../domain/functional/index.js";
+import { ConceptIdCache } from "../../infrastructure/cache/concept-id-cache.js";
 
 export interface ConceptSearchParams extends ToolParams {
   concept: string;
@@ -138,15 +139,22 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
    * Pure presentation logic - converts domain model to MCP JSON format.
    */
   private formatMCPResponse(result: any) {
-    // Format chunk results
-    const formattedChunks = result.chunks.map((chunk: any) => ({
-          text: chunk.text,
-          source: chunk.source,
-          concept_density: (chunk.conceptDensity || 0).toFixed(3),
-          concepts_in_chunk: chunk.concepts || [],
-          categories: chunk.conceptCategories || [],
-      relevance: this.conceptSearchService.calculateRelevance(chunk, result.concept)
-    }));
+    // Format chunk results - resolve concept names from IDs for display
+    const conceptCache = ConceptIdCache.getInstance();
+    const formattedChunks = result.chunks.map((chunk: any) => {
+      const conceptNames = chunk.conceptIds 
+        ? conceptCache.getNames(chunk.conceptIds.map((id: number) => String(id)))
+        : [];
+      
+      return {
+        text: chunk.text,
+        source: chunk.source,
+        concept_density: (chunk.conceptDensity || 0).toFixed(3),
+        concepts_in_chunk: conceptNames,
+        categories: chunk.conceptCategories || [],
+        relevance: this.conceptSearchService.calculateRelevance(chunk, result.concept)
+      };
+    });
       
     // Build response object
       const response: any = {

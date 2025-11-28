@@ -113,7 +113,7 @@ describe('ConceptSearchService', () => {
           text: 'Chunk about dependency injection',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['dependency injection'],
+          conceptIds: [1003],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -145,7 +145,7 @@ describe('ConceptSearchService', () => {
           text: 'Chunk about DI',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['dependency injection'],
+          conceptIds: [1003],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -173,7 +173,7 @@ describe('ConceptSearchService', () => {
           text: 'Chunk about DI',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['dependency injection'],
+          conceptIds: [1003],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -323,14 +323,14 @@ describe('ConceptSearchService', () => {
           text: 'Chunk from typescript guide',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['architecture'],
+          conceptIds: [1001],
         },
         {
           id: 2,
           text: 'Chunk from python guide',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['architecture'],
+          conceptIds: [1001],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -359,7 +359,7 @@ describe('ConceptSearchService', () => {
           text: 'Chunk from TypeScript guide',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['design patterns'],
+          conceptIds: [1006],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -384,14 +384,14 @@ describe('ConceptSearchService', () => {
           text: 'Chunk 1',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['testing'],
+          conceptIds: [1004],
         },
         {
           id: 2,
           text: 'Chunk 2',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['testing'],
+          conceptIds: [1004],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -415,7 +415,7 @@ describe('ConceptSearchService', () => {
           text: 'Chunk',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['architecture'],
+          conceptIds: [1001],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -442,21 +442,21 @@ describe('ConceptSearchService', () => {
           text: 'Few concepts',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['patterns'],
+          conceptIds: [1005],
         },
         {
           id: 2,
           text: 'Many concepts',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['patterns', 'design', 'architecture'],
+          conceptIds: [1005, 1002, 1001],
         },
         {
           id: 3,
           text: 'Some concepts',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['patterns', 'design'],
+          conceptIds: [1005, 1002],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -471,7 +471,7 @@ describe('ConceptSearchService', () => {
       expect(isOk(result)).toBe(true);
       if (isOk(result)) {
         // Results should be sorted by concept count (most concepts first)
-        expect(result.value.chunks[0].concepts?.length).toBeGreaterThanOrEqual(result.value.chunks[1].concepts?.length || 0);
+        expect(result.value.chunks[0].conceptIds?.length).toBeGreaterThanOrEqual(result.value.chunks[1].conceptIds?.length || 0);
       }
     });
 
@@ -484,14 +484,14 @@ describe('ConceptSearchService', () => {
           text: 'Short chunk', // Short text, fewer concepts = lower relevance
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['testing'],
+          conceptIds: [1004],
         },
         {
           id: 2,
           text: 'A'.repeat(300), // Long text (qualifies for text length bonus) + more concepts
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['testing', 'software', 'development'], // More concepts
+          conceptIds: [1004, 1007, 1008], // More concepts
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -520,14 +520,14 @@ describe('ConceptSearchService', () => {
           text: 'Chunk from Z document',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['architecture'],
+          conceptIds: [1001],
         },
         {
           id: 2,
           text: 'Chunk from A document',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['architecture'],
+          conceptIds: [1001],
         }
       ];
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
@@ -556,14 +556,14 @@ describe('ConceptSearchService', () => {
           text: 'Chunk with density',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['patterns'],
+          conceptIds: [1005],
         },
         {
           id: 2,
           text: 'Chunk without density',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['patterns']
+          conceptIds: [1005]
           // conceptDensity is undefined
         }
       ];
@@ -593,7 +593,7 @@ describe('ConceptSearchService', () => {
         text: `Chunk ${i}`,
         hash: `hash${i}`,
         catalogId: 12345678,
-        concepts: ['testing'],
+        conceptIds: [1004],
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
@@ -616,7 +616,7 @@ describe('ConceptSearchService', () => {
         source: i < 15 ? '/docs/typescript.pdf' : '/docs/python.pdf',
         hash: `hash${i}`,
         catalogId: 12345678,
-        concepts: ['architecture'],
+        conceptIds: [1001],
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
@@ -645,7 +645,7 @@ describe('ConceptSearchService', () => {
         text: `Chunk ${i}`,
         hash: `hash${i}`,
         catalogId: 12345678,
-        concepts: ['patterns'],
+        conceptIds: [1005],
       }));
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
@@ -674,7 +674,7 @@ describe('ConceptSearchService', () => {
         text: 'Chunk with concept',
         hash: 'hash1',
           catalogId: 12345678,
-        concepts: ['testing', 'other'], // 2 concepts
+        conceptIds: [1001, 1002], // 2 concepts
       };
       const concept = 'testing';
 
@@ -694,7 +694,7 @@ describe('ConceptSearchService', () => {
         text: 'A'.repeat(300), // 300 chars (qualifies for text length bonus)
         hash: 'hash1',
           catalogId: 12345678,
-        concepts: ['testing', 'other', 'third'], // 3 concepts
+        conceptIds: [1001, 1002, 1003], // 3 concepts
       };
       const concept = 'testing';
 
@@ -714,7 +714,7 @@ describe('ConceptSearchService', () => {
         text: 'A'.repeat(300), // 300 chars
         hash: 'hash1',
           catalogId: 12345678,
-        concepts: [],
+        conceptIds: [],
       };
       const concept = 'testing';
 
@@ -734,7 +734,7 @@ describe('ConceptSearchService', () => {
         text: 'Short',
         hash: 'hash1',
           catalogId: 12345678,
-        concepts: ['testing'],
+        conceptIds: [1004],
       };
       const concept = 'testing';
 
@@ -754,7 +754,7 @@ describe('ConceptSearchService', () => {
         text: 'Chunk',
         hash: 'hash1',
           catalogId: 12345678,
-        concepts: ['testing'],
+        conceptIds: [1004],
       };
       const concept = 'testing';
 

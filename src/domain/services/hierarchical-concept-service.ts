@@ -205,13 +205,11 @@ export class HierarchicalConceptService {
       const docChunks = await this.chunkRepo.findByCatalogId(sourceDoc.catalogId, 100);
       totalChunks += docChunks.length;
       
-      // Filter to chunks from relevant pages and with the concept
+      // Filter to chunks from relevant pages or with the concept ID
       const relevantChunks = docChunks
         .filter(chunk => {
           const chunkPage = chunk.pageNumber ?? 0;
-          const hasConcept = chunk.concepts?.some(c => 
-            c.toLowerCase() === conceptName
-          ) ?? false;
+          const hasConcept = chunk.conceptIds?.includes(conceptId) ?? false;
           return pageNumbers.has(chunkPage) || hasConcept;
         })
         .slice(0, chunksPerSource);

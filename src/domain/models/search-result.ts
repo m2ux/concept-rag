@@ -21,7 +21,7 @@ import { Chunk } from './chunk.js';
  *   text: 'Dependency injection is a design pattern...',
  *   catalogId: 12345678,
  *   hash: 'abc123',
- *   concepts: ['dependency injection', 'design patterns'],
+ *   conceptIds: [11111111, 22222222],
  *   // Display fields (resolved from catalog)
  *   source: '/docs/design-patterns.pdf',  // Optional, from catalog lookup
  *   

@@ -5,6 +5,7 @@ import { InputValidator } from "../../domain/services/validation/index.js";
 import { isErr, isSome } from "../../domain/functional/index.js";
 import { Chunk } from "../../domain/models/index.js";
 import { CatalogSourceCache } from "../../infrastructure/cache/catalog-source-cache.js";
+import { ConceptIdCache } from "../../infrastructure/cache/concept-id-cache.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
   text: string;
@@ -140,13 +141,21 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
     // Format results for MCP response
     // Use cache to resolve catalogId → source (chunks no longer store source)
     const sourceCache = CatalogSourceCache.getInstance();
+    const conceptCache = ConceptIdCache.getInstance();
     // @ts-expect-error - Type narrowing limitation
-    const formattedResults = result.value.map((r: Chunk) => ({
-      text: r.text,
-      source: sourceCache.getSourceOrDefault(r.catalogId, params.source),
-      concepts: r.concepts || [],
-      concept_ids: r.conceptIds || [],
-    }));
+    const formattedResults = result.value.map((r: Chunk) => {
+      // Resolve concept names from IDs for display
+      const conceptNames = r.conceptIds 
+        ? conceptCache.getNames(r.conceptIds.map(id => String(id)))
+        : [];
+      
+      return {
+        text: r.text,
+        source: sourceCache.getSourceOrDefault(r.catalogId, params.source),
+        concepts: conceptNames,
+        concept_ids: r.conceptIds || [],
+      };
+    });
     
     return {
       content: [

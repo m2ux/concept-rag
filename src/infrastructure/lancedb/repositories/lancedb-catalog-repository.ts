@@ -143,7 +143,6 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       text: doc.summary || doc.text || '',  // 'summary' is new field name, 'text' for backward compat
       source: doc.source || doc.filename || '',  // Support both old and new field names
       hash: doc.hash,
-      concepts: undefined,  // No longer stored in catalog (derive from chunks if needed)
       embeddings: doc.vector || [],
       distance: 0,
       hybridScore: 1.0,
@@ -184,6 +183,13 @@ export class LanceDBCatalogRepository implements CatalogRepository {
         if (!doc.category_ids) return false;
         
         try {
+          // Parse category_ids if needed and check for match
+          const categoryIds = Array.isArray(doc.category_ids)
+            ? doc.category_ids
+            : typeof doc.category_ids === 'object' && 'toArray' in doc.category_ids
+              ? Array.from(doc.category_ids.toArray())
+              : [];
+          return categoryIds.includes(categoryId);
         } catch {
           return false;
         }

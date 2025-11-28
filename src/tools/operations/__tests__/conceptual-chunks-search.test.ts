@@ -45,14 +45,14 @@ describe('ConceptualChunksSearchTool', () => {
           
           catalogId: 12345678,  // matches catalog entry
           text: 'First chunk about testing',
-          concepts: ['testing']
+          conceptIds: [123456]
         }),
         createTestChunk({
           id: 1002,
           
           catalogId: 12345678,  // matches catalog entry
           text: 'Second chunk',
-          concepts: ['testing']
+          conceptIds: [123456]
         })
       ];
       testChunks.forEach(chunk => chunkRepo.addChunk(chunk));
@@ -106,7 +106,6 @@ describe('ConceptualChunksSearchTool', () => {
         
         catalogId: 12345678,  // matches catalog entry
         text: 'Test chunk',
-        concepts: ['testing', 'unit tests'],
         conceptIds: [111111, 222222],
       });
       chunkRepo.addChunk(testChunk);

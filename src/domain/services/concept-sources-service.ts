@@ -252,14 +252,8 @@ export class ConceptSourcesService {
               
               sourceInfo.summary = entry.text?.substring(0, 500);
               
-              // Parse concepts if available
-              if (entry.concepts) {
-                const concepts = typeof entry.concepts === 'string' 
-                  ? JSON.parse(entry.concepts) 
-                  : entry.concepts;
-                sourceInfo.primaryConcepts = concepts.primary_concepts?.slice(0, 10);
-                sourceInfo.categories = concepts.categories?.slice(0, 5);
-              }
+              // Note: Structured concepts (primary_concepts, categories) are no longer 
+              // stored in catalog SearchResult. Use concept_ids from chunks if needed.
             }
           } catch (catalogError) {
             // Log but don't fail - catalog metadata is optional enrichment

@@ -422,7 +422,7 @@ describe('ConceptualHybridSearchService', () => {
       expect(results).toHaveLength(1);
       expect(results[0].id).toBe('chunk-1');
       expect(results[0].hash).toBe('');
-      expect(results[0].concepts).toBeUndefined();
+      expect(results[0].conceptIds).toEqual([]);
     });
   });
 

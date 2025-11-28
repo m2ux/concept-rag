@@ -258,15 +258,9 @@ export function validateChunkRow(row: any): void {
   }
   validateEmbeddings(row, vectorField, 'chunk');
   
-  // Validate JSON fields (optional but must be valid if present)
-  if (row.concepts !== null && row.concepts !== undefined) {
-    validateJsonField(row, 'concepts', 'chunk');
-  }
+  // Validate array fields (optional but must be valid if present)
   if (row.concept_ids !== null && row.concept_ids !== undefined) {
     validateJsonField(row, 'concept_ids', 'chunk');
-  }
-  if (row.concept_categories !== null && row.concept_categories !== undefined) {
-    validateJsonField(row, 'concept_categories', 'chunk');
   }
 }
 

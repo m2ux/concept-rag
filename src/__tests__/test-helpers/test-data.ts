@@ -23,7 +23,6 @@ export function createTestChunk(overrides?: Partial<Chunk>): Chunk {
     text: 'This is a test chunk about innovation and creativity in software development.',
     catalogId: 12345678,  // Use catalogId lookup to get source
     hash: 'abc123def456',
-    concepts: ['innovation', 'creativity', 'software development'],
     conceptIds: [123456, 234567, 345678],
     ...overrides
   };

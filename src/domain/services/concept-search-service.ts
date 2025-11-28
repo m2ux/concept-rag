@@ -194,9 +194,9 @@ export class ConceptSearchService {
     
     switch (sortBy) {
       case 'density':
-        // Sort by concept count as proxy for density (since conceptDensity removed)
+        // Sort by concept count as proxy for density
         return sorted.sort((a, b) => 
-          (b.concepts?.length || 0) - (a.concepts?.length || 0)
+          (b.conceptIds?.length || 0) - (a.conceptIds?.length || 0)
         );
       
       case 'relevance':
@@ -218,19 +218,20 @@ export class ConceptSearchService {
   
   /**
    * Calculate relevance score for a chunk.
+   * @param conceptId - Optional concept ID to check for direct match
    */
   /** @internal - Exposed for testing */
-  calculateRelevance(chunk: Chunk, concept: string): number {
+  calculateRelevance(chunk: Chunk, concept: string, conceptId?: number): number {
     let score = 0;
     
     // Concept count score (normalized by text length as proxy for density)
-    const conceptCount = chunk.concepts?.length || 0;
+    const conceptCount = chunk.conceptIds?.length || 0;
     const textLength = chunk.text.length;
     const normalizedDensity = textLength > 0 ? Math.min(conceptCount / (textLength / 500), 1) : 0;
     score += normalizedDensity * 0.5;
     
-    // Concept appears in chunk
-    if (chunk.concepts?.includes(concept)) {
+    // Concept appears in chunk (by ID if available)
+    if (conceptId && chunk.conceptIds?.includes(conceptId)) {
       score += 0.3;
     }
     

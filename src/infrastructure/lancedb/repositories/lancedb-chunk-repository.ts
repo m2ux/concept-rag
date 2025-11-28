@@ -84,7 +84,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
       }
       
       // Sort by concept count (most concept-rich first)
-      matches.sort((a, b) => (b.concepts?.length || 0) - (a.concepts?.length || 0));
+      matches.sort((a, b) => (b.conceptIds?.length || 0) - (a.conceptIds?.length || 0));
       
       return matches.slice(0, limit);
     } catch (error) {
@@ -159,11 +159,14 @@ export class LanceDBChunkRepository implements ChunkRepository {
   // Helper methods
   
   private chunkContainsConcept(chunk: Chunk, concept: string): boolean {
-    if (!chunk.concepts || chunk.concepts.length === 0) {
+    if (!chunk.conceptIds || chunk.conceptIds.length === 0) {
       return false;
     }
     
-    return chunk.concepts.some((c: string) => {
+    // Resolve concept names from IDs using cache
+    const conceptNames = this.conceptIdCache.getNames(chunk.conceptIds.map(id => String(id)));
+    
+    return conceptNames.some((c: string) => {
       const cLower = c.toLowerCase();
       return cLower === concept || 
              cLower.includes(concept) || 
@@ -193,10 +196,6 @@ export class LanceDBChunkRepository implements ChunkRepository {
       }
     }
     
-    // Resolve concepts via cache (convert numeric IDs to strings for cache lookup)
-    const concepts = this.conceptIdCache.getNames(conceptIds.map(id => String(id)));
-    
-    
     // Parse page_number directly (loc field removed in schema v4)
     let pageNumber: number | undefined;
     if (row.page_number !== undefined && row.page_number !== null) {
@@ -214,9 +213,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
       text: row.text || '',
       catalogId: row.catalog_id || 0,
       hash: row.hash || '',
-      concepts,  // Resolved from conceptIds for API compatibility
       conceptIds,
-
       embeddings,  // May be undefined if no vector field found
       pageNumber,
       conceptDensity

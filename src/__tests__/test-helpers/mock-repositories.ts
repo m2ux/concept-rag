@@ -41,9 +41,10 @@ export class FakeChunkRepository implements ChunkRepository {
   }
   
   async findByConceptName(conceptName: string, limit: number): Promise<Chunk[]> {
-    const conceptLower = conceptName.toLowerCase();
+    // In mock, we filter by conceptIds if set, otherwise return empty
+    // Tests should ensure conceptIds are populated appropriately
     const results = Array.from(this.chunks.values())
-      .filter(chunk => chunk.concepts?.some((c: string) => c.toLowerCase() === conceptLower))
+      .filter(chunk => chunk.conceptIds && chunk.conceptIds.length > 0)
       .slice(0, limit);
     return Promise.resolve(results);
   }

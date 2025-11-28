@@ -81,7 +81,7 @@ describe('ChunkSearchService', () => {
           conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.67,
-          concepts: ['architecture']
+          conceptIds: [1001]
         }
       ];
       mockRepo.setSearchResults(mockResults);
@@ -115,7 +115,7 @@ describe('ChunkSearchService', () => {
           conceptScore: 0.6,
           wordnetScore: 0.4,
           hybridScore: 0.67,
-          concepts: []
+          conceptIds: []
         }
       ];
       mockRepo.setSearchResults(mockResults);
@@ -197,7 +197,7 @@ describe('ChunkSearchService', () => {
         conceptScore: 0.6,
         wordnetScore: 0.4,
         hybridScore: 0.67,
-        concepts: []
+        conceptIds: []
       }));
       mockRepo.setSearchResults(mockResults);
 
@@ -222,14 +222,14 @@ describe('ChunkSearchService', () => {
           text: 'First chunk',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['architecture'],
+          conceptIds: [1001],
         },
         {
           id: 2,
           text: 'Second chunk',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: ['design'],
+          conceptIds: [1002],
         }
       ];
       mockRepo.setSourceChunks(sourcePath, mockChunks);
@@ -256,7 +256,7 @@ describe('ChunkSearchService', () => {
         text: `Chunk ${i}`,
         hash: `hash${i}`,
         catalogId: 12345678,
-        concepts: [],
+        conceptIds: [],
       }));
       mockRepo.setSourceChunks(sourcePath, mockChunks);
 
@@ -313,7 +313,7 @@ describe('ChunkSearchService', () => {
           text: 'Chunk from specific source',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: [],
+          conceptIds: [],
         }
       ];
       mockRepo.setSourceChunks(sourcePath, mockChunks);
@@ -342,7 +342,7 @@ describe('ChunkSearchService', () => {
           text: 'Chunk from doc1',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: [],
+          conceptIds: [],
         }
       ];
       const chunks2: Chunk[] = [
@@ -351,7 +351,7 @@ describe('ChunkSearchService', () => {
           text: 'Chunk from doc2',
           hash: 'hash1',
           catalogId: 12345678,
-          concepts: [],
+          conceptIds: [],
         }
       ];
       mockRepo.setSourceChunks(source1, chunks1);

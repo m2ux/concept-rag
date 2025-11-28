@@ -31,21 +31,11 @@ export interface Chunk {
   /** The text content of the chunk (typically 100-500 words) */
   text: string;
   
-  /** 
-  
   /** Parent document ID (hash-based integer, matches catalog.id) */
   catalogId: number;
   
   /** Content hash for deduplication */
   hash: string;
-  
-  /**
-   * Concepts associated with this chunk (resolved names from conceptIds).
-   * This is a computed field populated by ConceptIdCache.getNames(conceptIds).
-   * 
-   * @deprecated Prefer using conceptIds directly. This field exists for API compatibility.
-   */
-  concepts?: string[];
   
   /** Hash-based concept IDs - primary authoritative field */
   conceptIds?: number[];

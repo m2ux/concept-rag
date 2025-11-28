@@ -104,33 +104,20 @@ OUTPUT FORMATS:
         primaryConcepts = this.conceptIdCache.getNames(doc.conceptIds.map(id => String(id)));
       }
       
-      // Fall back to concepts field if no primaryConcepts resolved
-      if (primaryConcepts.length === 0 && doc.concepts) {
-        const conceptsField = doc.concepts as any;
-        if (Array.isArray(conceptsField)) {
-          // Direct array of concept names
-          primaryConcepts = conceptsField;
-        } else if (typeof conceptsField === 'string') {
-          // JSON blob format (legacy)
-          try {
-            const parsed = JSON.parse(conceptsField);
-            primaryConcepts = parsed.primary_concepts || [];
-            relatedConcepts = parsed.related_concepts || [];
-          } catch {
-            // Not valid JSON, might be a single concept name
-            primaryConcepts = [conceptsField];
-          }
-        } else if (typeof conceptsField === 'object' && conceptsField !== null) {
+      // Note: concepts string field was removed from Chunk model.
+      // All concept resolution is now done via conceptIds and ConceptIdCache.
+      if (primaryConcepts.length === 0) {
+        // Legacy fallback: check for any raw metadata fields
+        const rawDoc = doc as any;
+        if (rawDoc.concepts && typeof rawDoc.concepts === 'object' && rawDoc.concepts !== null) {
           // Object format
-          primaryConcepts = conceptsField.primary_concepts || [];
-          relatedConcepts = conceptsField.related_concepts || [];
+          primaryConcepts = rawDoc.concepts.primary_concepts || [];
+          relatedConcepts = rawDoc.concepts.related_concepts || [];
         }
       }
       
-      // Get categories from categoryIds or legacy field
-      if (doc.categoryIds && doc.categoryIds.length > 0 && this.categoryIdCache) {
-        categories = this.categoryIdCache.getNames(doc.categoryIds);
-      }
+      // Categories are now derived from catalog.category_ids, not chunk
+      // Use categoryIdCache if available (would need to lookup via catalogId)
       
       // Derive related concepts from concept repository if available
       if (relatedConcepts.length === 0 && this.conceptRepo && doc.conceptIds) {
