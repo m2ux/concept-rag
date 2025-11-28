@@ -83,6 +83,18 @@ npx tsx hybrid_fast_seed.ts \
   --dbpath ~/.concept_rag \
   --filesdir ~/Documents/my-pdfs
 
+# Resume interrupted seeding (skip checkpoint documents)
+npx tsx hybrid_fast_seed.ts \
+  --dbpath ~/.concept_rag \
+  --filesdir ~/Documents/my-pdfs \
+  --resume
+
+# Clear checkpoint and start fresh
+npx tsx hybrid_fast_seed.ts \
+  --dbpath ~/.concept_rag \
+  --filesdir ~/Documents/my-pdfs \
+  --clean-checkpoint
+
 # Rebuild concept index (after algorithm updates)
 npx tsx hybrid_fast_seed.ts \
   --dbpath ~/.concept_rag \
@@ -95,6 +107,17 @@ npx tsx hybrid_fast_seed.ts \
   --filesdir ~/Documents/my-pdfs \
   --auto-reseed
 ```
+
+**Seeding Options:**
+| Flag | Description |
+|------|-------------|
+| `--filesdir` | Directory containing PDF/EPUB files (required) |
+| `--dbpath` | Database path (default: `~/.concept_rag`) |
+| `--overwrite` | Drop and recreate all database tables |
+| `--resume` | Skip documents already in checkpoint (for interrupted runs) |
+| `--clean-checkpoint` | Clear checkpoint file and start fresh |
+| `--rebuild-concepts` | Rebuild concept index even if no new documents |
+| `--auto-reseed` | Re-process documents with incomplete metadata |
 
 **📝 Automatic Logging**: Each run creates a timestamped log file in `logs/seed-YYYY-MM-DDTHH-MM-SS.log` for troubleshooting and audit trails.
 

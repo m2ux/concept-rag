@@ -20,6 +20,7 @@ import { EPUBDocumentLoader } from './src/infrastructure/document-loaders/epub-l
 import { hashToId, generateStableId } from './src/infrastructure/utils/hash.js';
 import { generateCategorySummaries } from './src/concepts/summary_generator.js';
 import { parseFilenameMetadata, normalizeText } from './src/infrastructure/utils/filename-metadata-parser.js';
+import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
 
 // Setup timestamped logging
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
@@ -170,24 +171,32 @@ console.log = (...args: any[]) => {
     }
 };
 
-const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: ["overwrite", "rebuild-concepts", "auto-reseed"]});
+const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume"]});
 
 const databaseDir = argv["dbpath"] || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag");
 const filesDir = argv["filesdir"];
 const overwrite = argv["overwrite"];
 const rebuildConcepts = argv["rebuild-concepts"];
 const autoReseed = argv["auto-reseed"];
+const cleanCheckpoint = argv["clean-checkpoint"];
+const resumeMode = argv["resume"];
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
 function validateArgs() {
     if (!filesDir) {
         console.error("Please provide a directory with files (--filesdir) to process");
-        console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [--overwrite] [--rebuild-concepts] [--auto-reseed]");
-        console.error("  --filesdir: Directory containing PDF files to process (required)");
-        console.error("  --dbpath: Database path (optional, defaults to ~/.concept_rag)");
-        console.error("  --overwrite: Overwrite existing database tables (optional)");
-        console.error("  --rebuild-concepts: Rebuild concept index even if no new documents (optional)");
-        console.error("  --auto-reseed: Automatically re-process documents with incomplete metadata (optional)");
+        console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [options]");
+        console.error("");
+        console.error("Required:");
+        console.error("  --filesdir: Directory containing PDF/EPUB files to process");
+        console.error("");
+        console.error("Options:");
+        console.error("  --dbpath: Database path (default: ~/.concept_rag)");
+        console.error("  --overwrite: Drop and recreate all database tables");
+        console.error("  --rebuild-concepts: Rebuild concept index even if no new documents");
+        console.error("  --auto-reseed: Re-process documents with incomplete metadata");
+        console.error("  --resume: Resume from checkpoint (skip already processed documents)");
+        console.error("  --clean-checkpoint: Clear checkpoint and start fresh");
         process.exit(1);
     }
     
@@ -198,6 +207,9 @@ function validateArgs() {
     
     console.log(`📂 Database: ${databaseDir}`);
     console.log(`🔄 Overwrite mode: ${overwrite}`);
+    if (resumeMode) {
+        console.log(`🔄 Resume mode: enabled`);
+    }
 }
 
 // LLM API call for summarization
@@ -750,7 +762,8 @@ async function loadDocumentsWithErrorHandling(
     filesDir: string, 
     catalogTable: lancedb.Table | null, 
     chunksTable: lancedb.Table | null,
-    skipExistsCheck: boolean
+    skipExistsCheck: boolean,
+    checkpoint?: SeedingCheckpoint
 ) {
     const documents: Document[] = [];
     const failedFiles: string[] = [];
@@ -793,8 +806,15 @@ async function loadDocumentsWithErrorHandling(
             }
             
             try {
+                // Check checkpoint first for fast skip (O(1) hash lookup)
+                if (checkpoint && checkpoint.isProcessed(hash)) {
+                    console.log(`  ⏭[${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (checkpoint)`);
+                    skippedFiles.push(relativePath);
+                    continue;
+                }
+                
                 if (!skipExistsCheck && catalogTable && hash !== 'unknown') {
-                    // NEW: Check completeness instead of just existence
+                    // Check completeness instead of just existence
                     const completeness = await checkDocumentCompleteness(
                         catalogTable,
                         chunksTable,
@@ -805,6 +825,10 @@ async function loadDocumentsWithErrorHandling(
                     if (completeness.isComplete) {
                         console.log(`  ⏭[${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (complete)`);
                         skippedFiles.push(relativePath);
+                        // Update checkpoint with this complete document (for future runs)
+                        if (checkpoint) {
+                            await checkpoint.markProcessed(hash, docFile, false);
+                        }
                         continue; // Skip loading this file entirely
                     } else if (completeness.hasRecord) {
                         // Document exists but is incomplete - needs reprocessing
@@ -1288,7 +1312,7 @@ async function createOptimizedIndex(
     }
 }
 
-async function processDocuments(rawDocs: Document[]) {
+async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpoint) {
     const docsBySource = rawDocs.reduce((acc: Record<string, Document[]>, doc: Document) => {
         const source = doc.metadata.source;
         if (!acc[source]) {
@@ -1302,6 +1326,9 @@ async function processDocuments(rawDocs: Document[]) {
     
     // Initialize concept extractor
     const conceptExtractor = new ConceptExtractor(process.env.OPENROUTER_API_KEY || '');
+    
+    // Track documents for checkpoint updates
+    const processedInThisRun: Array<{hash: string, source: string}> = [];
 
     for (const [source, docs] of Object.entries(docsBySource)) {
         // Use existing hash from document metadata if available (for consistency)
@@ -1364,13 +1391,16 @@ Categories: ${concepts.categories.join(', ')}
         
         catalogRecords.push(catalogRecord);
         
+        // Track for checkpoint update
+        processedInThisRun.push({ hash, source });
+        
         // Debug logging for OCR persistence troubleshooting
         if (process.env.DEBUG_OCR && isOcrProcessed) {
             console.log(`📝 Creating catalog record for OCR'd document: hash=${hash.slice(0, 8)}..., source=${sourceBasename}`);
         }
     }
 
-    return catalogRecords;
+    return { catalogRecords, processedInThisRun };
 }
 
 async function getDatabaseSize(dbPath: string): Promise<string> {
@@ -1692,6 +1722,47 @@ async function rebuildConceptIndexFromExistingData(
 async function hybridFastSeed() {
     validateArgs();
 
+    // Initialize checkpoint for resumable seeding
+    const checkpointPath = SeedingCheckpoint.getDefaultPath(databaseDir);
+    const seedingCheckpoint = new SeedingCheckpoint({
+        checkpointPath,
+        databasePath: databaseDir,
+        filesDir: filesDir
+    });
+    
+    // Handle --clean-checkpoint flag
+    if (cleanCheckpoint) {
+        console.log(`🗑️ Clearing checkpoint file...`);
+        await seedingCheckpoint.delete();
+        console.log(`✅ Checkpoint cleared`);
+    }
+    
+    // Load checkpoint (or create new one)
+    const { loaded: checkpointLoaded, warnings: checkpointWarnings } = await seedingCheckpoint.load();
+    
+    if (checkpointLoaded) {
+        const stats = seedingCheckpoint.getStats();
+        console.log(`📋 Checkpoint found: ${stats.processedHashCount} documents already processed`);
+        console.log(`   Stage: ${stats.stage}, Last updated: ${stats.lastUpdatedAt}`);
+        
+        if (checkpointWarnings.length > 0) {
+            console.log(`⚠️  Checkpoint warnings:`);
+            checkpointWarnings.forEach(w => console.log(`   - ${w}`));
+        }
+        
+        if (stats.totalFailed > 0) {
+            console.log(`⚠️  ${stats.totalFailed} previously failed documents`);
+        }
+    } else if (resumeMode) {
+        console.log(`📋 No checkpoint found - starting fresh`);
+    }
+    
+    // If overwrite mode, clear checkpoint as well
+    if (overwrite && checkpointLoaded) {
+        console.log(`🗑️ Overwrite mode - clearing checkpoint...`);
+        await seedingCheckpoint.clear();
+    }
+
     const db = await lancedb.connect(databaseDir);
 
     let catalogTable: lancedb.Table | null = null;
@@ -1787,8 +1858,19 @@ async function hybridFastSeed() {
         }
     }
 
-    // Load files
-    const { documents: rawDocs, documentsNeedingChunks } = await loadDocumentsWithErrorHandling(filesDir, catalogTable, chunksTable, overwrite || !catalogTableExists);
+    // Load files (pass checkpoint for resumable skip detection)
+    const { documents: rawDocs, documentsNeedingChunks } = await loadDocumentsWithErrorHandling(
+        filesDir, 
+        catalogTable, 
+        chunksTable, 
+        overwrite || !catalogTableExists,
+        seedingCheckpoint
+    );
+    
+    // Save checkpoint after loading phase to persist any newly discovered complete documents
+    if (seedingCheckpoint.hasUnsavedChanges()) {
+        await seedingCheckpoint.save();
+    }
 
     if (rawDocs.length === 0) {
         // Check if we should rebuild the concept index (opt-in via flag)
@@ -1843,7 +1925,7 @@ async function hybridFastSeed() {
     }
 
     console.log("🚀 Creating catalog with LLM summaries...");
-    const catalogRecords = await processDocuments(rawDocs);
+    const { catalogRecords, processedInThisRun } = await processDocuments(rawDocs, seedingCheckpoint);
     
     if (catalogRecords.length > 0) {
         console.log("📊 Creating catalog table with fast local embeddings...");
@@ -1969,6 +2051,15 @@ async function hybridFastSeed() {
         console.log(`📊 Creating ${newChunksToCreate.length} new chunks...`);
         // Pass sourceToCatalogIdMap so chunks get proper catalog_id foreign key
         await createLanceTableWithSimpleEmbeddings(db, newChunksToCreate, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined, sourceToCatalogIdMap);
+        
+        // Update checkpoint after chunks are written successfully
+        // This marks each document as fully processed (catalog + chunks)
+        console.log(`📋 Updating checkpoint for ${processedInThisRun.length} newly processed documents...`);
+        for (const { hash, source } of processedInThisRun) {
+            await seedingCheckpoint.markProcessed(hash, source, false);
+        }
+        await seedingCheckpoint.save();
+        console.log(`✅ Checkpoint updated`);
     }
     
     // Update existing chunks with new concept metadata
@@ -2028,6 +2119,9 @@ async function hybridFastSeed() {
         console.log(`✅ Updated ${updatedCount} existing chunks with concept metadata`);
     }
 
+    // Update checkpoint stage to concepts
+    await seedingCheckpoint.setStage('concepts');
+    
     // ENHANCED: Build concept index with chunk statistics
     // When reprocessing documents, we need to rebuild from ALL catalog records, not just new ones
     if (catalogRecords.length > 0) {
@@ -2178,6 +2272,9 @@ async function hybridFastSeed() {
         }
     }
 
+    // Mark checkpoint as complete
+    await seedingCheckpoint.setStage('complete');
+
     // Calculate database size
     const dbSize = await getDatabaseSize(databaseDir);
     console.log(`✅ Created ${catalogRecords.length} catalog records`);
@@ -2188,6 +2285,11 @@ async function hybridFastSeed() {
         console.log(`✅ Updated ${existingChunksToUpdate.length} existing chunk records with concept metadata`);
     }
     console.log(`💾 Database size: ${dbSize}`);
+    
+    // Display checkpoint stats
+    const finalStats = seedingCheckpoint.getStats();
+    console.log(`📋 Checkpoint: ${finalStats.totalProcessed} processed, ${finalStats.totalFailed} failed`);
+    
     console.log("🎉 Seeding completed successfully!");
 }
 
