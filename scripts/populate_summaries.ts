@@ -30,6 +30,7 @@ const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const MODEL = "x-ai/grok-4-fast";
 const DEFAULT_BATCH_SIZE = 20;
 const MIN_REQUEST_INTERVAL = 1000; // 1 second between requests
+const SAVE_EVERY_N_BATCHES = 5; // Save progress every N batches
 
 interface SummaryResult {
   name: string;

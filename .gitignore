@@ -318,4 +318,4 @@ data
 preprod_db
 # Database backups
 backups/
-test_db
+db/
