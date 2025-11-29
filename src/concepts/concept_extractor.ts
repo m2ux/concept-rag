@@ -50,7 +50,7 @@ export class ConceptExtractor {
     /** Print document header once before first log message */
     private printHeaderIfNeeded(): void {
         if (this.sourceLabel && !this.headerPrinted) {
-            console.log(`\n📄 ${this.sourceLabel}`);
+            console.log(`📄 ${this.sourceLabel}`);
             this.headerPrinted = true;
         }
     }
