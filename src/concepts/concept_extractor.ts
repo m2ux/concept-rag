@@ -4,6 +4,14 @@ import { buildConceptExtractionPrompt } from "../config.js";
 import * as fs from "fs";
 import type { ResilientExecutor } from "../infrastructure/resilience/resilient-executor.js";
 import { ResilienceProfiles } from "../infrastructure/resilience/resilient-executor.js";
+import type { SharedRateLimiter } from "../infrastructure/utils/shared-rate-limiter.js";
+
+export interface ConceptExtractorOptions {
+    /** Optional resilient executor for circuit breaker, retry, and timeout protection */
+    resilientExecutor?: ResilientExecutor;
+    /** Optional shared rate limiter for coordinating across multiple extractors */
+    sharedRateLimiter?: SharedRateLimiter;
+}
 
 export class ConceptExtractor {
     
@@ -11,17 +19,37 @@ export class ConceptExtractor {
     private lastRequestTime: number = 0;
     private minRequestInterval: number = 3000; // 3 seconds between requests
     private resilientExecutor?: ResilientExecutor;
+    private sharedRateLimiter?: SharedRateLimiter;
     
     /**
      * @param apiKey - OpenRouter API key
-     * @param resilientExecutor - Optional resilient executor for circuit breaker, retry, and timeout protection
+     * @param options - Optional configuration (resilientExecutor, sharedRateLimiter)
      */
-    constructor(apiKey: string, resilientExecutor?: ResilientExecutor) {
+    constructor(apiKey: string, options?: ConceptExtractorOptions | ResilientExecutor) {
         this.openRouterApiKey = apiKey;
-        this.resilientExecutor = resilientExecutor;
+        
+        // Support both old signature (resilientExecutor) and new options object
+        if (options) {
+            if ('execute' in options) {
+                // Old signature: passed ResilientExecutor directly
+                this.resilientExecutor = options as ResilientExecutor;
+            } else {
+                // New signature: options object
+                const opts = options as ConceptExtractorOptions;
+                this.resilientExecutor = opts.resilientExecutor;
+                this.sharedRateLimiter = opts.sharedRateLimiter;
+            }
+        }
     }
     
     private async rateLimitDelay(): Promise<void> {
+        // If using shared rate limiter, use it instead of internal timing
+        if (this.sharedRateLimiter) {
+            await this.sharedRateLimiter.acquire();
+            return;
+        }
+        
+        // Internal rate limiting (for standalone usage)
         const now = Date.now();
         const timeSinceLastRequest = now - this.lastRequestTime;
         if (timeSinceLastRequest < this.minRequestInterval) {

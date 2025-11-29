@@ -151,6 +151,7 @@ export class ParallelConceptExtractor {
 
     /**
      * Process a batch of documents concurrently.
+     * Documents process in parallel; only API calls are rate-limited via shared limiter.
      */
     private async processBatch(
         batch: Array<[string, DocumentSet]>,
@@ -162,13 +163,13 @@ export class ParallelConceptExtractor {
             const startTime = Date.now();
             
             try {
-                // Wait for rate limiter before making API call
-                await this.rateLimiter.acquire();
-                
-                // Create a fresh extractor for this document
-                // Each extractor has its own internal state but that's fine
-                // since we're already coordinated through SharedRateLimiter
-                const extractor = new ConceptExtractor(this.apiKey);
+                // Create extractor with shared rate limiter
+                // Rate limiting happens at API call level, not document level
+                // This allows documents to process in parallel (chunking, etc.)
+                // while API calls are properly coordinated
+                const extractor = new ConceptExtractor(this.apiKey, {
+                    sharedRateLimiter: this.rateLimiter
+                });
                 const concepts = await extractor.extractConcepts(docs);
                 
                 onComplete();
