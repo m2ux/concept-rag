@@ -175,9 +175,6 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
       concept_id: result.conceptId,
       summary: result.summary,
       
-      // Concept match score (how well query matched this concept)
-      match_score: result.scores?.hybridScore?.toFixed(3) || '1.000',
-      
       // Semantic relationships
       related_concepts: result.relatedConcepts,
       synonyms: result.synonyms,
@@ -198,12 +195,13 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
         chunks_returned: result.chunks.length
       },
       
-      // Detailed hybrid search scores (debug mode only)
-      ...(debug && result.scores ? {
-        score_breakdown: {
-          name_match: result.scores.nameScore.toFixed(3),
+      // Detailed hybrid search scores (always shown for debugging)
+      ...(result.scores ? {
+        scores: {
+          hybrid: result.scores.hybridScore.toFixed(3),
+          name: result.scores.nameScore.toFixed(3),
           vector: result.scores.vectorScore.toFixed(3),
-          bm25_summary: result.scores.bm25Score.toFixed(3),
+          bm25: result.scores.bm25Score.toFixed(3),
           wordnet: result.scores.wordnetScore.toFixed(3)
         }
       } : {})

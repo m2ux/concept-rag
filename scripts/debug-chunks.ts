@@ -8,8 +8,8 @@ async function main() {
   const count = await chunks.countRows();
   console.log(`Total chunks in table: ${count}`);
   
-  // Query all records
-  const allRecords = await chunks.query().toArray();
+  // Query all records (LanceDB defaults to limit 10 without explicit limit)
+  const allRecords = await chunks.query().limit(100000).toArray();
   console.log(`Query returned: ${allRecords.length} records`);
   
   // Check catalog_title distribution

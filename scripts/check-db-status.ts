@@ -7,9 +7,10 @@ async function main() {
   const chunks = await db.openTable("chunks");
   const concepts = await db.openTable("concepts");
   
-  const catalogRecords = await catalog.query().toArray();
-  const chunkRecords = await chunks.query().toArray();
-  const conceptRecords = await concepts.query().toArray();
+  // LanceDB defaults to limit 10 without explicit limit
+  const catalogRecords = await catalog.query().limit(100000).toArray();
+  const chunkRecords = await chunks.query().limit(1000000).toArray();
+  const conceptRecords = await concepts.query().limit(100000).toArray();
   
   console.log("=== Database Status ===");
   console.log(`Catalog entries: ${catalogRecords.length}`);

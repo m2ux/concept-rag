@@ -264,6 +264,7 @@ export class LanceDBConceptRepository implements ConceptRepository {
           vectorScore,
           bm25Score,
           titleScore: nameScore,  // titleScore slot holds nameScore for concepts
+          conceptScore: 0,  // Not applicable for concept-to-concept search
           wordnetScore
         });
         

@@ -5,6 +5,7 @@
 import { BaseTool, ToolParams } from '../base/tool.js';
 import type { CategoryRepository } from '../../domain/interfaces/category-repository.js';
 import { InputValidator } from '../../domain/services/validation/index.js';
+import { isSome } from '../../domain/functional/index.js';
 
 export interface ListCategoriesToolParams extends ToolParams {
   sortBy?: 'name' | 'popularity' | 'documentCount';
@@ -76,15 +77,15 @@ export class ListCategoriesTool extends BaseTool<ListCategoriesToolParams> {
       // Format output (fetch additional data for each category)
       const formattedCategories = await Promise.all(limitedCategories.map(async cat => {
         const hierarchyPath = await this.categoryRepo.getHierarchyPath(cat.id);
-        const parentCat = cat.parentCategoryId 
+        const parentCatOpt = cat.parentCategoryId 
           ? await this.categoryRepo.findById(cat.parentCategoryId)
           : null;
         
         // Get related category names
         const relatedNames = [];
         for (const relId of cat.relatedCategories || []) {
-          const relCat = await this.categoryRepo.findById(relId);
-          if (relCat) relatedNames.push(relCat.category);
+          const relCatOpt = await this.categoryRepo.findById(relId);
+          if (isSome(relCatOpt)) relatedNames.push(relCatOpt.value.category);
         }
         
         return {
@@ -92,7 +93,7 @@ export class ListCategoriesTool extends BaseTool<ListCategoriesToolParams> {
           name: cat.category,
           description: cat.description,
           aliases: cat.aliases,
-          parent: parentCat?.category || null,
+          parent: parentCatOpt && isSome(parentCatOpt) ? parentCatOpt.value.category : null,
           hierarchy: hierarchyPath,
           statistics: {
             documents: cat.documentCount,

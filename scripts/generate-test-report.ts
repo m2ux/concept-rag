@@ -100,7 +100,7 @@ async function generateReport(container: ApplicationContainer): Promise<string> 
     // =====================
     report.push('## 1. concept_search');
     report.push('');
-    report.push('Hybrid scoring: 40% name, 30% vector, 20% BM25, 10% synonyms');
+    report.push('Hybrid scoring for concept: 40% name, 30% vector, 20% BM25, 10% WordNet/synonyms');
     report.push('');
     
     const conceptSearchTool = container.getTool('concept_search');
@@ -189,7 +189,7 @@ async function generateReport(container: ApplicationContainer): Promise<string> 
     // =====================
     report.push('## 2. catalog_search');
     report.push('');
-    report.push('Hybrid scoring: 30% vector, 30% BM25, 25% title, 15% WordNet');
+    report.push('Hybrid scoring for catalog: 25% vector, 25% BM25, 20% title, 20% concept, 10% WordNet');
     report.push('');
     
     const catalogSearchTool = container.getTool('catalog_search');
@@ -223,7 +223,7 @@ async function generateReport(container: ApplicationContainer): Promise<string> 
     // =====================
     report.push('## 3. broad_chunks_search');
     report.push('');
-    report.push('Hybrid scoring: 40% vector, 40% BM25, 20% WordNet (no title)');
+    report.push('Hybrid scoring for chunks: 35% vector, 30% BM25, 20% concept, 15% WordNet (no title)');
     report.push('');
     
     const broadChunksSearchTool = container.getTool('broad_chunks_search');
@@ -402,7 +402,7 @@ async function main() {
         const report = await generateReport(container);
         
         // Write report to file
-        const reportPath = '.ai/planning/2025-11-28-schema-redesign/mcp-tool-test-report.md';
+        const reportPath = '.ai/planning/2025-11-29-unified-search/mcp-tool-test-report.md';
         fs.writeFileSync(reportPath, report);
         
         console.log(`✅ Report written to ${reportPath}`);

@@ -315,4 +315,7 @@ sample-docs
 logs
 .envrc
 data
+preprod_db
+# Database backups
+backups/
 test_db

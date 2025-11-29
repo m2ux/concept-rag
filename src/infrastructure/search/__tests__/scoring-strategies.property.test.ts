@@ -334,11 +334,13 @@ describe('Scoring Functions Property-Based Tests', () => {
           fc.float({ min: 0, max: 1, noNaN: true }),
           fc.float({ min: 0, max: 1, noNaN: true }),
           fc.float({ min: 0, max: 1, noNaN: true }),
-          (vectorScore, bm25Score, titleScore, wordnetScore) => {
+          fc.float({ min: 0, max: 1, noNaN: true }),
+          (vectorScore, bm25Score, titleScore, conceptScore, wordnetScore) => {
             const components: ScoreComponents = {
               vectorScore,
               bm25Score,
               titleScore,
+              conceptScore,
               wordnetScore
             };
             const score = calculateHybridScore(components);
@@ -356,11 +358,13 @@ describe('Scoring Functions Property-Based Tests', () => {
           fc.float({ min: 0, max: 1, noNaN: true }),
           fc.float({ min: 0, max: 1, noNaN: true }),
           fc.float({ min: 0, max: 1, noNaN: true }),
-          (vectorScore, bm25Score, titleScore, wordnetScore) => {
+          fc.float({ min: 0, max: 1, noNaN: true }),
+          (vectorScore, bm25Score, titleScore, conceptScore, wordnetScore) => {
             const components: ScoreComponents = {
               vectorScore,
               bm25Score,
               titleScore,
+              conceptScore,
               wordnetScore
             };
             const hybridScore = calculateHybridScore(components);
@@ -368,12 +372,13 @@ describe('Scoring Functions Property-Based Tests', () => {
             // Skip if result is NaN
             if (isNaN(hybridScore)) return true;
             
-            // Calculate expected weighted average (new weights: 30/30/25/15)
+            // Calculate expected weighted average (catalog weights: 30/25/20/15/10)
             const expected = (
               vectorScore * 0.30 +
-              bm25Score * 0.30 +
-              titleScore * 0.25 +
-              wordnetScore * 0.15
+              bm25Score * 0.25 +
+              titleScore * 0.20 +
+              conceptScore * 0.15 +
+              wordnetScore * 0.10
             );
             
             // Allow small floating-point precision differences
@@ -391,11 +396,13 @@ describe('Scoring Functions Property-Based Tests', () => {
           fc.float({ min: 0, max: 1, noNaN: true }),
           fc.float({ min: 0, max: 1, noNaN: true }),
           fc.float({ min: 0, max: 1, noNaN: true }),
-          (vectorScore, bm25Score, titleScore, wordnetScore) => {
+          fc.float({ min: 0, max: 1, noNaN: true }),
+          (vectorScore, bm25Score, titleScore, conceptScore, wordnetScore) => {
             const components: ScoreComponents = {
               vectorScore,
               bm25Score,
               titleScore,
+              conceptScore,
               wordnetScore
             };
             const score1 = calculateHybridScore(components);
@@ -416,7 +423,8 @@ describe('Scoring Functions Property-Based Tests', () => {
           fc.float({ min: 0, max: 1, noNaN: true }),
           fc.float({ min: 0, max: 1, noNaN: true }),
           fc.float({ min: 0, max: 1, noNaN: true }),
-          (vectorScore1, bm25Score, titleScore, wordnetScore, vectorScore2) => {
+          fc.float({ min: 0, max: 1, noNaN: true }),
+          (vectorScore1, bm25Score, titleScore, conceptScore, wordnetScore, vectorScore2) => {
             // Ensure vectorScore2 > vectorScore1
             const v1 = Math.min(vectorScore1, vectorScore2);
             const v2 = Math.max(vectorScore1, vectorScore2);
@@ -425,6 +433,7 @@ describe('Scoring Functions Property-Based Tests', () => {
               vectorScore: v1,
               bm25Score,
               titleScore,
+              conceptScore,
               wordnetScore
             };
             
@@ -432,6 +441,7 @@ describe('Scoring Functions Property-Based Tests', () => {
               vectorScore: v2,
               bm25Score,
               titleScore,
+              conceptScore,
               wordnetScore
             };
             
@@ -454,6 +464,7 @@ describe('Scoring Functions Property-Based Tests', () => {
         vectorScore: 0,
         bm25Score: 0,
         titleScore: 0,
+        conceptScore: 0,
         wordnetScore: 0
       };
       expect(calculateHybridScore(components)).toBe(0);
@@ -464,6 +475,7 @@ describe('Scoring Functions Property-Based Tests', () => {
         vectorScore: 1,
         bm25Score: 1,
         titleScore: 1,
+        conceptScore: 1,
         wordnetScore: 1
       };
       expect(calculateHybridScore(components)).toBeCloseTo(1.0, 10);
@@ -490,6 +502,7 @@ describe('Scoring Functions Property-Based Tests', () => {
               vectorScore,
               bm25Score,
               titleScore,
+              conceptScore: 0.5,
               wordnetScore: 0.5
             };
             

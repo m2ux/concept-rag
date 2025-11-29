@@ -10,6 +10,7 @@ import {
   calculateWeightedBM25,
   calculateTitleScore,
   calculateWordNetBonus,
+  calculateConceptMatchScore,
   calculateCatalogHybridScore,
   calculateChunkHybridScore,
   getMatchedConcepts,
@@ -23,9 +24,11 @@ import {
  * - Vector similarity (semantic search via embeddings)
  * - BM25 keyword matching (lexical search)
  * - Title matching (document relevance)
+ * - Concept matching (concept-aware scoring via QueryExpander)
  * - WordNet expansion (semantic enrichment)
  * 
- * Note: Concept scoring removed - use concept_search tool for concept-based discovery.
+ * The QueryExpander provides concept_terms derived from hybrid concept search,
+ * enabling unified concept-aware searching across all search types.
  * 
  * This service orchestrates query expansion, vector search, and multi-signal
  * scoring to provide high-quality search results.
@@ -106,6 +109,19 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       // Get searchable text (chunks use 'text', catalog uses 'summary')
       const searchableText = row.text || row.summary || '';
       
+      // Parse string array fields (for derived text fields) - needed early for concept scoring
+      const parseStringArrayField = (value: any): string[] => {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'object' && 'toArray' in value) {
+          return Array.from(value.toArray());
+        }
+        if (typeof value === 'string') {
+          try { return JSON.parse(value); } catch { return []; }
+        }
+        return [];
+      };
+      
       // Calculate individual scores
       const vectorScore = calculateVectorScore(row._distance || 0);
       const bm25Score = calculateWeightedBM25(
@@ -115,6 +131,11 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         row.source || ''
       );
       const titleScore = calculateTitleScore(expanded.original_terms, row.source || '');
+      
+      // Calculate concept score using expanded concept terms
+      const docConceptNames = parseStringArrayField(row.concept_names);
+      const conceptScore = calculateConceptMatchScore(expanded.concept_terms, docConceptNames);
+      
       const wordnetScore = calculateWordNetBonus(expanded.wordnet_terms, searchableText);
       
       // Calculate hybrid score based on collection type
@@ -123,8 +144,8 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       const isChunkSearch = collectionName.includes('chunk');
       
       const hybridScore = isChunkSearch
-        ? calculateChunkHybridScore({ vectorScore, bm25Score, titleScore, wordnetScore })
-        : calculateCatalogHybridScore({ vectorScore, bm25Score, titleScore, wordnetScore });
+        ? calculateChunkHybridScore({ vectorScore, bm25Score, titleScore, conceptScore, wordnetScore })
+        : calculateCatalogHybridScore({ vectorScore, bm25Score, titleScore, conceptScore, wordnetScore });
       
       // Parse array fields (may be Arrow Vectors from LanceDB)
       const parseArrayField = (value: any): number[] => {
@@ -132,19 +153,6 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         if (Array.isArray(value)) return value;
         if (typeof value === 'object' && 'toArray' in value) {
           return Array.from(value.toArray());
-        }
-        return [];
-      };
-      
-      // Parse string array fields (for derived text fields)
-      const parseStringArrayField = (value: any): string[] => {
-        if (!value) return [];
-        if (Array.isArray(value)) return value;
-        if (typeof value === 'object' && 'toArray' in value) {
-          return Array.from(value.toArray());
-        }
-        if (typeof value === 'string') {
-          try { return JSON.parse(value); } catch { return []; }
         }
         return [];
       };
@@ -165,6 +173,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         vectorScore,
         bm25Score,
         titleScore,
+        conceptScore,
         wordnetScore,
         hybridScore,
         matchedConcepts: getMatchedConcepts(expanded, row),
@@ -199,6 +208,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     console.error('\n🔍 Query Expansion:');
     console.error('  Original:', expanded.original_terms.join(', '));
     console.error('  + Corpus:', expanded.corpus_terms.slice(0, 5).join(', '));
+    console.error('  + Concepts:', expanded.concept_terms.slice(0, 5).join(', '));
     console.error('  + WordNet:', expanded.wordnet_terms.slice(0, 5).join(', '));
     console.error('  Total terms:', expanded.all_terms.length);
   }
@@ -211,7 +221,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       console.error(`   Vector: ${result.vectorScore.toFixed(3)}`);
       console.error(`   BM25: ${result.bm25Score.toFixed(3)}`);
       console.error(`   Title: ${result.titleScore.toFixed(3)}`);
-      // Concept score removed - use concept_search tool
+      console.error(`   Concept: ${result.conceptScore.toFixed(3)}`);
       console.error(`   WordNet: ${result.wordnetScore.toFixed(3)}`);
       console.error(`   ➜ Hybrid: ${result.hybridScore.toFixed(3)}`);
       if (result.matchedConcepts && result.matchedConcepts.length > 0) {

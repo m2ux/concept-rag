@@ -7,6 +7,7 @@ import type { CategoryRepository } from '../../domain/interfaces/category-reposi
 import { CatalogRepository } from '../../domain/interfaces/repositories/catalog-repository.js';
 import { InputValidator } from '../../domain/services/validation/index.js';
 import { RecordNotFoundError } from '../../domain/exceptions/index.js';
+import { isSome } from '../../domain/functional/index.js';
 
 export interface CategorySearchToolParams extends ToolParams {
   category: string;
@@ -101,17 +102,17 @@ export class CategorySearchTool extends BaseTool<CategorySearchToolParams> {
       // Get related categories with names
       const relatedCategoryNames = [];
       for (const relId of category.relatedCategories || []) {
-        const relCat = await this.categoryRepo.findById(relId);
-        if (relCat) {
-          relatedCategoryNames.push({ id: relId, name: relCat.category });
+        const relCatOpt = await this.categoryRepo.findById(relId);
+        if (isSome(relCatOpt)) {
+          relatedCategoryNames.push({ id: relId, name: relCatOpt.value.category });
         }
       }
       
       // Get category names for searched IDs
       const searchedCategoryNames = [];
       for (const id of categoryIdsToSearch) {
-        const cat = await this.categoryRepo.findById(id);
-        if (cat) searchedCategoryNames.push(cat.category);
+        const catOpt = await this.categoryRepo.findById(id);
+        if (isSome(catOpt)) searchedCategoryNames.push(catOpt.value.category);
       }
       
       // Format response
