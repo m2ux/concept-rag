@@ -18,6 +18,8 @@ Concept-RAG provides **10 MCP tools** organized into four categories:
 | **Concept Analysis** | `concept_search`, `extract_concepts`, `source_concepts`, `concept_sources` | Analyze and track concepts |
 | **Category Browsing** | `category_search`, `list_categories`, `list_concepts_in_category` | Browse by domain/category |
 
+> **Note:** Category tools (`category_search`, `list_categories`, `list_concepts_in_category`) are only available when a `categories` table exists in the database.
+
 ---
 
 ## Document Discovery
@@ -63,11 +65,12 @@ Search document summaries and metadata to discover relevant documents using sema
 1. Converts query to a vector embedding
 2. Performs semantic search against document summaries
 3. Re-ranks results using weighted combination:
-   - 25% Vector similarity (semantic understanding)
-   - 25% BM25 (keyword relevance)
-   - 20% Title matching (document title/filename)
-   - 20% Concept matching (against `concept_names` field)
-   - 10% WordNet expansion (synonyms and related terms)
+   - 30% Vector similarity (semantic understanding)
+   - 30% BM25 (keyword relevance)
+   - 25% Title matching (document title/filename)
+   - 15% WordNet expansion (synonyms and related terms)
+
+> **Note:** Concept matching was removed from hybrid search scoring. Use `concept_search` for concept-based discovery.
 
 ---
 
@@ -75,7 +78,9 @@ Search document summaries and metadata to discover relevant documents using sema
 
 ### `broad_chunks_search`
 
-Search across ALL document chunks using hybrid search (40% vector + 40% BM25 + 20% WordNet). Note: Title matching is NOT used for chunk search.
+Search across ALL document chunks using hybrid search (40% vector + 40% BM25 + 20% WordNet).
+
+> **Note:** Title matching is NOT used for chunk search. The `catalog_title` field is for display only.
 
 **Use When:**
 - Comprehensive cross-document research on a topic
@@ -93,9 +98,8 @@ Search across ALL document chunks using hybrid search (40% vector + 40% BM25 + 2
 
 **Returns:** Top 20 chunks ranked by hybrid scoring with:
 - Text content
-- Source document path (`catalog_title`)
-- Score components (vector, BM25, title, concept, WordNet)
-- Matched concepts
+- Source document path (via `source` field)
+- Score components (hybrid, vector, BM25, WordNet)
 - Expanded search terms
 
 **Example:**
@@ -108,7 +112,11 @@ Search across ALL document chunks using hybrid search (40% vector + 40% BM25 + 2
 
 **How It Works:**
 Uses 3-signal hybrid scoring optimized for text passages:
-- 40% Vector, 40% BM25, 20% WordNet (title scoring excluded for chunks)
+- 40% Vector similarity (semantic understanding)
+- 40% BM25 (keyword relevance)
+- 20% WordNet expansion (synonyms and related terms)
+
+> **Note:** Title scoring is excluded for chunks since `catalog_title` is a display field, not relevant for passage ranking.
 
 ---
 
@@ -133,7 +141,8 @@ Search within a single known document using hybrid search.
 
 **Returns:** Top 20 chunks from the specified document with:
 - Text content
-- Hybrid scores (vector, BM25, title, WordNet)
+- Document title (`catalog_title`)
+- Concepts (`concept_names`)
 - Expanded search terms
 
 **Example:**
@@ -152,7 +161,9 @@ Search within a single known document using hybrid search.
 
 ### `concept_search`
 
-Find chunks associated with a concept, organized by source documents.
+Find chunks associated with a concept, organized by source documents (hierarchical view).
+
+Uses **fuzzy matching** to find the concept, then **expands to include documents from lexically-related concepts**. For example: "software architecture" → also finds documents via "complexity software", "software design".
 
 Uses **hybrid scoring** to find the best matching concept:
 - 40% Name matching (exact/partial concept name match)
@@ -181,10 +192,11 @@ Then retrieves all chunks that were tagged with that concept during extraction.
 | `source_filter` | string | ❌ | - | Filter results to documents containing this text in path |
 | `debug` | boolean | ❌ | `false` | Show debug information |
 
-**Returns:** Concept-tagged chunks organized by source with:
+**Returns:** Hierarchical results organized as Concept → Sources → Chunks:
 - Concept metadata (summary, synonyms, broader/narrower terms)
-- Source documents with paths and page numbers
-- Enriched chunks with concept density ranking
+- Source documents with `match_type`: `'primary'` (direct) or `'related'` (via linked concept)
+- Enriched chunks with page numbers and concept density ranking
+- Statistics (total documents, total chunks, sources/chunks returned)
 
 **Example:**
 ```json
@@ -196,10 +208,11 @@ Then retrieves all chunks that were tagged with that concept during extraction.
 ```
 
 **How It Works:**
-1. Finds concept by exact name match or fuzzy search
-2. Retrieves all chunks tagged with the concept
-3. Groups chunks by source document
-4. Returns hierarchical view: concept → documents → chunks
+1. Finds concept by hybrid search (name + vector + BM25 + WordNet)
+2. Expands to include documents from lexically-related concepts
+3. Retrieves all chunks tagged with the concept
+4. Groups chunks by source document with page context
+5. Returns hierarchical view: concept → sources (with match type) → chunks (sorted by concept density)
 
 ---
 
@@ -520,3 +533,7 @@ All tools return structured error responses:
 | `list_categories` | 10-50ms |
 
 Performance depends on database size and query complexity.
+
+**Performance Caches:**
+- **EmbeddingCache** - Caches up to 10,000 embeddings to avoid recomputation
+- **SearchResultCache** - Caches up to 1,000 search results with 5-minute TTL

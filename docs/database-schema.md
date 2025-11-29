@@ -1,6 +1,6 @@
 # Concept-RAG Database Schema
 
-**Last Updated:** 2025-11-28  
+**Last Updated:** 2025-11-29  
 **Database:** LanceDB (embedded vector database)  
 **Embedding Model:** all-MiniLM-L6-v2 (384 dimensions)  
 **Schema Version:** Normalized v7 (derived text fields, no ID caches needed)
@@ -405,12 +405,14 @@ await chunksTable.createIndex("vector", {
 
 | Metric | Value |
 |--------|-------|
-| **Total Size** | 1.1 GB |
-| **Documents (catalog)** | 259 |
-| **Chunks** | 471,454 |
-| **Concepts** | 59,587 |
-| **Categories** | 687 |
+| **Total Size** | ~180 MB (40 docs) to 1.1 GB (259 docs) |
+| **Documents (catalog)** | 40-259 (varies by deployment) |
+| **Chunks** | ~82,000 (40 docs) to 471,000+ (259 docs) |
+| **Concepts** | ~5,000 (40 docs) to 60,000+ (259 docs) |
+| **Categories** | 76-687 (varies by content) |
 | **Avg concepts per chunk** | ~3-5 |
+
+> **Note:** Statistics vary by deployment. The preprod database with 40 documents is approximately 183 MB with 82,663 chunks and 4,787 concepts.
 
 ---
 
@@ -427,6 +429,7 @@ await chunksTable.createIndex("vector", {
 | 2025-11-28 | Replaced `source` with `catalog_title` in chunks (v7) | - |
 | 2025-11-28 | Removed ID mapping caches (ConceptIdCache, CatalogSourceCache, CategoryIdCache) | - |
 | 2025-11-28 | Added `summary` field to concepts (extracted with concept) | - |
+| 2025-11-29 | Parallel concept extraction support (SharedRateLimiter, ParallelConceptExtractor) | - |
 
 ---
 
@@ -478,3 +481,4 @@ These performance caches remain for CPU/DB optimization:
 - Migration Script: `scripts/migrate_to_normalized_schema.ts`
 - Lexical Linking: `scripts/link_related_concepts.ts`
 - Derived Fields Regeneration: `scripts/rebuild_derived_names.ts`
+- Seeding Script: `hybrid_fast_seed.ts` (supports `--parallel N` for parallel concept extraction)
