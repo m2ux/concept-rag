@@ -1,0 +1,245 @@
+/**
+ * Parallel Concept Extractor
+ * 
+ * Processes multiple documents concurrently for concept extraction while
+ * respecting API rate limits. Uses a shared rate limiter to coordinate
+ * across all workers.
+ * 
+ * @example
+ * ```typescript
+ * const extractor = new ParallelConceptExtractor('api-key', 3000);
+ * 
+ * const documentSets = new Map([
+ *   ['doc1.pdf', { docs: [...], hash: 'abc123' }],
+ *   ['doc2.pdf', { docs: [...], hash: 'def456' }],
+ * ]);
+ * 
+ * const results = await extractor.extractAll(documentSets, {
+ *   concurrency: 5,
+ *   onProgress: (done, total, current) => {
+ *     console.log(`Progress: ${done}/${total}`);
+ *   }
+ * });
+ * ```
+ */
+
+import { Document } from "@langchain/core/documents";
+import { ConceptExtractor } from "./concept_extractor.js";
+import { ConceptMetadata } from "./types.js";
+import { SharedRateLimiter, RateLimiterMetrics } from "../infrastructure/utils/shared-rate-limiter.js";
+
+/**
+ * Result of concept extraction for a single document.
+ */
+export interface DocumentConceptResult {
+    /** Source file path */
+    source: string;
+    /** Document hash */
+    hash: string;
+    /** Extracted concepts, or null if extraction failed */
+    concepts: ConceptMetadata | null;
+    /** Error message if extraction failed */
+    error?: string;
+    /** Time taken to process this document in milliseconds */
+    processingTimeMs: number;
+}
+
+/**
+ * Options for parallel concept extraction.
+ */
+export interface ParallelExtractionOptions {
+    /** Number of documents to process concurrently */
+    concurrency: number;
+    /** Callback for progress updates */
+    onProgress?: (completed: number, total: number, currentSource: string) => void;
+    /** Callback for error notifications */
+    onError?: (source: string, error: Error) => void;
+}
+
+/**
+ * Summary statistics for a parallel extraction run.
+ */
+export interface ParallelExtractionStats {
+    /** Total documents processed */
+    totalDocuments: number;
+    /** Documents that succeeded */
+    successCount: number;
+    /** Documents that failed */
+    failureCount: number;
+    /** Total processing time in milliseconds */
+    totalTimeMs: number;
+    /** Average time per document in milliseconds */
+    avgTimePerDocMs: number;
+    /** Rate limiter metrics */
+    rateLimiterMetrics: RateLimiterMetrics;
+}
+
+/**
+ * Document set prepared for parallel extraction.
+ */
+export interface DocumentSet {
+    /** Array of document pages/chunks */
+    docs: Document[];
+    /** Document hash for tracking */
+    hash: string;
+}
+
+/**
+ * Parallel concept extraction using worker pool pattern.
+ * Processes multiple documents concurrently while respecting rate limits.
+ */
+export class ParallelConceptExtractor {
+    private rateLimiter: SharedRateLimiter;
+    private apiKey: string;
+    private startTime: number = 0;
+    
+    /**
+     * Creates a new parallel concept extractor.
+     * 
+     * @param apiKey - OpenRouter API key
+     * @param rateLimitIntervalMs - Minimum interval between API calls (default: 3000ms)
+     */
+    constructor(
+        apiKey: string,
+        rateLimitIntervalMs: number = 3000
+    ) {
+        this.apiKey = apiKey;
+        this.rateLimiter = new SharedRateLimiter(rateLimitIntervalMs);
+    }
+
+    /**
+     * Extract concepts from multiple document sets in parallel.
+     * 
+     * @param documentSets - Map of source path to document set
+     * @param options - Parallel extraction options
+     * @returns Array of results for each document
+     */
+    async extractAll(
+        documentSets: Map<string, DocumentSet>,
+        options: ParallelExtractionOptions
+    ): Promise<DocumentConceptResult[]> {
+        const { 
+            concurrency, 
+            onProgress, 
+            onError 
+        } = options;
+
+        const entries = Array.from(documentSets.entries());
+        const results: DocumentConceptResult[] = [];
+        let completed = 0;
+        
+        this.startTime = Date.now();
+
+        // Process in batches of `concurrency` size
+        for (let i = 0; i < entries.length; i += concurrency) {
+            const batch = entries.slice(i, i + concurrency);
+            const batchResults = await this.processBatch(
+                batch, 
+                () => {
+                    completed++;
+                },
+                (source) => {
+                    onProgress?.(completed, entries.length, source);
+                },
+                onError
+            );
+            results.push(...batchResults);
+        }
+
+        return results;
+    }
+
+    /**
+     * Process a batch of documents concurrently.
+     */
+    private async processBatch(
+        batch: Array<[string, DocumentSet]>,
+        onComplete: () => void,
+        onProgress: (source: string) => void,
+        onError?: (source: string, error: Error) => void
+    ): Promise<DocumentConceptResult[]> {
+        const batchPromises = batch.map(async ([source, { docs, hash }]) => {
+            const startTime = Date.now();
+            
+            try {
+                // Wait for rate limiter before making API call
+                await this.rateLimiter.acquire();
+                
+                // Create a fresh extractor for this document
+                // Each extractor has its own internal state but that's fine
+                // since we're already coordinated through SharedRateLimiter
+                const extractor = new ConceptExtractor(this.apiKey);
+                const concepts = await extractor.extractConcepts(docs);
+                
+                onComplete();
+                onProgress(source);
+                
+                return {
+                    source,
+                    hash,
+                    concepts,
+                    processingTimeMs: Date.now() - startTime
+                };
+            } catch (error: any) {
+                onError?.(source, error);
+                onComplete();
+                onProgress(source);
+                
+                return {
+                    source,
+                    hash,
+                    concepts: null,
+                    error: error.message || 'Unknown error',
+                    processingTimeMs: Date.now() - startTime
+                };
+            }
+        });
+
+        return Promise.all(batchPromises);
+    }
+
+    /**
+     * Get statistics about the extraction run.
+     * 
+     * @param results - Results from extractAll()
+     * @returns Summary statistics
+     */
+    getStats(results: DocumentConceptResult[]): ParallelExtractionStats {
+        const successCount = results.filter(r => r.concepts !== null).length;
+        const failureCount = results.filter(r => r.concepts === null).length;
+        const totalTimeMs = results.reduce((sum, r) => sum + r.processingTimeMs, 0);
+        
+        return {
+            totalDocuments: results.length,
+            successCount,
+            failureCount,
+            totalTimeMs: Date.now() - this.startTime,
+            avgTimePerDocMs: results.length > 0 ? Math.round(totalTimeMs / results.length) : 0,
+            rateLimiterMetrics: this.rateLimiter.getMetrics()
+        };
+    }
+
+    /**
+     * Get rate limiter metrics.
+     */
+    getRateLimiterMetrics(): RateLimiterMetrics {
+        return this.rateLimiter.getMetrics();
+    }
+
+    /**
+     * Partition results into successful and failed extractions.
+     * 
+     * @param results - Results from extractAll()
+     * @returns Object with successful and failed results
+     */
+    partitionResults(results: DocumentConceptResult[]): {
+        successful: DocumentConceptResult[];
+        failed: DocumentConceptResult[];
+    } {
+        return {
+            successful: results.filter(r => r.concepts !== null),
+            failed: results.filter(r => r.concepts === null)
+        };
+    }
+}
+
