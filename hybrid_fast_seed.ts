@@ -1532,6 +1532,7 @@ async function processDocumentsParallel(
     const catalogRecords: Document[] = [];
     const processedInThisRun: Array<{hash: string, source: string}> = [];
     
+    // Process successful documents
     for (const result of successful) {
         const docs = docsBySource[result.source];
         const contentOverview = await generateContentOverview(docs);
@@ -1562,6 +1563,50 @@ Categories: ${result.concepts!.categories.join(', ')}
         
         catalogRecords.push(catalogRecord);
         processedInThisRun.push({ hash: result.hash, source: result.source });
+    }
+    
+    // Process failed documents with empty concepts (consistent with sequential mode)
+    // This ensures they're still added to the catalog and checkpoint
+    for (const result of failed) {
+        const docs = docsBySource[result.source];
+        const contentOverview = await generateContentOverview(docs);
+        const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
+        
+        // Use empty concepts for failed documents
+        const emptyConcepts = {
+            primary_concepts: [],
+            categories: ['General']
+        };
+        
+        const enrichedContent = `
+${contentOverview}
+
+Key Concepts: 
+Categories: General
+`.trim();
+        
+        const catalogRecord = new Document({
+            pageContent: enrichedContent,
+            metadata: {
+                source: result.source,
+                hash: result.hash,
+                ocr_processed: isOcrProcessed,
+                concepts: emptyConcepts
+            }
+        });
+        
+        catalogRecords.push(catalogRecord);
+        processedInThisRun.push({ hash: result.hash, source: result.source });
+        
+        // Also mark as failed in checkpoint if available (for reporting purposes)
+        if (checkpoint) {
+            await checkpoint.markFailed(result.source, false);
+        }
+    }
+    
+    // Save checkpoint once after batch processing
+    if (checkpoint && failed.length > 0) {
+        await checkpoint.save();
     }
     
     return { catalogRecords, processedInThisRun };
