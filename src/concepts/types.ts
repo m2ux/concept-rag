@@ -110,7 +110,8 @@ export interface WordNetSynset {
 // Query expansion result
 export interface ExpandedQuery {
     original_terms: string[];
-    corpus_terms: string[];            // From concept index
+    corpus_terms: string[];            // From concept index vector search
+    concept_terms: string[];           // From concept hybrid search (names + related)
     wordnet_terms: string[];           // From WordNet
     all_terms: string[];               // Combined
     weights: Map<string, number>;      // Term importance weights

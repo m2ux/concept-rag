@@ -6,11 +6,9 @@
  */
 
 export * from './concept-search-service.js';
-// @ts-expect-error - Type narrowing limitation
 export * from './catalog-search-service.js';
-// @ts-expect-error - Type narrowing limitation
+// @ts-expect-error - SearchError type name collision with catalog-search-service (different types)
 export * from './chunk-search-service.js';
 export * from './concept-sources-service.js';
 export * from './fuzzy-concept-search-service.js';
-export * from './concept-search-service.js';
 

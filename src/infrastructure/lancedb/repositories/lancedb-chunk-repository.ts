@@ -130,6 +130,41 @@ export class LanceDBChunkRepository implements ChunkRepository {
     }
   }
   
+  /**
+   * Find chunks by source path using catalog_title field.
+   * 
+   * @deprecated Use findByCatalogId instead for better performance.
+   * This method exists for backward compatibility only.
+   */
+  async findBySource(sourcePath: string, limit: number): Promise<Chunk[]> {
+    console.warn('findBySource is deprecated - use findByCatalogId for better performance');
+    
+    try {
+      // Search by catalog_title field which stores the document title
+      const sourceMatch = sourcePath.toLowerCase();
+      const results = await this.chunksTable
+        .query()
+        .limit(100000)  // Get all to filter
+        .toArray();
+      
+      // Filter by catalog_title containing the source path
+      const filtered = results
+        .filter((row: any) => {
+          const title = (row.catalog_title || '').toLowerCase();
+          return title.includes(sourceMatch) || sourceMatch.includes(title);
+        })
+        .slice(0, limit);
+      
+      return filtered.map((row: any) => this.mapRowToChunk(row));
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to find chunks for source "${sourcePath}"`,
+        'query',
+        error as Error
+      );
+    }
+  }
+  
 
   async search(query: SearchQuery): Promise<SearchResult[]> {
     // Use hybrid search for multi-signal ranking

@@ -5,13 +5,11 @@ import { Chunk } from './chunk.js';
  * 
  * Extends {@link Chunk} with scoring information from the hybrid search algorithm.
  * Results are ranked using a weighted combination of multiple signals:
- * - **Vector similarity**: Semantic understanding (30% weight)
- * - **BM25**: Keyword matching (30% weight)
- * - **Title matching**: Document relevance (25% weight)
- * - **WordNet expansion**: Semantic enrichment (15% weight)
- * 
- * Note: Concept scoring was removed from hybrid search. Use concept_search
- * or concept_chunks tools for concept-based discovery instead.
+ * - **Vector similarity**: Semantic understanding (30% catalog, 35% chunk)
+ * - **BM25**: Keyword matching (25% catalog, 35% chunk)
+ * - **Title matching**: Document relevance (20% catalog only)
+ * - **Concept matching**: Concept alignment (15% both)
+ * - **WordNet expansion**: Semantic enrichment (10% catalog, 15% chunk)
  * 
  * @example
  * ```typescript
@@ -68,15 +66,17 @@ export interface SearchResult extends Chunk {
   /** Title/source matching score (0-1, higher = query appears in title) */
   titleScore: number;
   
+  /** Concept alignment score based on expanded concept terms (0-1, higher = better concept match) */
+  conceptScore: number;
+  
   /** WordNet semantic expansion score (0-1, higher = more synonym matches) */
   wordnetScore: number;
   
   /**
    * Final hybrid score combining all signals (0-1, higher = more relevant).
    * 
-   * Formula: `0.30*vector + 0.30*bm25 + 0.25*title + 0.15*wordnet`
-   * 
-   * Note: Concept scoring removed - use concept_search tool for concept-based discovery.
+   * Catalog formula: `0.30*vector + 0.25*bm25 + 0.20*title + 0.15*concept + 0.10*wordnet`
+   * Chunk formula: `0.35*vector + 0.35*bm25 + 0.15*concept + 0.15*wordnet`
    */
   hybridScore: number;
   

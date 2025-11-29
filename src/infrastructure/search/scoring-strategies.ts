@@ -9,12 +9,14 @@ export interface ScoreComponents {
   vectorScore: number;
   bm25Score: number;
   titleScore: number;
+  conceptScore: number;
   wordnetScore: number;
 }
 
 export interface ExpandedQuery {
   original_terms: string[];
   corpus_terms: string[];
+  concept_terms: string[];
   wordnet_terms: string[];
   all_terms: string[];
   weights: Map<string, number>;
@@ -221,10 +223,19 @@ export function calculateConceptScore(
     
     if (allConcepts.length === 0) return 0;
     
+    // Only use original terms + concept terms for concept scoring
+    // (not corpus/wordnet terms which may be unrelated)
+    const relevantTerms = [
+      ...expanded.original_terms,
+      ...expanded.concept_terms
+    ];
+    
+    if (relevantTerms.length === 0) return 0;
+    
     let weightedScore = 0;
     
     // Match query terms against document concepts
-    for (const queryConcept of expanded.all_terms) {
+    for (const queryConcept of relevantTerms) {
       const queryWeight = expanded.weights.get(queryConcept) || 0.5;
       
       // Fuzzy matching
@@ -236,8 +247,8 @@ export function calculateConceptScore(
       }
     }
     
-    // Normalize by number of query terms
-    return Math.min(weightedScore / Math.max(expanded.all_terms.length, 1), 1.0);
+    // Normalize by number of relevant terms
+    return Math.min(weightedScore / Math.max(relevantTerms.length, 1), 1.0);
   } catch (e) {
     return 0;
   }
@@ -276,9 +287,10 @@ export function calculateWordNetBonus(
  * 
  * Applies weighted combination optimized for document discovery:
  * - 30% Vector similarity (semantic understanding)
- * - 30% BM25 (keyword relevance)
- * - 25% Title matching (document title/filename relevance)
- * - 15% WordNet (semantic enrichment)
+ * - 25% BM25 (keyword relevance)
+ * - 20% Title matching (document title/filename relevance)
+ * - 15% Concept matching (concept alignment)
+ * - 10% WordNet (semantic enrichment)
  * 
  * @param components - Individual score components
  * @returns Final hybrid score from 0.0 to 1.0
@@ -286,9 +298,10 @@ export function calculateWordNetBonus(
 export function calculateCatalogHybridScore(components: ScoreComponents): number {
   return (
     (components.vectorScore * 0.30) +
-    (components.bm25Score * 0.30) +
-    (components.titleScore * 0.25) +
-    (components.wordnetScore * 0.15)
+    (components.bm25Score * 0.25) +
+    (components.titleScore * 0.20) +
+    (components.conceptScore * 0.15) +
+    (components.wordnetScore * 0.10)
   );
 }
 
@@ -296,9 +309,10 @@ export function calculateCatalogHybridScore(components: ScoreComponents): number
  * Calculate hybrid score for chunk search.
  * 
  * Applies weighted combination optimized for text passage retrieval:
- * - 40% Vector similarity (semantic understanding - primary signal)
- * - 40% BM25 (keyword relevance - critical for specific terms)
- * - 20% WordNet (semantic enrichment)
+ * - 35% Vector similarity (semantic understanding - primary signal)
+ * - 35% BM25 (keyword relevance - critical for specific terms)
+ * - 15% Concept matching (concept alignment)
+ * - 15% WordNet (semantic enrichment)
  * 
  * Note: Title scoring excluded - chunks don't have meaningful titles.
  * The catalog_title field is for display only, not relevance ranking.
@@ -308,9 +322,10 @@ export function calculateCatalogHybridScore(components: ScoreComponents): number
  */
 export function calculateChunkHybridScore(components: ScoreComponents): number {
   return (
-    (components.vectorScore * 0.40) +
-    (components.bm25Score * 0.40) +
-    (components.wordnetScore * 0.20)
+    (components.vectorScore * 0.35) +
+    (components.bm25Score * 0.30) +
+    (components.conceptScore * 0.20) +
+    (components.wordnetScore * 0.15)
   );
 }
 
@@ -336,6 +351,50 @@ export function calculateConceptHybridScore(components: ScoreComponents): number
     (components.bm25Score * 0.20) +
     (components.wordnetScore * 0.10)
   );
+}
+
+/**
+ * Calculate concept match score from expanded concept terms.
+ * 
+ * Scores documents based on how many of the query's expanded concept terms
+ * match the document's concept names.
+ * 
+ * @param conceptTerms - Expanded concept terms from QueryExpander
+ * @param docConceptNames - Document's concept names (concept_names field)
+ * @returns Score from 0.0 to 1.0
+ */
+export function calculateConceptMatchScore(
+  conceptTerms: string[],
+  docConceptNames: string[]
+): number {
+  if (conceptTerms.length === 0 || docConceptNames.length === 0) return 0;
+  
+  const docConceptsLower = docConceptNames
+    .filter(c => c && c.length > 0)
+    .map(c => c.toLowerCase());
+  
+  if (docConceptsLower.length === 0) return 0;
+  
+  let matches = 0;
+  
+  for (const term of conceptTerms) {
+    const termLower = term.toLowerCase();
+    
+    // Check for any matching concepts
+    for (const docConcept of docConceptsLower) {
+      // Exact match or partial match (term is part of concept or vice versa)
+      if (docConcept === termLower) {
+        matches += 1.5;  // Exact match gets bonus
+        break;
+      } else if (docConcept.includes(termLower) || termLower.includes(docConcept)) {
+        matches += 1;
+        break;  // Count each term once
+      }
+    }
+  }
+  
+  // Normalize by number of concept terms
+  return Math.min(matches / conceptTerms.length, 1.0);
 }
 
 /**

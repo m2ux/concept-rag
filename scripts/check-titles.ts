@@ -3,7 +3,8 @@ import lancedb from "@lancedb/lancedb";
 async function main() {
   const db = await lancedb.connect("./test_db");
   const chunks = await db.openTable("chunks");
-  const records = await chunks.query().toArray();
+  // LanceDB defaults to limit 10 without explicit limit
+  const records = await chunks.query().limit(1000000).toArray();
   
   // Get unique catalog titles
   const titles = new Set<string>();

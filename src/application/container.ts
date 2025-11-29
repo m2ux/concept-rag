@@ -143,12 +143,16 @@ export class ApplicationContainer {
     
     // 4. Create infrastructure services (with caches and resilience integration)
     const embeddingService = new SimpleEmbeddingService(this.embeddingCache);
-    const queryExpander = new QueryExpander(conceptsTable, embeddingService);
+    
+    // 4a. Create concept repository first (needed by QueryExpander for concept expansion)
+    const conceptRepo = new LanceDBConceptRepository(conceptsTable);
+    
+    // 4b. Create QueryExpander with concept repository for unified concept-aware search
+    const queryExpander = new QueryExpander(conceptsTable, embeddingService, conceptRepo);
     const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander, this.searchResultCache, this.resilientExecutor);
     
-    // 5. Create repositories (with infrastructure services)
+    // 5. Create remaining repositories (with infrastructure services)
     // Note: ID mapping caches removed - schema now has derived text fields (concept_names, catalog_title)
-    const conceptRepo = new LanceDBConceptRepository(conceptsTable);
     const chunkRepo = new LanceDBChunkRepository(chunksTable, conceptRepo, embeddingService, hybridSearchService);
     const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService);
     

@@ -23,7 +23,7 @@ export class ConceptualBroadChunksSearchTool extends BaseTool<ConceptualBroadChu
   }
   
   name = "broad_chunks_search";
-  description = `Search across ALL document chunks using hybrid search (vector similarity + BM25 keyword matching + title matching + WordNet expansion).
+  description = `Search across ALL document chunks using hybrid search (vector similarity + BM25 keyword matching + concept matching + WordNet expansion).
 
 USE THIS TOOL WHEN:
 - Searching for specific phrases, keywords, or technical terms across all documents
@@ -35,9 +35,9 @@ USE THIS TOOL WHEN:
 DO NOT USE for:
 - Finding documents by title or getting document overviews (use catalog_search instead)
 - Searching within a single known document (use chunks_search instead)
-- Finding semantically-tagged concept discussions (use concept_search or concept_chunks)
+- Finding semantically-tagged concept discussions (use concept_search)
 
-RETURNS: Top 20 chunks ranked by hybrid scoring (40% vector, 40% BM25, 20% WordNet - no title matching for chunks). May include false positives based on keyword matches.`;
+RETURNS: Top 20 chunks ranked by hybrid scoring (35% vector, 35% BM25, 15% concept, 15% WordNet). May include false positives based on keyword matches.`;
   inputSchema = {
     type: "object" as const,
     properties: {
@@ -110,7 +110,7 @@ RETURNS: Top 20 chunks ranked by hybrid scoring (40% vector, 40% BM25, 20% WordN
     }
     
     // Format results for MCP response, filtering out zero/negative scores
-    // Note: Chunks don't use title scoring (40% vector, 40% BM25, 20% WordNet)
+    // Note: Chunks use concept-aware scoring (35% vector, 35% BM25, 15% concept, 15% WordNet)
     // @ts-expect-error - Type narrowing limitation
     const formattedResults = result.value
       .filter((r: SearchResult) => r.hybridScore > 0)
@@ -121,6 +121,7 @@ RETURNS: Top 20 chunks ranked by hybrid scoring (40% vector, 40% BM25, 20% WordN
           hybrid: r.hybridScore.toFixed(3),
           vector: r.vectorScore.toFixed(3),
           bm25: r.bm25Score.toFixed(3),
+          concept: r.conceptScore.toFixed(3),
           wordnet: r.wordnetScore.toFixed(3)
         },
         expanded_terms: r.expandedTerms
