@@ -11,6 +11,8 @@ export interface ConceptExtractorOptions {
     resilientExecutor?: ResilientExecutor;
     /** Optional shared rate limiter for coordinating across multiple extractors */
     sharedRateLimiter?: SharedRateLimiter;
+    /** Optional label for log messages (e.g., document name) */
+    sourceLabel?: string;
 }
 
 export class ConceptExtractor {
@@ -20,10 +22,11 @@ export class ConceptExtractor {
     private minRequestInterval: number = 3000; // 3 seconds between requests
     private resilientExecutor?: ResilientExecutor;
     private sharedRateLimiter?: SharedRateLimiter;
+    private sourceLabel?: string;
     
     /**
      * @param apiKey - OpenRouter API key
-     * @param options - Optional configuration (resilientExecutor, sharedRateLimiter)
+     * @param options - Optional configuration (resilientExecutor, sharedRateLimiter, sourceLabel)
      */
     constructor(apiKey: string, options?: ConceptExtractorOptions | ResilientExecutor) {
         this.openRouterApiKey = apiKey;
@@ -38,8 +41,14 @@ export class ConceptExtractor {
                 const opts = options as ConceptExtractorOptions;
                 this.resilientExecutor = opts.resilientExecutor;
                 this.sharedRateLimiter = opts.sharedRateLimiter;
+                this.sourceLabel = opts.sourceLabel;
             }
         }
+    }
+    
+    /** Get log prefix with source label if available */
+    private get logPrefix(): string {
+        return this.sourceLabel ? `[${this.sourceLabel}] ` : '  ';
     }
     
     private async rateLimitDelay(): Promise<void> {
@@ -91,7 +100,7 @@ export class ConceptExtractor {
         const tokenLimit = 100000; // 100k token limit for splitting
         
         if (estimatedTokens > tokenLimit) {
-            console.log(`  📚 Large document (${estimatedTokens.toLocaleString()} tokens) - splitting into chunks...`);
+            console.log(`${this.logPrefix}📚 Large document (${estimatedTokens.toLocaleString()} tokens) - splitting into chunks...`);
             return await this.extractConceptsMultiPass(fullContent, tokenLimit);
         }
         
@@ -109,13 +118,13 @@ export class ConceptExtractor {
             chunks.push(content.slice(i, i + charLimit));
         }
         
-        console.log(`  📄 Split into ${chunks.length} chunks for processing`);
+        console.log(`${this.logPrefix}📄 Split into ${chunks.length} chunks for processing`);
         
         const allExtractions: ConceptMetadata[] = [];
         
         // Extract concepts from each chunk
         for (let i = 0; i < chunks.length; i++) {
-            console.log(`  🔄 Processing chunk ${i + 1}/${chunks.length}...`);
+            console.log(`${this.logPrefix}🔄 Processing chunk ${i + 1}/${chunks.length}...`);
             const extracted = await this.extractConceptsFromChunk(chunks[i]);
             allExtractions.push(extracted);
         }
@@ -404,7 +413,7 @@ export class ConceptExtractor {
             });
         }
         
-        console.log(`  ✅ Merged: ${conceptMap.size} unique concepts from ${extractions.length} chunks`);
+        console.log(`${this.logPrefix}✅ Merged: ${conceptMap.size} unique concepts from ${extractions.length} chunks`);
         
         return {
             primary_concepts: Array.from(conceptMap.values()),

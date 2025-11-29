@@ -163,12 +163,14 @@ export class ParallelConceptExtractor {
             const startTime = Date.now();
             
             try {
-                // Create extractor with shared rate limiter
+                // Create extractor with shared rate limiter and source label
                 // Rate limiting happens at API call level, not document level
                 // This allows documents to process in parallel (chunking, etc.)
                 // while API calls are properly coordinated
+                const sourceLabel = source.split('/').pop()?.slice(0, 30) || source.slice(0, 30);
                 const extractor = new ConceptExtractor(this.apiKey, {
-                    sharedRateLimiter: this.rateLimiter
+                    sharedRateLimiter: this.rateLimiter,
+                    sourceLabel
                 });
                 const concepts = await extractor.extractConcepts(docs);
                 
