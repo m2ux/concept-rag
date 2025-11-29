@@ -4,6 +4,16 @@ import { buildConceptExtractionPrompt } from "../config.js";
 import * as fs from "fs";
 import type { ResilientExecutor } from "../infrastructure/resilience/resilient-executor.js";
 import { ResilienceProfiles } from "../infrastructure/resilience/resilient-executor.js";
+import type { SharedRateLimiter } from "../infrastructure/utils/shared-rate-limiter.js";
+
+export interface ConceptExtractorOptions {
+    /** Optional resilient executor for circuit breaker, retry, and timeout protection */
+    resilientExecutor?: ResilientExecutor;
+    /** Optional shared rate limiter for coordinating across multiple extractors */
+    sharedRateLimiter?: SharedRateLimiter;
+    /** Optional label for log messages (e.g., document name) */
+    sourceLabel?: string;
+}
 
 export class ConceptExtractor {
     
@@ -11,17 +21,48 @@ export class ConceptExtractor {
     private lastRequestTime: number = 0;
     private minRequestInterval: number = 3000; // 3 seconds between requests
     private resilientExecutor?: ResilientExecutor;
+    private sharedRateLimiter?: SharedRateLimiter;
+    private sourceLabel?: string;
+    private headerPrinted: boolean = false;
     
     /**
      * @param apiKey - OpenRouter API key
-     * @param resilientExecutor - Optional resilient executor for circuit breaker, retry, and timeout protection
+     * @param options - Optional configuration (resilientExecutor, sharedRateLimiter, sourceLabel)
      */
-    constructor(apiKey: string, resilientExecutor?: ResilientExecutor) {
+    constructor(apiKey: string, options?: ConceptExtractorOptions | ResilientExecutor) {
         this.openRouterApiKey = apiKey;
-        this.resilientExecutor = resilientExecutor;
+        
+        // Support both old signature (resilientExecutor) and new options object
+        if (options) {
+            if ('execute' in options) {
+                // Old signature: passed ResilientExecutor directly
+                this.resilientExecutor = options as ResilientExecutor;
+            } else {
+                // New signature: options object
+                const opts = options as ConceptExtractorOptions;
+                this.resilientExecutor = opts.resilientExecutor;
+                this.sharedRateLimiter = opts.sharedRateLimiter;
+                this.sourceLabel = opts.sourceLabel;
+            }
+        }
+    }
+    
+    /** Print document header once before first log message */
+    private printHeaderIfNeeded(): void {
+        if (this.sourceLabel && !this.headerPrinted) {
+            console.log(`📄 ${this.sourceLabel}`);
+            this.headerPrinted = true;
+        }
     }
     
     private async rateLimitDelay(): Promise<void> {
+        // If using shared rate limiter, use it instead of internal timing
+        if (this.sharedRateLimiter) {
+            await this.sharedRateLimiter.acquire();
+            return;
+        }
+        
+        // Internal rate limiting (for standalone usage)
         const now = Date.now();
         const timeSinceLastRequest = now - this.lastRequestTime;
         if (timeSinceLastRequest < this.minRequestInterval) {
@@ -63,11 +104,13 @@ export class ConceptExtractor {
         const tokenLimit = 100000; // 100k token limit for splitting
         
         if (estimatedTokens > tokenLimit) {
+            this.printHeaderIfNeeded();
             console.log(`  📚 Large document (${estimatedTokens.toLocaleString()} tokens) - splitting into chunks...`);
             return await this.extractConceptsMultiPass(fullContent, tokenLimit);
         }
         
         // Regular extraction for smaller documents
+        this.printHeaderIfNeeded();
         return await this.extractConceptsSinglePass(fullContent);
     }
     
