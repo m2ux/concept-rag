@@ -1500,7 +1500,9 @@ async function processDocumentsParallel(
     );
     
     // Create progress bar display (null if in CI or non-TTY)
-    const progressDisplay = createProgressBarDisplay(workers);
+    // Only show as many lines as needed (min of workers and docs)
+    const displayLines = Math.min(workers, totalDocs);
+    const progressDisplay = createProgressBarDisplay(displayLines);
     progressDisplay?.initialize();
     progressDisplay?.updateProgress(0, totalDocs);
     
