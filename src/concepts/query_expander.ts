@@ -158,7 +158,7 @@ export class QueryExpander {
                 // (prevents "software" matching "war" via substring)
                 const conceptWords = concept.split(/\s+/);
                 const hasOverlap = terms.some(term => 
-                    conceptWords.some(word => word === term)
+                    conceptWords.some((word: string) => word === term)
                 );
                 
                 if (!hasOverlap) continue;  // Skip unrelated concepts

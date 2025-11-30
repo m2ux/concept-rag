@@ -23,6 +23,7 @@ import { parseFilenameMetadata, normalizeText } from './src/infrastructure/utils
 import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
 import { ConceptEnricher } from './src/concepts/concept_enricher.js';
 import { ParallelConceptExtractor, DocumentSet } from './src/concepts/parallel-concept-extractor.js';
+import { ProgressBarDisplay, createProgressBarDisplay } from './src/infrastructure/cli/progress-bar-display.js';
 
 // Setup timestamped logging
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
@@ -1498,25 +1499,65 @@ async function processDocumentsParallel(
         3000  // 3 second rate limit interval
     );
     
+    // Create progress bar display (null if in CI or non-TTY)
+    const progressDisplay = createProgressBarDisplay(workers);
+    progressDisplay?.initialize();
+    progressDisplay?.updateProgress(0, totalDocs);
+    
+    // Handle Ctrl+C for cleanup
+    const cleanupHandler = () => {
+        progressDisplay?.cleanup();
+        process.exit(130);
+    };
+    process.on('SIGINT', cleanupHandler);
+    
     // Extract concepts in parallel
     const results = await parallelExtractor.extractAll(documentSets, {
         concurrency: workers,
-        onProgress: (completed, total, current) => {
-            // Document completed - no need to log here, chunk progress already shows it
+        onWorkerStart: (workerIndex, source, totalChunks) => {
+            const basename = path.basename(source);
+            progressDisplay?.updateWorker(workerIndex, {
+                documentName: basename,
+                chunkNum: 0,
+                totalChunks,
+                status: 'processing'
+            });
+        },
+        onProgress: (completed, total, current, workerIndex) => {
+            progressDisplay?.updateProgress(completed, total);
+            progressDisplay?.updateWorker(workerIndex, { status: 'done' });
+            
+            // Fallback for non-TTY
+            if (!progressDisplay) {
+                const pct = Math.round((completed / total) * 100);
+                const basename = path.basename(current);
+                console.log(`[${workerIndex}] ✅ Complete: ${completed}/${total} (${pct}%) - ${basename}`);
+            }
         },
         onChunkProgress: (completed, total, current, chunkNum, totalChunks, workerIndex) => {
-            const pct = Math.round((completed / total) * 100);
-            const basename = path.basename(current);
-            // Show chunk progress on a new line with worker index
-            console.log(`[${workerIndex}] 📊 Progress: ${completed}/${total} (${pct}%) - ${basename.slice(0, 120).padEnd(120)}  🔄 Processing chunk ${chunkNum}/${totalChunks}...`);
+            progressDisplay?.updateWorker(workerIndex, {
+                chunkNum,
+                totalChunks,
+                status: 'processing'
+            });
+            
+            // Fallback for non-TTY
+            if (!progressDisplay) {
+                const pct = Math.round((completed / total) * 100);
+                const basename = path.basename(current);
+                console.log(`[${workerIndex}] 📊 Progress: ${completed}/${total} (${pct}%) - ${basename.slice(0, 80)}  🔄 ${chunkNum}/${totalChunks}`);
+            }
         },
-        onError: (source, error) => {
+        onError: (source, error, workerIndex) => {
+            progressDisplay?.updateWorker(workerIndex, { status: 'idle' });
             console.error(`\n❌ Failed: ${path.basename(source)}: ${error.message}`);
         }
     });
     
-    // Clear progress line
-    console.log('\n');
+    // Cleanup progress display
+    progressDisplay?.cleanup();
+    process.removeListener('SIGINT', cleanupHandler);
+    console.log('');
     
     // Get and display stats
     const stats = parallelExtractor.getStats(results);

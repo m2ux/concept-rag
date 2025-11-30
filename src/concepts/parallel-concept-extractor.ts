@@ -50,12 +50,14 @@ export interface DocumentConceptResult {
 export interface ParallelExtractionOptions {
     /** Number of documents to process concurrently */
     concurrency: number;
-    /** Callback for progress updates */
-    onProgress?: (completed: number, total: number, currentSource: string) => void;
+    /** Callback for progress updates (document completed) */
+    onProgress?: (completed: number, total: number, currentSource: string, workerIndex: number) => void;
     /** Callback for error notifications */
-    onError?: (source: string, error: Error) => void;
+    onError?: (source: string, error: Error, workerIndex: number) => void;
     /** Callback for chunk progress updates within a document (for inline progress display) */
     onChunkProgress?: (completed: number, total: number, currentSource: string, chunkNum: number, totalChunks: number, workerIndex: number) => void;
+    /** Callback when a worker starts processing a document */
+    onWorkerStart?: (workerIndex: number, source: string, totalChunks: number) => void;
 }
 
 /**
@@ -124,7 +126,8 @@ export class ParallelConceptExtractor {
             concurrency, 
             onProgress, 
             onError,
-            onChunkProgress
+            onChunkProgress,
+            onWorkerStart
         } = options;
 
         const entries = Array.from(documentSets.entries());
@@ -141,13 +144,16 @@ export class ParallelConceptExtractor {
                 () => {
                     completed++;
                 },
-                (source) => {
-                    onProgress?.(completed, entries.length, source);
+                (source, workerIndex) => {
+                    onProgress?.(completed, entries.length, source, workerIndex);
                 },
-                onError,
+                (source, error, workerIndex) => {
+                    onError?.(source, error, workerIndex);
+                },
                 (source, chunkNum, totalChunks, workerIndex) => {
                     onChunkProgress?.(completed, entries.length, source, chunkNum, totalChunks, workerIndex);
-                }
+                },
+                onWorkerStart
             );
             results.push(...batchResults);
         }
@@ -162,12 +168,20 @@ export class ParallelConceptExtractor {
     private async processBatch(
         batch: Array<[string, DocumentSet]>,
         onComplete: () => void,
-        onProgress: (source: string) => void,
-        onError?: (source: string, error: Error) => void,
-        onChunkProgress?: (source: string, chunkNum: number, totalChunks: number, workerIndex: number) => void
+        onProgress: (source: string, workerIndex: number) => void,
+        onError?: (source: string, error: Error, workerIndex: number) => void,
+        onChunkProgress?: (source: string, chunkNum: number, totalChunks: number, workerIndex: number) => void,
+        onWorkerStart?: (workerIndex: number, source: string, totalChunks: number) => void
     ): Promise<DocumentConceptResult[]> {
         const batchPromises = batch.map(async ([source, { docs, hash }], workerIndex) => {
             const startTime = Date.now();
+            
+            // Estimate chunk count (similar to extractor logic)
+            const totalContent = docs.map(d => d.pageContent).join('\n');
+            const estimatedChunks = Math.ceil(totalContent.length / 80000) || 1;
+            
+            // Notify worker start
+            onWorkerStart?.(workerIndex, source, estimatedChunks);
             
             try {
                 // Create extractor with shared rate limiter and source label
@@ -185,7 +199,7 @@ export class ParallelConceptExtractor {
                 const concepts = await extractor.extractConcepts(docs);
                 
                 onComplete();
-                onProgress(source);
+                onProgress(source, workerIndex);
                 
                 return {
                     source,
@@ -194,9 +208,9 @@ export class ParallelConceptExtractor {
                     processingTimeMs: Date.now() - startTime
                 };
             } catch (error: any) {
-                onError?.(source, error);
+                onError?.(source, error, workerIndex);
                 onComplete();
-                onProgress(source);
+                onProgress(source, workerIndex);
                 
                 return {
                     source,
