@@ -1082,7 +1082,7 @@ async function loadDocumentsWithErrorHandling(
             console.log(`🤖 OCR Summary: • 📄 ${ocrProcessedCount} pages processed via OCR • 📚 Standard PDFs also processed`);
         }
         
-        return { documents, documentsNeedingChunks };
+        return { documents, documentsNeedingChunks, failedFiles };
     } catch (error) {
         console.error('Error reading directory:', error.message);
         throw error;
@@ -2135,7 +2135,7 @@ async function hybridFastSeed() {
     }
 
     // Load files (pass checkpoint for resumable skip detection)
-    const { documents: rawDocs, documentsNeedingChunks } = await loadDocumentsWithErrorHandling(
+    const { documents: rawDocs, documentsNeedingChunks, failedFiles: loadingFailedFiles } = await loadDocumentsWithErrorHandling(
         filesDir, 
         catalogTable, 
         chunksTable, 
@@ -2615,6 +2615,20 @@ async function hybridFastSeed() {
     // Display checkpoint stats
     const finalStats = seedingCheckpoint.getStats();
     console.log(`📋 Checkpoint: ${finalStats.totalProcessed} processed, ${finalStats.totalFailed} failed`);
+    
+    // Display list of all failed files (combine loading failures and checkpoint failures)
+    const checkpointFailedFiles = seedingCheckpoint.getFailedFiles();
+    const allFailedFiles = Array.from(new Set([...loadingFailedFiles, ...checkpointFailedFiles]));
+    
+    if (allFailedFiles.length > 0) {
+        console.log(`\n⚠️  Files with errors (${allFailedFiles.length}):`);
+        for (const failedFile of allFailedFiles) {
+            const basename = path.basename(failedFile);
+            const truncated = basename.length > 80 ? basename.slice(0, 77) + '...' : basename;
+            console.log(`   ❌ ${truncated}`);
+        }
+        console.log('');
+    }
     
     console.log("🎉 Seeding completed successfully!");
 }
