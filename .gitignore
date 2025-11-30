@@ -319,3 +319,4 @@ preprod_db
 # Database backups
 backups/
 db/
+test_db/
