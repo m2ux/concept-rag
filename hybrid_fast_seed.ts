@@ -838,7 +838,7 @@ async function loadDocumentsWithErrorHandling(
             try {
                 // Check checkpoint first for fast skip (O(1) hash lookup)
                 if (checkpoint && checkpoint.isProcessed(hash)) {
-                    console.log(`  ⏭[${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (checkpoint)`);
+                    console.log(`⏭️ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (checkpoint)`);
                     skippedFiles.push(relativePath);
                     continue;
                 }
@@ -853,7 +853,7 @@ async function loadDocumentsWithErrorHandling(
                     );
                     
                     if (completeness.isComplete) {
-                        console.log(`  ⏭[${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (complete)`);
+                        console.log(`⏭️ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (complete)`);
                         skippedFiles.push(relativePath);
                         // Update checkpoint with this complete document (for future runs)
                         if (checkpoint) {
@@ -982,7 +982,7 @@ async function loadDocumentsWithErrorHandling(
                 } else {
                     contentInfo = `${docs.length} docs`;
                 }
-                console.log(`  📥[${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
+                console.log(`📥 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
                 
                 // Check --max-docs limit (only counts newly processed, not skipped)
                 newlyProcessedCount++;
