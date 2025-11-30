@@ -437,7 +437,7 @@ export class ProgressBarDisplay {
     const filled = Math.round((percent / 100) * this.barWidth);
     const empty = this.barWidth - filled;
 
-    const bar = '█'.repeat(filled) + '░'.repeat(empty);
+    const bar = '▓'.repeat(filled) + '░'.repeat(empty);
     const pctStr = `${percent}%`.padStart(4);
 
     return `[${bar}] ${pctStr}`;

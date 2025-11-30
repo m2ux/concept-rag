@@ -318,7 +318,7 @@ describe('ProgressBarDisplay', () => {
       display.forceRender();
 
       const output = mockOutput.getOutput();
-      expect(output).toContain('[██████████]');
+      expect(output).toContain('[▓▓▓▓▓▓▓▓▓▓]');
       expect(output).toContain('100%');
     });
 
