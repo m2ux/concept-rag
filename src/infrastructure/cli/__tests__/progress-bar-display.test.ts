@@ -88,8 +88,8 @@ describe('ProgressBarDisplay', () => {
       const output = mockOutput.getOutput();
       // Should contain hide cursor code
       expect(output).toContain('\x1B[?25l');
-      // Should contain worker progress header
-      expect(output).toContain('Worker Progress');
+      // Should contain worker line (no header)
+      expect(output).toContain('[0]');
     });
 
     it('should not print ANSI codes in non-TTY mode', () => {
@@ -203,20 +203,19 @@ describe('ProgressBarDisplay', () => {
       expect(state.total).toBe(50);
     });
 
-    it('should calculate percentage correctly', () => {
+    it('should update state correctly', () => {
       const display = new ProgressBarDisplay(2, {
         output: mockOutput as unknown as NodeJS.WriteStream,
         forceTTY: true,
         minRenderInterval: 0,
       });
       display.initialize();
-      mockOutput.clear();
 
       display.updateProgress(25, 100);
-      display.forceRender();
 
-      const output = mockOutput.getOutput();
-      expect(output).toContain('25%');
+      const state = display.getState();
+      expect(state.completed).toBe(25);
+      expect(state.total).toBe(100);
     });
   });
 

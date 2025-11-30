@@ -157,14 +157,13 @@ export class ProgressBarDisplay {
       // Hide cursor for cleaner display
       this.output.write(ANSI.hideCursor);
 
-      // Print header + worker lines (creates space for updates)
-      this.output.write('\n'); // Header line
+      // Print worker lines (creates space for updates)
       for (let i = 0; i < this.workerCount; i++) {
         this.output.write('\n');
       }
 
       // Move cursor back up to start position
-      this.output.write(ANSI.up(this.workerCount + 1));
+      this.output.write(ANSI.up(this.workerCount));
 
       // Start periodic timer for time-based progress updates
       this.progressTimer = setInterval(() => {
@@ -262,7 +261,7 @@ export class ProgressBarDisplay {
 
     if (this.isTTY) {
       // Move cursor below the display
-      this.output.write(ANSI.down(this.workerCount + 1));
+      this.output.write(ANSI.down(this.workerCount));
       this.output.write('\n');
       // Show cursor
       this.output.write(ANSI.showCursor);
@@ -334,16 +333,7 @@ export class ProgressBarDisplay {
   private renderTTY(): void {
     const lines: string[] = [];
 
-    // Header line
-    const pct =
-      this.state.total > 0
-        ? Math.round((this.state.completed / this.state.total) * 100)
-        : 0;
-    lines.push(
-      `Worker Progress (${this.workerCount} concurrent, ${this.state.completed}/${this.state.total} docs complete - ${pct}%):`
-    );
-
-    // Worker lines
+    // Worker lines only (no header - info is implicit from the lines)
     for (let i = 0; i < this.workerCount; i++) {
       lines.push(this.formatWorkerLine(i, this.state.workers[i]));
     }
