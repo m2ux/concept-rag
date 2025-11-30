@@ -1476,8 +1476,6 @@ async function processDocumentsParallel(
     workers: number
 ): Promise<{ catalogRecords: Document[], processedInThisRun: Array<{hash: string, source: string}> }> {
     
-    console.log(`\n🚀 Starting parallel concept extraction with ${workers} workers...`);
-    
     // Prepare document sets with hashes
     const documentSets = new Map<string, DocumentSet>();
     
@@ -1491,7 +1489,8 @@ async function processDocumentsParallel(
     }
     
     const totalDocs = documentSets.size;
-    console.log(`📊 Processing ${totalDocs} document(s) with ${workers} parallel workers\n`);
+    const actualWorkers = Math.min(totalDocs, workers);
+    console.log(`📊 Processing ${totalDocs} document(s) with ${actualWorkers} parallel workers\n`);
     
     // Create parallel extractor
     const parallelExtractor = new ParallelConceptExtractor(
