@@ -15,6 +15,8 @@ export interface ConceptExtractorOptions {
     sourceLabel?: string;
     /** Optional callback for chunk progress updates (for overwriting progress line) */
     onChunkProgress?: (chunkNum: number, totalChunks: number) => void;
+    /** Optional callback for status messages (warnings, errors, success) */
+    onMessage?: (message: string) => void;
 }
 
 export class ConceptExtractor {
@@ -27,6 +29,7 @@ export class ConceptExtractor {
     private sourceLabel?: string;
     private headerPrinted: boolean = false;
     private onChunkProgress?: (chunkNum: number, totalChunks: number) => void;
+    private onMessage?: (message: string) => void;
     
     /**
      * @param apiKey - OpenRouter API key
@@ -47,6 +50,7 @@ export class ConceptExtractor {
                 this.sharedRateLimiter = opts.sharedRateLimiter;
                 this.sourceLabel = opts.sourceLabel;
                 this.onChunkProgress = opts.onChunkProgress;
+                this.onMessage = opts.onMessage;
             }
         }
     }
@@ -60,6 +64,16 @@ export class ConceptExtractor {
         if (this.sourceLabel && !this.headerPrinted) {
             console.log(`📄 ${this.sourceLabel}`);
             this.headerPrinted = true;
+        }
+    }
+    
+    /** Emit a status message via callback or console fallback */
+    private emitMessage(message: string): void {
+        if (this.onMessage) {
+            this.onMessage(message);
+        } else {
+            const docLabel = this.sourceLabel ? `[${this.sourceLabel}] ` : '';
+            console.log(`${docLabel}${message}`);
         }
     }
     
@@ -95,7 +109,7 @@ export class ConceptExtractor {
                 
                 // Only show warning if credits are low
                 if (limit_remaining !== null && limit_remaining < 1) {
-                    console.warn(`  ⚠️  WARNING: Low/no credits remaining!`);
+                    this.emitMessage('⚠️ Low credits!');
                 }
             }
         } catch (error) {
@@ -211,8 +225,7 @@ export class ConceptExtractor {
                 
                 // Success - log if this was a retry
                 if (attempt > 1) {
-                    const docLabel = this.sourceLabel ? `[${this.sourceLabel}] ` : '';
-                    console.log(`✅ ${docLabel}Retry ${attempt} succeeded`);
+                    this.emitMessage(`✅ Retry ${attempt} ok`);
                 }
                 
                 return {
@@ -244,15 +257,14 @@ export class ConceptExtractor {
         }
         
         // All retries failed - log and return empty
-        const docLabel = this.sourceLabel ? `[${this.sourceLabel}] ` : '';
-        console.warn(`⚠️  ${docLabel}Chunk extraction failed after ${maxRetries} attempts: ${lastError?.message}`);
+        this.emitMessage(`❌ Failed after ${maxRetries} retries`);
         
         // Try to save the failed response for debugging
         try {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const debugPath = `/tmp/concept_extraction_error_${timestamp}.txt`;
             fs.writeFileSync(debugPath, `Document: ${this.sourceLabel || 'unknown'}\nError: ${lastError?.message}\n\nResponse:\n${lastResponse || 'N/A'}`);
-            console.warn(`💾 ${docLabel}Debug saved: ${debugPath}`);
+            this.emitMessage(`💾 Debug: ${debugPath}`);
         } catch (saveError) {
             // Ignore save errors
         }
@@ -544,8 +556,7 @@ export class ConceptExtractor {
             });
         }
         
-        const docLabel = this.sourceLabel ? `[${this.sourceLabel}] ` : '';
-        console.log(`✅ ${docLabel}Merged: ${conceptMap.size} unique concepts from ${extractions.length} chunks`);
+        this.emitMessage(`✅ ${conceptMap.size} concepts`);
         
         return {
             primary_concepts: Array.from(conceptMap.values()),
@@ -591,7 +602,7 @@ export class ConceptExtractor {
             
             // Validate JSON ends properly (light check only)
             if (!jsonText.endsWith('}') && !jsonText.endsWith('"}')) {
-                console.warn('  ⚠️  Attempting to recover truncated JSON...');
+                this.emitMessage('⚠️ Recovering JSON...');
                 
                 // Find the last complete array or string field
                 let recovered = false;
@@ -638,7 +649,7 @@ export class ConceptExtractor {
                 rawConcepts = JSON.parse(jsonText);
             } catch (parseError) {
                 // Try to recover by finding valid JSON structure
-                console.warn('  ⚠️  JSON parse failed, attempting advanced recovery...');
+                this.emitMessage('⚠️ JSON recovery...');
                 jsonText = this.recoverMalformedJSON(jsonText);
                 rawConcepts = JSON.parse(jsonText);
             }

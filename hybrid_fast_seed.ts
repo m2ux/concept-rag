@@ -1525,7 +1525,7 @@ async function processDocumentsParallel(
         },
         onProgress: (completed, total, current, workerIndex) => {
             progressDisplay?.updateProgress(completed, total);
-            progressDisplay?.updateWorker(workerIndex, { status: 'done' });
+            progressDisplay?.updateWorker(workerIndex, { status: 'done', message: null });
             
             // Fallback for non-TTY
             if (!progressDisplay) {
@@ -1538,7 +1538,8 @@ async function processDocumentsParallel(
             progressDisplay?.updateWorker(workerIndex, {
                 chunkNum,
                 totalChunks,
-                status: 'processing'
+                status: 'processing',
+                message: null  // Clear any previous message when starting new chunk
             });
             
             // Fallback for non-TTY
@@ -1549,8 +1550,16 @@ async function processDocumentsParallel(
             }
         },
         onError: (source, error, workerIndex) => {
-            progressDisplay?.updateWorker(workerIndex, { status: 'idle' });
+            progressDisplay?.updateWorker(workerIndex, { status: 'idle', message: null });
             console.error(`\n❌ Failed: ${path.basename(source)}: ${error.message}`);
+        },
+        onMessage: (workerIndex, message) => {
+            progressDisplay?.updateWorker(workerIndex, { message });
+            
+            // Fallback for non-TTY
+            if (!progressDisplay) {
+                console.log(`[${workerIndex}] ${message}`);
+            }
         }
     });
     

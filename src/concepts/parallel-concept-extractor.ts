@@ -58,6 +58,8 @@ export interface ParallelExtractionOptions {
     onChunkProgress?: (completed: number, total: number, currentSource: string, chunkNum: number, totalChunks: number, workerIndex: number) => void;
     /** Callback when a worker starts processing a document */
     onWorkerStart?: (workerIndex: number, source: string, totalChunks: number) => void;
+    /** Callback for status messages (warnings, errors, success) from extractor */
+    onMessage?: (workerIndex: number, message: string) => void;
 }
 
 /**
@@ -127,7 +129,8 @@ export class ParallelConceptExtractor {
             onProgress, 
             onError,
             onChunkProgress,
-            onWorkerStart
+            onWorkerStart,
+            onMessage
         } = options;
 
         const entries = Array.from(documentSets.entries());
@@ -153,7 +156,8 @@ export class ParallelConceptExtractor {
                 (source, chunkNum, totalChunks, workerIndex) => {
                     onChunkProgress?.(completed, entries.length, source, chunkNum, totalChunks, workerIndex);
                 },
-                onWorkerStart
+                onWorkerStart,
+                onMessage
             );
             results.push(...batchResults);
         }
@@ -171,7 +175,8 @@ export class ParallelConceptExtractor {
         onProgress: (source: string, workerIndex: number) => void,
         onError?: (source: string, error: Error, workerIndex: number) => void,
         onChunkProgress?: (source: string, chunkNum: number, totalChunks: number, workerIndex: number) => void,
-        onWorkerStart?: (workerIndex: number, source: string, totalChunks: number) => void
+        onWorkerStart?: (workerIndex: number, source: string, totalChunks: number) => void,
+        onMessage?: (workerIndex: number, message: string) => void
     ): Promise<DocumentConceptResult[]> {
         const batchPromises = batch.map(async ([source, { docs, hash }], workerIndex) => {
             const startTime = Date.now();
@@ -194,6 +199,9 @@ export class ParallelConceptExtractor {
                     sourceLabel,
                     onChunkProgress: onChunkProgress 
                         ? (chunkNum, totalChunks) => onChunkProgress(source, chunkNum, totalChunks, workerIndex)
+                        : undefined,
+                    onMessage: onMessage
+                        ? (message) => onMessage(workerIndex, message)
                         : undefined
                 });
                 const concepts = await extractor.extractConcepts(docs);

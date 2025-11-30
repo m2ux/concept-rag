@@ -34,6 +34,8 @@ export interface WorkerState {
   chunkNum: number;
   totalChunks: number;
   status: WorkerStatus;
+  /** Optional status message (e.g., error, warning) shown after chunk info */
+  message?: string | null;
 }
 
 /** Overall progress display state */
@@ -130,6 +132,7 @@ export class ProgressBarDisplay {
         chunkNum: 0,
         totalChunks: 0,
         status: 'idle' as WorkerStatus,
+        message: null,
       })),
     };
   }
@@ -178,6 +181,7 @@ export class ProgressBarDisplay {
     if (state.chunkNum !== undefined) worker.chunkNum = state.chunkNum;
     if (state.totalChunks !== undefined) worker.totalChunks = state.totalChunks;
     if (state.status !== undefined) worker.status = state.status;
+    if (state.message !== undefined) worker.message = state.message;
 
     this.scheduleRender();
   }
@@ -414,19 +418,35 @@ export class ProgressBarDisplay {
    */
   private formatChunkInfo(worker: WorkerState): string {
     const icon = STATUS_ICONS[worker.status];
+    let statusText: string;
 
     switch (worker.status) {
       case 'idle':
-        return `${icon} idle`;
+        statusText = `${icon} idle`;
+        break;
       case 'waiting':
-        return `${icon} wait`;
+        statusText = `${icon} wait`;
+        break;
       case 'done':
-        return `${icon} done`;
+        statusText = `${icon} done`;
+        break;
       case 'processing':
-        return `${icon} ${worker.chunkNum}/${worker.totalChunks}`;
+        statusText = `${icon} ${worker.chunkNum}/${worker.totalChunks}`;
+        break;
       default:
-        return '';
+        statusText = '';
     }
+
+    // Append message if present (truncated to fit line)
+    if (worker.message) {
+      const maxMsgLen = 40;
+      const msg = worker.message.length > maxMsgLen 
+        ? worker.message.slice(0, maxMsgLen - 3) + '...'
+        : worker.message;
+      statusText += ` ${msg}`;
+    }
+
+    return statusText;
   }
 }
 
