@@ -51,7 +51,7 @@ export interface ProgressDisplayState {
 export interface ProgressBarDisplayOptions {
   /** Width of the progress bar in characters (default: 40) */
   barWidth?: number;
-  /** Maximum document name length before truncation (default: 50) */
+  /** Maximum document name length before truncation (default: 120) */
   maxDocNameLength?: number;
   /** Minimum render interval in ms (default: 100ms = 10 fps) */
   minRenderInterval?: number;
@@ -124,7 +124,7 @@ export class ProgressBarDisplay {
   constructor(workerCount: number, options: ProgressBarDisplayOptions = {}) {
     this.workerCount = workerCount;
     this.barWidth = options.barWidth ?? 40;
-    this.maxDocNameLength = options.maxDocNameLength ?? 50;
+    this.maxDocNameLength = options.maxDocNameLength ?? 120;
     this.minRenderInterval = options.minRenderInterval ?? 100;
     this.output = options.output ?? process.stdout;
     this.isTTY = options.forceTTY ?? (this.output.isTTY ?? false);
