@@ -36,6 +36,8 @@ export interface WorkerState {
   status: WorkerStatus;
   /** Optional status message (e.g., error, warning) shown after chunk info */
   message?: string | null;
+  /** Timestamp when current chunk started (for intra-chunk progress estimation) */
+  chunkStartTime?: number;
 }
 
 /** Overall progress display state */
@@ -57,6 +59,8 @@ export interface ProgressBarDisplayOptions {
   forceTTY?: boolean;
   /** Output stream (default: process.stdout) */
   output?: NodeJS.WriteStream;
+  /** Estimated time per chunk in ms for intra-chunk progress (default: 15000ms) */
+  estimatedChunkDurationMs?: number;
 }
 
 /** ANSI escape codes for terminal control */
@@ -104,10 +108,12 @@ export class ProgressBarDisplay {
   private readonly minRenderInterval: number;
   private readonly isTTY: boolean;
   private readonly output: NodeJS.WriteStream;
+  private readonly estimatedChunkDurationMs: number;
   private initialized: boolean = false;
   private lastRenderTime: number = 0;
   private pendingRender: boolean = false;
   private renderTimeout: NodeJS.Timeout | null = null;
+  private progressTimer: NodeJS.Timeout | null = null;
 
   /**
    * Creates a new progress bar display.
@@ -122,6 +128,7 @@ export class ProgressBarDisplay {
     this.minRenderInterval = options.minRenderInterval ?? 100;
     this.output = options.output ?? process.stdout;
     this.isTTY = options.forceTTY ?? (this.output.isTTY ?? false);
+    this.estimatedChunkDurationMs = options.estimatedChunkDurationMs ?? 15000; // 15s default
 
     // Initialize worker states
     this.state = {
@@ -133,6 +140,7 @@ export class ProgressBarDisplay {
         totalChunks: 0,
         status: 'idle' as WorkerStatus,
         message: null,
+        chunkStartTime: undefined,
       })),
     };
   }
@@ -157,10 +165,24 @@ export class ProgressBarDisplay {
 
       // Move cursor back up to start position
       this.output.write(ANSI.up(this.workerCount + 1));
+
+      // Start periodic timer for time-based progress updates
+      this.progressTimer = setInterval(() => {
+        if (this.hasActiveWorkers()) {
+          this.render(true);
+        }
+      }, this.minRenderInterval);
     }
 
     // Initial render
     this.render(true);
+  }
+
+  /**
+   * Check if any workers are actively processing.
+   */
+  private hasActiveWorkers(): boolean {
+    return this.state.workers.some(w => w.status === 'processing');
   }
 
   /**
@@ -176,12 +198,24 @@ export class ProgressBarDisplay {
     if (workerIndex < 0 || workerIndex >= this.workerCount) return;
 
     const worker = this.state.workers[workerIndex];
+    const prevChunkNum = worker.chunkNum;
+    
     if (state.documentName !== undefined)
       worker.documentName = state.documentName;
     if (state.chunkNum !== undefined) worker.chunkNum = state.chunkNum;
     if (state.totalChunks !== undefined) worker.totalChunks = state.totalChunks;
     if (state.status !== undefined) worker.status = state.status;
     if (state.message !== undefined) worker.message = state.message;
+
+    // Reset chunk start time when starting a new chunk
+    if (state.chunkNum !== undefined && state.chunkNum !== prevChunkNum) {
+      worker.chunkStartTime = Date.now();
+    }
+    
+    // Clear chunk start time when not processing
+    if (state.status !== undefined && state.status !== 'processing') {
+      worker.chunkStartTime = undefined;
+    }
 
     this.scheduleRender();
   }
@@ -215,6 +249,12 @@ export class ProgressBarDisplay {
     if (this.renderTimeout) {
       clearTimeout(this.renderTimeout);
       this.renderTimeout = null;
+    }
+
+    // Stop progress timer
+    if (this.progressTimer) {
+      clearInterval(this.progressTimer);
+      this.progressTimer = null;
     }
 
     // Final render
@@ -365,6 +405,7 @@ export class ProgressBarDisplay {
 
   /**
    * Formats the ASCII progress bar for a worker.
+   * Uses time-based intra-chunk progress for smooth updates.
    *
    * @param worker - Worker state
    * @returns Formatted progress bar string
@@ -374,15 +415,23 @@ export class ProgressBarDisplay {
 
     if (worker.status === 'done') {
       percent = 100;
-    } else if (
-      worker.status === 'processing' &&
-      worker.totalChunks > 0 &&
-      worker.chunkNum > 0
-    ) {
-      // Progress based on chunk completion (0-based, so chunkNum-1 completed)
-      percent = Math.round(((worker.chunkNum - 1) / worker.totalChunks) * 100);
-      // Clamp to valid range
-      percent = Math.max(0, Math.min(100, percent));
+    } else if (worker.status === 'processing' && worker.totalChunks > 0) {
+      // Calculate base progress from completed chunks
+      const completedChunks = Math.max(0, worker.chunkNum - 1);
+      const baseProgress = completedChunks / worker.totalChunks;
+      
+      // Calculate intra-chunk progress based on elapsed time
+      let intraChunkProgress = 0;
+      if (worker.chunkStartTime) {
+        const elapsed = Date.now() - worker.chunkStartTime;
+        // Cap at 95% to avoid showing complete before actually done
+        intraChunkProgress = Math.min(elapsed / this.estimatedChunkDurationMs, 0.95);
+      }
+      
+      // Combine: base + (intra-chunk * chunk_fraction)
+      const chunkFraction = 1 / worker.totalChunks;
+      percent = Math.round((baseProgress + intraChunkProgress * chunkFraction) * 100);
+      percent = Math.max(0, Math.min(99, percent)); // Cap at 99% until done
     }
 
     const filled = Math.round((percent / 100) * this.barWidth);
