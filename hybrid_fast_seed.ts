@@ -2165,6 +2165,15 @@ async function hybridFastSeed() {
                 // Rebuild concept index from ALL existing catalog records and chunks
                 await rebuildConceptIndexFromExistingData(db, catalogTable, chunksTable);
                 
+                // Display total concepts
+                try {
+                    const conceptsTable = await db.openTable('concepts');
+                    const totalConcepts = await conceptsTable.countRows();
+                    console.log(`📚 Total concepts in database: ${totalConcepts.toLocaleString()}`);
+                } catch (e) {
+                    // Concepts table might not exist
+                }
+                
                 const dbSize = await getDatabaseSize(databaseDir);
                 console.log(`💾 Database size: ${dbSize}`);
                 console.log("🎉 Concept index rebuild completed successfully!");
@@ -2178,6 +2187,15 @@ async function hybridFastSeed() {
         
         if (rebuildConcepts) {
             console.log("\n💡 Note: --rebuild-concepts flag was set but catalog or chunks table missing");
+        }
+        
+        // Display total concepts if table exists
+        try {
+            const conceptsTable = await db.openTable('concepts');
+            const totalConcepts = await conceptsTable.countRows();
+            console.log(`📚 Total concepts in database: ${totalConcepts.toLocaleString()}`);
+        } catch (e) {
+            // Concepts table might not exist
         }
         
         const dbSize = await getDatabaseSize(databaseDir);
@@ -2582,6 +2600,16 @@ async function hybridFastSeed() {
     if (existingChunksToUpdate.length > 0) {
         console.log(`✅ Updated ${existingChunksToUpdate.length} existing chunk records with concept metadata`);
     }
+    
+    // Display total concepts in database
+    try {
+        const conceptsTable = await db.openTable('concepts');
+        const totalConcepts = await conceptsTable.countRows();
+        console.log(`📚 Total concepts in database: ${totalConcepts.toLocaleString()}`);
+    } catch (e) {
+        // Concepts table might not exist yet
+    }
+    
     console.log(`💾 Database size: ${dbSize}`);
     
     // Display checkpoint stats

@@ -239,6 +239,47 @@ export class ProgressBarDisplay {
   }
 
   /**
+   * Finalizes the current batch by printing completed lines permanently
+   * and resetting for the next batch. Completed workers are printed with
+   * their final state, then new empty lines are created for the next batch.
+   */
+  finalizeBatch(): void {
+    if (!this.initialized) return;
+
+    // Final render of current state
+    this.render(true);
+
+    if (this.isTTY) {
+      // Move cursor below all lines and add a newline to "commit" them
+      this.output.write(ANSI.down(this.workerCount));
+      this.output.write('\n');
+
+      // Reset worker states for next batch
+      for (let i = 0; i < this.workerCount; i++) {
+        this.state.workers[i] = {
+          documentName: null,
+          chunkNum: 0,
+          totalChunks: 0,
+          status: 'idle',
+          message: null,
+          chunkStartTime: undefined,
+        };
+      }
+
+      // Create new lines for the next batch
+      for (let i = 0; i < this.workerCount; i++) {
+        this.output.write('\n');
+      }
+
+      // Move cursor back up to start position
+      this.output.write(ANSI.up(this.workerCount));
+
+      // Initial render for new batch
+      this.render(true);
+    }
+  }
+
+  /**
    * Cleans up the display, showing cursor and printing final state.
    */
   cleanup(): void {
