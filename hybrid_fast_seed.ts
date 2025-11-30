@@ -187,7 +187,7 @@ const autoReseed = argv["auto-reseed"];
 const cleanCheckpoint = argv["clean-checkpoint"];
 const resumeMode = argv["resume"];
 const maxDocs = argv["max-docs"] ? parseInt(argv["max-docs"], 10) : undefined;
-const parallelWorkers = argv["parallel"] ? parseInt(argv["parallel"], 10) : 1;
+const parallelWorkers = argv["parallel"] ? parseInt(argv["parallel"], 10) : 10;
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
 function validateArgs() {
@@ -207,7 +207,7 @@ function validateArgs() {
         console.error("  --clean-checkpoint: Clear checkpoint and start fresh");
         console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
         console.error("  --max-docs N: Process at most N NEW documents (skips already processed, enables batching)");
-        console.error("  --parallel N: Process N documents concurrently for concept extraction (default: 1, max: 25)");
+        console.error("  --parallel N: Process N documents concurrently for concept extraction (default: 10, max: 25)");
         process.exit(1);
     }
     
