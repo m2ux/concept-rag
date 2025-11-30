@@ -2414,21 +2414,40 @@ async function hybridFastSeed() {
                 console.log("  📚 Loading existing catalog records for concept index...");
                 const existingRecords = await catalogTable.query().limit(100000).toArray();
                 
+                // Helper to convert Arrow arrays to JS arrays
+                const toArray = (val: any): any[] => {
+                    if (!val) return [];
+                    if (Array.isArray(val)) return val;
+                    if (typeof val === 'object' && 'toArray' in val) return Array.from(val.toArray());
+                    return [];
+                };
+                
                 // Convert existing records to Document format
+                // FIX: Use normalized schema fields (summary, concept_ids, concept_names) 
+                // instead of legacy fields (text, concepts)
                 const existingDocs = existingRecords
-                    .filter((r: any) => r.text && r.source && r.concepts)
+                    .filter((r: any) => {
+                        // Check for normalized schema fields
+                        const conceptIds = toArray(r.concept_ids);
+                        const conceptNames = toArray(r.concept_names);
+                        return r.source && (conceptIds.length > 0 || conceptNames.length > 0);
+                    })
                     .map((r: any) => {
-                        let concepts = r.concepts;
-                        if (typeof concepts === 'string') {
-                            try {
-                                concepts = JSON.parse(concepts);
-                            } catch (e) {
-                                concepts = null;
-                            }
-                        }
+                        // Reconstruct ConceptMetadata from normalized fields
+                        const conceptNames = toArray(r.concept_names);
+                        const categoryNames = toArray(r.category_names);
+                        
+                        // Create ConceptMetadata structure that ConceptIndexBuilder expects
+                        const concepts = {
+                            primary_concepts: conceptNames.map((name: string) => ({ 
+                                name: name, 
+                                summary: '' // Summary not stored in normalized schema
+                            })),
+                            categories: categoryNames.length > 0 ? categoryNames : ['General']
+                        };
                         
                         return new Document({
-                            pageContent: r.text || '',
+                            pageContent: r.summary || '',  // FIX: catalog uses 'summary' not 'text'
                             metadata: {
                                 source: r.source,
                                 hash: r.hash,
@@ -2436,7 +2455,7 @@ async function hybridFastSeed() {
                             }
                         });
                     })
-                    .filter((d: Document) => d.metadata.concepts);
+                    .filter((d: Document) => d.metadata.concepts?.primary_concepts?.length > 0);
                 
                 console.log(`  ✅ Loaded ${existingRecords.length} existing records (${existingDocs.length} with concepts)`);
                 
@@ -2446,7 +2465,7 @@ async function hybridFastSeed() {
                 allCatalogRecords = [...catalogRecords, ...nonDuplicateExisting];
                 
                 console.log(`  📊 Building concept index from ${allCatalogRecords.length} total catalog records`);
-            } catch (e) {
+            } catch (e: any) {
                 console.warn(`  ⚠️  Could not load existing records, building from new records only: ${e.message}`);
             }
         }
