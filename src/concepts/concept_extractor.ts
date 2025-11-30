@@ -13,6 +13,8 @@ export interface ConceptExtractorOptions {
     sharedRateLimiter?: SharedRateLimiter;
     /** Optional label for log messages (e.g., document name) */
     sourceLabel?: string;
+    /** Optional callback for chunk progress updates (for overwriting progress line) */
+    onChunkProgress?: (chunkNum: number, totalChunks: number) => void;
 }
 
 export class ConceptExtractor {
@@ -24,6 +26,7 @@ export class ConceptExtractor {
     private sharedRateLimiter?: SharedRateLimiter;
     private sourceLabel?: string;
     private headerPrinted: boolean = false;
+    private onChunkProgress?: (chunkNum: number, totalChunks: number) => void;
     
     /**
      * @param apiKey - OpenRouter API key
@@ -43,6 +46,7 @@ export class ConceptExtractor {
                 this.resilientExecutor = opts.resilientExecutor;
                 this.sharedRateLimiter = opts.sharedRateLimiter;
                 this.sourceLabel = opts.sourceLabel;
+                this.onChunkProgress = opts.onChunkProgress;
             }
         }
     }
@@ -105,8 +109,7 @@ export class ConceptExtractor {
         
         if (estimatedTokens > tokenLimit) {
             this.printHeaderIfNeeded();
-            console.log(`  📚 Large document (${estimatedTokens.toLocaleString()} tokens) - splitting into chunks...`);
-            return await this.extractConceptsMultiPass(fullContent, tokenLimit);
+            return await this.extractConceptsMultiPass(fullContent, tokenLimit, estimatedTokens);
         }
         
         // Regular extraction for smaller documents
@@ -115,7 +118,7 @@ export class ConceptExtractor {
     }
     
     // Multi-pass extraction for large documents
-    private async extractConceptsMultiPass(content: string, tokenLimit: number): Promise<ConceptMetadata> {
+    private async extractConceptsMultiPass(content: string, tokenLimit: number, estimatedTokens?: number): Promise<ConceptMetadata> {
         const charsPerToken = 4;
         const charLimit = tokenLimit * charsPerToken; // ~400k chars per chunk
         
@@ -124,13 +127,17 @@ export class ConceptExtractor {
             chunks.push(content.slice(i, i + charLimit));
         }
         
-        console.log(`  📄 Split into ${chunks.length} chunks for processing`);
-        
         const allExtractions: ConceptMetadata[] = [];
         
         // Extract concepts from each chunk
         for (let i = 0; i < chunks.length; i++) {
-            console.log(`  🔄 Processing chunk ${i + 1}/${chunks.length}...`);
+            // Use callback if provided (for inline progress updates), otherwise log normally
+            if (this.onChunkProgress) {
+                this.onChunkProgress(i + 1, chunks.length);
+            } else {
+                const tokenInfo = estimatedTokens ? ` (${Math.round(estimatedTokens / 1000)}k tokens)` : '';
+                console.log(`  🔄 Processing chunk ${i + 1}/${chunks.length}${tokenInfo}...`);
+            }
             const extracted = await this.extractConceptsFromChunk(chunks[i]);
             allExtractions.push(extracted);
         }
@@ -139,8 +146,8 @@ export class ConceptExtractor {
         return this.mergeConceptExtractions(allExtractions);
     }
     
-    // Extract concepts from a chunk
-    private async extractConceptsFromChunk(chunk: string): Promise<ConceptMetadata> {
+    // Extract concepts from a chunk with retry logic
+    private async extractConceptsFromChunk(chunk: string, maxRetries: number = 3): Promise<ConceptMetadata> {
         const estimatedTokens = Math.ceil(chunk.length / 4) + 1000;
         const contextLimit = 400000; // gpt-5-mini has 400k context
         const safetyBuffer = 10000;
@@ -150,75 +157,106 @@ export class ConceptExtractor {
         // Build prompt from template file
         const prompt = buildConceptExtractionPrompt(chunk);
         
-        let response: string | undefined;
-        try {
-            response = await this.callOpenRouter(prompt, maxTokens);
-            
-            // Parse response with better error recovery
-            let jsonText = response.trim();
-            
-            // Remove markdown code blocks if present
-            if (jsonText.includes('```')) {
-                const jsonMatch = jsonText.match(/```json?\s*([\s\S]*?)\s*```/);
-                if (jsonMatch) {
-                    jsonText = jsonMatch[1].trim();
-                } else {
-                    // Fallback: remove all ``` markers
-                    jsonText = jsonText.replace(/```json?\s*/g, '').replace(/```\s*/g, '').trim();
-                }
-            }
-            
-            // Try to fix common JSON issues before parsing
-            jsonText = this.sanitizeJSON(jsonText);
-            
-            const concepts = JSON.parse(jsonText);
-            
-            // Parse primary_concepts - handle both new (object[]) and legacy (string[]) formats
-            let primaryConcepts: (ExtractedConcept | string)[] = [];
-            if (Array.isArray(concepts.primary_concepts)) {
-                primaryConcepts = concepts.primary_concepts
-                    .filter((c: any) => c != null)
-                    .map((c: any) => {
-                        if (typeof c === 'string') {
-                            // Legacy format: string only
-                            return c.trim() ? c : null;
-                        } else if (typeof c === 'object' && c.name) {
-                            // New format: object with name and summary
-                            return {
-                                name: String(c.name).trim(),
-                                summary: String(c.summary || '').trim()
-                            } as ExtractedConcept;
-                        }
-                        return null;
-                    })
-                    .filter((c: any) => c != null);
-            }
-            
-            return {
-                primary_concepts: primaryConcepts,
-                categories: Array.isArray(concepts.categories) 
-                    ? concepts.categories.filter((c: any) => typeof c === 'string' && c.trim()) 
-                    : []
-            };
-        } catch (error: any) {
-            console.warn(`  ⚠️  Chunk extraction failed: ${error.message}`);
-            console.warn(`  📄 Saving failed response for debugging...`);
-            
-            // Try to save the failed response for debugging
+        let lastError: Error | null = null;
+        let lastResponse: string | undefined;
+        
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                const debugPath = `/tmp/concept_extraction_error_${timestamp}.txt`;
-                fs.writeFileSync(debugPath, `Error: ${error.message}\n\nResponse:\n${response || 'N/A'}`);
-                console.warn(`  💾 Debug info saved to: ${debugPath}`);
-            } catch (saveError) {
-                // Ignore save errors
+                const response = await this.callOpenRouter(prompt, maxTokens);
+                lastResponse = response;
+                
+                // Parse response with better error recovery
+                let jsonText = response.trim();
+                
+                // Remove markdown code blocks if present
+                if (jsonText.includes('```')) {
+                    const jsonMatch = jsonText.match(/```json?\s*([\s\S]*?)\s*```/);
+                    if (jsonMatch) {
+                        jsonText = jsonMatch[1].trim();
+                    } else {
+                        // Fallback: remove all ``` markers
+                        jsonText = jsonText.replace(/```json?\s*/g, '').replace(/```\s*/g, '').trim();
+                    }
+                }
+                
+                // Try to fix common JSON issues before parsing
+                jsonText = this.sanitizeJSON(jsonText);
+                
+                const concepts = JSON.parse(jsonText);
+                
+                // Parse primary_concepts - handle both new (object[]) and legacy (string[]) formats
+                let primaryConcepts: (ExtractedConcept | string)[] = [];
+                if (Array.isArray(concepts.primary_concepts)) {
+                    primaryConcepts = concepts.primary_concepts
+                        .filter((c: any) => c != null)
+                        .map((c: any) => {
+                            if (typeof c === 'string') {
+                                // Legacy format: string only
+                                return c.trim() ? c : null;
+                            } else if (typeof c === 'object' && c.name) {
+                                // New format: object with name and summary
+                                return {
+                                    name: String(c.name).trim(),
+                                    summary: String(c.summary || '').trim()
+                                } as ExtractedConcept;
+                            }
+                            return null;
+                        })
+                        .filter((c: any) => c != null);
+                }
+                
+                // Success - return the result
+                if (attempt > 1) {
+                    console.log(`  ✅ Retry ${attempt} succeeded`);
+                }
+                
+                return {
+                    primary_concepts: primaryConcepts,
+                    categories: Array.isArray(concepts.categories) 
+                        ? concepts.categories.filter((c: any) => typeof c === 'string' && c.trim()) 
+                        : []
+                };
+            } catch (error: any) {
+                lastError = error;
+                
+                // Check if this is a retryable error
+                const isRetryable = error.message?.includes('terminated') || 
+                                   error.message?.includes('timeout') ||
+                                   error.message?.includes('ECONNRESET') ||
+                                   error.message?.includes('network') ||
+                                   error.message?.includes('Bad control character');
+                
+                if (isRetryable && attempt < maxRetries) {
+                    const backoffMs = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // 1s, 2s, 4s... max 10s
+                    console.warn(`  ⚠️  Chunk extraction failed (attempt ${attempt}/${maxRetries}): ${error.message}`);
+                    console.warn(`  🔄 Retrying in ${backoffMs / 1000}s...`);
+                    await new Promise(resolve => setTimeout(resolve, backoffMs));
+                    continue;
+                }
+                
+                // Non-retryable error or max retries reached
+                break;
             }
-            
-            return {
-                primary_concepts: [],
-                categories: []
-            };
         }
+        
+        // All retries failed - log and return empty
+        console.warn(`  ⚠️  Chunk extraction failed after ${maxRetries} attempts: ${lastError?.message}`);
+        console.warn(`  📄 Saving failed response for debugging...`);
+        
+        // Try to save the failed response for debugging
+        try {
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const debugPath = `/tmp/concept_extraction_error_${timestamp}.txt`;
+            fs.writeFileSync(debugPath, `Error: ${lastError?.message}\n\nResponse:\n${lastResponse || 'N/A'}`);
+            console.warn(`  💾 Debug info saved to: ${debugPath}`);
+        } catch (saveError) {
+            // Ignore save errors
+        }
+        
+        return {
+            primary_concepts: [],
+            categories: []
+        };
     }
     
     // Fix control characters (newlines, tabs, etc.) within JSON string literals
@@ -383,6 +421,89 @@ export class ConceptExtractor {
         }
     }
     
+    // Advanced JSON recovery for malformed responses
+    private recoverMalformedJSON(jsonText: string): string {
+        // Strategy 1: Find the last complete concept object and truncate there
+        // Look for pattern like: }, { or }, ] which indicates a complete object boundary
+        
+        // Find all complete concept objects (objects with "name" and "summary")
+        const completeObjectPattern = /\{\s*"name"\s*:\s*"[^"]*"\s*,\s*"summary"\s*:\s*"[^"]*"\s*\}/g;
+        let lastCompleteMatch: RegExpExecArray | null = null;
+        let match;
+        
+        while ((match = completeObjectPattern.exec(jsonText)) !== null) {
+            lastCompleteMatch = match;
+        }
+        
+        if (lastCompleteMatch) {
+            const endOfLastComplete = lastCompleteMatch.index + lastCompleteMatch[0].length;
+            
+            // Check if there's more content after that might be incomplete
+            const remaining = jsonText.substring(endOfLastComplete);
+            
+            // If there's incomplete content, truncate to the last complete object
+            if (remaining.includes('"name"') && !remaining.match(completeObjectPattern)) {
+                console.warn('  🔧 Truncating to last complete concept object');
+                let truncated = jsonText.substring(0, endOfLastComplete);
+                
+                // Close the structure properly
+                const openBraces = (truncated.match(/\{/g) || []).length;
+                const closeBraces = (truncated.match(/\}/g) || []).length;
+                const openBrackets = (truncated.match(/\[/g) || []).length;
+                const closeBrackets = (truncated.match(/\]/g) || []).length;
+                
+                // Close any open arrays first
+                for (let i = 0; i < openBrackets - closeBrackets; i++) {
+                    truncated += '\n  ]';
+                }
+                
+                // Close any open objects
+                for (let i = 0; i < openBraces - closeBraces; i++) {
+                    truncated += '\n}';
+                }
+                
+                return truncated;
+            }
+        }
+        
+        // Strategy 2: Fix missing commas between objects
+        // Pattern: } { should be }, {
+        let fixed = jsonText.replace(/\}\s*\{/g, '}, {');
+        
+        // Strategy 3: Fix missing commas after string values followed by "name"
+        // Pattern: "value" "name" should be "value", "name"
+        fixed = fixed.replace(/"(\s*)"name"/g, '",\n    "name"');
+        
+        // Strategy 4: Remove any trailing incomplete object
+        // Find the last complete } and check if there's an incomplete { after
+        const lastCloseBrace = fixed.lastIndexOf('}');
+        const lastOpenBrace = fixed.lastIndexOf('{');
+        
+        if (lastOpenBrace > lastCloseBrace) {
+            // There's an unclosed object - find the start of this incomplete object
+            const beforeIncomplete = fixed.lastIndexOf(',', lastOpenBrace);
+            if (beforeIncomplete > 0) {
+                console.warn('  🔧 Removing incomplete trailing object');
+                fixed = fixed.substring(0, beforeIncomplete);
+                
+                // Close any remaining open brackets/braces
+                const openBrackets = (fixed.match(/\[/g) || []).length;
+                const closeBrackets = (fixed.match(/\]/g) || []).length;
+                const openBraces = (fixed.match(/\{/g) || []).length;
+                const closeBraces = (fixed.match(/\}/g) || []).length;
+                
+                for (let i = 0; i < openBrackets - closeBrackets; i++) {
+                    fixed += '\n  ]';
+                }
+                for (let i = 0; i < openBraces - closeBraces; i++) {
+                    fixed += '\n}';
+                }
+            }
+        }
+        
+        return fixed;
+    }
+    
     // Merge multiple concept extractions into one
     private mergeConceptExtractions(extractions: ConceptMetadata[]): ConceptMetadata {
         // Map to store concepts with their best summary (first one found)
@@ -460,6 +581,9 @@ export class ConceptExtractor {
                 }
             }
             
+            // Apply full JSON sanitization (control characters, comments, truncation recovery)
+            jsonText = this.sanitizeJSON(jsonText);
+            
             // Validate JSON ends properly (light check only)
             if (!jsonText.endsWith('}') && !jsonText.endsWith('"}')) {
                 console.warn('  ⚠️  Attempting to recover truncated JSON...');
@@ -503,7 +627,16 @@ export class ConceptExtractor {
                 }
             }
             
-            const rawConcepts = JSON.parse(jsonText);
+            // Attempt advanced JSON recovery if standard parse fails
+            let rawConcepts;
+            try {
+                rawConcepts = JSON.parse(jsonText);
+            } catch (parseError) {
+                // Try to recover by finding valid JSON structure
+                console.warn('  ⚠️  JSON parse failed, attempting advanced recovery...');
+                jsonText = this.recoverMalformedJSON(jsonText);
+                rawConcepts = JSON.parse(jsonText);
+            }
             
             // Parse primary_concepts - handle both new (object[]) and legacy (string[]) formats
             let primaryConcepts: (ExtractedConcept | string)[] = [];
@@ -536,7 +669,23 @@ export class ConceptExtractor {
                 categories
             } as ConceptMetadata;
         } catch (error) {
-            console.error('Concept extraction error:', error);
+            // Properly serialize error for logging
+            const errorMessage = error instanceof Error 
+                ? `${error.name}: ${error.message}` 
+                : (typeof error === 'object' ? JSON.stringify(error) : String(error));
+            console.error(`Concept extraction error: ${errorMessage}`);
+            
+            // Save debug info for analysis
+            try {
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const debugPath = `/tmp/concept_extraction_error_${timestamp}.txt`;
+                const debugContent = `Error: ${errorMessage}\n\nStack: ${error instanceof Error ? error.stack : 'N/A'}`;
+                fs.writeFileSync(debugPath, debugContent);
+                console.warn(`  💾 Debug info saved to: ${debugPath}`);
+            } catch (saveError) {
+                // Ignore save errors
+            }
+            
             // Return empty structure as fallback
             return {
                 primary_concepts: [],

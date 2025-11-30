@@ -54,6 +54,8 @@ export interface ParallelExtractionOptions {
     onProgress?: (completed: number, total: number, currentSource: string) => void;
     /** Callback for error notifications */
     onError?: (source: string, error: Error) => void;
+    /** Callback for chunk progress updates within a document (for inline progress display) */
+    onChunkProgress?: (completed: number, total: number, currentSource: string, chunkNum: number, totalChunks: number) => void;
 }
 
 /**
@@ -121,7 +123,8 @@ export class ParallelConceptExtractor {
         const { 
             concurrency, 
             onProgress, 
-            onError 
+            onError,
+            onChunkProgress
         } = options;
 
         const entries = Array.from(documentSets.entries());
@@ -141,7 +144,10 @@ export class ParallelConceptExtractor {
                 (source) => {
                     onProgress?.(completed, entries.length, source);
                 },
-                onError
+                onError,
+                (source, chunkNum, totalChunks) => {
+                    onChunkProgress?.(completed, entries.length, source, chunkNum, totalChunks);
+                }
             );
             results.push(...batchResults);
         }
@@ -157,7 +163,8 @@ export class ParallelConceptExtractor {
         batch: Array<[string, DocumentSet]>,
         onComplete: () => void,
         onProgress: (source: string) => void,
-        onError?: (source: string, error: Error) => void
+        onError?: (source: string, error: Error) => void,
+        onChunkProgress?: (source: string, chunkNum: number, totalChunks: number) => void
     ): Promise<DocumentConceptResult[]> {
         const batchPromises = batch.map(async ([source, { docs, hash }]) => {
             const startTime = Date.now();
@@ -170,7 +177,10 @@ export class ParallelConceptExtractor {
                 const sourceLabel = source.split('/').pop()?.slice(0, 30) || source.slice(0, 30);
                 const extractor = new ConceptExtractor(this.apiKey, {
                     sharedRateLimiter: this.rateLimiter,
-                    sourceLabel
+                    sourceLabel,
+                    onChunkProgress: onChunkProgress 
+                        ? (chunkNum, totalChunks) => onChunkProgress(source, chunkNum, totalChunks)
+                        : undefined
                 });
                 const concepts = await extractor.extractConcepts(docs);
                 

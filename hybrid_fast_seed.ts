@@ -1162,7 +1162,8 @@ async function createLanceTableWithSimpleEmbeddings(
             // DERIVED fields with placeholders for LanceDB schema inference
             baseData.concept_ids = [0];     // Will be overwritten if concepts exist
             baseData.concept_names = [''];  // DERIVED: Will be overwritten if concepts exist
-            baseData.category_names = [''];  // DERIVED: Will be overwritten if concepts exist
+            baseData.category_ids = [0];    // Will be overwritten if categories exist
+            baseData.category_names = [''];  // DERIVED: Will be overwritten if categories exist
         }
         
         // Add concept metadata if present (using native arrays)
@@ -1505,6 +1506,12 @@ async function processDocumentsParallel(
             const basename = path.basename(current);
             // Use carriage return to overwrite progress line
             process.stdout.write(`\r📊 Progress: ${completed}/${total} (${pct}%) - ${basename.slice(0, 40).padEnd(40)}`);
+        },
+        onChunkProgress: (completed, total, current, chunkNum, totalChunks) => {
+            const pct = Math.round((completed / total) * 100);
+            const basename = path.basename(current);
+            // Show chunk progress on a new line
+            console.log(`📊 Progress: ${completed}/${total} (${pct}%) - ${basename.slice(0, 40).padEnd(40)}  🔄 Processing chunk ${chunkNum}/${totalChunks}...`);
         },
         onError: (source, error) => {
             console.error(`\n❌ Failed: ${path.basename(source)}: ${error.message}`);
