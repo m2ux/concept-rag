@@ -987,7 +987,6 @@ async function loadDocumentsWithErrorHandling(
                 // Check --max-docs limit (only counts newly processed, not skipped)
                 newlyProcessedCount++;
                 if (maxDocs && maxDocs > 0 && newlyProcessedCount >= maxDocs) {
-                    console.log(`\n📊 Reached --max-docs limit (${maxDocs}). Stopping document loading.`);
                     break documentLoop;
                 }
             } catch (error: any) {
@@ -1023,7 +1022,6 @@ async function loadDocumentsWithErrorHandling(
                                 // Check --max-docs limit for OCR success
                                 newlyProcessedCount++;
                                 if (maxDocs && maxDocs > 0 && newlyProcessedCount >= maxDocs) {
-                                    console.log(`\n📊 Reached --max-docs limit (${maxDocs}). Stopping document loading.`);
                                     break documentLoop;
                                 }
                             } else {
