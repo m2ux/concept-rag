@@ -207,7 +207,7 @@ function validateArgs() {
         console.error("  --clean-checkpoint: Clear checkpoint and start fresh");
         console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
         console.error("  --max-docs N: Process at most N NEW documents (skips already processed, enables batching)");
-        console.error("  --parallel N: Process N documents concurrently for concept extraction (default: 1, max: 20)");
+        console.error("  --parallel N: Process N documents concurrently for concept extraction (default: 1, max: 25)");
         process.exit(1);
     }
     
@@ -217,8 +217,8 @@ function validateArgs() {
     }
     
     // Validate parallel workers
-    if (parallelWorkers < 1 || parallelWorkers > 20 || isNaN(parallelWorkers)) {
-        console.error("--parallel must be a number between 1 and 20");
+    if (parallelWorkers < 1 || parallelWorkers > 25 || isNaN(parallelWorkers)) {
+        console.error("--parallel must be a number between 1 and 25");
         process.exit(1);
     }
     
