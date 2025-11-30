@@ -51,8 +51,12 @@ export class ConceptExtractor {
         }
     }
     
-    /** Print document header once before first log message */
+    /** Print document header once before first log message (skip if using progress callback) */
     private printHeaderIfNeeded(): void {
+        // Skip header when using onChunkProgress callback - document name is already in progress line
+        if (this.onChunkProgress) {
+            return;
+        }
         if (this.sourceLabel && !this.headerPrinted) {
             console.log(`📄 ${this.sourceLabel}`);
             this.headerPrinted = true;
@@ -205,9 +209,10 @@ export class ConceptExtractor {
                         .filter((c: any) => c != null);
                 }
                 
-                // Success - return the result
+                // Success - log if this was a retry
                 if (attempt > 1) {
-                    console.log(`  ✅ Retry ${attempt} succeeded`);
+                    const docLabel = this.sourceLabel ? `[${this.sourceLabel}] ` : '';
+                    console.log(`✅ ${docLabel}Retry ${attempt} succeeded`);
                 }
                 
                 return {
@@ -228,8 +233,7 @@ export class ConceptExtractor {
                 
                 if (isRetryable && attempt < maxRetries) {
                     const backoffMs = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // 1s, 2s, 4s... max 10s
-                    console.warn(`  ⚠️  Chunk extraction failed (attempt ${attempt}/${maxRetries}): ${error.message}`);
-                    console.warn(`  🔄 Retrying in ${backoffMs / 1000}s...`);
+                    // Silent retry - just wait and try again
                     await new Promise(resolve => setTimeout(resolve, backoffMs));
                     continue;
                 }
@@ -240,15 +244,15 @@ export class ConceptExtractor {
         }
         
         // All retries failed - log and return empty
-        console.warn(`  ⚠️  Chunk extraction failed after ${maxRetries} attempts: ${lastError?.message}`);
-        console.warn(`  📄 Saving failed response for debugging...`);
+        const docLabel = this.sourceLabel ? `[${this.sourceLabel}] ` : '';
+        console.warn(`⚠️  ${docLabel}Chunk extraction failed after ${maxRetries} attempts: ${lastError?.message}`);
         
         // Try to save the failed response for debugging
         try {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const debugPath = `/tmp/concept_extraction_error_${timestamp}.txt`;
-            fs.writeFileSync(debugPath, `Error: ${lastError?.message}\n\nResponse:\n${lastResponse || 'N/A'}`);
-            console.warn(`  💾 Debug info saved to: ${debugPath}`);
+            fs.writeFileSync(debugPath, `Document: ${this.sourceLabel || 'unknown'}\nError: ${lastError?.message}\n\nResponse:\n${lastResponse || 'N/A'}`);
+            console.warn(`💾 ${docLabel}Debug saved: ${debugPath}`);
         } catch (saveError) {
             // Ignore save errors
         }
@@ -540,7 +544,8 @@ export class ConceptExtractor {
             });
         }
         
-        console.log(`  ✅ Merged: ${conceptMap.size} unique concepts from ${extractions.length} chunks`);
+        const docLabel = this.sourceLabel ? `[${this.sourceLabel}] ` : '';
+        console.log(`✅ ${docLabel}Merged: ${conceptMap.size} unique concepts from ${extractions.length} chunks`);
         
         return {
             primary_concepts: Array.from(conceptMap.values()),
@@ -673,15 +678,16 @@ export class ConceptExtractor {
             const errorMessage = error instanceof Error 
                 ? `${error.name}: ${error.message}` 
                 : (typeof error === 'object' ? JSON.stringify(error) : String(error));
-            console.error(`Concept extraction error: ${errorMessage}`);
+            const docLabel = this.sourceLabel ? `[${this.sourceLabel}] ` : '';
+            console.error(`⚠️  ${docLabel}Concept extraction error: ${errorMessage}`);
             
             // Save debug info for analysis
             try {
                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                 const debugPath = `/tmp/concept_extraction_error_${timestamp}.txt`;
-                const debugContent = `Error: ${errorMessage}\n\nStack: ${error instanceof Error ? error.stack : 'N/A'}`;
+                const debugContent = `Document: ${this.sourceLabel || 'unknown'}\nError: ${errorMessage}\n\nStack: ${error instanceof Error ? error.stack : 'N/A'}`;
                 fs.writeFileSync(debugPath, debugContent);
-                console.warn(`  💾 Debug info saved to: ${debugPath}`);
+                console.warn(`💾 ${docLabel}Debug saved: ${debugPath}`);
             } catch (saveError) {
                 // Ignore save errors
             }

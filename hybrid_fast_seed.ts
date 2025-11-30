@@ -1502,16 +1502,13 @@ async function processDocumentsParallel(
     const results = await parallelExtractor.extractAll(documentSets, {
         concurrency: workers,
         onProgress: (completed, total, current) => {
-            const pct = Math.round((completed / total) * 100);
-            const basename = path.basename(current);
-            // Use carriage return to overwrite progress line
-            process.stdout.write(`\r📊 Progress: ${completed}/${total} (${pct}%) - ${basename.slice(0, 40).padEnd(40)}`);
+            // Document completed - no need to log here, chunk progress already shows it
         },
-        onChunkProgress: (completed, total, current, chunkNum, totalChunks) => {
+        onChunkProgress: (completed, total, current, chunkNum, totalChunks, workerIndex) => {
             const pct = Math.round((completed / total) * 100);
             const basename = path.basename(current);
-            // Show chunk progress on a new line
-            console.log(`📊 Progress: ${completed}/${total} (${pct}%) - ${basename.slice(0, 40).padEnd(40)}  🔄 Processing chunk ${chunkNum}/${totalChunks}...`);
+            // Show chunk progress on a new line with worker index
+            console.log(`[${workerIndex}] 📊 Progress: ${completed}/${total} (${pct}%) - ${basename.slice(0, 120).padEnd(120)}  🔄 Processing chunk ${chunkNum}/${totalChunks}...`);
         },
         onError: (source, error) => {
             console.error(`\n❌ Failed: ${path.basename(source)}: ${error.message}`);

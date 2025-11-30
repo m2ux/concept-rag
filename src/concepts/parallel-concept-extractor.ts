@@ -55,7 +55,7 @@ export interface ParallelExtractionOptions {
     /** Callback for error notifications */
     onError?: (source: string, error: Error) => void;
     /** Callback for chunk progress updates within a document (for inline progress display) */
-    onChunkProgress?: (completed: number, total: number, currentSource: string, chunkNum: number, totalChunks: number) => void;
+    onChunkProgress?: (completed: number, total: number, currentSource: string, chunkNum: number, totalChunks: number, workerIndex: number) => void;
 }
 
 /**
@@ -145,8 +145,8 @@ export class ParallelConceptExtractor {
                     onProgress?.(completed, entries.length, source);
                 },
                 onError,
-                (source, chunkNum, totalChunks) => {
-                    onChunkProgress?.(completed, entries.length, source, chunkNum, totalChunks);
+                (source, chunkNum, totalChunks, workerIndex) => {
+                    onChunkProgress?.(completed, entries.length, source, chunkNum, totalChunks, workerIndex);
                 }
             );
             results.push(...batchResults);
@@ -164,9 +164,9 @@ export class ParallelConceptExtractor {
         onComplete: () => void,
         onProgress: (source: string) => void,
         onError?: (source: string, error: Error) => void,
-        onChunkProgress?: (source: string, chunkNum: number, totalChunks: number) => void
+        onChunkProgress?: (source: string, chunkNum: number, totalChunks: number, workerIndex: number) => void
     ): Promise<DocumentConceptResult[]> {
-        const batchPromises = batch.map(async ([source, { docs, hash }]) => {
+        const batchPromises = batch.map(async ([source, { docs, hash }], workerIndex) => {
             const startTime = Date.now();
             
             try {
@@ -179,7 +179,7 @@ export class ParallelConceptExtractor {
                     sharedRateLimiter: this.rateLimiter,
                     sourceLabel,
                     onChunkProgress: onChunkProgress 
-                        ? (chunkNum, totalChunks) => onChunkProgress(source, chunkNum, totalChunks)
+                        ? (chunkNum, totalChunks) => onChunkProgress(source, chunkNum, totalChunks, workerIndex)
                         : undefined
                 });
                 const concepts = await extractor.extractConcepts(docs);
