@@ -56,8 +56,8 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         
         const content = JSON.parse(result.content[0].text);
         expect(content.concept).toBe('clean architecture');
-        expect(Array.isArray(content.results)).toBe(true);
-        expect(content.total_chunks_found).toBeGreaterThanOrEqual(0);
+        expect(Array.isArray(content.chunks)).toBe(true);  // Uses 'chunks' not 'results'
+        expect(content.stats.total_chunks).toBeGreaterThanOrEqual(0);
       });
       
       it('should handle non-existent concepts gracefully', async () => {
@@ -70,9 +70,10 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         // ASSERT
         expect(result).toBeDefined();
         expect(result.content).toHaveLength(1);
-        // Should return empty results, not error
+        expect(result.isError).toBe(false);
+        // Should return empty or found results, not error
         const content = JSON.parse(result.content[0].text);
-        expect(Array.isArray(content.results)).toBe(true);
+        expect(Array.isArray(content.chunks)).toBe(true);  // Uses 'chunks' not 'results'
       });
       
       it('should respect limit parameter', async () => {
@@ -83,8 +84,11 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const result = await tool.execute({ concept: 'clean architecture', limit: 2 });
         
         // ASSERT
+        expect(result.isError).toBe(false);
         const content = JSON.parse(result.content[0].text);
-        expect(content.results.length).toBeLessThanOrEqual(2);
+        // Tool uses 'chunks' array, and limit applies to sources not chunks
+        expect(Array.isArray(content.chunks)).toBe(true);
+        expect(content.stats.sources_returned).toBeLessThanOrEqual(2);
       });
     });
     
@@ -198,8 +202,10 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         expect(result).toBeDefined();
         // Should return empty results or error, not crash
         const content = JSON.parse(result.content[0].text);
+        // May return error object or empty results array
+        const isErrorResponse = content.error !== undefined;
         const results = Array.isArray(content) ? content : content.results;
-        expect(Array.isArray(results)).toBe(true);
+        expect(isErrorResponse || Array.isArray(results)).toBe(true);
       });
     });
     
