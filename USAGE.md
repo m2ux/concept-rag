@@ -14,7 +14,7 @@
 
 **Quick Decision:**
 1. Looking for documents? → `catalog_search`
-2. Researching a concept? → `concept_chunks` 
+2. Researching a concept? → `concept_search` 
 3. Searching for phrases/questions? → `broad_chunks_search`
 4. Searching within known document? → `chunks_search`
 5. Extracting concept list? → `extract_concepts`
@@ -78,7 +78,7 @@ Deep search across ALL chunks in your entire library.
 
 ---
 
-### 4. `concept_chunks` - Find Concept Mentions
+### 4. `concept_search` - Find Concept Mentions
 
 Find all chunks that mention a specific concept.
 
@@ -426,7 +426,7 @@ npx tsx scripts/view_document_metadata.ts "Sun Tzu"
    ```
    "Show all mentions of 'strategic thinking'"
    ```
-   Uses: `concept_chunks`
+   Uses: `concept_search`
 
 3. **Compare documents:**
    - Extract concepts from multiple documents
@@ -459,7 +459,7 @@ npx tsx scripts/view_document_metadata.ts "Sun Tzu"
    ```
    "Find information about API design"
    ```
-   Uses: `concept_chunks` → Returns concept-tagged chunks
+   Uses: `concept_search` → Returns concept-tagged chunks
 
 **Benefits:**
 - Systematic domain exploration
@@ -507,12 +507,12 @@ npx tsx scripts/view_document_metadata.ts "Sun Tzu"
 | Goal | Best Tool | Query Type |
 |------|-----------|------------|
 | Find relevant documents | `catalog_search` | Titles, authors, topics |
-| **Research a concept** | **`concept_chunks`** | **Single concept terms (highest precision)** |
+| **Research a concept** | **`concept_search`** | **Single concept terms (highest precision)** |
 | Search across all documents | `broad_chunks_search` | Phrases, questions, keywords |
 | Search within known document | `chunks_search` | Any query + source path |
 | Export/analyze concepts | `extract_concepts` | Document identifier |
 
-**Important:** For conceptual research (e.g., "innovation", "leadership"), use `concept_chunks` for 100% precision with semantically-tagged results. Use `broad_chunks_search` for keyword/phrase searches.
+**Important:** For conceptual research (e.g., "innovation", "leadership"), use `concept_search` for 100% precision with semantically-tagged results. Use `broad_chunks_search` for keyword/phrase searches.
 
 See [tool-selection-guide.md](tool-selection-guide.md) for detailed selection criteria.
 

@@ -276,14 +276,14 @@ echo $OPENROUTER_API_KEY
 
 2. **Try different search tools**:
    ```bash
-   # If concept_chunks returns nothing, try:
+   # If concept_search returns nothing, try:
    # broad_chunks_search for same query
    ```
 
 3. **Check query phrasing**:
    ```
    ❌ "show me innovation stuff"
-   ✅ "innovation" (for concept_chunks)
+   ✅ "innovation" (for concept_search)
    ✅ "documents about innovation" (for catalog_search)
    ✅ "how do organizations innovate?" (for broad_chunks_search)
    ```
@@ -327,10 +327,10 @@ echo $OPENROUTER_API_KEY
 
 **Solutions**:
 
-1. **Use concept_chunks for concepts**:
+1. **Use concept_search for concepts**:
    ```
    Query: "innovation"
-   Tool: concept_chunks (not broad_chunks_search)
+   Tool: concept_search (not broad_chunks_search)
    ```
 
 2. **Be more specific**:

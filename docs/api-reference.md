@@ -47,9 +47,8 @@ Search document summaries and metadata to discover relevant documents using sema
 > **Note:** Results are limited to 10 documents (hardcoded). No `limit` parameter available.
 
 **Returns:** Top 10 documents with:
-- Document summary/preview (first 200 chars)
-- Hybrid scores (vector, BM25, title, wordnet)
-- Matched concepts from `concept_names` field
+- Document summary/preview (full summary text)
+- Hybrid scores (vector, BM25, title, concept, wordnet)
 - Expanded search terms
 - Source path
 
@@ -66,11 +65,10 @@ Search document summaries and metadata to discover relevant documents using sema
 2. Performs semantic search against document summaries
 3. Re-ranks results using weighted combination:
    - 30% Vector similarity (semantic understanding)
-   - 30% BM25 (keyword relevance)
-   - 25% Title matching (document title/filename)
-   - 15% WordNet expansion (synonyms and related terms)
-
-> **Note:** Concept matching was removed from hybrid search scoring. Use `concept_search` for concept-based discovery.
+   - 25% BM25 (keyword relevance)
+   - 20% Title matching (document title/filename)
+   - 15% Concept matching (concept alignment)
+   - 10% WordNet expansion (synonyms and related terms)
 
 ---
 
@@ -78,7 +76,7 @@ Search document summaries and metadata to discover relevant documents using sema
 
 ### `broad_chunks_search`
 
-Search across ALL document chunks using hybrid search (40% vector + 40% BM25 + 20% WordNet).
+Search across ALL document chunks using hybrid search with 4-signal scoring.
 
 > **Note:** Title matching is NOT used for chunk search. The `catalog_title` field is for display only.
 
@@ -99,7 +97,7 @@ Search across ALL document chunks using hybrid search (40% vector + 40% BM25 + 2
 **Returns:** Top 20 chunks ranked by hybrid scoring with:
 - Text content
 - Source document path (via `source` field)
-- Score components (hybrid, vector, BM25, WordNet)
+- Score components (hybrid, vector, BM25, concept, WordNet)
 - Expanded search terms
 
 **Example:**
@@ -111,10 +109,11 @@ Search across ALL document chunks using hybrid search (40% vector + 40% BM25 + 2
 ```
 
 **How It Works:**
-Uses 3-signal hybrid scoring optimized for text passages:
-- 40% Vector similarity (semantic understanding)
-- 40% BM25 (keyword relevance)
-- 20% WordNet expansion (synonyms and related terms)
+Uses 4-signal hybrid scoring optimized for text passages:
+- 35% Vector similarity (semantic understanding)
+- 30% BM25 (keyword relevance)
+- 20% Concept matching (concept alignment)
+- 15% WordNet expansion (synonyms and related terms)
 
 > **Note:** Title scoring is excluded for chunks since `catalog_title` is a display field, not relevant for passage ranking.
 
@@ -143,7 +142,7 @@ Search within a single known document using hybrid search.
 - Text content
 - Document title (`catalog_title`)
 - Concepts (`concept_names`)
-- Expanded search terms
+- Concept IDs
 
 **Example:**
 ```json
@@ -169,7 +168,7 @@ Uses **hybrid scoring** to find the best matching concept:
 - 40% Name matching (exact/partial concept name match)
 - 30% Vector similarity (semantic search)
 - 20% BM25 (keyword matching in concept summary)
-- 10% Synonym/hierarchy matching (WordNet relations)
+- 10% WordNet expansion (synonym/hierarchy matching)
 
 Then retrieves all chunks that were tagged with that concept during extraction.
 
@@ -197,6 +196,7 @@ Then retrieves all chunks that were tagged with that concept during extraction.
 - Source documents with `match_type`: `'primary'` (direct) or `'related'` (via linked concept)
 - Enriched chunks with page numbers and concept density ranking
 - Statistics (total documents, total chunks, sources/chunks returned)
+- Hybrid search scores (name, vector, BM25, WordNet)
 
 **Example:**
 ```json
@@ -267,10 +267,11 @@ Find all documents where specific concept(s) appear. Returns a merged/union list
 | `include_metadata` | boolean | ❌ | `true` | Include document summaries and categories |
 
 **Returns:** List of source documents with:
-- Title and path
+- Title, author, year, and source path
 - Summary (if requested)
-- Concept metadata
+- Primary concepts and categories
 - `concept_indices` showing which concepts each source matches (for multiple concepts)
+- Sources matching more concepts are sorted first
 
 **Example (single concept):**
 ```json
@@ -347,9 +348,10 @@ Find documents by category/domain. Best for browsing your library by subject are
 | `limit` | number | ❌ | `10` | Maximum documents to return |
 
 **Returns:** Documents in the category with:
-- Category metadata and statistics
-- Document list with summaries
-- Hierarchy information
+- Category metadata (name, description, hierarchy, aliases, related categories)
+- Statistics (documents, chunks, concepts)
+- Document list with previews and primary concepts
+- Categories searched (when includeChildren is true)
 
 **Example:**
 ```json
@@ -381,9 +383,9 @@ List all available categories with statistics. **Best starting point for library
 | `search` | string | ❌ | - | Filter categories by name/description |
 
 **Returns:** Categories with:
-- Name and description
-- Document count per category
-- Hierarchy path
+- Summary statistics (total categories, root categories, total documents)
+- Category list with name, description, aliases, parent, hierarchy
+- Per-category statistics (documents, chunks, concepts)
 - Related categories
 
 **Example:**
@@ -414,9 +416,10 @@ Find all unique concepts in documents of a specific category.
 | `limit` | number | ❌ | `50` | Maximum concepts to return |
 
 **Returns:** Concepts in the category with:
-- Concept name and summary
-- Document count (frequency)
-- Related concepts
+- Category metadata and hierarchy
+- Statistics (total documents, chunks, unique concepts, concepts returned)
+- Concept list with name, document count, and weight
+- Note about concepts being category-agnostic
 
 **Example:**
 ```json
@@ -497,6 +500,16 @@ list_concepts_in_category → understand domain vocabulary
 
 ---
 
+## Hybrid Search Scoring Summary
+
+| Search Type | Vector | BM25 | Title | Concept | WordNet |
+|-------------|--------|------|-------|---------|---------|
+| **Catalog** | 30% | 25% | 20% | 15% | 10% |
+| **Chunks** | 35% | 30% | — | 20% | 15% |
+| **Concept** | 30% | 20% | 40% (name) | — | 10% |
+
+---
+
 ## Error Handling
 
 All tools return structured error responses:
@@ -516,6 +529,7 @@ All tools return structured error responses:
 **Common Error Codes:**
 - `VALIDATION_ERROR` - Invalid input parameters
 - `RECORD_NOT_FOUND` - Document/category not found
+- `CONCEPT_NOT_FOUND` - Concept not found in database
 - `DATABASE_ERROR` - Database operation failed
 
 ---
@@ -529,8 +543,11 @@ All tools return structured error responses:
 | `chunks_search` | 50-150ms |
 | `concept_search` | 50-200ms |
 | `extract_concepts` | 100-300ms |
+| `source_concepts` | 50-150ms |
+| `concept_sources` | 50-200ms |
 | `category_search` | 30-130ms |
 | `list_categories` | 10-50ms |
+| `list_concepts_in_category` | 30-100ms |
 
 Performance depends on database size and query complexity.
 

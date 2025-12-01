@@ -97,7 +97,7 @@ WordNet provides:
 
 **Quick decision**:
 1. Finding documents? → `catalog_search`
-2. Researching a concept? → `concept_chunks`
+2. Researching a concept? → `concept_search`
 3. Searching phrases/questions? → `broad_chunks_search`
 4. Searching within known document? → `chunks_search`
 5. Extracting concept list? → `extract_concepts`
@@ -122,7 +122,7 @@ Yes! Edit `prompts/concept-extraction.txt` to:
 - Change categorization rules
 - Modify extraction strategy
 
-See [prompts/README.md](prompts/README.md) for details.
+See `prompts/concept-extraction.txt` for the current extraction prompt.
 
 ### What document formats are supported?
 

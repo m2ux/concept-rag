@@ -259,9 +259,9 @@ Simpler three-layer (Presentation/Business/Data).
 ## Related Decisions
 
 - [ADR-0017: Repository Pattern](adr0017-repository-pattern.md) - Data access abstraction
-- [ADR-0018: Dependency Injection](adr0018-dependency-injection.md) - DI container implementation
-- [ADR-0019: Vitest Testing](adr0019-vitest-testing.md) - Testing enabled by architecture
-- [ADR-0021: Performance Optimization](adr0021-performance-optimization.md) - O(n) → O(log n) fix
+- [ADR-0018: Dependency Injection](adr0018-dependency-injection-container.md) - DI container implementation
+- [ADR-0019: Vitest Testing](adr0019-vitest-testing-framework.md) - Testing enabled by architecture
+- [ADR-0021: Performance Optimization](adr0021-performance-optimization-vector-search.md) - O(n) → O(log n) fix
 - [ADR-0023: SQL Injection Prevention](adr0023-sql-injection-prevention.md) - Security fix
 
 ## References

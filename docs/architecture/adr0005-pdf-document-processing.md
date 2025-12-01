@@ -96,7 +96,7 @@ Decision validated by:
 
 **October 21, 2025**: Added Tesseract OCR fallback for scanned documents
 
-See [ADR-0012: OCR Fallback Strategy](adr0012-ocr-fallback.md)
+See [ADR-0012: OCR Fallback Strategy](adr0012-ocr-fallback-tesseract.md)
 
 ## Pros and Cons of the Options
 
@@ -203,7 +203,7 @@ Documents that fail PDF extraction are skipped with logging.
 ## Related Decisions
 
 - [ADR-0001: TypeScript/Node.js](adr0001-typescript-nodejs-runtime.md) - Requires JavaScript-based PDF parser
-- [ADR-0012: OCR Fallback](adr0012-ocr-fallback.md) - Handles scanned PDFs
+- [ADR-0012: OCR Fallback](adr0012-ocr-fallback-tesseract.md) - Handles scanned PDFs
 - [ADR-0025: Document Loader Factory](adr0025-document-loader-factory.md) - Abstraction for multiple formats
 - [ADR-0026: EPUB Support](adr0026-epub-format-support.md) - Additional format
 
@@ -211,7 +211,7 @@ Documents that fail PDF extraction are skipped with logging.
 
 ### Related Decisions
 - [ADR-0001: TypeScript/Node.js](adr0001-typescript-nodejs-runtime.md)
-- [ADR-0012: OCR Fallback](adr0012-ocr-fallback.md)
+- [ADR-0012: OCR Fallback](adr0012-ocr-fallback-tesseract.md)
 
 ---
 

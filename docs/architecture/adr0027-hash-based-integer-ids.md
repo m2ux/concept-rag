@@ -293,14 +293,14 @@ class CategoryIdCache {
 ## Related Decisions
 
 - [ADR-0009: Three-Table Architecture](adr0009-three-table-architecture.md) - Schema that got optimized
-- [ADR-0028: Category Storage](adr0028-category-storage.md) - Categories use hash IDs
+- [ADR-0028: Category Storage](adr0028-category-storage-strategy.md) - Categories use hash IDs
 - [ADR-0007: Concept Extraction](adr0007-concept-extraction-llm.md) - Concepts get hash IDs
 
 ## References
 
 ### Related Decisions
 - [ADR-0009: Three-Table Architecture](adr0009-three-table-architecture.md)
-- [ADR-0028: Category Storage](adr0028-category-storage.md)
+- [ADR-0028: Category Storage](adr0028-category-storage-strategy.md)
 
 ---
 

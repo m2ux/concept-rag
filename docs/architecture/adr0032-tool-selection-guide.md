@@ -257,7 +257,7 @@ Agents figure it out through trial and error.
 
 **Prominent Link:** [Source: README.md]
 ```markdown
-**For AI agents:** See [tool-selection-guide.md](tool-selection-guide.md) 
+**For AI agents:** See [tool-selection-guide.md](../../tool-selection-guide.md) 
 for the complete decision tree.
 ```
 

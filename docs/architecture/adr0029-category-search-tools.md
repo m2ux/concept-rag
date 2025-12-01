@@ -242,7 +242,7 @@ Each tool has detailed description guiding AI agent usage:
 - [ADR-0028: Category Storage](adr0028-category-storage-strategy.md) - Storage enables tools
 - [ADR-0027: Hash-Based IDs](adr0027-hash-based-integer-ids.md) - IDs used in queries
 - [ADR-0030: 46 Categories](adr0030-auto-extracted-categories.md) - Categories to browse
-- [ADR-0031: Eight Specialized Tools](adr0031-eight-specialized-tools.md) - Tool proliferation strategy
+- [ADR-0031: Eight Specialized Tools](adr0031-eight-specialized-tools-strategy.md) - Tool proliferation strategy
 
 ## References
 

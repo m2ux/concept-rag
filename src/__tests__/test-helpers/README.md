@@ -42,7 +42,7 @@ Fake implementations of service interfaces.
 
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ConceptChunksTool } from '../concept_chunks.js';
+import { ConceptChunksTool } from '../concept_search.js';
 import {
   FakeChunkRepository,
   FakeConceptRepository,

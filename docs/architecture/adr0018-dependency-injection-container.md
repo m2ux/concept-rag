@@ -268,7 +268,7 @@ const tool = new ConceptSearchTool(
 
 - [ADR-0016: Layered Architecture](adr0016-layered-architecture-refactoring.md) - Application layer context
 - [ADR-0017: Repository Pattern](adr0017-repository-pattern.md) - What gets injected
-- [ADR-0019: Vitest Testing](adr0019-vitest-testing.md) - Testing with DI
+- [ADR-0019: Vitest Testing](adr0019-vitest-testing-framework.md) - Testing with DI
 
 ## References
 

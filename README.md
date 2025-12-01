@@ -15,7 +15,7 @@ A powerful RAG MCP server that enables LLMs to interact with local PDF/EPUB docu
 ---
 ## 📝 Available Tools
 
-The server provides **11 specialized MCP tools** organized into four categories:
+The server provides **10 specialized MCP tools** organized into four categories:
 
 ### Content Analysis
 | Tool | Description                                       | Example Query |
@@ -176,7 +176,7 @@ src/
 │   ├── query_expander.ts         # Query expansion
 │   └── summary_generator.ts      # LLM summary generation
 ├── wordnet/                      # WordNet integration
-└── tools/                        # MCP tools (11 operations)
+└── tools/                        # MCP tools (10 operations)
 ```
 
 ## 🏗️ Architecture
@@ -213,7 +213,7 @@ All major technical decisions are documented in **[Architecture Decision Records
 
 ### Concept Lexicon
 
-The **[Concept Lexicon](docs/concept-lexicon.md)** catalogs concepts from the local knowledge base that are directly applicable to this project, organized by functional area: This lexicon serves as a reference for understanding the conceptual foundations that inform the project's design decisions.
+The **[API Reference](docs/api-reference.md)** provides comprehensive documentation for all MCP tools, including parameters, return types, and usage examples.
 
 ## 💬 Support & Community
 
