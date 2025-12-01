@@ -108,6 +108,7 @@ npx tsx hybrid_fast_seed.ts \
 ```
 
 **Seeding Options:**
+
 | Flag | Description |
 |------|-------------|
 | `--filesdir` | Directory containing PDF/EPUB files (required) |
