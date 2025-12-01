@@ -188,7 +188,7 @@ export class ApplicationContainer {
     // 7a. Register category tools if categories table exists
     if (categoriesTable && this.categoryRepo) {
       this.tools.set('category_search', new CategorySearchTool(this.categoryRepo, catalogRepo));
-      this.tools.set('list_categories', new ListCategoriesTool(this.categoryRepo));
+      this.tools.set('list_categories', new ListCategoriesTool(this.categoryRepo, catalogRepo));
       this.tools.set('list_concepts_in_category', new ListConceptsInCategoryTool(this.categoryRepo, catalogRepo, conceptRepo));
       console.error(`✅ Category tools registered (3 tools)`);
     }

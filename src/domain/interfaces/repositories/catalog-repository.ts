@@ -173,5 +173,22 @@ export interface CatalogRepository {
    * ```
    */
   getConceptsInCategory(categoryId: number): Promise<number[]>;
+  
+  /**
+   * Count total number of documents in the catalog.
+   * 
+   * Returns the actual unique document count, not the sum of category assignments
+   * (since a document can belong to multiple categories).
+   * 
+   * @returns Promise resolving to total document count
+   * @throws {Error} If database query fails
+   * 
+   * @example
+   * ```typescript
+   * const totalDocs = await catalogRepo.count();
+   * console.log(`Library contains ${totalDocs} documents`);
+   * ```
+   */
+  count(): Promise<number>;
 }
 

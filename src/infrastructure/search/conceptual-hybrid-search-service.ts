@@ -124,13 +124,15 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       
       // Calculate individual scores
       const vectorScore = calculateVectorScore(row._distance || 0);
+      // For BM25 and title scoring, use source (catalog) or catalog_title (chunks)
+      const sourceOrTitle = row.source || row.catalog_title || '';
       const bm25Score = calculateWeightedBM25(
         expanded.all_terms,
         expanded.weights,
         searchableText,
-        row.source || ''
+        sourceOrTitle
       );
-      const titleScore = calculateTitleScore(expanded.original_terms, row.source || '');
+      const titleScore = calculateTitleScore(expanded.original_terms, sourceOrTitle);
       
       // Calculate concept score using expanded concept terms
       const docConceptNames = parseStringArrayField(row.concept_names);
@@ -158,10 +160,14 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       };
       
       // Build enriched search result
+      // For chunks: use catalog_title (source field was removed in v7 schema)
+      // For catalog: use source (document path)
+      const sourceValue = row.source || row.catalog_title || '';
+      
       const result: SearchResult = {
         id: row.id || '',
         text: searchableText,  // Use text for chunks, summary for catalog
-        source: row.source || '',  // Source document path
+        source: sourceValue,  // Source document path or catalog_title for chunks
         catalogId: row.catalog_id || row.id || 0,
         hash: row.hash || '',
         conceptIds: parseArrayField(row.concept_ids),

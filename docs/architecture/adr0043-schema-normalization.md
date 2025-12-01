@@ -85,3 +85,6 @@ Schema validation script checks:
 - Validation script: `scripts/validate_normalized_schema.ts`
 - Domain models: `src/domain/models/`
 
+
+
+

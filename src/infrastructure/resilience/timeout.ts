@@ -6,7 +6,7 @@ import { TimeoutError } from './errors.js';
  * These values are chosen based on typical operation characteristics:
  * - LLM_CALL: 30s - Concept extraction can take time with large texts
  * - EMBEDDING: 10s - Embedding generation is typically faster
- * - SEARCH: 5s - Search should be fast for good UX
+ * - SEARCH: 10s - Hybrid search with query expansion can be slower
  * - DATABASE: 3s - Database queries should be quick
  * - HEALTH_CHECK: 1s - Health checks need to be very fast
  */
@@ -17,8 +17,8 @@ export const TIMEOUTS = {
   /** Timeout for embedding generation */
   EMBEDDING: 10000,
   
-  /** Timeout for search operations */
-  SEARCH: 5000,
+  /** Timeout for search operations (hybrid search with query expansion) */
+  SEARCH: 30000,
   
   /** Timeout for database queries */
   DATABASE: 3000,

@@ -4,6 +4,7 @@
 
 import { BaseTool, ToolParams } from '../base/tool.js';
 import type { CategoryRepository } from '../../domain/interfaces/category-repository.js';
+import type { CatalogRepository } from '../../domain/interfaces/repositories/catalog-repository.js';
 import { InputValidator } from '../../domain/services/validation/index.js';
 import { isSome } from '../../domain/functional/index.js';
 
@@ -16,7 +17,10 @@ export interface ListCategoriesToolParams extends ToolParams {
 export class ListCategoriesTool extends BaseTool<ListCategoriesToolParams> {
   private validator = new InputValidator();
   
-  constructor(private categoryRepo: CategoryRepository) {
+  constructor(
+    private categoryRepo: CategoryRepository,
+    private catalogRepo?: CatalogRepository
+  ) {
     super();
   }
   
@@ -107,8 +111,16 @@ export class ListCategoriesTool extends BaseTool<ListCategoriesToolParams> {
       // Calculate summary statistics
       const allCategories = await this.categoryRepo.findAll();
       const totalCategories = allCategories.length;
-      const totalDocuments = allCategories.reduce((sum, cat) => sum + cat.documentCount, 0);
       const rootCategories = allCategories.filter(cat => cat.parentCategoryId === null).length;
+      
+      // Get actual document count from catalog (not sum of category assignments)
+      let totalDocuments: number;
+      if (this.catalogRepo) {
+        totalDocuments = await this.catalogRepo.count();
+      } else {
+        // Fallback: use max document count from any category as estimate
+        totalDocuments = Math.max(...allCategories.map(cat => cat.documentCount), 0);
+      }
       
       const result = JSON.stringify({
         summary: {

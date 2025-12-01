@@ -253,13 +253,55 @@ export class LanceDBCatalogRepository implements CatalogRepository {
   
   /**
    * Get all unique concept IDs in a category.
-   * Note: In the normalized schema, concepts are stored per-chunk, not per-catalog entry.
-   * This returns an empty array. Use ChunkRepository to get concepts for documents.
+   * Aggregates concept_ids from all catalog entries in the category.
+   * @param categoryId - Category ID to search
+   * @returns Array of unique concept IDs
+   * @throws {DatabaseError} If database query fails
    */
-  async getConceptsInCategory(_categoryId: number): Promise<number[]> {
-    // Concepts are now derived from chunks, not stored in catalog
-    // Return empty array - callers should use chunk-based concept aggregation
-    return [];
+  async getConceptsInCategory(categoryId: number): Promise<number[]> {
+    try {
+      // Get all documents in this category
+      const docsInCategory = await this.findByCategory(categoryId);
+      
+      // Aggregate unique concept IDs from all documents
+      const conceptIdSet = new Set<number>();
+      
+      for (const doc of docsInCategory) {
+        // Use documentConceptIds (catalog-level concept IDs)
+        if (doc.documentConceptIds && doc.documentConceptIds.length > 0) {
+          for (const conceptId of doc.documentConceptIds) {
+            if (conceptId && conceptId > 0) {
+              conceptIdSet.add(conceptId);
+            }
+          }
+        }
+      }
+      
+      return Array.from(conceptIdSet);
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to get concepts in category ${categoryId}`,
+        'query',
+        error as Error
+      );
+    }
+  }
+  
+  /**
+   * Count total documents in the catalog.
+   * @returns Total document count
+   * @throws {DatabaseError} If database query fails
+   */
+  async count(): Promise<number> {
+    try {
+      return await this.catalogTable.countRows();
+    } catch (error) {
+      throw new DatabaseError(
+        'Failed to count catalog documents',
+        'query',
+        error as Error
+      );
+    }
   }
   
 }
