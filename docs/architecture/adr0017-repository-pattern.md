@@ -253,7 +253,7 @@ container.register('ChunkRepository', {
 **Injection:**
 ```typescript
 // In tool
-class ConceptChunksTool {
+class ConceptSearchTool {
   constructor(
     private chunkRepo: IChunkRepository,  // Interface, not implementation
     private conceptRepo: IConceptRepository

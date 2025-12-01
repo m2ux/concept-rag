@@ -226,7 +226,6 @@ const hybridScore = (vectorScore * 0.6) + (bm25Score * 0.2) + (titleScore * 0.2)
 This implementation became the foundation for later enhancements:
 - October 13: Added conceptual search and WordNet expansion [See: ADR-0007, ADR-0008]
 - November 14: Refactored into HybridSearchService [See: ADR-0022]
-- November 27: Removed concept scoring from hybrid search (now 4 signals: vector 30%, BM25 30%, title 25%, WordNet 15%). Concept-based discovery is now handled by dedicated `concept_search` and `concept_chunks` tools.
 
 ## Related Decisions
 

@@ -31,7 +31,7 @@ The system started with 2 basic tools (catalog_search, chunks_search) [Initial: 
 
 ## Decision Outcome
 
-**Chosen option:** "Eight Specialized Tools (Option 1)", because investigation showed different tools serve fundamentally different use cases with 0% overlap [Evidence: concept_chunks vs. broad_chunks_search investigation], and specialized tools enable better optimization, clearer intent, and easier AI agent selection.
+**Chosen option:** "Eight Specialized Tools (Option 1)", because investigation showed different tools serve fundamentally different use cases with 0% overlap [Evidence: concept_search vs. broad_chunks_search investigation], and specialized tools enable better optimization, clearer intent, and easier AI agent selection.
 
 ### The Eight Tools
 
@@ -42,7 +42,7 @@ The system started with 2 basic tools (catalog_search, chunks_search) [Initial: 
 2. chunks_search
 
 **Oct 13, 2025 Enhancement:**
-3. concept_chunks (added)
+3. concept_search (added)
 4. broad_chunks_search (added)
 5. extract_concepts (added)
 
@@ -59,7 +59,7 @@ The system started with 2 basic tools (catalog_search, chunks_search) [Initial: 
 
 | Tool | Scope | Index | Precision | Use Case |
 |------|-------|-------|-----------|----------|
-| **concept_chunks** | All chunks | Concept-enriched | ⭐⭐⭐⭐⭐ | Conceptual research |
+| **concept_search** | All chunks | Concept-enriched | ⭐⭐⭐⭐⭐ | Conceptual research |
 | **broad_chunks_search** | All chunks | Hybrid | ⭐⭐⭐ | Comprehensive search |
 | **catalog_search** | Doc summaries | Hybrid+titles | ⭐⭐⭐⭐ | Document discovery |
 | **chunks_search** | Single doc | Hybrid+filter | ⭐⭐⭐⭐ | Focused search |
@@ -71,7 +71,7 @@ The system started with 2 basic tools (catalog_search, chunks_search) [Initial: 
 ### Investigation Evidence
 
 **"innovation" Search Comparison:** [Source: `.ai/planning/2025-11-13-tool-documentation-enhancement/README.md`, lines 14-22]
-- **concept_chunks**: 10/10 results relevant (100% precision)
+- **concept_search**: 10/10 results relevant (100% precision)
 - **broad_chunks_search**: 0/10 results relevant (0% precision)
 - **Overlap**: 0% - No common chunks
 
@@ -161,7 +161,7 @@ Search (text), browse (metadata), extract (concepts).
 * Simpler than 8
 
 **Cons:**
-* **Loses precision control:** concept_chunks (high) vs. broad_chunks_search (medium) [Trade-off: precision]
+* **Loses precision control:** concept_search (high) vs. broad_chunks_search (medium) [Trade-off: precision]
 * **Category separate:** Categories don't fit into text/browse/extract [Gap: new dimension]
 * **Middle ground weakness:** Not specialized enough OR simple enough
 * **Investigation:** Would group tools with 0% overlap [Problem: wrong grouping]
@@ -206,7 +206,7 @@ Just catalog_search and chunks_search (upstream state).
 Are they looking for documents? → catalog_search
 Are they browsing by category? → category_search, list_categories
 Are they extracting concepts? → extract_concepts
-Are they searching for a concept? → concept_chunks
+Are they searching for a concept? → concept_search
 Do they know the document? → chunks_search
 Are they asking questions/phrases? → broad_chunks_search
 ```
@@ -234,7 +234,7 @@ Are they asking questions/phrases? → broad_chunks_search
 ## Related Decisions
 
 - [ADR-0003: MCP Protocol](adr0003-mcp-protocol.md) - Protocol supports multiple tools
-- [ADR-0007: Concept Extraction](adr0007-concept-extraction-llm.md) - Enabled concept_chunks tool
+- [ADR-0007: Concept Extraction](adr0007-concept-extraction-llm.md) - Enabled concept_search tool
 - [ADR-0029: Category Search Tools](adr0029-category-search-tools.md) - Added 3 category tools
 - [ADR-0032: Tool Selection Guide](adr0032-tool-selection-guide.md) - Helps users choose
 - [ADR-0033: BaseTool Abstraction](adr0033-basetool-abstraction.md) - Tool implementation pattern

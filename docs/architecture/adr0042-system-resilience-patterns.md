@@ -410,7 +410,3 @@ Each pattern provides detailed metrics:
 **Traceability:** .ai/planning/2025-11-25-resilience-patterns/
 
 
-
-
-
-

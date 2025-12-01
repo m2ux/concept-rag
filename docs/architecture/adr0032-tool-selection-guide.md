@@ -10,12 +10,12 @@
 
 ## Context and Problem Statement
 
-With 5 tools (later 8) serving different use cases [ADR-0031], AI agents struggled to select the appropriate tool [Problem: tool confusion]. Investigation revealed dramatic differences: concept_chunks returned 100% relevant results while broad_chunks_search returned 0% relevant for the same query ("innovation") with 0% overlap [Evidence: `.ai/planning/2025-11-13-tool-documentation-enhancement/README.md`, lines 17-20].
+With 5 tools (later 8) serving different use cases [ADR-0031], AI agents struggled to select the appropriate tool [Problem: tool confusion]. Investigation revealed dramatic differences: concept_search returned 100% relevant results while broad_chunks_search returned 0% relevant for the same query ("innovation") with 0% overlap [Evidence: `.ai/planning/2025-11-13-tool-documentation-enhancement/README.md`, lines 17-20].
 
 **The Core Problem:** How to help AI agents (and humans) select the optimal tool for their query intent? [Planning: tool-documentation-enhancement]
 
 **Decision Drivers:**
-* 0% overlap between concept_chunks and broad_chunks_search [Evidence: investigation, lines 17-20]
+* 0% overlap between concept_search and broad_chunks_search [Evidence: investigation, lines 17-20]
 * 100% vs. 0% precision shows tools serve different needs [Evidence: lines 17-19]
 * AI agents need clear selection criteria [Requirement: guidance]
 * Embedded MCP tool descriptions insufficient alone [Gap: limited space in description]
@@ -55,7 +55,7 @@ DO NOT USE for:
 `
 ```
 
-**Example - concept_chunks:** [Source: tool-selection-guide.md, lines 49-63]
+**Example - concept_search:** [Source: tool-selection-guide.md, lines 49-63]
 ```
 USE THIS TOOL WHEN:
 - ✅ User asks about a CONCEPT (e.g., "innovation", "leadership")
@@ -103,7 +103,7 @@ START: User asks a question
 │  └─ YES → extract_concepts
 │
 ├─ Searching for CONCEPTUAL TOPIC (single concept)?
-│  └─ YES → concept_chunks (highest precision)
+│  └─ YES → concept_search (highest precision)
 │
 ├─ Know SPECIFIC DOCUMENT to search within?
 │  └─ YES → chunks_search (requires source)
@@ -245,7 +245,7 @@ Agents figure it out through trial and error.
 ### Tool Description Updates
 
 **All 5 Tools Updated:** [Source: lines 27-55]
-1. concept_chunks - Added USE/DON'T USE sections
+1. concept_search - Added USE/DON'T USE sections
 2. broad_chunks_search - Clarified hybrid methodology
 3. catalog_search - Emphasized document-level focus
 4. chunks_search - Clarified two-step workflow

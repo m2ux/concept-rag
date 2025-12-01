@@ -78,8 +78,8 @@ container.register('EmbeddingService', () =>
 );
 
 // Register tools
-container.register('ConceptChunksTool', () =>
-  new ConceptChunksTool(
+container.register('ConceptSearchTool', () =>
+  new ConceptSearchTool(
     container.resolve('ChunkRepository'),
     container.resolve('ConceptRepository')
   )
@@ -246,7 +246,7 @@ testContainer.register('ChunkRepository', () =>
   new FakeChunkRepository()  // Fake, not real
 );
 
-const tool = new ConceptChunksTool(
+const tool = new ConceptSearchTool(
   testContainer.resolve('ChunkRepository'),
   testContainer.resolve('ConceptRepository')
 );

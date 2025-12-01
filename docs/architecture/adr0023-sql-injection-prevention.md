@@ -12,7 +12,7 @@
 
 During architecture review, SQL injection vulnerability discovered in concept search WHERE clauses [Security Issue: `.ai/planning/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md`, SQL injection section]. User input was directly interpolated into SQL queries without proper escaping [Problem: string concatenation in WHERE clauses].
 
-**Vulnerable Code Example:** [Source: Pre-refactoring `concept_chunks.ts`]
+**Vulnerable Code Example:** [Source: Pre-refactoring `concept_search.ts`]
 ```typescript
 // VULNERABLE: Direct string interpolation
 const results = await conceptTable
