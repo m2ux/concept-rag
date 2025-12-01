@@ -318,7 +318,8 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         expect(result.isError).toBe(false);
         
         const content = JSON.parse(result.content[0].text);
-        expect(Array.isArray(content) || Array.isArray(content.results)).toBe(true);
+        // category_search returns { category, statistics, documents, ... }
+        expect(content.documents !== undefined || Array.isArray(content.results) || Array.isArray(content)).toBe(true);
       });
     });
     

@@ -116,7 +116,8 @@ describe('parseFilenameMetadata', () => {
 
         it('should handle missing middle fields gracefully', () => {
             // With 6 parts: Title, Author, (empty), Publisher, ISBN, hash
-            const path = '/docs/Title -- Author -- -- Publisher -- 9781234567890 -- hash.epub';
+            // Note: double space between -- and -- to create empty element when split by " -- "
+            const path = '/docs/Title -- Author --  -- Publisher -- 9781234567890 -- hash.epub';
             const result = parseFilenameMetadata(path);
             
             expect(result.title).toBe('Title');
