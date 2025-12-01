@@ -39,6 +39,7 @@ class MockQueryExpander {
     const expanded: ExpandedQuery = {
       original_terms: terms,
       corpus_terms: [],
+      concept_terms: [],  // Required for concept matching
       wordnet_terms: [],
       all_terms: terms,
       weights
@@ -137,14 +138,15 @@ describe('ConceptualHybridSearchService', () => {
     });
 
     it('should return results with all score components', async () => {
-      // SETUP
+      // SETUP - Use v7 schema field names
       const mockRow = {
         id: 'chunk-1',
         text: 'This is a test document about software architecture',
         source: '/test/architecture.pdf',
+        catalog_title: 'Architecture Guide',
         hash: 'abc123',
-        concepts: ['architecture', 'software'],
-        concept_categories: ['technology'],
+        concept_names: ['architecture', 'software'],  // v7 schema uses concept_names
+        category_names: ['technology'],
         concept_density: 0.75,
         vector: createTestEmbedding(),
         _distance: 0.2
@@ -170,13 +172,14 @@ describe('ConceptualHybridSearchService', () => {
     });
 
     it('should respect limit parameter', async () => {
-      // SETUP
+      // SETUP - Use v7 schema field names
       const mockRows = Array.from({ length: 10 }, (_, i) => ({
         id: `chunk-${i}`,
         text: `Test document ${i}`,
         source: `/test/doc-${i}.pdf`,
+        catalog_title: `Document ${i}`,
         hash: `hash-${i}`,
-        concepts: [],
+        concept_names: [],  // v7 schema
         vector: createTestEmbedding(),
         _distance: 0.2 + i * 0.1
       }));
@@ -196,7 +199,7 @@ describe('ConceptualHybridSearchService', () => {
         text: `Test document ${i}`,
         source: `/test/doc-${i}.pdf`,
         hash: `hash-${i}`,
-        concepts: [],
+        concept_names: [],
         vector: createTestEmbedding(),
         _distance: 0.2
       }));
@@ -225,7 +228,7 @@ describe('ConceptualHybridSearchService', () => {
           text: 'Low score document',
           source: '/test/low.pdf',
           hash: 'hash1',
-          concepts: [],
+          concept_names: [],
           vector: createTestEmbedding(),
           _distance: 0.9 // High distance = low vector score
         },
@@ -234,7 +237,7 @@ describe('ConceptualHybridSearchService', () => {
           text: 'High score document with matching terms',
           source: '/test/high.pdf',
           hash: 'hash2',
-          concepts: ['matching'],
+          concept_names: ['matching'],
           vector: createTestEmbedding(),
           _distance: 0.1 // Low distance = high vector score
         },
@@ -243,7 +246,7 @@ describe('ConceptualHybridSearchService', () => {
           text: 'Medium score document',
           source: '/test/medium.pdf',
           hash: 'hash3',
-          concepts: [],
+          concept_names: [],
           vector: createTestEmbedding(),
           _distance: 0.5
         }
@@ -267,7 +270,7 @@ describe('ConceptualHybridSearchService', () => {
         text: `Document ${i}`,
         source: `/test/doc-${i}.pdf`,
         hash: `hash-${i}`,
-        concepts: [],
+        concept_names: [],
         vector: createTestEmbedding(),
         _distance: 0.1 + (i * 0.05) // Increasing distance
       }));
@@ -292,6 +295,7 @@ describe('ConceptualHybridSearchService', () => {
       const expandedQuery: ExpandedQuery = {
         original_terms: ['software'],
         corpus_terms: ['architecture', 'design'],
+        concept_terms: ['architecture'],  // Required for concept matching
         wordnet_terms: ['programming'],
         all_terms: ['software', 'architecture', 'design', 'programming'],
         weights: new Map([
@@ -308,7 +312,7 @@ describe('ConceptualHybridSearchService', () => {
         text: 'This document discusses software architecture and design patterns',
         source: '/test/arch.pdf',
         hash: 'abc123',
-        concepts: ['architecture'],
+        concept_names: ['architecture'],
         vector: createTestEmbedding(),
         _distance: 0.2
       };
@@ -328,6 +332,7 @@ describe('ConceptualHybridSearchService', () => {
       const emptyExpansion: ExpandedQuery = {
         original_terms: [],
         corpus_terms: [],
+        concept_terms: [],  // Required for concept matching
         wordnet_terms: [],
         all_terms: [],
         weights: new Map()
@@ -339,7 +344,7 @@ describe('ConceptualHybridSearchService', () => {
         text: 'Test document',
         source: '/test/doc.pdf',
         hash: 'abc123',
-        concepts: [],
+        concept_names: [],
         vector: createTestEmbedding(),
         _distance: 0.2
       };
@@ -362,8 +367,8 @@ describe('ConceptualHybridSearchService', () => {
         text: 'Software architecture patterns and design principles',
         source: '/test/software-architecture.pdf',
         hash: 'abc123',
-        concepts: ['architecture', 'patterns'],
-        concept_categories: ['technology'],
+        concept_names: ['architecture', 'patterns'],
+        category_names: ['technology'],
         concept_density: 0.8,
         vector: createTestEmbedding(),
         _distance: 0.15 // Low distance = high vector score
@@ -432,7 +437,7 @@ describe('ConceptualHybridSearchService', () => {
         text: 'Test document',
         source: '/test/doc.pdf',
         hash: 'abc123',
-        concepts: [],
+        concept_names: [],
         vector: createTestEmbedding(),
         _distance: 0.2
       };
@@ -456,7 +461,7 @@ describe('ConceptualHybridSearchService', () => {
         text: 'Test document',
         source: '/test/doc.pdf',
         hash: 'abc123',
-        concepts: [],
+        concept_names: [],
         vector: createTestEmbedding(),
         _distance: 0.2
       };
@@ -481,7 +486,7 @@ describe('ConceptualHybridSearchService', () => {
         text: `Document ${i}`,
         source: `/test/doc-${i}.pdf`,
         hash: `hash-${i}`,
-        concepts: [],
+        concept_names: [],
         vector: createTestEmbedding(),
         _distance: 0.2
       }));
@@ -501,7 +506,7 @@ describe('ConceptualHybridSearchService', () => {
         text: 'Test document',
         source: '/test/doc.pdf',
         hash: 'abc123',
-        concepts: [],
+        concept_names: [],
         vector: createTestEmbedding(),
         _distance: 0.2
       };
@@ -546,8 +551,8 @@ describe('ConceptualHybridSearchService', () => {
         text: 'Test',
         source: '/test/doc.pdf',
         hash: 'abc123',
-        concepts: [],
-        concept_categories: ['technology', 'design'],
+        concept_names: [],
+        category_names: ['technology', 'design'],
         vector: createTestEmbedding(),
         _distance: 0.2
       };
@@ -566,8 +571,8 @@ describe('ConceptualHybridSearchService', () => {
         text: 'Test',
         source: '/test/doc.pdf',
         hash: 'abc123',
-        concepts: [],
-        concept_categories: JSON.stringify(['technology', 'design']),
+        concept_names: [],
+        category_names: JSON.stringify(['technology', 'design']),
         vector: createTestEmbedding(),
         _distance: 0.2
       };
@@ -586,8 +591,8 @@ describe('ConceptualHybridSearchService', () => {
         text: 'Test',
         source: '/test/doc.pdf',
         hash: 'abc123',
-        concepts: [],
-        concept_categories: 'invalid json{',
+        concept_names: [],
+        category_names: 'invalid json{',
         vector: createTestEmbedding(),
         _distance: 0.2
       };
