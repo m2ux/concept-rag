@@ -137,6 +137,9 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
     }
     
     // Format results for MCP response - use direct fields
+    // Include source from catalog entry for backward compatibility
+    const catalogSource = catalogOpt.value.source || '';
+    
     // @ts-expect-error - Type narrowing limitation
     const formattedResults = result.value.map((r: Chunk) => {
       // Use derived concept_names field directly
@@ -146,6 +149,7 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
       
       return {
         text: r.text,
+        source: catalogSource,  // From catalog lookup
         title: r.catalogTitle || '',
         concepts: conceptNames,
         concept_ids: r.conceptIds || [],

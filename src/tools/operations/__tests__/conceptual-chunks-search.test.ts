@@ -101,9 +101,9 @@ describe('ConceptualChunksSearchTool', () => {
       expect(parsedContent[0].text).toBeDefined();
     });
     
-    it('should respect limit parameter (defaults to 5)', async () => {
-      // SETUP
-      const testChunks = Array.from({ length: 10 }, (_, i) =>
+    it('should respect limit parameter (defaults to 20)', async () => {
+      // SETUP - Add more than 20 chunks
+      const testChunks = Array.from({ length: 25 }, (_, i) =>
         createTestChunk({
           id: 5000 + i,
           
@@ -121,7 +121,7 @@ describe('ConceptualChunksSearchTool', () => {
       
       // VERIFY
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.length).toBeLessThanOrEqual(5);
+      expect(parsedContent.length).toBeLessThanOrEqual(20);
     });
     
     it('should include concept information', async () => {

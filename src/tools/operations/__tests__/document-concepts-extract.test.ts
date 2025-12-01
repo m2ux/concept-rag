@@ -52,11 +52,12 @@ describe('DocumentConceptsExtractTool', () => {
   
   describe('execute', () => {
     it('should extract concepts from document in JSON format', async () => {
-      // SETUP
+      // SETUP - Use conceptNames (derived field) which the tool uses
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document about testing',
         conceptIds: [CONCEPT_IDS.testing, CONCEPT_IDS.softwareDesign, CONCEPT_IDS.architecture, CONCEPT_IDS.patterns],
+        conceptNames: ['testing', 'software design', 'architecture', 'patterns'],
       });
       catalogRepo.addDocument(testDoc);
       
@@ -110,11 +111,12 @@ describe('DocumentConceptsExtractTool', () => {
     });
     
     it('should format output as markdown when format is markdown', async () => {
-      // SETUP
+      // SETUP - Use conceptNames (derived field) which the tool uses
       const testDoc = createTestSearchResult({
         source: '/test/doc.pdf',
         text: 'Document about testing',
         conceptIds: [CONCEPT_IDS.testing, CONCEPT_IDS.softwareDesign, CONCEPT_IDS.architecture],
+        conceptNames: ['testing', 'software design', 'architecture'],
       });
       catalogRepo.addDocument(testDoc);
       

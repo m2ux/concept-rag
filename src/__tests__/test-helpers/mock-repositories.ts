@@ -86,6 +86,7 @@ export class FakeChunkRepository implements ChunkRepository {
       vectorScore: 0.8,
       bm25Score: 0.7,
       titleScore: 0.5,
+      conceptScore: 0.6,
       wordnetScore: 0.4,
       hybridScore: 0.67
     };
@@ -238,6 +239,10 @@ export class FakeCatalogRepository implements CatalogRepository {
     // Simple mock: return empty array for testing
     // In real tests, you'd aggregate concepts from documents
     return Promise.resolve([]);
+  }
+  
+  async count(): Promise<number> {
+    return Promise.resolve(this.documents.size);
   }
   
   // Test helpers

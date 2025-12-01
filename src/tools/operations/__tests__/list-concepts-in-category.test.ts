@@ -5,26 +5,68 @@
  * Follows Four-Phase Test pattern from TDD for Embedded C (Grenning).
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ListConceptsInCategoryTool } from '../list-concepts-in-category-tool.js';
-import { CategoryIdCache } from '../../../infrastructure/cache/category-id-cache.js';
-import {
-  FakeCatalogRepository,
-  FakeConceptRepository
-} from '../../../__tests__/test-helpers/index.js';
+import type { CategoryRepository } from '../../../domain/interfaces/category-repository.js';
+import type { CatalogRepository } from '../../../domain/interfaces/repositories/catalog-repository.js';
+import type { ConceptRepository } from '../../../domain/interfaces/repositories/concept-repository.js';
+import { Some, None } from '../../../domain/functional/option.js';
 
 describe('ListConceptsInCategoryTool', () => {
-  let categoryCache: CategoryIdCache;
-  let catalogRepo: FakeCatalogRepository;
-  let conceptRepo: FakeConceptRepository;
+  let mockCategoryRepo: CategoryRepository;
+  let mockCatalogRepo: CatalogRepository;
+  let mockConceptRepo: ConceptRepository;
   let tool: ListConceptsInCategoryTool;
   
   beforeEach(() => {
-    // SETUP
-    categoryCache = CategoryIdCache.getInstance();
-    catalogRepo = new FakeCatalogRepository();
-    conceptRepo = new FakeConceptRepository();
-    tool = new ListConceptsInCategoryTool(categoryCache, catalogRepo, conceptRepo);
+    // SETUP - Create mock repositories
+    const mockCategory = {
+      id: 1,
+      category: 'software engineering',
+      description: 'Test category',
+      aliases: [],
+      parentCategoryId: null,
+      relatedCategories: [],
+      documentCount: 10,
+      chunkCount: 100,
+      conceptCount: 50
+    };
+    
+    mockCategoryRepo = {
+      findAll: vi.fn().mockResolvedValue([mockCategory]),
+      findById: vi.fn().mockResolvedValue(Some(mockCategory)),
+      findByName: vi.fn().mockResolvedValue(Some(mockCategory)),
+      resolveCategory: vi.fn().mockResolvedValue(mockCategory),
+      getHierarchyPath: vi.fn().mockResolvedValue(['software engineering'])
+    } as unknown as CategoryRepository;
+    
+    mockCatalogRepo = {
+      getConceptsInCategory: vi.fn().mockResolvedValue([101, 102]),
+      count: vi.fn().mockResolvedValue(10)
+    } as unknown as CatalogRepository;
+    
+    mockConceptRepo = {
+      findById: vi.fn().mockImplementation((id: number) => {
+        if (id === 101) {
+          return Promise.resolve(Some({
+            id: 101,
+            name: 'dependency injection',
+            catalogIds: [1, 2, 3],
+            weight: 0.8
+          }));
+        } else if (id === 102) {
+          return Promise.resolve(Some({
+            id: 102,
+            name: 'design patterns',
+            catalogIds: [1, 2],
+            weight: 0.7
+          }));
+        }
+        return Promise.resolve(None());
+      })
+    } as unknown as ConceptRepository;
+    
+    tool = new ListConceptsInCategoryTool(mockCategoryRepo, mockCatalogRepo, mockConceptRepo);
   });
   
   describe('execute', () => {
@@ -37,16 +79,36 @@ describe('ListConceptsInCategoryTool', () => {
       expect(result.content).toHaveLength(1);
       expect(result.content[0].type).toBe('text');
       expect(result.isError).toBe(false);
+      
+      const parsed = JSON.parse(result.content[0].text);
+      expect(parsed.category).toBeDefined();
+      expect(parsed.category.name).toBe('software engineering');
+      expect(parsed.concepts).toBeDefined();
+      expect(parsed.concepts.length).toBeGreaterThan(0);
     });
     
-    it('should handle errors gracefully', async () => {
+    it('should handle nonexistent category gracefully', async () => {
+      // SETUP - Make resolveCategory return null
+      mockCategoryRepo.resolveCategory = vi.fn().mockResolvedValue(null);
+      
       // EXERCISE
       const result = await tool.execute({ category: 'nonexistent' });
       
       // VERIFY
       expect(result).toBeDefined();
-      // Tool should handle errors internally
+      expect(result.isError).toBe(true);
+    });
+    
+    it('should handle errors gracefully', async () => {
+      // SETUP - Make findAll throw
+      mockCategoryRepo.resolveCategory = vi.fn().mockRejectedValue(new Error('Test error'));
+      
+      // EXERCISE
+      const result = await tool.execute({ category: 'software engineering' });
+      
+      // VERIFY
+      expect(result).toBeDefined();
+      expect(result.isError).toBe(true);
     });
   });
 });
-
