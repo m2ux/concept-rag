@@ -17,7 +17,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { createTestDatabase, TestDatabaseFixture } from './test-db-setup.js';
+import { useExistingTestDatabase, TestDatabaseFixture } from './test-db-setup.js';
 import { ApplicationContainer } from '../../application/container.js';
 
 describe('MCP Tools End-to-End Integration Tests', () => {
@@ -25,8 +25,8 @@ describe('MCP Tools End-to-End Integration Tests', () => {
   let container: ApplicationContainer;
   
   beforeAll(async () => {
-    // ARRANGE: Setup test database
-    fixture = createTestDatabase('mcp-tools-e2e');
+    // ARRANGE: Use existing test_db with real sample-docs data
+    fixture = useExistingTestDatabase('mcp-tools-e2e');
     await fixture.setup();
     
     // Create ApplicationContainer with test database
@@ -283,10 +283,10 @@ describe('MCP Tools End-to-End Integration Tests', () => {
       // ARRANGE & ACT
       const tools = container.getAllTools();
       const toolNames = tools.map(t => t.name);
-      const hasCategoryCache = container.getCategoryIdCache() !== undefined;
+      const hasCategoryRepo = container.getCategoryRepository() !== undefined;
       
       // ASSERT
-      if (hasCategoryCache) {
+      if (hasCategoryRepo) {
         expect(toolNames).toContain('category_search');
         expect(toolNames).toContain('list_categories');
         expect(toolNames).toContain('list_concepts_in_category');
@@ -296,7 +296,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
     describe('category_search tool', () => {
       it('should search documents by category when available', async () => {
         // ARRANGE
-        if (!container.getCategoryIdCache()) {
+        if (!container.getCategoryRepository()) {
           // Skip if categories not available
           return;
         }
@@ -319,7 +319,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
     describe('list_categories tool', () => {
       it('should list all categories when available', async () => {
         // ARRANGE
-        if (!container.getCategoryIdCache()) {
+        if (!container.getCategoryRepository()) {
           // Skip if categories not available
           return;
         }
@@ -342,7 +342,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
     describe('list_concepts_in_category tool', () => {
       it('should list concepts in category when available', async () => {
         // ARRANGE
-        if (!container.getCategoryIdCache()) {
+        if (!container.getCategoryRepository()) {
           // Skip if categories not available
           return;
         }

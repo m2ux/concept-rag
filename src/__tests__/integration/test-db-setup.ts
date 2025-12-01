@@ -2,11 +2,13 @@
  * Integration Test Database Setup
  * 
  * Provides utilities for creating and tearing down test databases for integration tests.
- * Uses a temporary directory for each test suite to ensure isolation.
+ * Supports two modes:
+ * 1. Fresh temp database with synthetic test data (isolated per test suite)
+ * 2. Existing test_db with real sample-docs data (shared, faster)
  * 
  * **Design**: Test Fixture pattern
- * - Setup creates fresh test database with v7 schema
- * - Teardown cleans up resources
+ * - Setup creates fresh test database with v7 schema OR uses existing test_db
+ * - Teardown cleans up resources (only for temp databases)
  * - Each test suite gets isolated environment
  * 
  * See REFERENCES.md for pattern sources and further reading.
@@ -24,20 +26,32 @@ import {
   createStandardTestCategories
 } from '../test-helpers/integration-test-data.js';
 
+// Path to the existing test_db with real sample-docs data
+const EXISTING_TEST_DB_PATH = path.resolve(process.cwd(), 'test_db');
+
 /**
  * Test database fixture for integration tests.
- * Manages lifecycle of temporary LanceDB instance.
+ * Manages lifecycle of LanceDB instance (temp or existing).
  */
 export class TestDatabaseFixture {
   private testDbPath: string;
   private connection?: LanceDBConnection;
+  private useExisting: boolean;
   
-  constructor(testSuiteName: string) {
-    // Create unique temp directory for this test suite
-    this.testDbPath = path.join(
-      os.tmpdir(),
-      `concept-rag-test-${testSuiteName}-${Date.now()}`
-    );
+  constructor(testSuiteName: string, useExistingDb: boolean = false) {
+    this.useExisting = useExistingDb;
+    
+    if (useExistingDb && fs.existsSync(EXISTING_TEST_DB_PATH)) {
+      // Use existing test_db with real data
+      this.testDbPath = EXISTING_TEST_DB_PATH;
+    } else {
+      // Create unique temp directory for this test suite
+      this.testDbPath = path.join(
+        os.tmpdir(),
+        `concept-rag-test-${testSuiteName}-${Date.now()}`
+      );
+      this.useExisting = false;
+    }
   }
   
   /**
@@ -48,10 +62,24 @@ export class TestDatabaseFixture {
   }
   
   /**
-   * Initialize test database with sample data.
-   * Creates tables and populates with test fixtures using v7 schema.
+   * Check if using existing database.
+   */
+  isUsingExistingDb(): boolean {
+    return this.useExisting;
+  }
+  
+  /**
+   * Initialize test database.
+   * If using existing db, just connects.
+   * If using temp db, creates tables and populates with test fixtures.
    */
   async setup(): Promise<void> {
+    if (this.useExisting) {
+      // Just connect to existing database
+      this.connection = await LanceDBConnection.connect(this.testDbPath);
+      return;
+    }
+    
     // Create test database directory
     fs.mkdirSync(this.testDbPath, { recursive: true });
     
@@ -67,6 +95,7 @@ export class TestDatabaseFixture {
   
   /**
    * Clean up test database and resources.
+   * Only removes temp databases, not existing test_db.
    */
   async teardown(): Promise<void> {
     // Close connection
@@ -74,8 +103,8 @@ export class TestDatabaseFixture {
       await this.connection.close();
     }
     
-    // Remove test database directory
-    if (fs.existsSync(this.testDbPath)) {
+    // Only remove temp database directories, not existing test_db
+    if (!this.useExisting && fs.existsSync(this.testDbPath)) {
       fs.rmSync(this.testDbPath, { recursive: true, force: true });
     }
   }
@@ -133,6 +162,7 @@ export class TestDatabaseFixture {
 
 /**
  * Create a test database fixture for a test suite.
+ * Uses synthetic test data in a temp directory.
  * 
  * @example
  * ```typescript
@@ -156,4 +186,32 @@ export class TestDatabaseFixture {
  */
 export function createTestDatabase(testSuiteName: string): TestDatabaseFixture {
   return new TestDatabaseFixture(testSuiteName);
+}
+
+/**
+ * Create a test database fixture using the existing test_db with real sample-docs data.
+ * This is faster and uses real document data for more realistic testing.
+ * 
+ * @example
+ * ```typescript
+ * describe('MCP Tools E2E Tests', () => {
+ *   const fixture = useExistingTestDatabase('mcp-tools-e2e');
+ *   
+ *   beforeAll(async () => {
+ *     await fixture.setup();
+ *   });
+ *   
+ *   afterAll(async () => {
+ *     await fixture.teardown();
+ *   });
+ *   
+ *   it('should search real documents', async () => {
+ *     const connection = fixture.getConnection();
+ *     // ... test code using real data
+ *   });
+ * });
+ * ```
+ */
+export function useExistingTestDatabase(testSuiteName: string): TestDatabaseFixture {
+  return new TestDatabaseFixture(testSuiteName, true);
 }
