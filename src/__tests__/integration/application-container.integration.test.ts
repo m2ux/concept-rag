@@ -46,9 +46,9 @@ describe('ApplicationContainer Integration Tests', () => {
       const tools = container.getAllTools();
       const toolNames = tools.map(t => t.name);
       
-      // VERIFY
+      // VERIFY - Base tools registered by container
       expect(tools.length).toBeGreaterThanOrEqual(5);
-      expect(toolNames).toContain('concept_chunks');
+      expect(toolNames).toContain('concept_search');  // For concept-based chunk search
       expect(toolNames).toContain('catalog_search');
       expect(toolNames).toContain('chunks_search');
       expect(toolNames).toContain('broad_chunks_search');
@@ -70,13 +70,13 @@ describe('ApplicationContainer Integration Tests', () => {
   });
   
   describe('getTool', () => {
-    it('should return concept_chunks tool', () => {
+    it('should return concept_search tool', () => {
       // EXERCISE
-      const tool = container.getTool('concept_chunks');
+      const tool = container.getTool('concept_search');
       
       // VERIFY
       expect(tool).toBeDefined();
-      expect(tool.name).toBe('concept_chunks');
+      expect(tool.name).toBe('concept_search');
     });
     
     it('should return catalog_search tool', () => {
@@ -124,9 +124,9 @@ describe('ApplicationContainer Integration Tests', () => {
   });
   
   describe('tool execution', () => {
-    it('should execute concept_chunks tool', async () => {
+    it('should execute concept_search tool', async () => {
       // ARRANGE
-      const tool = container.getTool('concept_chunks');
+      const tool = container.getTool('concept_search');
       
       // EXERCISE
       const result = await tool.execute({ concept: 'clean architecture', limit: 5 });
@@ -245,7 +245,7 @@ describe('ApplicationContainer Integration Tests', () => {
   describe('dependency wiring', () => {
     it('should wire all tools with proper dependencies', async () => {
       // ARRANGE
-      const toolNames = ['concept_chunks', 'catalog_search', 'broad_chunks_search'];
+      const toolNames = ['concept_search', 'catalog_search', 'broad_chunks_search'];
       
       // EXERCISE & VERIFY
       for (const toolName of toolNames) {
@@ -256,7 +256,7 @@ describe('ApplicationContainer Integration Tests', () => {
         const result = await tool.execute({ 
           text: 'test', 
           limit: 1,
-          ...(toolName === 'concept_chunks' ? { concept: 'test' } : {})
+          ...(toolName === 'concept_search' ? { concept: 'test' } : {})
         });
         expect(result).toBeDefined();
       }
@@ -269,7 +269,7 @@ describe('ApplicationContainer Integration Tests', () => {
       // But if tools work, it's initialized
       
       // Verify tools work (proves caches are initialized)
-      const tool = container.getTool('concept_chunks');
+      const tool = container.getTool('concept_search');
       expect(tool).toBeDefined();
     });
   });

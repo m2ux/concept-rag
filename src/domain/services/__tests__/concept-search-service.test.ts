@@ -103,7 +103,7 @@ describe('ConceptSearchService', () => {
     service = new ConceptSearchService(mockChunkRepo, mockConceptRepo);
   });
 
-  describe('searchConcept - basic functionality', () => {
+  describe('search - basic functionality', () => {
     it('should find chunks containing concept', async () => {
       // SETUP
       const conceptName = 'dependency injection';
@@ -119,7 +119,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10
       });
@@ -151,7 +151,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: 'DEPENDENCY INJECTION', // Uppercase
         limit: 10
       });
@@ -179,7 +179,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: '  dependency injection  ', // With whitespace
         limit: 10
       });
@@ -205,7 +205,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, []);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10
       });
@@ -229,7 +229,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, []);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10
       });
@@ -255,7 +255,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, []);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10
       });
@@ -285,7 +285,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, []);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10
       });
@@ -300,7 +300,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, []);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10
       });
@@ -336,7 +336,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10,
         sourceFilter: 'typescript'
@@ -365,7 +365,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10,
         sourceFilter: 'TYPESCRIPT'
@@ -397,7 +397,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10
       });
@@ -421,7 +421,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10,
         sourceFilter: 'python'
@@ -432,7 +432,7 @@ describe('ConceptSearchService', () => {
     });
   });
 
-  describe('searchConcept - sorting', () => {
+  describe('search - sorting', () => {
     it('should sort by density by default', async () => {
       // SETUP
       const conceptName = 'patterns';
@@ -462,7 +462,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10
       });
@@ -497,7 +497,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10,
         sortBy: 'relevance'
@@ -533,7 +533,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10,
         sortBy: 'source'
@@ -570,7 +570,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10
       });
@@ -598,7 +598,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 5
       });
@@ -621,7 +621,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 10,
         sourceFilter: 'typescript'
@@ -650,7 +650,7 @@ describe('ConceptSearchService', () => {
       mockChunkRepo.setConceptChunks(conceptName, mockChunks);
 
       // EXERCISE
-      const result = await service.searchConcept({
+      const result = await service.search({
         concept: conceptName,
         limit: 5
       });

@@ -16,7 +16,7 @@ describe('Timeout Utilities', () => {
     it('should define standard timeout values', () => {
       expect(TIMEOUTS.LLM_CALL).toBe(30000);
       expect(TIMEOUTS.EMBEDDING).toBe(10000);
-      expect(TIMEOUTS.SEARCH).toBe(5000);
+      expect(TIMEOUTS.SEARCH).toBe(30000);
       expect(TIMEOUTS.DATABASE).toBe(3000);
       expect(TIMEOUTS.HEALTH_CHECK).toBe(1000);
     });

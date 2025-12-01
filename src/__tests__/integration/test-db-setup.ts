@@ -5,7 +5,7 @@
  * Uses a temporary directory for each test suite to ensure isolation.
  * 
  * **Design**: Test Fixture pattern
- * - Setup creates fresh test database
+ * - Setup creates fresh test database with v7 schema
  * - Teardown cleans up resources
  * - Each test suite gets isolated environment
  * 
@@ -20,7 +20,8 @@ import * as lancedb from '@lancedb/lancedb';
 import {
   createStandardTestChunks,
   createStandardTestConcepts,
-  createStandardTestCatalogEntries
+  createStandardTestCatalogEntries,
+  createStandardTestCategories
 } from '../test-helpers/integration-test-data.js';
 
 /**
@@ -48,7 +49,7 @@ export class TestDatabaseFixture {
   
   /**
    * Initialize test database with sample data.
-   * Creates tables and populates with test fixtures.
+   * Creates tables and populates with test fixtures using v7 schema.
    */
   async setup(): Promise<void> {
     // Create test database directory
@@ -61,6 +62,7 @@ export class TestDatabaseFixture {
     await this.createChunksTable();
     await this.createConceptsTable();
     await this.createCatalogTable();
+    await this.createCategoriesTable();
   }
   
   /**
@@ -89,8 +91,7 @@ export class TestDatabaseFixture {
   }
   
   /**
-   * Create and populate chunks table with test data.
-   * Uses test data builders for maintainability.
+   * Create and populate chunks table with test data (v7 schema).
    */
   private async createChunksTable(): Promise<void> {
     const chunks = createStandardTestChunks();
@@ -101,7 +102,6 @@ export class TestDatabaseFixture {
   
   /**
    * Create and populate concepts table with test data.
-   * Uses test data builders for maintainability.
    */
   private async createConceptsTable(): Promise<void> {
     const concepts = createStandardTestConcepts();
@@ -111,14 +111,23 @@ export class TestDatabaseFixture {
   }
   
   /**
-   * Create and populate catalog table with test data.
-   * Uses test data builders for maintainability.
+   * Create and populate catalog table with test data (v7 schema).
    */
   private async createCatalogTable(): Promise<void> {
     const catalog = createStandardTestCatalogEntries();
     
     const db = await lancedb.connect(this.testDbPath);
     await db.createTable('catalog', catalog, { mode: 'overwrite' });
+  }
+  
+  /**
+   * Create and populate categories table with test data.
+   */
+  private async createCategoriesTable(): Promise<void> {
+    const categories = createStandardTestCategories();
+    
+    const db = await lancedb.connect(this.testDbPath);
+    await db.createTable('categories', categories, { mode: 'overwrite' });
   }
 }
 
@@ -148,4 +157,3 @@ export class TestDatabaseFixture {
 export function createTestDatabase(testSuiteName: string): TestDatabaseFixture {
   return new TestDatabaseFixture(testSuiteName);
 }
-
