@@ -91,16 +91,48 @@ class MockConceptRepository implements ConceptRepository {
   }
 }
 
+/**
+ * Mock CatalogRepository for testing
+ */
+class MockCatalogRepository {
+  async search(query: any): Promise<any[]> {
+    return Promise.resolve([]);
+  }
+  
+  async findById(id: number): Promise<any> {
+    return Promise.resolve(null);
+  }
+  
+  async findBySource(source: string): Promise<any> {
+    return Promise.resolve(null);
+  }
+  
+  async findByCategory(categoryId: number): Promise<any[]> {
+    return Promise.resolve([]);
+  }
+  
+  async getConceptsInCategory(categoryId: number): Promise<number[]> {
+    return Promise.resolve([]);
+  }
+  
+  async count(): Promise<number> {
+    return Promise.resolve(0);
+  }
+}
+
 describe('ConceptSearchService', () => {
   let service: ConceptSearchService;
   let mockChunkRepo: MockChunkRepository;
   let mockConceptRepo: MockConceptRepository;
+  let mockCatalogRepo: MockCatalogRepository;
 
   beforeEach(() => {
     // SETUP: Create fresh mocks for each test
     mockChunkRepo = new MockChunkRepository();
     mockConceptRepo = new MockConceptRepository();
-    service = new ConceptSearchService(mockChunkRepo, mockConceptRepo);
+    mockCatalogRepo = new MockCatalogRepository();
+    // Constructor: conceptRepo, chunkRepo, catalogRepo, embeddingService?
+    service = new ConceptSearchService(mockConceptRepo, mockChunkRepo, mockCatalogRepo as any);
   });
 
   describe('search - basic functionality', () => {
