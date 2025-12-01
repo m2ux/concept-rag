@@ -143,6 +143,7 @@ export function createIntegrationTestChunk(overrides?: Partial<IntegrationChunkD
 
 /**
  * Creates an integration test concept with sensible defaults
+ * Note: Arrays must have at least one element for LanceDB type inference
  */
 export function createIntegrationTestConcept(overrides?: Partial<IntegrationConceptData>): IntegrationConceptData {
   const conceptName = overrides?.name || 'clean architecture';
@@ -154,12 +155,13 @@ export function createIntegrationTestConcept(overrides?: Partial<IntegrationConc
     weight: 0.85,
     catalog_ids: [TEST_CATALOG_IDS['clean-architecture']],
     catalog_titles: ['Clean Architecture'],  // DERIVED
-    chunk_ids: [],
-    adjacent_ids: [],
-    related_ids: [],
-    synonyms: [],
-    broader_terms: [],
-    narrower_terms: []
+    // Arrays must have at least one element for LanceDB type inference
+    chunk_ids: [0],  // Placeholder - will be filtered
+    adjacent_ids: [0],  // Placeholder - will be filtered
+    related_ids: [0],  // Placeholder - will be filtered
+    synonyms: [''],  // Placeholder - will be filtered
+    broader_terms: [''],  // Placeholder - will be filtered
+    narrower_terms: ['']  // Placeholder - will be filtered
   };
   
   return { ...defaults, ...overrides };
@@ -196,6 +198,7 @@ export function createIntegrationTestCatalogEntry(overrides?: Partial<Integratio
 
 /**
  * Creates an integration test category with sensible defaults
+ * Note: Arrays must have at least one element for LanceDB type inference
  */
 export function createIntegrationTestCategory(overrides?: Partial<IntegrationCategoryData>): IntegrationCategoryData {
   const categoryName = overrides?.category || 'software architecture';
@@ -205,8 +208,9 @@ export function createIntegrationTestCategory(overrides?: Partial<IntegrationCat
     description: `Concepts and practices related to ${categoryName}`,
     summary: `Category for ${categoryName} topics`,
     parent_category_id: null,
-    aliases: [],
-    related_categories: [],
+    // Arrays must have at least one element for LanceDB type inference
+    aliases: [''],  // Placeholder - will be filtered
+    related_categories: [0],  // Placeholder - will be filtered
     document_count: 5,
     chunk_count: 25,
     concept_count: 10,
@@ -379,12 +383,23 @@ export function createStandardTestCatalogEntries(): IntegrationCatalogData[] {
 
 /**
  * Creates a set of standard test categories for integration testing
+ * Note: At least one category must have a non-null parent_category_id for LanceDB type inference
  */
 export function createStandardTestCategories(): IntegrationCategoryData[] {
   return [
     createIntegrationTestCategory({
+      id: TEST_CATEGORIES['software engineering'],
+      category: 'software engineering',
+      description: 'Root category for software engineering topics',
+      parent_category_id: null,  // Root category
+      document_count: 1,
+      chunk_count: 5,
+      concept_count: 3
+    }),
+    createIntegrationTestCategory({
       id: TEST_CATEGORIES['software architecture'],
       category: 'software architecture',
+      parent_category_id: TEST_CATEGORIES['software engineering'],  // Child of software engineering
       document_count: 2,
       chunk_count: 10,
       concept_count: 5
@@ -392,6 +407,7 @@ export function createStandardTestCategories(): IntegrationCategoryData[] {
     createIntegrationTestCategory({
       id: TEST_CATEGORIES['design patterns'],
       category: 'design patterns',
+      parent_category_id: TEST_CATEGORIES['software engineering'],  // Child of software engineering
       document_count: 2,
       chunk_count: 8,
       concept_count: 4
@@ -399,16 +415,10 @@ export function createStandardTestCategories(): IntegrationCategoryData[] {
     createIntegrationTestCategory({
       id: TEST_CATEGORIES['programming languages'],
       category: 'programming languages',
+      parent_category_id: null,  // Root category
       document_count: 1,
       chunk_count: 5,
       concept_count: 2
-    }),
-    createIntegrationTestCategory({
-      id: TEST_CATEGORIES['software engineering'],
-      category: 'software engineering',
-      document_count: 1,
-      chunk_count: 5,
-      concept_count: 3
     })
   ];
 }
