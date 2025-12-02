@@ -17,27 +17,32 @@ A powerful RAG MCP server that enables LLMs to interact with local PDF/EPUB docu
 
 The server provides **10 specialized MCP tools** organized into four categories:
 
-### Content Analysis
-| Tool | Description                                       | Example Query |
-|------|---------------------------------------------------|---------------|
-| `catalog_search` | Fuzzy search documents by topic, title, or author | `"software architecture patterns"` |
-| `broad_chunks_search` | Cross-document search (phrases, keywords, topics) | `"implementing dependency injection"` |
-| `chunks_search` | Search within a specific known document | `"SOLID principles"` + source path |
+### Document Discovery
+| Tool | Description | Example Query |
+|------|-------------|---------------|
+| `catalog_search` | Semantic search documents by topic, title, or author | `"software architecture patterns"` |
 | `category_search` | Browse documents by category/domain | `"software engineering"` |
 | `list_categories` | List all categories in your library | *(no query required)* |
+
+### Content Search
+| Tool | Description | Example Query |
+|------|-------------|---------------|
+| `broad_chunks_search` | Cross-document search (phrases, keywords, topics) | `"implementing dependency injection"` |
+| `chunks_search` | Search within a specific known document | `"SOLID principles"` + source path |
 
 ### Concept Analysis
 | Tool | Description | Example Query |
 |------|-------------|---------------|
-| `concept_search` | Fuzzy search concepts by name, meaning            | `"design patterns for loose coupling"` |
+| `concept_search` | Find chunks by concept with fuzzy matching | `"design patterns"` |
 | `extract_concepts` | Export all concepts from a document | `"Clean Architecture"` |
 | `source_concepts` | Find documents where concept(s) appear (union) | `["TDD", "BDD"]` → all docs with either |
 | `concept_sources` | Get per-concept source lists (separate arrays) | `["TDD", "BDD"]` → sources for each |
 | `list_concepts_in_category` | Find concepts in a category | `"distributed systems"` |
 
-**📖 Full API documentation:** See [docs/api-reference.md](docs/api-reference.md) for complete parameter specs.
+**📖 Full API documentation:** See [docs/api-reference.md](docs/api-reference.md) for complete parameter specs and hybrid scoring weights.
 
 **For AI agents:** See [tool-selection-guide.md](tool-selection-guide.md) for the decision tree.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -82,6 +87,12 @@ npx tsx hybrid_fast_seed.ts \
   --dbpath ~/.concept_rag \
   --filesdir ~/Documents/my-pdfs
 
+# Parallel concept extraction (10 documents concurrently, default)
+npx tsx hybrid_fast_seed.ts \
+  --dbpath ~/.concept_rag \
+  --filesdir ~/Documents/my-pdfs \
+  --parallel 15
+
 # Resume interrupted seeding (skip checkpoint documents)
 npx tsx hybrid_fast_seed.ts \
   --dbpath ~/.concept_rag \
@@ -114,12 +125,17 @@ npx tsx hybrid_fast_seed.ts \
 | `--filesdir` | Directory containing PDF/EPUB files (required) |
 | `--dbpath` | Database path (default: `~/.concept_rag`) |
 | `--overwrite` | Drop and recreate all database tables |
+| `--parallel N` | Process N documents concurrently (default: 10, max: 25) |
 | `--resume` | Skip documents already in checkpoint (for interrupted runs) |
 | `--clean-checkpoint` | Clear checkpoint file and start fresh |
 | `--rebuild-concepts` | Rebuild concept index even if no new documents |
 | `--auto-reseed` | Re-process documents with incomplete metadata |
+| `--max-docs N` | Process at most N new documents (for batching) |
+| `--with-wordnet` | Enable WordNet enrichment (disabled by default) |
 
 **📝 Automatic Logging**: Each run creates a timestamped log file in `logs/seed-YYYY-MM-DDTHH-MM-SS.log` for troubleshooting and audit trails.
+
+**📊 Progress Tracking**: Real-time progress bars show document processing, concept extraction, and index building stages.
 
 **To seed specific documents**
 
@@ -129,6 +145,22 @@ npx tsx scripts/seed_specific.ts --hash 3cde 7f2b
 
 # Or by filename pattern
 npx tsx scripts/seed_specific.ts --pattern "Transaction Processing"
+```
+
+### Maintenance Scripts
+
+```bash
+# Health check - verify database integrity
+npx tsx scripts/health-check.ts
+
+# Rebuild derived name fields (after schema changes)
+npx tsx scripts/rebuild_derived_names.ts --dbpath ~/.concept_rag
+
+# Link related concepts (lexical similarity)
+npx tsx scripts/link_related_concepts.ts --dbpath ~/.concept_rag
+
+# Analyze backup differences
+npx tsx scripts/analyze-backups.ts backup1/ backup2/
 ```
 
 See [scripts/README.md](scripts/README.md) for all maintenance utilities.
@@ -167,54 +199,68 @@ src/
 │   ├── services/                 # Domain services (search logic)
 │   └── interfaces/               # Repository and service interfaces
 ├── infrastructure/               # External integrations
-│   ├── lancedb/                  # Database adapters
+│   ├── lancedb/                  # Database adapters (normalized schema v7)
 │   ├── embeddings/               # Embedding service
-│   ├── search/                   # Hybrid search implementation
-│   └── document-loaders/         # PDF, EPUB loaders
+│   ├── search/                   # Hybrid search with 4-signal scoring
+│   ├── resilience/               # Circuit breaker, bulkhead, timeout patterns
+│   ├── checkpoint/               # Resumable seeding with progress tracking
+│   ├── cli/                      # Progress bar display utilities
+│   └── document-loaders/         # PDF, EPUB loaders with OCR fallback
 ├── concepts/                     # Concept extraction & indexing
 │   ├── concept_extractor.ts      # LLM-based extraction
-│   ├── concept_index.ts          # Index builder
-│   ├── query_expander.ts         # Query expansion
+│   ├── parallel-concept-extractor.ts  # Concurrent document processing
+│   ├── concept_index.ts          # Index builder with lexical linking
+│   ├── query_expander.ts         # Query expansion with WordNet
 │   └── summary_generator.ts      # LLM summary generation
 ├── wordnet/                      # WordNet integration
 └── tools/                        # MCP tools (10 operations)
+
+scripts/
+├── health-check.ts               # Database integrity verification
+├── rebuild_derived_names.ts      # Regenerate derived text fields
+├── link_related_concepts.ts      # Build concept relationship graph
+├── seed_specific.ts              # Targeted document re-seeding
+└── analyze-backups.ts            # Backup comparison and analysis
 ```
 
 ## 🏗️ Architecture
 
 ```
-              PDF Documents 
-                   ↓
-     Processing (with OCR fallback)
-                   ↓
-  ┌────────────────┬────────────────┐
-  │                │                │
-Concept         Summary           Chunks
-Extraction      Generation        Creation
-  ↓                ↓                ↓
-Concepts         Catalog          Chunks
-Table            Table            Table
-  └────────────────┴────────────────┘
-                   │
-         Conceptual Search Engine
-                   │
-     ┌─────────────┼─────────────┐
-     │             │             │
-   Corpus       WordNet        Hybrid
-  Concepts     Synonyms       Scoring
+     PDF/EPUB Documents
+            ↓
+   Processing + OCR fallback
+            ↓
+  ┌─────────┼─────────┐
+  ↓         ↓         ↓
+Catalog   Chunks   Concepts   Categories
+(docs)    (text)   (index)    (taxonomy)
+  └─────────┴─────────┴─────────┘
+            ↓
+    Hybrid Search Engine
+   (Vector + BM25 + Concepts + WordNet)
 ```
+
+**Four-Table Normalized Schema (v7):**
+- **Catalog**: Document metadata with derived `concept_names`, `category_names`
+- **Chunks**: Text segments with `catalog_title`, `concept_names`
+- **Concepts**: Deduplicated index with lexical/adjacent relationships
+- **Categories**: Hierarchical taxonomy with statistics
+
+See [docs/database-schema.md](docs/database-schema.md) for complete schema documentation.
 
 ## 🎨 Design
 
-This project follows well-documented architectural principles and design decisions. For comprehensive design documentation, see:
+This project follows well-documented architectural principles and design decisions:
 
 ### Architecture Decision Records (ADRs)
 
 All major technical decisions are documented in **[Architecture Decision Records](docs/architecture/README.md)**.
 
-### Concept Lexicon
+### Documentation
 
-The **[API Reference](docs/api-reference.md)** provides comprehensive documentation for all MCP tools, including parameters, return types, and usage examples.
+- **[API Reference](docs/api-reference.md)** - Complete MCP tool documentation with parameters and scoring weights
+- **[Database Schema](docs/database-schema.md)** - Four-table normalized schema with derived fields
+- **[Tool Selection Guide](tool-selection-guide.md)** - Decision tree for AI agents
 
 ## 💬 Support & Community
 
@@ -228,10 +274,14 @@ This project is forked from [lance-mcp](https://github.com/adiom-data/lance-mcp)
 - 📚 **Formal concept model** - Rigorous definition ensuring semantic matching and disambiguation
 - 🧠 **Enhanced concept extraction** - 80-150+ concepts per document (Claude Sonnet 4.5)
 - 🌐 **WordNet semantic enrichment** - Synonym expansion and hierarchical navigation
-- 🔍 **Multi-signal hybrid ranking** - Vector + BM25 + title + WordNet
+- 🔍 **Multi-signal hybrid ranking** - Vector + BM25 + title + concept + WordNet (4-signal scoring)
 - 📖 **Large document support** - Multi-pass extraction for >100k token documents
-- ⚡ **Incremental seeding** - Fast updates for new/changed documents only
-- 🛡️ **Robust error handling** - Better JSON parsing, debug logging, OCR fallback
+- ⚡ **Parallel concept extraction** - Process up to 25 documents concurrently with shared rate limiting
+- 🔁 **Resumable seeding** - Checkpoint-based recovery from interrupted runs
+- 🛡️ **System resilience** - Circuit breaker, bulkhead, and timeout patterns for external services
+- 📊 **Normalized schema (v7)** - Derived text fields eliminate ID cache lookups at runtime
+- 🔗 **Concept relationships** - Adjacent (co-occurrence) and related (lexical) concept linking
+- 🏥 **Health checks** - Database integrity verification with detailed reporting
 - 🏗️ **Clean Architecture** - Domain-Driven Design patterns throughout (see [REFERENCES.md](REFERENCES.md))
 
 We're grateful to the original author for creating and open-sourcing this excellent foundation!
