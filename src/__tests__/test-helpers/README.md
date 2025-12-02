@@ -42,7 +42,7 @@ Fake implementations of service interfaces.
 
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ConceptChunksTool } from '../concept_search.js';
+import { ConceptSearchTool } from '../concept_search.js';
 import {
   FakeChunkRepository,
   FakeConceptRepository,
@@ -50,16 +50,16 @@ import {
   createTestConcept
 } from '../../__tests__/test-helpers/index.js';
 
-describe('ConceptChunksTool', () => {
+describe('ConceptSearchTool', () => {
   let chunkRepo: FakeChunkRepository;
   let conceptRepo: FakeConceptRepository;
-  let tool: ConceptChunksTool;
+  let tool: ConceptSearchTool;
   
   beforeEach(() => {
     // Fresh repos for each test
     chunkRepo = new FakeChunkRepository();
     conceptRepo = new FakeConceptRepository();
-    tool = new ConceptChunksTool(chunkRepo, conceptRepo);
+    tool = new ConceptSearchTool(chunkRepo, conceptRepo);
   });
   
   it('should find chunks by concept', async () => {

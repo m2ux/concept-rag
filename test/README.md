@@ -42,7 +42,11 @@ The test database is created at `/tmp/concept_rag_test` and uses sample document
 
 ## Test Coverage
 
-- **32 unit tests** - Fast, isolated tests for utilities, services, and tools
-- **5 integration tests** - End-to-end verification of all MCP tools with real database
-- **Total: 37 tests** (100% passing)
+The test suite includes:
+- **Unit tests** - Fast, isolated tests for utilities, services, and tools
+- **Integration tests** - Cross-component workflows and database interactions
+- **E2E tests** - Performance, resilience, and full pipeline validation
+- **Property tests** - Fuzz testing for query expansion and scoring
+
+Run `npm test` to execute all tests (~1000+ tests).
 
