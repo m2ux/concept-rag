@@ -7,12 +7,12 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CategorySearchTool } from '../category-search-tool.js';
-import { CategoryIdCache } from '../../../infrastructure/cache/category-id-cache.js';
 import { CategoryRepository } from '../../../domain/interfaces/category-repository.js';
 import { Category } from '../../../domain/models/category.js';
 import {
   FakeCatalogRepository
 } from '../../../__tests__/test-helpers/index.js';
+import { fromNullable } from '../../../domain/functional/option.js';
 
 /**
  * Mock CategoryRepository for testing
@@ -25,20 +25,21 @@ class MockCategoryRepository implements CategoryRepository {
   }
 
   // @ts-expect-error - Type narrowing limitation
-  async findById(id: number): Promise<Category | null> {
-    return Promise.resolve(this.categories.find(c => c.id === id) || null);
+  async findById(id: number) {
+    const category = this.categories.find(c => c.id === id);
+    return Promise.resolve(fromNullable(category));
   }
 
   // @ts-expect-error - Type narrowing limitation
-  async findByName(name: string): Promise<Category | null> {
-    return Promise.resolve(this.categories.find(c => c.category === name) || null);
+  async findByName(name: string) {
+    const category = this.categories.find(c => c.category === name);
+    return Promise.resolve(fromNullable(category));
   }
 
   // @ts-expect-error - Type narrowing limitation
-  async findByAlias(alias: string): Promise<Category | null> {
-    return Promise.resolve(
-      this.categories.find(c => c.aliases.includes(alias)) || null
-    );
+  async findByAlias(alias: string) {
+    const category = this.categories.find(c => c.aliases.includes(alias));
+    return Promise.resolve(fromNullable(category));
   }
 
   async findRootCategories(): Promise<Category[]> {
@@ -67,29 +68,68 @@ class MockCategoryRepository implements CategoryRepository {
     );
   }
 
+  async resolveCategory(nameOrIdOrAlias: string): Promise<Category | null> {
+    // Check by name first
+    const byName = this.categories.find(c => 
+      c.category.toLowerCase() === nameOrIdOrAlias.toLowerCase()
+    );
+    if (byName) return byName;
+
+    // Check by ID
+    const asNumber = parseInt(nameOrIdOrAlias, 10);
+    if (!isNaN(asNumber)) {
+      const byId = this.categories.find(c => c.id === asNumber);
+      if (byId) return byId;
+    }
+
+    // Check by alias
+    const byAlias = this.categories.find(c => 
+      c.aliases.some(a => a.toLowerCase() === nameOrIdOrAlias.toLowerCase())
+    );
+    if (byAlias) return byAlias;
+
+    return null;
+  }
+
+  async getHierarchyPath(categoryId: number): Promise<string[]> {
+    const path: string[] = [];
+    let currentId: number | null = categoryId;
+    
+    while (currentId !== null) {
+      const category = this.categories.find(c => c.id === currentId);
+      if (!category) break;
+      path.unshift(category.category);
+      currentId = category.parentCategoryId;
+    }
+    
+    return Promise.resolve(path);
+  }
+
+  async getChildIds(parentId: number): Promise<number[]> {
+    const children = this.categories.filter(c => c.parentCategoryId === parentId);
+    return Promise.resolve(children.map(c => c.id));
+  }
+
   setCategories(categories: Category[]): void {
     this.categories = categories;
   }
 }
 
 describe('CategorySearchTool', () => {
-  let categoryCache: CategoryIdCache;
   let catalogRepo: FakeCatalogRepository;
   let categoryRepo: MockCategoryRepository;
   let tool: CategorySearchTool;
   
   beforeEach(() => {
     // SETUP
-    categoryCache = CategoryIdCache.getInstance();
-    categoryCache.clear();
     catalogRepo = new FakeCatalogRepository();
     categoryRepo = new MockCategoryRepository();
-    tool = new CategorySearchTool(categoryCache, catalogRepo);
+    tool = new CategorySearchTool(categoryRepo, catalogRepo);
   });
   
   describe('execute', () => {
     it('should return formatted category search results', async () => {
-      // SETUP - Initialize cache with a category
+      // SETUP - Initialize repo with a category
       const categories: Category[] = [
         {
           id: 1,
@@ -105,7 +145,6 @@ describe('CategorySearchTool', () => {
         }
       ];
       categoryRepo.setCategories(categories);
-      await categoryCache.initialize(categoryRepo);
       
       // EXERCISE
       const result = await tool.execute({ category: 'Software Engineering' });
@@ -118,7 +157,7 @@ describe('CategorySearchTool', () => {
     });
     
     it('should handle errors gracefully', async () => {
-      // SETUP - Initialize cache with a category, then make findByCategory throw
+      // SETUP - Initialize repo with a category, then make findByCategory throw
       const categories: Category[] = [
         {
           id: 1,
@@ -134,7 +173,6 @@ describe('CategorySearchTool', () => {
         }
       ];
       categoryRepo.setCategories(categories);
-      await categoryCache.initialize(categoryRepo);
       
       // Make findByCategory throw
       catalogRepo.findByCategory = async () => {
@@ -150,4 +188,3 @@ describe('CategorySearchTool', () => {
     });
   });
 });
-

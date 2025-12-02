@@ -81,6 +81,17 @@ export interface CatalogRepository {
   search(query: SearchQuery): Promise<SearchResult[]>;
   
   /**
+   * Find a catalog entry by hash-based catalog ID.
+   * 
+   * Returns Option<SearchResult> for type-safe nullable handling.
+   * 
+   * @param catalogId - Hash-based document ID
+   * @returns Promise resolving to Some(entry) if found, None if not found
+   * @throws {Error} If database query fails
+   */
+  findById(catalogId: number): Promise<Option<SearchResult>>;
+  
+  /**
    * Find a catalog entry by source document path.
    * 
    * Returns Option<SearchResult> for type-safe nullable handling.
@@ -162,5 +173,22 @@ export interface CatalogRepository {
    * ```
    */
   getConceptsInCategory(categoryId: number): Promise<number[]>;
+  
+  /**
+   * Count total number of documents in the catalog.
+   * 
+   * Returns the actual unique document count, not the sum of category assignments
+   * (since a document can belong to multiple categories).
+   * 
+   * @returns Promise resolving to total document count
+   * @throws {Error} If database query fails
+   * 
+   * @example
+   * ```typescript
+   * const totalDocs = await catalogRepo.count();
+   * console.log(`Library contains ${totalDocs} documents`);
+   * ```
+   */
+  count(): Promise<number>;
 }
 

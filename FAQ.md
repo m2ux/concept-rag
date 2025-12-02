@@ -122,7 +122,7 @@ Yes! Edit `prompts/concept-extraction.txt` to:
 - Change categorization rules
 - Modify extraction strategy
 
-See [prompts/README.md](prompts/README.md) for details.
+See `prompts/concept-extraction.txt` for the current extraction prompt.
 
 ### What document formats are supported?
 

@@ -18,6 +18,10 @@ START: User asks a question
 ├─ Are they explicitly asking to "extract", "list", "show", or "export" ALL concepts from a document?
 │  └─ YES → Use `extract_concepts`
 │
+├─ Are they asking which SOURCES/DOCUMENTS contain a concept?
+│  ├─ Need merged list with overlap info → Use `source_concepts`
+│  └─ Need separate lists per concept → Use `concept_sources`
+│
 ├─ Are they searching for a CONCEPTUAL TOPIC (single concept name like "innovation", "leadership")?
 │  └─ YES → Use `concept_search` (highest precision for concepts)
 │
@@ -40,9 +44,11 @@ START: User asks a question
 | **catalog_search** | Document summaries | Hybrid + titles | ⭐⭐⭐⭐ High | Document discovery | Titles, topics, authors |
 | **chunks_search** | Single document | Hybrid + filter | ⭐⭐⭐⭐ High | Focused document search | Any, within known doc |
 | **extract_concepts** | Document metadata | Concept catalog | N/A | Concept export | Document identifier |
-| **category_search** 🆕 | Documents in category | Category filter | ⭐⭐⭐⭐⭐ High | Domain-specific browsing | Category name/ID |
-| **list_categories** 🆕 | All categories | Category table | N/A | Category discovery | Optional search filter |
-| **list_concepts_in_category** 🆕 | Category's concepts | Dynamic aggregation | ⭐⭐⭐⭐ High | Domain concept analysis | Category name/ID |
+| **source_concepts** 🆕 | Concept → sources | Concept index | ⭐⭐⭐⭐⭐ High | Source attribution (union) | Concept name(s) |
+| **concept_sources** 🆕 | Concept → sources | Concept index | ⭐⭐⭐⭐⭐ High | Per-concept bibliographies | Concept name(s) |
+| **category_search** | Documents in category | Category filter | ⭐⭐⭐⭐⭐ High | Domain-specific browsing | Category name/ID |
+| **list_categories** | All categories | Category table | N/A | Category discovery | Optional search filter |
+| **list_concepts_in_category** | Category's concepts | Dynamic aggregation | ⭐⭐⭐⭐ High | Domain concept analysis | Category name/ID |
 
 ## Detailed Tool Selection Criteria
 
@@ -112,13 +118,13 @@ START: User asks a question
 
 **What It Returns:**
 - Top 10 chunks ranked by hybrid score
-- Scoring breakdown: vector, BM25, concept, WordNet
+- Scoring breakdown: vector, BM25, title, WordNet
 - Matched concepts and expanded query terms
 - May include false positives from keyword matching
 
 **Technical Details:**
 - Hybrid search: vector similarity + BM25 keyword matching
-- Concept scoring contributes but chunks may have 0.000 concept scores
+- Title scoring for source path relevance
 - WordNet expansion for synonyms
 - Searches entire chunks table across all documents
 
@@ -237,7 +243,116 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 
 ---
 
-### 6. `category_search` - Browse Documents by Category 🆕
+### 6. `source_concepts` - Source Attribution (Union) 🆕
+
+**When to Use:**
+- ✅ "Which books mention [concept]?" or "Where is [concept] discussed?"
+- ✅ Finding source attribution for research or citation
+- ✅ Understanding concept coverage across your library
+- ✅ Finding documents that cover MULTIPLE concepts (pass an array)
+- ✅ Need a merged/union list showing which sources cover which concepts
+
+**When NOT to Use:**
+- ❌ Need separate per-concept lists (use concept_sources)
+- ❌ Finding specific text passages (use concept_search)
+- ❌ Finding documents by title (use catalog_search)
+
+**Query Examples:**
+```
+✅ source_concepts(concept="test-driven development")
+✅ source_concepts(concept=["tdd", "dependency injection", "ci"])
+✅ "Which books discuss dependency injection?"
+✅ "Find sources that mention both TDD and refactoring"
+❌ "Find passages about TDD" (use concept_search for content)
+```
+
+**What It Returns:**
+- Union of all sources containing ANY of the input concepts
+- Each source includes `concept_indices` array (e.g., `[0, 1]` means matches concepts at index 0 and 1)
+- Sources sorted by number of matching concepts (most comprehensive first)
+- Title, author, year extracted from filenames
+- Optional: summary, primary_concepts, categories from catalog
+
+**Example Output:**
+```json
+{
+  "concepts_searched": ["tdd", "di", "ci"],
+  "concepts_found": ["tdd", "di", "ci"],
+  "source_count": 34,
+  "sources": [
+    { "title": "Code That Fits in Your Head", "concept_indices": [0, 1, 2] },
+    { "title": "Clean Architecture", "concept_indices": [1] }
+  ]
+}
+```
+
+**Technical Details:**
+- Queries concept index for sources field on each concept
+- Aggregates and deduplicates across multiple concepts
+- Index-based attribution for brevity (maps to concepts_searched array)
+- Graceful degradation if catalog metadata unavailable
+
+---
+
+### 7. `concept_sources` - Per-Concept Source Arrays 🆕
+
+**When to Use:**
+- ✅ Need separate source lists for each concept (not merged)
+- ✅ Building per-concept bibliographies or citations
+- ✅ Comparing which sources cover which specific concepts
+- ✅ Need to know exactly which sources discuss each individual concept
+
+**When NOT to Use:**
+- ❌ Need merged/union list with overlap info (use source_concepts)
+- ❌ Finding specific text passages (use concept_search)
+- ❌ Finding documents by title (use catalog_search)
+
+**Query Examples:**
+```
+✅ concept_sources(concept="test-driven development")
+✅ concept_sources(concept=["tdd", "di", "ci"])
+✅ "List sources for each: TDD, DI, and CI separately"
+✅ "What are the sources for dependency injection specifically?"
+❌ "Which books cover the most of these topics?" (use source_concepts)
+```
+
+**What It Returns:**
+- Array where `results[i]` contains sources for `concepts_searched[i]`
+- Position in results array corresponds to position in input array
+- Each concept may have 0 or more sources
+- Title, author, year extracted from filenames
+
+**Example Output:**
+```json
+{
+  "concepts_searched": ["tdd", "di", "ci"],
+  "results": [
+    [{ "title": "TDD by Example" }, { "title": "Clean Code" }],  // sources for tdd
+    [{ "title": "Clean Architecture" }],                          // sources for di
+    [{ "title": "Continuous Delivery" }, { "title": "DevOps Handbook" }]  // sources for ci
+  ]
+}
+```
+
+**Technical Details:**
+- Queries concept index for each concept independently
+- Returns empty array `[]` for concepts not found (preserves position)
+- No deduplication - same source may appear in multiple arrays
+- Useful for comparing coverage across concepts
+
+**Comparison: source_concepts vs concept_sources:**
+
+| Feature | source_concepts | concept_sources |
+|---------|-----------------|-----------------|
+| Output | Union with indices | Separate arrays |
+| Duplicates | Deduplicated | May repeat across arrays |
+| Use case | "What covers these?" | "Sources per concept" |
+| Sorting | By match count | By input position |
+| Best for | Overlap analysis | Per-concept citations |
+
+---
+
+### 9. `category_search` - Browse Documents by Category
 
 **When to Use:**
 - ✅ Browse documents in a specific domain or subject area
@@ -278,7 +393,7 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 
 ---
 
-### 7. `list_categories` - Browse All Categories 🆕
+### 10. `list_categories` - Browse All Categories
 
 **When to Use:**
 - ✅ "What categories do I have?"
@@ -321,7 +436,7 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 
 ---
 
-### 8. `list_concepts_in_category` - Domain Concept Analysis 🆕
+### 11. `list_concepts_in_category` - Domain Concept Analysis
 
 **When to Use:**
 - ✅ "What concepts appear in [category] documents?"
@@ -568,16 +683,15 @@ list_concepts_in_category(category="distributed systems", sortBy="documentCount"
 - **hybrid**: Combined score from multiple signals
 - **vector**: Semantic similarity (0-1)
 - **bm25**: Keyword frequency/relevance (0-1)
-- **concept**: Concept match score (often 0.000)
+- **title**: Title/source path match (0-1)
 - **wordnet**: Synonym expansion score (0-1)
 - May include false positives
 
 ### catalog_search Scoring
 - **hybrid**: Combined score with title boost
-- **vector**: Semantic similarity (often negative, -0.4 to -0.6)
+- **vector**: Semantic similarity (0-1)
 - **bm25**: Keyword in summary (0-1)
-- **title**: Title match (0 or 10.000 - huge boost!)
-- **concept**: Usually 0.000
+- **title**: Title match (0-1, significant boost for matches)
 - **wordnet**: Synonym expansion (0-1)
 
 ### chunks_search Scoring
@@ -595,9 +709,11 @@ list_concepts_in_category(category="distributed systems", sortBy="documentCount"
 | **catalog_search** | 5 documents | Fast | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
 | **chunks_search** | 5 chunks | Fast | ⭐⭐⭐⭐ | ⭐⭐⭐ |
 | **extract_concepts** | 80-150 concepts | Instant | N/A | N/A |
-| **category_search** 🆕 | 1-50 documents | Very Fast | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
-| **list_categories** 🆕 | 10-50 categories | Instant | N/A | N/A |
-| **list_concepts_in_category** 🆕 | 10-200 concepts | Fast | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **source_concepts** 🆕 | 1-50 sources | Fast | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **concept_sources** 🆕 | 1-50 sources/concept | Fast | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **category_search** | 1-50 documents | Very Fast | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **list_categories** | 10-50 categories | Instant | N/A | N/A |
+| **list_concepts_in_category** | 10-200 concepts | Fast | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
 
 † concept_search loads all chunks into memory for filtering - may be slower on large corpora
 
@@ -675,6 +791,10 @@ Use these test cases to validate tool selection:
 | "organizational learning" | concept_search | Conceptual term |
 | "What is the process for user authentication?" | broad_chunks_search | Specific technical question |
 | "Browse real-time systems category" | category_search | Explicit category browsing |
+| "Which books discuss TDD?" | source_concepts | Source attribution for concept |
+| "Find sources for TDD, DI, and CI" | source_concepts | Multi-concept source lookup |
+| "List sources for each concept separately" | concept_sources | Per-concept bibliographies |
+| "What books cover the most of these topics?" | source_concepts | Overlap analysis (sorted by match count) |
 
 ---
 
@@ -684,6 +804,8 @@ Use these test cases to validate tool selection:
 - **Motivation**: Resolved 0% overlap between concept_search and broad_chunks_search results for "innovation" query
 - **2025-11-20**: Added category search tools (category_search, list_categories, list_concepts_in_category)
 - **Purpose**: Enable domain-based browsing and category-scoped concept discovery
+- **2025-11-26**: Added concept source attribution tools (source_concepts, concept_sources)
+- **Purpose**: Enable "which books mention X?" queries with two complementary output formats
 
 ---
 

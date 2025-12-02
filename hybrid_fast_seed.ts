@@ -18,6 +18,12 @@ import { DocumentLoaderFactory } from './src/infrastructure/document-loaders/doc
 import { PDFDocumentLoader } from './src/infrastructure/document-loaders/pdf-loader.js';
 import { EPUBDocumentLoader } from './src/infrastructure/document-loaders/epub-loader.js';
 import { hashToId, generateStableId } from './src/infrastructure/utils/hash.js';
+import { generateCategorySummaries } from './src/concepts/summary_generator.js';
+import { parseFilenameMetadata, normalizeText } from './src/infrastructure/utils/filename-metadata-parser.js';
+import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
+import { ConceptEnricher } from './src/concepts/concept_enricher.js';
+import { ParallelConceptExtractor, DocumentSet } from './src/concepts/parallel-concept-extractor.js';
+import { ProgressBarDisplay, createProgressBarDisplay } from './src/infrastructure/cli/progress-bar-display.js';
 
 // Setup timestamped logging
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
@@ -101,6 +107,7 @@ process.on('unhandledRejection', (reason: any, promise) => {
     console.warn(`⚠️  PDF processing error: ${message}`);
 });
 
+
 // Suppress PDF.js warnings that clutter output and add logging to file
 const originalConsoleWarn = console.warn;
 const originalConsoleError = console.error;
@@ -167,24 +174,40 @@ console.log = (...args: any[]) => {
     }
 };
 
-const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {boolean: ["overwrite", "rebuild-concepts", "auto-reseed"]});
+const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {
+    boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume", "with-wordnet"],
+    string: ["dbpath", "filesdir", "max-docs", "parallel"]
+});
 
 const databaseDir = argv["dbpath"] || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag");
 const filesDir = argv["filesdir"];
 const overwrite = argv["overwrite"];
 const rebuildConcepts = argv["rebuild-concepts"];
 const autoReseed = argv["auto-reseed"];
+const cleanCheckpoint = argv["clean-checkpoint"];
+const resumeMode = argv["resume"];
+const maxDocs = argv["max-docs"] ? parseInt(argv["max-docs"], 10) : undefined;
+const parallelWorkers = argv["parallel"] ? parseInt(argv["parallel"], 10) : 10;
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
 function validateArgs() {
     if (!filesDir) {
         console.error("Please provide a directory with files (--filesdir) to process");
-        console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [--overwrite] [--rebuild-concepts] [--auto-reseed]");
-        console.error("  --filesdir: Directory containing PDF files to process (required)");
-        console.error("  --dbpath: Database path (optional, defaults to ~/.concept_rag)");
-        console.error("  --overwrite: Overwrite existing database tables (optional)");
-        console.error("  --rebuild-concepts: Rebuild concept index even if no new documents (optional)");
-        console.error("  --auto-reseed: Automatically re-process documents with incomplete metadata (optional)");
+        console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [options]");
+        console.error("");
+        console.error("Required:");
+        console.error("  --filesdir: Directory containing PDF/EPUB files to process");
+        console.error("");
+        console.error("Options:");
+        console.error("  --dbpath: Database path (default: ~/.concept_rag)");
+        console.error("  --overwrite: Drop and recreate all database tables");
+        console.error("  --rebuild-concepts: Rebuild concept index even if no new documents");
+        console.error("  --auto-reseed: Re-process documents with incomplete metadata");
+        console.error("  --resume: Resume from checkpoint (skip already processed documents)");
+        console.error("  --clean-checkpoint: Clear checkpoint and start fresh");
+        console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
+        console.error("  --max-docs N: Process at most N NEW documents (skips already processed, enables batching)");
+        console.error("  --parallel N: Process N documents concurrently for concept extraction (default: 10, max: 25)");
         process.exit(1);
     }
     
@@ -193,8 +216,23 @@ function validateArgs() {
         process.exit(1);
     }
     
+    // Validate parallel workers
+    if (parallelWorkers < 1 || parallelWorkers > 25 || isNaN(parallelWorkers)) {
+        console.error("--parallel must be a number between 1 and 25");
+        process.exit(1);
+    }
+    
     console.log(`📂 Database: ${databaseDir}`);
     console.log(`🔄 Overwrite mode: ${overwrite}`);
+    if (resumeMode) {
+        console.log(`🔄 Resume mode: enabled`);
+    }
+    if (maxDocs) {
+        console.log(`📊 Max documents: ${maxDocs}`);
+    }
+    if (parallelWorkers > 1) {
+        console.log(`🚀 Parallel mode: ${parallelWorkers} workers`);
+    }
 }
 
 // LLM API call for summarization
@@ -360,7 +398,7 @@ async function callOpenRouterOCR(pdfPath: string): Promise<{ documents: Document
                         pageContent: cleanText,
                         metadata: {
                             source: pdfPath,
-                            loc: { pageNumber: pageNumber },
+                            page_number: pageNumber,
                             ocr_processed: true,
                             ocr_method: 'tesseract_local',
                             ocr_confidence: 'good'
@@ -372,7 +410,7 @@ async function callOpenRouterOCR(pdfPath: string): Promise<{ documents: Document
                         pageContent: '[No text content detected on this page]',
                         metadata: {
                             source: pdfPath,
-                            loc: { pageNumber: pageNumber },
+                            page_number: pageNumber,
                             ocr_processed: true,
                             ocr_method: 'tesseract_local',
                             ocr_confidence: 'low'
@@ -388,7 +426,7 @@ async function callOpenRouterOCR(pdfPath: string): Promise<{ documents: Document
                     pageContent: `[OCR failed for this page: ${pageError.message}]`,
                     metadata: {
                         source: pdfPath,
-                        loc: { pageNumber: pageNumber },
+                        page_number: pageNumber,
                         ocr_processed: false,
                         ocr_method: 'tesseract_local',
                         ocr_error: pageError.message
@@ -446,7 +484,7 @@ Alternative: Process manually with other OCR tools.`;
             pageContent: placeholderText,
             metadata: {
                 source: pdfPath,
-                loc: { pageNumber: 1 },
+                page_number: 1,
                 ocr_processed: false,
                 ocr_method: 'tesseract_failed',
                 ocr_error: error.message
@@ -747,7 +785,8 @@ async function loadDocumentsWithErrorHandling(
     filesDir: string, 
     catalogTable: lancedb.Table | null, 
     chunksTable: lancedb.Table | null,
-    skipExistsCheck: boolean
+    skipExistsCheck: boolean,
+    checkpoint?: SeedingCheckpoint
 ) {
     const documents: Document[] = [];
     const failedFiles: string[] = [];
@@ -777,7 +816,14 @@ async function loadDocumentsWithErrorHandling(
             console.log(`📚 Found ${documentFiles.length} document files`);
         }
         
-        for (const docFile of documentFiles) {
+        // Track newly processed count for --max-docs (skipped docs don't count)
+        let newlyProcessedCount = 0;
+        if (maxDocs && maxDocs > 0) {
+            console.log(`📊 Will process up to ${maxDocs} NEW documents (--max-docs), skipping already processed`);
+        }
+        
+        // Use labeled loop so we can break from nested try/catch
+        documentLoop: for (const docFile of documentFiles) {
             const relativePath = path.relative(filesDir, docFile);
             
             // Calculate hash first (available for all cases)
@@ -790,8 +836,15 @@ async function loadDocumentsWithErrorHandling(
             }
             
             try {
+                // Check checkpoint first for fast skip (O(1) hash lookup)
+                if (checkpoint && checkpoint.isProcessed(hash)) {
+                    console.log(`⏭️ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (checkpoint)`);
+                    skippedFiles.push(relativePath);
+                    continue;
+                }
+                
                 if (!skipExistsCheck && catalogTable && hash !== 'unknown') {
-                    // NEW: Check completeness instead of just existence
+                    // Check completeness instead of just existence
                     const completeness = await checkDocumentCompleteness(
                         catalogTable,
                         chunksTable,
@@ -800,8 +853,12 @@ async function loadDocumentsWithErrorHandling(
                     );
                     
                     if (completeness.isComplete) {
-                        console.log(`  ⏭[${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (complete)`);
+                        console.log(`⏭️ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (complete)`);
                         skippedFiles.push(relativePath);
+                        // Update checkpoint with this complete document (for future runs)
+                        if (checkpoint) {
+                            await checkpoint.markProcessed(hash, docFile, false);
+                        }
                         continue; // Skip loading this file entirely
                     } else if (completeness.hasRecord) {
                         // Document exists but is incomplete - needs reprocessing
@@ -853,7 +910,7 @@ async function loadDocumentsWithErrorHandling(
                                             metadata: {
                                                 source: docFile,
                                                 hash: hash,
-                                                loc: chunk.loc || { pageNumber: 1 },
+                                                page_number: chunk.page_number || 1,
                                                 // Preserve chunk ID for in-place updates
                                                 chunkId: chunk.id,
                                                 // Mark if needs concept enrichment
@@ -925,7 +982,13 @@ async function loadDocumentsWithErrorHandling(
                 } else {
                     contentInfo = `${docs.length} docs`;
                 }
-                console.log(`  📥[${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
+                console.log(`📥 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
+                
+                // Check --max-docs limit (only counts newly processed, not skipped)
+                newlyProcessedCount++;
+                if (maxDocs && maxDocs > 0 && newlyProcessedCount >= maxDocs) {
+                    break documentLoop;
+                }
             } catch (error: any) {
                 const errorMsg = error?.message || String(error);
                 const fileExt = path.extname(docFile).toLowerCase();
@@ -955,6 +1018,12 @@ async function loadDocumentsWithErrorHandling(
                             if (success) {
                                 console.log(`✅ ${hashDisplay} ${truncateFilePath(relativePath)} (${totalPages} pages, ${totalChars} chars, OCR)`);
                                 ocrSuccessful = true;
+                                
+                                // Check --max-docs limit for OCR success
+                                newlyProcessedCount++;
+                                if (maxDocs && maxDocs > 0 && newlyProcessedCount >= maxDocs) {
+                                    break documentLoop;
+                                }
                             } else {
                                 console.log(`⚠️ ${hashDisplay} ${truncateFilePath(relativePath)} (OCR: low quality text extracted)`);
                             }
@@ -1013,7 +1082,7 @@ async function loadDocumentsWithErrorHandling(
             console.log(`🤖 OCR Summary: • 📄 ${ocrProcessedCount} pages processed via OCR • 📚 Standard PDFs also processed`);
         }
         
-        return { documents, documentsNeedingChunks };
+        return { documents, documentsNeedingChunks, failedFiles };
     } catch (error) {
         console.error('Error reading directory:', error.message);
         throw error;
@@ -1024,7 +1093,8 @@ async function createLanceTableWithSimpleEmbeddings(
     db: lancedb.Connection,
     documents: Document[],
     tableName: string,
-    mode?: "overwrite"
+    mode?: "overwrite",
+    sourceToCatalogIdMap?: Map<string, number>
 ): Promise<lancedb.Table> {
     
     console.log(`🔄 Creating simple embeddings for ${documents.length} ${tableName}...`);
@@ -1040,78 +1110,149 @@ async function createLanceTableWithSimpleEmbeddings(
     }
     const categoryIdMap = buildCategoryIdMap(allCategories);
     
-    // Generate fast local embeddings
-    // Enhanced: Include concept metadata if present
+    // Generate fast local embeddings with normalized schema
     const data = documents.map((doc, i) => {
+        const isCatalog = tableName === 'catalog';
+        
+        // Generate hash-based numeric ID from source + hash for uniqueness
+        const idSource = `${doc.metadata.source || ''}-${doc.metadata.hash || ''}-${i}`;
         const baseData: any = {
-            id: i.toString(),
-            text: doc.pageContent,
-            source: doc.metadata.source || '',
+            id: isCatalog ? hashToId(doc.metadata.source || `doc-${i}`) : hashToId(idSource),
             hash: doc.metadata.hash || '',
-            loc: JSON.stringify(doc.metadata.loc || {}),
             vector: createSimpleEmbedding(doc.pageContent)
         };
         
-        // Add reserved bibliographic fields (for future use)
-        // Use empty string instead of null (LanceDB can't infer type from all nulls)
-        if (tableName === 'catalog') {
-            baseData.origin_hash = '';
-            baseData.author = '';
-            baseData.year = '';
-            baseData.publisher = '';
-            baseData.isbn = '';
-            
-            // Extract filename tags (metadata after '--' delimiter)
-            const filename = doc.metadata.source.split('/').pop() || '';
-            const filenameParts = filename.replace(/\.(pdf|epub)$/i, '').split('--').map((p: string) => p.trim());
-            const filenameTags = filenameParts.length > 1 ? filenameParts.slice(1) : [];
-            baseData.filename_tags = JSON.stringify(filenameTags);
+        // Catalog uses 'summary', chunks use 'text'
+        if (isCatalog) {
+            baseData.source = doc.metadata.source || '';  // Catalog keeps source path
+            baseData.summary = doc.pageContent;  // Renamed from 'text' to 'summary'
+        } else {
+            // Chunks get catalog_title instead of source
+            baseData.text = doc.pageContent;
+            // Extract page_number from loc.pageNumber (LangChain format) or direct field
+            baseData.page_number = doc.metadata.page_number ?? doc.metadata.loc?.pageNumber ?? 1;
+            // ALWAYS include concept_ids, concept_names, concept_density for chunks schema
+            // Use placeholder values for empty arrays to enable LanceDB type inference
+            baseData.concept_ids = [0];  // Will be overwritten below if concepts exist
+            baseData.concept_names = [''];  // DERIVED: Will be overwritten below if concepts exist
+            baseData.concept_density = 0;  // Will be computed below if concepts exist
+            // Add catalog_id (foreign key to catalog table) if map is provided
+            if (sourceToCatalogIdMap && doc.metadata.source) {
+                baseData.catalog_id = sourceToCatalogIdMap.get(doc.metadata.source) || 0;
+            } else {
+                baseData.catalog_id = 0;  // Placeholder if no map provided
+            }
+            // Add catalog_title (derived from filename) for display
+            const fileMeta = parseFilenameMetadata(doc.metadata.source || '');
+            baseData.catalog_title = fileMeta.title || '';
         }
         
-        // Add concept metadata if present
-        if (doc.metadata.concepts) {
-            baseData.concepts = JSON.stringify(doc.metadata.concepts);
+        // Add bibliographic fields for catalog entries (parsed from filename)
+        if (isCatalog) {
+            // Parse metadata from filename using '--' delimiter format
+            const fileMeta = parseFilenameMetadata(doc.metadata.source || '');
             
-            // Extract concept names and generate hash-based concept IDs
-            let conceptNames: string[] = [];
-            
-            // Handle two formats:
-            // 1. Catalog: concepts is object with primary_concepts array
-            // 2. Chunks: concepts is simple array of concept names
-            if (typeof doc.metadata.concepts === 'object') {
-                if (doc.metadata.concepts.primary_concepts) {
-                    conceptNames = doc.metadata.concepts.primary_concepts;
-                }
-            } else if (Array.isArray(doc.metadata.concepts)) {
-                conceptNames = doc.metadata.concepts;
-            }
-            
-            if (conceptNames.length > 0) {
-                // Generate hash-based concept IDs
-                const conceptIds = conceptNames.map((name: string) => hashToId(name));
-                baseData.concept_ids = JSON.stringify(conceptIds);
-            }
-            
-            // Extract categories from concepts structure for catalog/chunks
-            let categories: string[] = [];
-            if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.categories) {
-                categories = doc.metadata.concepts.categories;
-            } else if (doc.metadata.concept_categories) {
-                categories = doc.metadata.concept_categories;
-            }
-            
-            if (categories.length > 0) {
-                baseData.concept_categories = JSON.stringify(categories);
-                
-                // Generate hash-based category IDs
-                const categoryIds = categories.map((cat: string) => 
-                    categoryIdMap.get(cat) || hashToId(cat)
-                );
-                baseData.category_ids = JSON.stringify(categoryIds);
-            }
+            baseData.origin_hash = '';  // Reserved: hash of original file before processing
+            baseData.title = fileMeta.title || '';      // Document title from filename
+            baseData.author = fileMeta.author || '';    // Document author(s) from filename
+            baseData.year = fileMeta.year || 0;         // Publication year from filename
+            baseData.publisher = fileMeta.publisher || '';  // Publisher name from filename
+            baseData.isbn = fileMeta.isbn || '';        // ISBN from filename
+            // DERIVED fields with placeholders for LanceDB schema inference
+            baseData.concept_ids = [0];     // Will be overwritten if concepts exist
+            baseData.concept_names = [''];  // DERIVED: Will be overwritten if concepts exist
+            baseData.category_ids = [0];    // Will be overwritten if categories exist
+            baseData.category_names = [''];  // DERIVED: Will be overwritten if categories exist
         }
-        if (doc.metadata.concept_density !== undefined) {
-            baseData.concept_density = doc.metadata.concept_density;
+        
+        // Add concept metadata if present (using native arrays)
+        if (doc.metadata.concepts) {
+            // Extract categories and generate hash-based category IDs (CATALOG ONLY)
+            // Chunks don't store category_ids - use catalog_id to lookup categories
+            if (isCatalog) {
+                let categories: string[] = [];
+                if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.categories) {
+                    categories = doc.metadata.concepts.categories;
+                } else if (doc.metadata.concept_categories) {
+                    categories = doc.metadata.concept_categories;
+                }
+                
+                if (categories.length > 0) {
+                    // Generate hash-based category IDs (native array)
+                    const categoryIds = categories.map((cat: string) => 
+                        categoryIdMap.get(cat) || hashToId(cat)
+                    );
+                    baseData.category_ids = categoryIds;
+                }
+            }
+            
+            // Populate concept_ids in chunks using consistent normalization
+            // Since concepts table uses hashToId(name.toLowerCase().trim()) for ID generation,
+            // we use the same formula here to ensure foreign key consistency
+            if (!isCatalog) {
+                let chunkConceptNames: string[] = [];
+                // Check Array.isArray FIRST since arrays are also objects
+                // Handle both old (string[]) and new (ExtractedConcept[]) formats
+                if (Array.isArray(doc.metadata.concepts)) {
+                    chunkConceptNames = doc.metadata.concepts.map((c: any) => 
+                        typeof c === 'string' ? c : (c.name || '')
+                    ).filter((n: string) => n);
+                } else if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.primary_concepts) {
+                    chunkConceptNames = doc.metadata.concepts.primary_concepts.map((c: any) => 
+                        typeof c === 'string' ? c : (c.name || '')
+                    ).filter((n: string) => n);
+                }
+                
+                if (chunkConceptNames.length > 0) {
+                    // Use same normalization as concepts table: hashToId(name.toLowerCase().trim())
+                    const conceptIds = chunkConceptNames.map((name: string) => 
+                        hashToId(name.toLowerCase().trim())
+                    );
+                    baseData.concept_ids = conceptIds;
+                    // DERIVED FIELD: Store concept names for display and text search
+                    baseData.concept_names = chunkConceptNames.map((name: string) => name.toLowerCase().trim());
+                    
+                    // Calculate concept density: concepts per 10 words
+                    // Higher values indicate more concept-rich content
+                    const wordCount = doc.pageContent.split(/\s+/).length;
+                    baseData.concept_density = wordCount > 0 ? conceptIds.length / (wordCount / 10) : 0;
+                } else {
+                    baseData.concept_density = 0;
+                }
+            }
+            
+            // Populate concept_names and category_names for catalog (DERIVED fields)
+            if (isCatalog && doc.metadata.concepts) {
+                // Extract primary concepts for concept_names
+                // Handle both old (string[]) and new (ExtractedConcept[]) formats
+                let catalogConceptNames: string[] = [];
+                if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.primary_concepts) {
+                    catalogConceptNames = doc.metadata.concepts.primary_concepts.map((c: any) => 
+                        typeof c === 'string' ? c : (c.name || '')
+                    ).filter((n: string) => n);
+                }
+                if (catalogConceptNames.length > 0) {
+                    // Store concept_ids and concept_names together
+                    const conceptIds = catalogConceptNames.map((name: string) => 
+                        hashToId(name.toLowerCase().trim())
+                    );
+                    baseData.concept_ids = conceptIds;
+                    // DERIVED FIELD: Store concept names for display and text search
+                    baseData.concept_names = catalogConceptNames.map((name: string) => name.toLowerCase().trim());
+                }
+                
+                // Extract categories for category_names (DERIVED)
+                let categoryNames: string[] = [];
+                if (typeof doc.metadata.concepts === 'object' && doc.metadata.concepts.categories) {
+                    categoryNames = doc.metadata.concepts.categories;
+                } else if (doc.metadata.concept_categories) {
+                    categoryNames = doc.metadata.concept_categories;
+                }
+                if (categoryNames.length > 0) {
+                    // DERIVED FIELD: Store category names for display and text search
+                    baseData.category_names = categoryNames;
+                }
+            }
         }
         
         return baseData;
@@ -1226,7 +1367,7 @@ async function createOptimizedIndex(
     }
 }
 
-async function processDocuments(rawDocs: Document[]) {
+async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpoint, workers: number = 1) {
     const docsBySource = rawDocs.reduce((acc: Record<string, Document[]>, doc: Document) => {
         const source = doc.metadata.source;
         if (!acc[source]) {
@@ -1236,10 +1377,19 @@ async function processDocuments(rawDocs: Document[]) {
         return acc;
     }, {});
 
+    // Use parallel processing if workers > 1
+    if (workers > 1) {
+        return processDocumentsParallel(docsBySource, checkpoint, workers);
+    }
+
+    // Sequential processing (original behavior)
     let catalogRecords: Document[] = [];
     
     // Initialize concept extractor
     const conceptExtractor = new ConceptExtractor(process.env.OPENROUTER_API_KEY || '');
+    
+    // Track documents for checkpoint updates
+    const processedInThisRun: Array<{hash: string, source: string}> = [];
 
     for (const [source, docs] of Object.entries(docsBySource)) {
         // Use existing hash from document metadata if available (for consistency)
@@ -1277,11 +1427,16 @@ async function processDocuments(rawDocs: Document[]) {
             console.log(`⚠️  Continuing with empty concepts for this document`);
         }
         
+        // Extract concept names for display (handle both string[] and ExtractedConcept[] formats)
+        const conceptNames = concepts.primary_concepts.map((c: any) => 
+            typeof c === 'string' ? c : (c.name || '')
+        ).filter((n: string) => n);
+        
         // Include concepts in the embedded content for better vector search
         const enrichedContent = `
 ${contentOverview}
 
-Key Concepts: ${concepts.primary_concepts.join(', ')}
+Key Concepts: ${conceptNames.join(', ')}
 Categories: ${concepts.categories.join(', ')}
 `.trim();
         
@@ -1297,13 +1452,217 @@ Categories: ${concepts.categories.join(', ')}
         
         catalogRecords.push(catalogRecord);
         
+        // Track for checkpoint update
+        processedInThisRun.push({ hash, source });
+        
         // Debug logging for OCR persistence troubleshooting
         if (process.env.DEBUG_OCR && isOcrProcessed) {
             console.log(`📝 Creating catalog record for OCR'd document: hash=${hash.slice(0, 8)}..., source=${sourceBasename}`);
         }
     }
 
-    return catalogRecords;
+    return { catalogRecords, processedInThisRun };
+}
+
+/**
+ * Process documents in parallel for concept extraction.
+ * Uses ParallelConceptExtractor to coordinate workers with shared rate limiting.
+ */
+async function processDocumentsParallel(
+    docsBySource: Record<string, Document[]>,
+    checkpoint: SeedingCheckpoint | undefined,
+    workers: number
+): Promise<{ catalogRecords: Document[], processedInThisRun: Array<{hash: string, source: string}> }> {
+    
+    // Prepare document sets with hashes
+    const documentSets = new Map<string, DocumentSet>();
+    
+    for (const [source, docs] of Object.entries(docsBySource)) {
+        let hash = docs[0]?.metadata?.hash;
+        if (!hash || hash === 'unknown') {
+            const fileContent = await fs.promises.readFile(source);
+            hash = crypto.createHash('sha256').update(fileContent).digest('hex');
+        }
+        documentSets.set(source, { docs, hash });
+    }
+    
+    const totalDocs = documentSets.size;
+    const actualWorkers = Math.min(totalDocs, workers);
+    console.log(`📊 Processing ${totalDocs} document(s) with ${actualWorkers} parallel workers\n`);
+    
+    // Create parallel extractor
+    const parallelExtractor = new ParallelConceptExtractor(
+        process.env.OPENROUTER_API_KEY || '',
+        3000  // 3 second rate limit interval
+    );
+    
+    // Create progress bar display (null if in CI or non-TTY)
+    // Only show as many lines as needed (min of workers and docs)
+    const displayLines = Math.min(workers, totalDocs);
+    const progressDisplay = createProgressBarDisplay(displayLines);
+    progressDisplay?.initialize();
+    progressDisplay?.updateProgress(0, totalDocs);
+    
+    // Handle Ctrl+C for cleanup
+    const cleanupHandler = () => {
+        progressDisplay?.cleanup();
+        process.exit(130);
+    };
+    process.on('SIGINT', cleanupHandler);
+    
+    // Extract concepts in parallel
+    const results = await parallelExtractor.extractAll(documentSets, {
+        concurrency: workers,
+        onWorkerStart: (workerIndex, source, totalChunks) => {
+            const basename = path.basename(source);
+            progressDisplay?.updateWorker(workerIndex, {
+                documentName: basename,
+                chunkNum: 0,
+                totalChunks,
+                status: 'processing'
+            });
+        },
+        onProgress: (completed, total, current, workerIndex) => {
+            progressDisplay?.updateProgress(completed, total);
+            progressDisplay?.updateWorker(workerIndex, { status: 'done', message: null });
+            
+            // Fallback for non-TTY
+            if (!progressDisplay) {
+                const pct = Math.round((completed / total) * 100);
+                const basename = path.basename(current);
+                console.log(`[${workerIndex}] ✅ Complete: ${completed}/${total} (${pct}%) - ${basename}`);
+            }
+        },
+        onChunkProgress: (completed, total, current, chunkNum, totalChunks, workerIndex) => {
+            progressDisplay?.updateWorker(workerIndex, {
+                chunkNum,
+                totalChunks,
+                status: 'processing',
+                message: null  // Clear any previous message when starting new chunk
+            });
+            
+            // Fallback for non-TTY
+            if (!progressDisplay) {
+                const pct = Math.round((completed / total) * 100);
+                const basename = path.basename(current);
+                console.log(`[${workerIndex}] 📊 Progress: ${completed}/${total} (${pct}%) - ${basename.slice(0, 80)}  🔄 ${chunkNum}/${totalChunks}`);
+            }
+        },
+        onError: (source, error, workerIndex) => {
+            progressDisplay?.updateWorker(workerIndex, { status: 'idle', message: null });
+            console.error(`\n❌ Failed: ${path.basename(source)}: ${error.message}`);
+        },
+        onMessage: (workerIndex, message) => {
+            progressDisplay?.updateWorker(workerIndex, { message });
+            
+            // Fallback for non-TTY
+            if (!progressDisplay) {
+                console.log(`[${workerIndex}] ${message}`);
+            }
+        }
+    });
+    
+    // Cleanup progress display
+    progressDisplay?.cleanup();
+    process.removeListener('SIGINT', cleanupHandler);
+    console.log('');
+    
+    // Get and display stats
+    const stats = parallelExtractor.getStats(results);
+    const { successful, failed } = parallelExtractor.partitionResults(results);
+    
+    console.log(`✅ Completed: ${stats.successCount}/${stats.totalDocuments} documents`);
+    if (stats.failureCount > 0) {
+        console.log(`⚠️  Failed: ${stats.failureCount} documents`);
+        for (const f of failed) {
+            console.log(`   - ${path.basename(f.source)}: ${f.error}`);
+        }
+    }
+    console.log(`⏱️  Total time: ${(stats.totalTimeMs / 1000).toFixed(1)}s`);
+    console.log(`📊 Rate limiter: ${stats.rateLimiterMetrics.totalRequests} requests, avg wait ${stats.rateLimiterMetrics.avgWaitTimeMs}ms`);
+    
+    // Convert results to catalog records
+    const catalogRecords: Document[] = [];
+    const processedInThisRun: Array<{hash: string, source: string}> = [];
+    
+    // Process successful documents
+    for (const result of successful) {
+        const docs = docsBySource[result.source];
+        const contentOverview = await generateContentOverview(docs);
+        const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
+        
+        // Extract concept names
+        const conceptNames = result.concepts!.primary_concepts.map((c: any) => 
+            typeof c === 'string' ? c : (c.name || '')
+        ).filter((n: string) => n);
+        
+        // Include concepts in embedded content
+        const enrichedContent = `
+${contentOverview}
+
+Key Concepts: ${conceptNames.join(', ')}
+Categories: ${result.concepts!.categories.join(', ')}
+`.trim();
+        
+        const catalogRecord = new Document({
+            pageContent: enrichedContent,
+            metadata: {
+                source: result.source,
+                hash: result.hash,
+                ocr_processed: isOcrProcessed,
+                concepts: result.concepts
+            }
+        });
+        
+        catalogRecords.push(catalogRecord);
+        processedInThisRun.push({ hash: result.hash, source: result.source });
+    }
+    
+    // Process failed documents with empty concepts (consistent with sequential mode)
+    // This ensures they're still added to the catalog and checkpoint
+    for (const result of failed) {
+        const docs = docsBySource[result.source];
+        const contentOverview = await generateContentOverview(docs);
+        const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
+        
+        // Use empty concepts for failed documents
+        const emptyConcepts = {
+            primary_concepts: [],
+            categories: ['General']
+        };
+        
+        const enrichedContent = `
+${contentOverview}
+
+Key Concepts: 
+Categories: General
+`.trim();
+        
+        const catalogRecord = new Document({
+            pageContent: enrichedContent,
+            metadata: {
+                source: result.source,
+                hash: result.hash,
+                ocr_processed: isOcrProcessed,
+                concepts: emptyConcepts
+            }
+        });
+        
+        catalogRecords.push(catalogRecord);
+        processedInThisRun.push({ hash: result.hash, source: result.source });
+        
+        // Also mark as failed in checkpoint if available (for reporting purposes)
+        if (checkpoint) {
+            await checkpoint.markFailed(result.source, false);
+        }
+    }
+    
+    // Save checkpoint once after batch processing
+    if (checkpoint && failed.length > 0) {
+        await checkpoint.save();
+    }
+    
+    return { catalogRecords, processedInThisRun };
 }
 
 async function getDatabaseSize(dbPath: string): Promise<string> {
@@ -1402,9 +1761,12 @@ async function createCategoriesTable(
     // Generate stable hash-based IDs
     const sortedCategories = Array.from(categorySet).sort();
     const existingIds = new Set<number>();
-    const categoryRecords = [];
+    const categoryRecords: any[] = [];
     
     console.log("  🔄 Generating category records with embeddings...");
+    
+    // Generate summaries for categories using LLM
+    const categorySummaries = await generateCategorySummaries(sortedCategories);
     
     for (const category of sortedCategories) {
         // Generate stable hash-based ID
@@ -1413,6 +1775,9 @@ async function createCategoriesTable(
         
         // Generate simple description
         const description = `Concepts and practices related to ${category}`;
+        
+        // Get LLM-generated summary or fallback to description
+        const summary = categorySummaries.get(category.toLowerCase()) || description;
         
         // Generate embedding using simple embedding function (same as used for catalog/chunks)
         const embeddingText = `${category}: ${description}`;
@@ -1424,6 +1789,7 @@ async function createCategoriesTable(
             id: categoryId,
             category: category,
             description: description,
+            summary: summary,
             parent_category_id: 0, // Use 0 as null placeholder (LanceDB can't infer type from all nulls)
             aliases: JSON.stringify([]),
             related_categories: JSON.stringify([]),
@@ -1478,6 +1844,21 @@ function buildCategoryIdMap(categories: Set<string>): Map<string, number> {
     return categoryIdMap;
 }
 
+/**
+ * Parse array field from LanceDB (handles native arrays, Arrow Vectors, JSON strings)
+ */
+function parseArrayField(value: any): any[] {
+    if (!value) return [];
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'object' && 'toArray' in value) {
+        return Array.from(value.toArray());
+    }
+    if (typeof value === 'string') {
+        try { return JSON.parse(value); } catch { return []; }
+    }
+    return [];
+}
+
 async function rebuildConceptIndexFromExistingData(
     db: lancedb.Connection,
     catalogTable: lancedb.Table,
@@ -1485,134 +1866,120 @@ async function rebuildConceptIndexFromExistingData(
 ): Promise<void> {
     const catalogRecords = await catalogTable.query().limit(100000).toArray();
     
-    // Convert to Document format
+    // Build source → catalog ID map from ACTUAL catalog table IDs (foreign key constraint)
+    const sourceToCatalogId = new Map<string, number>();
+    for (const r of catalogRecords) {
+        if (r.source && r.id !== undefined) {
+            sourceToCatalogId.set(r.source, typeof r.id === 'number' ? r.id : parseInt(r.id, 10));
+        }
+    }
+    console.log(`  ✅ Built source→catalogId map with ${sourceToCatalogId.size} entries`);
+    
+    // Convert catalog records to Document format compatible with ConceptIndexBuilder
+    // Schema v7: catalog uses `summary` (not `text`) and `concept_names` (not `concepts`)
     const catalogDocs = catalogRecords
-        .filter((r: any) => r.text && r.source && r.concepts)
+        .filter((r: any) => {
+            const conceptNames = parseArrayField(r.concept_names);
+            // Filter out placeholder values [0] or ['']
+            const validConcepts = conceptNames.filter((n: any) => n && n !== '' && n !== 0);
+            return r.source && validConcepts.length > 0;
+        })
         .map((r: any) => {
-            let concepts = r.concepts;
-            if (typeof concepts === 'string') {
-                try {
-                    concepts = JSON.parse(concepts);
-                } catch (e) {
-                    concepts = null;
-                }
-            }
+            // Reconstruct the concepts metadata structure from stored concept_names
+            const conceptNames = parseArrayField(r.concept_names)
+                .filter((n: any) => n && n !== '' && n !== 0);
+            const categoryNames = parseArrayField(r.category_names)
+                .filter((n: any) => n && n !== '' && n !== 0);
+            
+            // Build ConceptMetadata structure expected by ConceptIndexBuilder
+            const concepts = {
+                primary_concepts: conceptNames,  // Array of concept name strings
+                categories: categoryNames,
+                related_concepts: []  // Not stored, will be rebuilt
+            };
             
             return new Document({
-                pageContent: r.text || '',
+                pageContent: r.summary || '',  // Schema v7: catalog uses 'summary' not 'text'
                 metadata: {
                     source: r.source,
                     hash: r.hash,
                     concepts: concepts
                 }
             });
-        })
-        .filter((d: Document) => d.metadata.concepts);
+        });
     
     console.log(`  ✅ Loaded ${catalogRecords.length} catalog records (${catalogDocs.length} with concepts)`);
     
     const allChunkRecords = await chunksTable.query().limit(1000000).toArray();
-
-    // Convert chunk records to Documents
-    const allChunks = allChunkRecords.map((chunk: any) => {
-        let concepts = [];
-        let categories = [];
-        let density = 0;
-        
-        try {
-            concepts = chunk.concepts ? JSON.parse(chunk.concepts) : [];
-            categories = chunk.concept_categories ? JSON.parse(chunk.concept_categories) : [];
-            density = chunk.concept_density || 0;
-        } catch (e) {
-            // Keep empty defaults
-        }
-        
-        return new Document({
-            pageContent: chunk.text || '',
-            metadata: {
-                source: chunk.source,
-                hash: chunk.hash,
-                concepts: concepts,
-                concept_categories: categories,
-                concept_density: density
-            }
-        });
+    
+    // Count chunks with concepts for logging
+    const chunksWithConcepts = allChunkRecords.filter((chunk: any) => {
+        const conceptIds = parseArrayField(chunk.concept_ids);
+        return conceptIds.filter((id: any) => id && id !== 0).length > 0;
     });
     
-    console.log(`  ✅ Loaded ${allChunks.length} total chunks`);
+    console.log(`  ✅ Loaded ${allChunkRecords.length} total chunks (${chunksWithConcepts.length} with concepts)`);
     
     const conceptBuilder = new ConceptIndexBuilder();
-    const conceptRecords = await conceptBuilder.buildConceptIndex(catalogDocs, allChunks);
+    // Pass actual catalog IDs from the database (foreign key constraint)
+    const conceptRecords = await conceptBuilder.buildConceptIndex(catalogDocs, sourceToCatalogId);
     
     console.log(`  ✅ Built ${conceptRecords.length} unique concept records`);
-    // Build source → catalog ID mapping for integer ID optimization
-    console.log("  🔗 Building source-to-catalog-ID mapping...");
-    const sourceToIdMap = new Map<string, string>();
-    const incompleteRecords = [];
-    const sourceCounts = new Map<string, number>();
-    const duplicateSources = [];
     
-    for (const row of catalogRecords) {
-        if (row.source && row.id) {
-            // Check for duplicate sources
-            if (sourceToIdMap.has(row.source)) {
-                const existingId = sourceToIdMap.get(row.source);
-                duplicateSources.push({
-                    source: row.source,
-                    existingId: existingId,
-                    duplicateId: row.id,
-                    hash: row.hash
-                });
+    // Build chunk_ids for each concept (reverse mapping from chunks → concepts)
+    console.log("  🔗 Building concept → chunk_ids mapping...");
+    const conceptToChunkIds = new Map<number, number[]>();
+    
+    for (const chunk of allChunkRecords) {
+        const chunkId = chunk.id;
+        let conceptIds: number[] = [];
+        
+        // Parse concept_ids (native array or JSON string or Arrow Vector)
+        if (chunk.concept_ids) {
+            if (Array.isArray(chunk.concept_ids)) {
+                conceptIds = chunk.concept_ids;
+            } else if (typeof chunk.concept_ids === 'object' && 'toArray' in chunk.concept_ids) {
+                conceptIds = Array.from(chunk.concept_ids.toArray());
+            } else if (typeof chunk.concept_ids === 'string') {
+                try { conceptIds = JSON.parse(chunk.concept_ids); } catch (e) {}
             }
-            sourceToIdMap.set(row.source, row.id);
-            
-            // Track source counts
-            sourceCounts.set(row.source, (sourceCounts.get(row.source) || 0) + 1);
-        } else {
-            // Detailed analysis of what's wrong
-            let reason = '';
-            if (!row.source) {
-                reason = `missing/empty source (type: ${typeof row.source}, value: ${JSON.stringify(row.source)})`;
-            } else if (!row.id) {
-                reason = `missing/empty id (type: ${typeof row.id}, value: ${JSON.stringify(row.id)})`;
+        }
+        
+        // Add this chunk to each concept's chunk_ids
+        for (const conceptId of conceptIds) {
+            if (!conceptToChunkIds.has(conceptId)) {
+                conceptToChunkIds.set(conceptId, []);
             }
-            
-            incompleteRecords.push({
-                source: row.source || '[no source]',
-                id: row.id || '[no id]',
-                hash: row.hash || 'unknown',
-                reason: reason,
-                hasText: !!row.text,
-                hasConcepts: !!row.concepts
-            });
+            conceptToChunkIds.get(conceptId)!.push(chunkId);
         }
     }
     
-    // Report incomplete records
-    if (incompleteRecords.length > 0) {
-        console.log(`  ⚠️  Found ${incompleteRecords.length} incomplete catalog records:`);
-        incompleteRecords.forEach((rec, idx) => {
-            const sourceDisplay = typeof rec.source === 'string' ? rec.source.substring(0, 50) : rec.source;
-            console.log(`     ${idx + 1}. ${sourceDisplay}... [${rec.hash.slice(0, 8)}]`);
-            console.log(`        → ${rec.reason}`);
-            console.log(`        → has text: ${rec.hasText}, has concepts: ${rec.hasConcepts}`);
-        });
-        console.log(`\n  💡 To fix: run with --auto-reseed to delete and re-process these records`);
+    // Add chunk_ids to concept records
+    for (const record of conceptRecords) {
+        const conceptId = hashToId(record.name);
+        const chunkIds = conceptToChunkIds.get(conceptId) || [];
+        record.chunk_ids = chunkIds;
     }
     
-    // Report duplicate sources
-    if (duplicateSources.length > 0) {
-        console.log(`  ⚠️  Found ${duplicateSources.length} duplicate source paths (same file path, different IDs):`);
-        duplicateSources.forEach((dup, idx) => {
-            const sourceDisplay = dup.source.substring(0, 60);
-            console.log(`     ${idx + 1}. ${sourceDisplay}...`);
-            console.log(`        → Existing ID: ${dup.existingId}, Duplicate ID: ${dup.duplicateId} [${dup.hash.slice(0, 8)}]`);
-        });
-        console.log(`\n  💡 Duplicate sources mean multiple catalog entries point to the same file`);
-        console.log(`     This usually happens when re-seeding without --overwrite`);
+    const conceptsWithChunks = conceptRecords.filter(c => c.chunk_ids && c.chunk_ids.length > 0).length;
+    console.log(`  ✅ Mapped ${conceptsWithChunks} concepts to ${allChunkRecords.length} chunks`);
+    
+    // Note: Summaries are now included in the concept extraction response,
+    // so no separate summary generation is needed.
+    
+    // Enrich concepts with WordNet data (synonyms, broader_terms, narrower_terms)
+    // Disabled by default - use --with-wordnet to enable
+    if (argv['with-wordnet']) {
+        console.log("  📚 Enriching concepts with WordNet data...");
+        const conceptEnricher = new ConceptEnricher();
+        await conceptEnricher.enrichConcepts(conceptRecords);
+    } else {
+        console.log("  ⏭️  Skipping WordNet enrichment (use --with-wordnet to enable)");
     }
     
-    console.log(`  ✅ Mapped ${sourceToIdMap.size}/${catalogRecords.length} sources to catalog IDs`);
+    // Note: Lexical linking (related_ids) can be added post-seeding via:
+    //   npx tsx scripts/link_related_concepts.ts --db <path>
+    
     // Drop and recreate concepts table
     try {
         await db.dropTable('concepts');
@@ -1621,14 +1988,56 @@ async function rebuildConceptIndexFromExistingData(
         // Table didn't exist, that's fine
     }
     
-    await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToIdMap);
-    console.log("  ✅ Concept index created successfully (with catalog_ids optimization)");
+    // Create concepts table - catalog_ids are already populated with actual IDs from sourceToCatalogId
+    await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts');
+    console.log("  ✅ Concept index created successfully (with actual catalog IDs)");
     // Create categories table with hash-based IDs
     await createCategoriesTable(db, catalogDocs);
 }
 
 async function hybridFastSeed() {
     validateArgs();
+
+    // Initialize checkpoint for resumable seeding
+    const checkpointPath = SeedingCheckpoint.getDefaultPath(databaseDir);
+    const seedingCheckpoint = new SeedingCheckpoint({
+        checkpointPath,
+        databasePath: databaseDir,
+        filesDir: filesDir
+    });
+    
+    // Handle --clean-checkpoint flag
+    if (cleanCheckpoint) {
+        console.log(`🗑️ Clearing checkpoint file...`);
+        await seedingCheckpoint.delete();
+        console.log(`✅ Checkpoint cleared`);
+    }
+    
+    // Load checkpoint (or create new one)
+    const { loaded: checkpointLoaded, warnings: checkpointWarnings } = await seedingCheckpoint.load();
+    
+    if (checkpointLoaded) {
+        const stats = seedingCheckpoint.getStats();
+        console.log(`📋 Checkpoint found: ${stats.processedHashCount} documents already processed`);
+        console.log(`   Stage: ${stats.stage}, Last updated: ${stats.lastUpdatedAt}`);
+        
+        if (checkpointWarnings.length > 0) {
+            console.log(`⚠️  Checkpoint warnings:`);
+            checkpointWarnings.forEach(w => console.log(`   - ${w}`));
+        }
+        
+        if (stats.totalFailed > 0) {
+            console.log(`⚠️  ${stats.totalFailed} previously failed documents`);
+        }
+    } else if (resumeMode) {
+        console.log(`📋 No checkpoint found - starting fresh`);
+    }
+    
+    // If overwrite mode, clear checkpoint as well
+    if (overwrite && checkpointLoaded) {
+        console.log(`🗑️ Overwrite mode - clearing checkpoint...`);
+        await seedingCheckpoint.clear();
+    }
 
     const db = await lancedb.connect(databaseDir);
 
@@ -1725,8 +2134,19 @@ async function hybridFastSeed() {
         }
     }
 
-    // Load files
-    const { documents: rawDocs, documentsNeedingChunks } = await loadDocumentsWithErrorHandling(filesDir, catalogTable, chunksTable, overwrite || !catalogTableExists);
+    // Load files (pass checkpoint for resumable skip detection)
+    const { documents: rawDocs, documentsNeedingChunks, failedFiles: loadingFailedFiles } = await loadDocumentsWithErrorHandling(
+        filesDir, 
+        catalogTable, 
+        chunksTable, 
+        overwrite || !catalogTableExists,
+        seedingCheckpoint
+    );
+    
+    // Save checkpoint after loading phase to persist any newly discovered complete documents
+    if (seedingCheckpoint.hasUnsavedChanges()) {
+        await seedingCheckpoint.save();
+    }
 
     if (rawDocs.length === 0) {
         // Check if we should rebuild the concept index (opt-in via flag)
@@ -1745,6 +2165,15 @@ async function hybridFastSeed() {
                 // Rebuild concept index from ALL existing catalog records and chunks
                 await rebuildConceptIndexFromExistingData(db, catalogTable, chunksTable);
                 
+                // Display total concepts
+                try {
+                    const conceptsTable = await db.openTable('concepts');
+                    const totalConcepts = await conceptsTable.countRows();
+                    console.log(`📚 Total concepts in database: ${totalConcepts.toLocaleString()}`);
+                } catch (e) {
+                    // Concepts table might not exist
+                }
+                
                 const dbSize = await getDatabaseSize(databaseDir);
                 console.log(`💾 Database size: ${dbSize}`);
                 console.log("🎉 Concept index rebuild completed successfully!");
@@ -1760,6 +2189,15 @@ async function hybridFastSeed() {
             console.log("\n💡 Note: --rebuild-concepts flag was set but catalog or chunks table missing");
         }
         
+        // Display total concepts if table exists
+        try {
+            const conceptsTable = await db.openTable('concepts');
+            const totalConcepts = await conceptsTable.countRows();
+            console.log(`📚 Total concepts in database: ${totalConcepts.toLocaleString()}`);
+        } catch (e) {
+            // Concepts table might not exist
+        }
+        
         const dbSize = await getDatabaseSize(databaseDir);
         console.log(`💾 Database size: ${dbSize}`);
         console.log("🎉 Seeding completed successfully (no changes needed)!");
@@ -1768,9 +2206,11 @@ async function hybridFastSeed() {
     }
 
     // Simplify metadata but preserve hash and OCR information
+    // Extract page_number from loc.pageNumber (LangChain format) or direct field
     for (const doc of rawDocs) {
+        const pageNumber = doc.metadata.page_number ?? doc.metadata.loc?.pageNumber ?? 1;
         doc.metadata = { 
-            loc: doc.metadata.loc, 
+            page_number: pageNumber,
             source: doc.metadata.source,
             hash: doc.metadata.hash,
             ocr_processed: doc.metadata.ocr_processed,
@@ -1779,7 +2219,7 @@ async function hybridFastSeed() {
     }
 
     console.log("🚀 Creating catalog with LLM summaries...");
-    const catalogRecords = await processDocuments(rawDocs);
+    const { catalogRecords, processedInThisRun } = await processDocuments(rawDocs, seedingCheckpoint, parallelWorkers);
     
     if (catalogRecords.length > 0) {
         console.log("📊 Creating catalog table with fast local embeddings...");
@@ -1787,17 +2227,18 @@ async function hybridFastSeed() {
     }
 
     console.log(`Number of new catalog records: ${catalogRecords.length}`);
-    // Build source → catalog ID mapping for integer ID optimization
+    // Build source → catalog ID mapping from ACTUAL catalog table IDs (foreign key constraint)
     console.log("🔗 Building source-to-catalog-ID mapping for optimization...");
     catalogTable = await db.openTable(defaults.CATALOG_TABLE_NAME);
-    const catalogRows = await catalogTable.query().toArray();
-    const sourceToIdMap = new Map<string, string>();
+    // LanceDB query() defaults to limit of 10, so we need explicit high limit
+    const catalogRows = await catalogTable.query().limit(100000).toArray();
+    const sourceToCatalogIdMap = new Map<string, number>();
     for (const row of catalogRows) {
-        if (row.source && row.id) {
-            sourceToIdMap.set(row.source, row.id);
+        if (row.source && row.id !== undefined) {
+            sourceToCatalogIdMap.set(row.source, typeof row.id === 'number' ? row.id : parseInt(row.id, 10));
         }
     }
-    console.log(`✅ Mapped ${sourceToIdMap.size} sources to catalog IDs`);
+    console.log(`✅ Mapped ${sourceToCatalogIdMap.size} sources to catalog IDs`);
     // Build and store concept index (moved to after chunk creation for chunk_count)
     // We'll create chunks first, then build concept index with chunk stats
     console.log("🔧 Creating chunks with fast local embeddings...");
@@ -1865,7 +2306,6 @@ async function hybridFastSeed() {
                 // Add concept metadata to chunk
                 chunk.metadata.concepts = matched.concepts;
                 chunk.metadata.concept_categories = matched.categories;
-                chunk.metadata.concept_density = matched.density;
                 
                 if (matched.concepts.length > 0) {
                     enrichedCount++;
@@ -1887,9 +2327,7 @@ async function hybridFastSeed() {
             docs.filter(d => d.metadata.concepts).map(d => ({
                 text: d.pageContent,
                 source: d.metadata.source || '',
-                concepts: d.metadata.concepts || [],
-                concept_categories: d.metadata.concept_categories || [],
-                concept_density: d.metadata.concept_density || 0
+                concepts: d.metadata.concepts || []
             }))
         );
         
@@ -1906,7 +2344,17 @@ async function hybridFastSeed() {
     
     if (newChunksToCreate.length > 0) {
         console.log(`📊 Creating ${newChunksToCreate.length} new chunks...`);
-        await createLanceTableWithSimpleEmbeddings(db, newChunksToCreate, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined);
+        // Pass sourceToCatalogIdMap so chunks get proper catalog_id foreign key
+        await createLanceTableWithSimpleEmbeddings(db, newChunksToCreate, defaults.CHUNKS_TABLE_NAME, overwrite ? "overwrite" : undefined, sourceToCatalogIdMap);
+        
+        // Update checkpoint after chunks are written successfully
+        // This marks each document as fully processed (catalog + chunks)
+        console.log(`📋 Updating checkpoint for ${processedInThisRun.length} newly processed documents...`);
+        for (const { hash, source } of processedInThisRun) {
+            await seedingCheckpoint.markProcessed(hash, source, false);
+        }
+        await seedingCheckpoint.save();
+        console.log(`✅ Checkpoint updated`);
     }
     
     // Update existing chunks with new concept metadata
@@ -1923,41 +2371,24 @@ async function hybridFastSeed() {
             // LanceDB doesn't support batch updates, so we need to delete and recreate
             // This is more efficient than individual updates for large batches
             const chunkIds = batch.map(c => c.metadata.chunkId);
-            // Build category ID map for this batch
-            const batchCategories = new Set<string>();
-            batch.forEach(doc => {
-                if (doc.metadata.concept_categories) {
-                    doc.metadata.concept_categories.forEach((cat: string) => batchCategories.add(cat));
-                }
-            });
-            const batchCategoryIdMap = buildCategoryIdMap(batchCategories);
             
             const chunkData = batch.map((doc, idx) => {
+                // Build concept IDs (native array)
+                // IMPORTANT: Lowercase concept names to match concepts table ID generation
+                let conceptIds: number[] = [];
+                if (doc.metadata.concepts && Array.isArray(doc.metadata.concepts) && doc.metadata.concepts.length > 0) {
+                    conceptIds = doc.metadata.concepts.map((name: string) => hashToId(name.toLowerCase().trim()));
+                }
+                
                 const data: any = {
                     id: chunkIds[idx],
                     text: doc.pageContent,
-                    source: doc.metadata.source,
                     hash: doc.metadata.hash,
-                    loc: JSON.stringify(doc.metadata.loc || {}),
+                    catalog_id: sourceToCatalogId.get(doc.metadata.source) || 0,
+                    page_number: doc.metadata.page_number || 1,
                     vector: createSimpleEmbedding(doc.pageContent),
-                    concepts: JSON.stringify(doc.metadata.concepts || []),
-                    concept_categories: JSON.stringify(doc.metadata.concept_categories || []),
-                    concept_density: doc.metadata.concept_density || 0
+                    concept_ids: conceptIds
                 };
-                
-                // Add hash-based concept IDs (chunks have concepts as simple array)
-                if (doc.metadata.concepts && Array.isArray(doc.metadata.concepts) && doc.metadata.concepts.length > 0) {
-                    const conceptIds = doc.metadata.concepts.map((name: string) => hashToId(name));
-                    data.concept_ids = JSON.stringify(conceptIds);
-                }
-                
-                // Add hash-based category IDs
-                if (doc.metadata.concept_categories && doc.metadata.concept_categories.length > 0) {
-                    const categoryIds = doc.metadata.concept_categories.map((cat: string) => 
-                        batchCategoryIdMap.get(cat) || hashToId(cat)
-                    );
-                    data.category_ids = JSON.stringify(categoryIds);
-                }
                 
                 return data;
             });
@@ -1983,6 +2414,9 @@ async function hybridFastSeed() {
         console.log(`✅ Updated ${updatedCount} existing chunks with concept metadata`);
     }
 
+    // Update checkpoint stage to concepts
+    await seedingCheckpoint.setStage('concepts');
+    
     // ENHANCED: Build concept index with chunk statistics
     // When reprocessing documents, we need to rebuild from ALL catalog records, not just new ones
     if (catalogRecords.length > 0) {
@@ -1995,21 +2429,40 @@ async function hybridFastSeed() {
                 console.log("  📚 Loading existing catalog records for concept index...");
                 const existingRecords = await catalogTable.query().limit(100000).toArray();
                 
+                // Helper to convert Arrow arrays to JS arrays
+                const toArray = (val: any): any[] => {
+                    if (!val) return [];
+                    if (Array.isArray(val)) return val;
+                    if (typeof val === 'object' && 'toArray' in val) return Array.from(val.toArray());
+                    return [];
+                };
+                
                 // Convert existing records to Document format
+                // FIX: Use normalized schema fields (summary, concept_ids, concept_names) 
+                // instead of legacy fields (text, concepts)
                 const existingDocs = existingRecords
-                    .filter((r: any) => r.text && r.source && r.concepts)
+                    .filter((r: any) => {
+                        // Check for normalized schema fields
+                        const conceptIds = toArray(r.concept_ids);
+                        const conceptNames = toArray(r.concept_names);
+                        return r.source && (conceptIds.length > 0 || conceptNames.length > 0);
+                    })
                     .map((r: any) => {
-                        let concepts = r.concepts;
-                        if (typeof concepts === 'string') {
-                            try {
-                                concepts = JSON.parse(concepts);
-                            } catch (e) {
-                                concepts = null;
-                            }
-                        }
+                        // Reconstruct ConceptMetadata from normalized fields
+                        const conceptNames = toArray(r.concept_names);
+                        const categoryNames = toArray(r.category_names);
+                        
+                        // Create ConceptMetadata structure that ConceptIndexBuilder expects
+                        const concepts = {
+                            primary_concepts: conceptNames.map((name: string) => ({ 
+                                name: name, 
+                                summary: '' // Summary not stored in normalized schema
+                            })),
+                            categories: categoryNames.length > 0 ? categoryNames : ['General']
+                        };
                         
                         return new Document({
-                            pageContent: r.text || '',
+                            pageContent: r.summary || '',  // FIX: catalog uses 'summary' not 'text'
                             metadata: {
                                 source: r.source,
                                 hash: r.hash,
@@ -2017,7 +2470,7 @@ async function hybridFastSeed() {
                             }
                         });
                     })
-                    .filter((d: Document) => d.metadata.concepts);
+                    .filter((d: Document) => d.metadata.concepts?.primary_concepts?.length > 0);
                 
                 console.log(`  ✅ Loaded ${existingRecords.length} existing records (${existingDocs.length} with concepts)`);
                 
@@ -2027,71 +2480,89 @@ async function hybridFastSeed() {
                 allCatalogRecords = [...catalogRecords, ...nonDuplicateExisting];
                 
                 console.log(`  📊 Building concept index from ${allCatalogRecords.length} total catalog records`);
-            } catch (e) {
+            } catch (e: any) {
                 console.warn(`  ⚠️  Could not load existing records, building from new records only: ${e.message}`);
             }
         }
         
         const conceptBuilder = new ConceptIndexBuilder();
         
-        // Build concept index from ALL catalog records (new + existing)
-        // Load ALL chunks from database to get accurate chunk_count for all concepts
-        let allChunks: Document[] = [];
-        if (chunksTable) {
-            try {
-                const allChunkRecords = await chunksTable.query().limit(1000000).toArray();
-                
-                // Convert chunk records to Documents
-                allChunks = allChunkRecords.map((chunk: any) => {
-                    // Parse concepts if present
-                    let concepts = [];
-                    let categories = [];
-                    let density = 0;
-                    
-                    try {
-                        concepts = chunk.concepts ? JSON.parse(chunk.concepts) : [];
-                        categories = chunk.concept_categories ? JSON.parse(chunk.concept_categories) : [];
-                        density = chunk.concept_density || 0;
-                    } catch (e) {
-                        // Keep empty defaults
-                    }
-                    
-                    return new Document({
-                        pageContent: chunk.text || '',
-                        metadata: {
-                            source: chunk.source,
-                            hash: chunk.hash,
-                            concepts: concepts,
-                            concept_categories: categories,
-                            concept_density: density
-                        }
-                    });
-                });
-                
-                console.log(`  ✅ Loaded ${allChunks.length} total chunks for concept counting`);
-            } catch (e: any) {
-                console.warn(`  ⚠️  Could not load existing chunks: ${e.message}`);
-                console.log(`  📊 Building concept index with new chunks only`);
-                allChunks = docs; // Fall back to new chunks only
-            }
-        } else {
-            // No chunks table yet, use new chunks
-            allChunks = docs;
-        }
-        
-        const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogRecords, allChunks);
+        // Build concept index from ALL catalog records using ACTUAL catalog IDs (foreign key constraint)
+        const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogRecords, sourceToCatalogIdMap);
         
         console.log(`✅ Built ${conceptRecords.length} unique concept records`);
-        // Log concepts with highest chunk counts
-        const topConceptsByChunks = conceptRecords
-            .filter(c => (c.chunk_count ?? 0) > 0)
-            .sort((a, b) => (b.chunk_count ?? 0) - (a.chunk_count ?? 0))
+        
+        // Build chunk_ids for each concept (reverse mapping from chunks → concepts)
+        console.log("🔗 Building concept → chunk_ids mapping...");
+        try {
+            const chunksTable = await db.openTable(defaults.CHUNKS_TABLE_NAME);
+            const allChunks = await chunksTable.query().limit(1000000).toArray();
+            
+            // Build concept_id → chunk_ids mapping
+            const conceptToChunkIds = new Map<number, number[]>();
+            
+            for (const chunk of allChunks) {
+                const chunkId = chunk.id;
+                let conceptIds: number[] = [];
+                
+                // Parse concept_ids (native array or JSON string or Arrow Vector)
+                if (chunk.concept_ids) {
+                    if (Array.isArray(chunk.concept_ids)) {
+                        conceptIds = chunk.concept_ids;
+                    } else if (typeof chunk.concept_ids === 'object' && 'toArray' in chunk.concept_ids) {
+                        conceptIds = Array.from(chunk.concept_ids.toArray());
+                    } else if (typeof chunk.concept_ids === 'string') {
+                        try { conceptIds = JSON.parse(chunk.concept_ids); } catch (e) {}
+                    }
+                }
+                
+                // Add this chunk to each concept's chunk_ids
+                for (const conceptId of conceptIds) {
+                    if (!conceptToChunkIds.has(conceptId)) {
+                        conceptToChunkIds.set(conceptId, []);
+                    }
+                    conceptToChunkIds.get(conceptId)!.push(chunkId);
+                }
+            }
+            
+            // Add chunk_ids to concept records
+            for (const record of conceptRecords) {
+                const conceptId = hashToId(record.name);
+                const chunkIds = conceptToChunkIds.get(conceptId) || [];
+                record.chunk_ids = chunkIds;
+            }
+            
+            const conceptsWithChunks = conceptRecords.filter(c => c.chunk_ids && c.chunk_ids.length > 0).length;
+            console.log(`  ✅ Mapped ${conceptsWithChunks} concepts to ${allChunks.length} chunks`);
+        } catch (e: any) {
+            console.warn(`  ⚠️  Could not build chunk_ids mapping: ${e.message}`);
+        }
+        
+        // Note: Summaries are now included in the concept extraction response.
+        
+        // Enrich concepts with WordNet data (synonyms, broader_terms, narrower_terms)
+        // Disabled by default - use --with-wordnet to enable
+        if (argv['with-wordnet']) {
+            console.log("📚 Enriching concepts with WordNet data...");
+            const conceptEnricher = new ConceptEnricher();
+            await conceptEnricher.enrichConcepts(conceptRecords);
+        } else {
+            console.log("⏭️  Skipping WordNet enrichment (use --with-wordnet to enable)");
+        }
+        
+        // Note: Lexical linking (related_ids) can be added post-seeding via:
+        //   npx tsx scripts/link_related_concepts.ts --db <path>
+        
+        // Log top concepts by weight (number of documents)
+        const topConcepts = conceptRecords
+            .filter(c => c.weight > 0)
+            .sort((a, b) => b.weight - a.weight)
             .slice(0, 5);
         
-        if (topConceptsByChunks.length > 0) {
-            console.log(`  🔝 Top concepts by chunk count:`);
-            topConceptsByChunks.forEach(c => {
-                console.log(`    • "${c.concept}" appears in ${c.chunk_count ?? 0} chunks`);
+        if (topConcepts.length > 0) {
+            console.log(`  🔝 Top concepts by document count:`);
+            topConcepts.forEach(c => {
+                console.log(`    • "${c.name}" appears in ${c.catalog_ids.length} documents`);
             });
         }
         
@@ -2105,28 +2576,20 @@ async function hybridFastSeed() {
                     // Table didn't exist, that's fine
                 }
                 
-                await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToIdMap);
-                console.log("✅ Concept index created successfully (with catalog_ids optimization)");
+                await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts', sourceToCatalogIdMap);
+                console.log("✅ Concept index created successfully (with catalog_ids from actual catalog table)");
                 
                 // Create categories table with hash-based IDs
                 await createCategoriesTable(db, allCatalogRecords);
-                // Initialize ConceptIdCache for concept_ids optimization
-                console.log("🔧 Initializing ConceptIdCache for fast ID resolution...");
-                const { ConceptIdCache } = await import('./src/infrastructure/cache/concept-id-cache.js');
-                const { LanceDBConceptRepository } = await import('./src/infrastructure/lancedb/repositories/lancedb-concept-repository.js');
-                const conceptsTable = await db.openTable('concepts');
-                const conceptRepo = new LanceDBConceptRepository(conceptsTable);
-                const conceptIdCache = ConceptIdCache.getInstance();
-                conceptIdCache.clear();  // Clear any existing cache from previous runs
-                await conceptIdCache.initialize(conceptRepo);
-                const cacheStats = conceptIdCache.getStats();
-                console.log(`✅ ConceptIdCache initialized: ${cacheStats.conceptCount} concepts, ~${Math.round(cacheStats.memorySizeEstimate / 1024)}KB`);
             } catch (error: any) {
                 console.error("⚠️  Error creating concept table:", error.message);
                 console.log("  Continuing with seeding...");
             }
         }
     }
+
+    // Mark checkpoint as complete
+    await seedingCheckpoint.setStage('complete');
 
     // Calculate database size
     const dbSize = await getDatabaseSize(databaseDir);
@@ -2137,7 +2600,36 @@ async function hybridFastSeed() {
     if (existingChunksToUpdate.length > 0) {
         console.log(`✅ Updated ${existingChunksToUpdate.length} existing chunk records with concept metadata`);
     }
+    
+    // Display total concepts in database
+    try {
+        const conceptsTable = await db.openTable('concepts');
+        const totalConcepts = await conceptsTable.countRows();
+        console.log(`📚 Total concepts in database: ${totalConcepts.toLocaleString()}`);
+    } catch (e) {
+        // Concepts table might not exist yet
+    }
+    
     console.log(`💾 Database size: ${dbSize}`);
+    
+    // Display checkpoint stats
+    const finalStats = seedingCheckpoint.getStats();
+    console.log(`📋 Checkpoint: ${finalStats.totalProcessed} processed, ${finalStats.totalFailed} failed`);
+    
+    // Display list of all failed files (combine loading failures and checkpoint failures)
+    const checkpointFailedFiles = seedingCheckpoint.getFailedFiles();
+    const allFailedFiles = Array.from(new Set([...loadingFailedFiles, ...checkpointFailedFiles]));
+    
+    if (allFailedFiles.length > 0) {
+        console.log(`\n⚠️  Files with errors (${allFailedFiles.length}):`);
+        for (const failedFile of allFailedFiles) {
+            const basename = path.basename(failedFile);
+            const truncated = basename.length > 80 ? basename.slice(0, 77) + '...' : basename;
+            console.log(`   ❌ ${truncated}`);
+        }
+        console.log('');
+    }
+    
     console.log("🎉 Seeding completed successfully!");
 }
 

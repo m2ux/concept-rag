@@ -484,7 +484,7 @@ describe('ResilientExecutor', () => {
     it('should provide SEARCH profile', () => {
       const profile = ResilienceProfiles.SEARCH;
       
-      expect(profile.timeout).toBe(5000);
+      expect(profile.timeout).toBe(30000);
       expect(profile.bulkhead).toBeDefined();
     });
     

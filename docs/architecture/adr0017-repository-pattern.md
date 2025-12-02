@@ -285,9 +285,9 @@ export class FakeChunkRepository implements IChunkRepository {
 ## Related Decisions
 
 - [ADR-0016: Layered Architecture](adr0016-layered-architecture-refactoring.md) - Architecture context
-- [ADR-0018: Dependency Injection](adr0018-dependency-injection.md) - Repository wiring
-- [ADR-0019: Vitest Testing](adr0019-vitest-testing.md) - Testing with repositories
-- [ADR-0021: Performance Optimization](adr0021-performance-optimization.md) - Repository methods optimized
+- [ADR-0018: Dependency Injection](adr0018-dependency-injection-container.md) - Repository wiring
+- [ADR-0019: Vitest Testing](adr0019-vitest-testing-framework.md) - Testing with repositories
+- [ADR-0021: Performance Optimization](adr0021-performance-optimization-vector-search.md) - Repository methods optimized
 
 ## References
 

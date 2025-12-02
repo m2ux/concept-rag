@@ -3,55 +3,67 @@
  * 
  * A chunk is a segment of text extracted from a document, enriched with:
  * - Vector embeddings for semantic search
- * - Extracted concepts for conceptual navigation
- * - Metadata for filtering and organization
- * 
- * **Two Formats**:
- * - **Regular chunks**: `concepts` is an array of concept names
- * - **Catalog entries**: `concepts` is a rich object with primary_concepts, technical_terms, etc.
+ * - Extracted concepts for conceptual navigation (via ID references)
+ * - Derived fields for display (catalog_title, concept_names)
  * 
  * @example
  * ```typescript
  * const chunk: Chunk = {
- *   id: 'chunk-123',
+ *   id: 3847293847,  // hash-based integer
  *   text: 'Machine learning is a subset of artificial intelligence...',
- *   source: '/docs/ai-intro.pdf',
+ *   catalogId: 12345678,
+ *   catalogTitle: 'Machine Learning Fundamentals',  // derived from catalog
  *   hash: 'abc123',
- *   concepts: ['machine learning', 'artificial intelligence'],
- *   conceptCategories: ['computer science', 'AI'],
- *   conceptDensity: 0.8,
- *   embeddings: [0.1, 0.2, ...] // 384 dimensions
+ *   conceptIds: [11111111, 22222222],
+ *   conceptNames: ['machine learning', 'artificial intelligence'],  // derived
+ *   embeddings: [0.1, 0.2, ...]
  * };
+ * 
+ * // Display uses derived fields directly - no cache lookup needed
+ * console.log(`Title: ${chunk.catalogTitle}`);
+ * console.log(`Concepts: ${chunk.conceptNames.join(', ')}`);
  * ```
  */
 export interface Chunk {
-  /** Unique identifier for the chunk */
-  id: string;
+  /** Unique identifier for the chunk (hash-based integer) */
+  id: number;
   
   /** The text content of the chunk (typically 100-500 words) */
   text: string;
   
-  /** Source document path or identifier */
-  source: string;
+  /** Parent document ID (hash-based integer, matches catalog.id) */
+  catalogId: number;
+  
+  /**
+   * Document title from catalog - DERIVED field for display.
+   * Populated from catalog.title during seeding.
+   * Use this for display instead of looking up via catalogId.
+   */
+  catalogTitle?: string;
   
   /** Content hash for deduplication */
   hash: string;
   
-  /**
-   * Extracted concepts associated with this chunk.
-   * 
-   * - For regular chunks: Array of concept names
-   * - For catalog entries: Rich object with primary_concepts, technical_terms, etc.
-   */
-  concepts?: string[] | any;
-  
-  /** Semantic categories the chunk belongs to (e.g., 'software engineering', 'architecture') */
-  conceptCategories?: string[];
-  
-  /** Density of concepts in the text (0-1, higher = more concept-rich) */
-  conceptDensity?: number;
+  /** Hash-based concept IDs - primary authoritative field */
+  conceptIds?: number[];
   
   /** 384-dimensional vector embedding for semantic similarity search */
   embeddings?: number[];
+  
+  /** Page number within source document (1-indexed, from PDF metadata) */
+  pageNumber?: number;
+  
+  /** 
+   * Concept density score (0-1) indicating conceptual richness.
+   * Calculated as: concept_ids.length / (word_count / 10)
+   * Higher values indicate more concept-rich content.
+   */
+  conceptDensity?: number;
+  
+  /**
+   * Denormalized concept names - DERIVED field for display and text search.
+   * Regenerated from concept_ids → concepts.name lookup.
+   * Enables queries like: `array_contains(concept_names, 'dependency injection')`
+   */
+  conceptNames?: string[];
 }
-

@@ -284,7 +284,7 @@ npx @modelcontextprotocol/inspector dist/index.js PATH_TO_INDEX
 ## Related Decisions
 
 - [ADR-0001: TypeScript with Node.js](adr0001-typescript-nodejs-runtime.md) - Language enables MCP SDK
-- [ADR-0031: Eight Specialized Tools](adr0031-eight-specialized-tools.md) - Tool proliferation strategy
+- [ADR-0031: Eight Specialized Tools](adr0031-eight-specialized-tools-strategy.md) - Tool proliferation strategy
 - [ADR-0032: Tool Selection Guide](adr0032-tool-selection-guide.md) - Helping AI agents choose tools
 
 ## More Information

@@ -1,20 +1,46 @@
 import * as lancedb from "@lancedb/lancedb";
 import { Document } from "@langchain/core/documents";
-import { ConceptRecord, ConceptMetadata } from "./types.js";
+import { ConceptRecord, ConceptMetadata, ExtractedConcept } from "./types.js";
 import { createSimpleEmbedding } from "../lancedb/hybrid_search_client.js";
 import { hashToId } from "../infrastructure/utils/hash.js";
 
+/**
+ * Builds the concept index from document metadata.
+ */
 export class ConceptIndexBuilder {
     
-    // Build concept index from documents with metadata
-    // Now also accepts chunks to calculate chunk_count
+    // Build source path to catalog ID mapping
+    private sourceToIdMap = new Map<string, number>();
+    
+    // Build catalog ID to source path mapping (for catalog_titles)
+    private catalogIdToSourceMap = new Map<number, string>();
+    
+    /**
+     * Build concept index from documents with metadata.
+     * @param documents - Documents with concept metadata
+     * @param sourceToCatalogId - Map of source paths to actual catalog IDs from the catalog table
+     *                            (REQUIRED: foreign keys must reference actual IDs, not computed hashes)
+     */
     async buildConceptIndex(
         documents: Document[],
-        chunks?: Document[]
+        sourceToCatalogId: Map<string, number>
     ): Promise<ConceptRecord[]> {
         const conceptMap = new Map<string, ConceptRecord>();
         
         console.log('📊 Building concept index from document metadata...');
+        
+        // Use the provided source-to-catalogId map (actual IDs from catalog table)
+        this.sourceToIdMap = sourceToCatalogId;
+        
+        // Build reverse mapping: catalogId → source (for catalog_titles)
+        this.catalogIdToSourceMap.clear();
+        for (const [source, catalogId] of sourceToCatalogId) {
+            this.catalogIdToSourceMap.set(catalogId, source);
+        }
+        
+        if (this.sourceToIdMap.size === 0) {
+            console.warn('  ⚠️  No source-to-catalog-ID mapping provided! Catalog IDs will be 0.');
+        }
         
         for (const doc of documents) {
             const metadata = doc.metadata.concepts as ConceptMetadata;
@@ -24,16 +50,19 @@ export class ConceptIndexBuilder {
             }
             
             const source = doc.metadata.source;
+            // Look up actual catalog ID - DO NOT compute from hash!
+            const catalogId = this.sourceToIdMap.get(source);
+            if (catalogId === undefined) {
+                console.warn(`  ⚠️  No catalog ID found for source: ${source}`);
+                continue;
+            }
             
-            // Process primary concepts (all concepts)
+            // Process primary concepts
             for (const concept of metadata.primary_concepts || []) {
                 this.addOrUpdateConcept(
                     conceptMap, 
                     concept,
-                    'thematic',  // All concepts are thematic
-                    source,
-                    metadata.categories[0] || 'General',
-                    metadata.related_concepts || [],
+                    catalogId,
                     1.0  // Standard weight
                 );
             }
@@ -41,62 +70,109 @@ export class ConceptIndexBuilder {
         
         console.log(`  ✅ Extracted ${conceptMap.size} unique concepts`);
         
-        // Build co-occurrence relationships
+        // Build co-occurrence relationships (populates related_concepts)
         this.enrichWithCoOccurrence(conceptMap, documents);
         
-        // ENHANCED: Calculate chunk_count if chunks are provided
-        if (chunks && chunks.length > 0) {
-            this.calculateChunkCounts(conceptMap, chunks);
-        }
+        // Convert related_concepts strings to adjacent_ids
+        this.resolveAdjacentIds(conceptMap);
+        
+        // Populate catalog_titles (DERIVED field) from catalog_ids
+        this.populateCatalogTitles(conceptMap);
         
         return Array.from(conceptMap.values());
     }
     
+    /**
+     * Populate catalog_titles for each concept from catalog_ids.
+     * DERIVED field: resolved from catalog_ids → catalog.source paths.
+     */
+    private populateCatalogTitles(conceptMap: Map<string, ConceptRecord>): void {
+        for (const [_key, record] of conceptMap) {
+            if (record.catalog_ids && record.catalog_ids.length > 0) {
+                record.catalog_titles = record.catalog_ids
+                    .map(catalogId => this.catalogIdToSourceMap.get(catalogId))
+                    .filter((source): source is string => source !== undefined);
+            }
+        }
+    }
+    
+    /**
+     * Add or update a concept in the map.
+     * Handles both string concepts (legacy) and ExtractedConcept objects (new with summaries).
+     */
     private addOrUpdateConcept(
         map: Map<string, ConceptRecord>,
-        concept: string,
-        conceptType: 'thematic' | 'terminology',
-        source: string,
-        category: string,
-        relatedConcepts: string[],
+        concept: string | ExtractedConcept,
+        catalogId: number,
         weight: number = 1.0
     ) {
-        const key = concept.toLowerCase().trim();
+        // Extract name and summary from input
+        let conceptName: string;
+        let conceptSummary: string = '';
+        
+        if (typeof concept === 'string') {
+            conceptName = concept;
+        } else {
+            conceptName = concept.name;
+            conceptSummary = concept.summary || '';
+        }
+        
+        const key = conceptName.toLowerCase().trim();
         
         if (!key) return;  // Skip empty concepts
         
         if (!map.has(key)) {
             map.set(key, {
-                concept: key,
-                concept_type: conceptType,  // Store type for differentiated search
-                category,
-                sources: [],
-                related_concepts: [...relatedConcepts.map(c => c.toLowerCase().trim())],
-                embeddings: createSimpleEmbedding(concept),
-                weight: 0,
-                chunk_count: 0,  // ENHANCED: Initialize chunk count
-                enrichment_source: 'corpus'
+                name: key,
+                summary: conceptSummary,  // Store summary from extraction
+                catalog_ids: [],
+                related_concepts: [],
+                adjacent_ids: [],
+                related_ids: [],
+                embeddings: createSimpleEmbedding(conceptName),
+                weight: 0
             });
         }
         
         const record = map.get(key)!;
         
-        // Add source if not already present
-        if (!record.sources.includes(source)) {
-            record.sources.push(source);
+        // Add catalog_id if not already present
+        if (!record.catalog_ids.includes(catalogId)) {
+            record.catalog_ids.push(catalogId);
             record.weight += weight;
         }
         
-        // Merge related concepts (avoid duplicates)
-        for (const related of relatedConcepts) {
-            const relatedKey = related.toLowerCase().trim();
-            if (relatedKey && !record.related_concepts.includes(relatedKey)) {
-                record.related_concepts.push(relatedKey);
+        // Update summary if we have one and the record doesn't
+        if (conceptSummary && !record.summary) {
+            record.summary = conceptSummary;
+        }
+    }
+    
+    /**
+     * Convert related_concepts strings to adjacent_ids.
+     * Call after co-occurrence enrichment.
+     */
+    private resolveAdjacentIds(conceptMap: Map<string, ConceptRecord>) {
+        // Build concept name to ID mapping
+        const conceptToId = new Map<string, number>();
+        for (const [key, _record] of conceptMap) {
+            conceptToId.set(key, hashToId(key));
+        }
+        
+        // Resolve related_concepts to IDs
+        for (const [_key, record] of conceptMap) {
+            if (record.related_concepts && record.related_concepts.length > 0) {
+                record.adjacent_ids = record.related_concepts
+                    .map(name => conceptToId.get(name.toLowerCase().trim()))
+                    .filter((id): id is number => id !== undefined);
             }
         }
     }
     
-    // Find concepts that co-occur frequently
+    /**
+     * Find concepts that co-occur frequently across documents.
+     * Populates related_concepts field with co-occurring terms.
+     */
     private enrichWithCoOccurrence(
         conceptMap: Map<string, ConceptRecord>,
         documents: Document[]
@@ -111,8 +187,12 @@ export class ConceptIndexBuilder {
             if (!metadata) continue;
             
             // Collect all terms from this document
+            // Handle both string and ExtractedConcept formats
             const allTerms = (metadata.primary_concepts || [])
-                .map(t => t.toLowerCase().trim())
+                .map(t => {
+                    const name = typeof t === 'string' ? t : (t.name || '');
+                    return name.toLowerCase().trim();
+                })
                 .filter(t => t);
             
             // Count co-occurrences (undirected graph)
@@ -152,6 +232,11 @@ export class ConceptIndexBuilder {
                 .slice(0, 5)                  // Top 5
                 .map(([term, _]) => term);
             
+            // Initialize related_concepts if needed
+            if (!record.related_concepts) {
+                record.related_concepts = [];
+            }
+            
             // Add to related concepts (avoiding duplicates)
             let added = 0;
             for (const related of topRelated) {
@@ -167,41 +252,9 @@ export class ConceptIndexBuilder {
         console.log(`  ✅ Enriched ${enrichedCount} concepts with co-occurrence data`);
     }
     
-    // ENHANCED: Calculate how many chunks reference each concept
-    private calculateChunkCounts(
-        conceptMap: Map<string, ConceptRecord>,
-        chunks: Document[]
-    ) {
-        console.log('  📊 Calculating chunk counts for concepts...');
-        
-        const chunkCounts = new Map<string, number>();
-        
-        // Count chunks for each concept
-        for (const chunk of chunks) {
-            const chunkConcepts = chunk.metadata.concepts as string[] || [];
-            
-            for (const concept of chunkConcepts) {
-                const key = concept.toLowerCase().trim();
-                if (key) {
-                    chunkCounts.set(key, (chunkCounts.get(key) || 0) + 1);
-                }
-            }
-        }
-        
-        // Update concept records with chunk counts
-        let updatedCount = 0;
-        for (const [concept, count] of chunkCounts.entries()) {
-            const record = conceptMap.get(concept);
-            if (record) {
-                record.chunk_count = count;
-                updatedCount++;
-            }
-        }
-        
-        console.log(`  ✅ Updated ${updatedCount} concepts with chunk counts`);
-    }
-    
-    // Create LanceDB table for concepts
+    /**
+     * Create LanceDB table for concepts.
+     */
     async createConceptTable(
         db: lancedb.Connection,
         concepts: ConceptRecord[],
@@ -211,26 +264,28 @@ export class ConceptIndexBuilder {
         
         const data = concepts.map((concept) => {
             // Generate hash-based integer ID from concept name (stable across rebuilds)
-            const conceptId = hashToId(concept.concept);
+            const conceptId = hashToId(concept.name);
             
-            // Build catalog_ids as hash-based integers from source paths (stable across rebuilds)
-            // Hash the source path itself for stability, not the sequential catalog ID
-            const catalogIds: number[] = concept.sources.map(source => hashToId(source));
+            // Ensure array fields have at least one element for LanceDB type inference
+            // Empty arrays cause "Cannot infer list vector from empty array" errors
+            const ensureNonEmpty = <T>(arr: T[] | undefined, placeholder: T): T[] => {
+                if (!arr || arr.length === 0) return [placeholder];
+                return arr;
+            };
             
             return {
                 id: conceptId,  // Hash-based integer ID (stable)
-                concept: concept.concept,
-                concept_type: concept.concept_type,  // Include type for filtering
-                category: concept.category,  // OLD: backward compatibility (kept but not used)
-                sources: JSON.stringify(concept.sources),  // OLD: backward compatibility
-                catalog_ids: JSON.stringify(catalogIds),  // NEW: hash-based integer catalog IDs
-                related_concepts: JSON.stringify(concept.related_concepts),
-                synonyms: JSON.stringify(concept.synonyms || []),
-                broader_terms: JSON.stringify(concept.broader_terms || []),
-                narrower_terms: JSON.stringify(concept.narrower_terms || []),
+                name: concept.name,  // Renamed from 'concept' to 'name'
+                summary: concept.summary || '',  // LLM-generated summary
+                catalog_ids: ensureNonEmpty(concept.catalog_ids, 0),  // Native array of hash-based IDs
+                catalog_titles: ensureNonEmpty(concept.catalog_titles, ''),  // DERIVED: document titles for display
+                chunk_ids: ensureNonEmpty(concept.chunk_ids, 0),  // Chunk IDs for fast lookups  // Native array of hash-based IDs
+                adjacent_ids: ensureNonEmpty(concept.adjacent_ids, 0),  // Co-occurrence links
+                related_ids: ensureNonEmpty(concept.related_ids, 0),  // Lexical links
+                synonyms: ensureNonEmpty(concept.synonyms, ''),  // Native array
+                broader_terms: ensureNonEmpty(concept.broader_terms, ''),  // Native array
+                narrower_terms: ensureNonEmpty(concept.narrower_terms, ''),  // Native array
                 weight: concept.weight,
-                chunk_count: concept.chunk_count,  // ENHANCED: Include chunk count
-                enrichment_source: concept.enrichment_source,
                 vector: concept.embeddings
             };
         });

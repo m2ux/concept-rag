@@ -80,7 +80,8 @@ describe('Scoring Strategies', () => {
       const score = calculateVectorScore(distance);
 
       // VERIFY
-      expect(score).toBe(1.5); // 1 - (-0.5) = 1.5
+      // Score is clamped to 0-1 range
+      expect(score).toBe(1.0); // 1 - (-0.5) = 1.5 -> clamped to 1.0
     });
 
     it('should handle distance greater than 1.0', () => {
@@ -91,7 +92,8 @@ describe('Scoring Strategies', () => {
       const score = calculateVectorScore(distance);
 
       // VERIFY
-      expect(score).toBe(-1.0); // 1 - 2.0 = -1.0
+      // Score is clamped to 0-1 range
+      expect(score).toBe(0.0); // 1 - 2.0 = -1.0 -> clamped to 0.0
     });
   });
 
@@ -357,6 +359,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['test'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['test'],
         weights: new Map([['test', 1.0]])
@@ -375,6 +378,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['test'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['test'],
         weights: new Map([['test', 1.0]])
@@ -397,6 +401,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['architecture'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['architecture'],
         weights: new Map([['architecture', 1.0]])
@@ -420,6 +425,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['important', 'less'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['important', 'less'],
         weights: new Map([
@@ -446,6 +452,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['arch'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['arch'],
         weights: new Map([['arch', 1.0]])
@@ -469,6 +476,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['architecture'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['architecture'], // Lowercase to match weights map
         weights: new Map([['architecture', 1.0]])
@@ -491,6 +499,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['nonexistent'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['nonexistent'],
         weights: new Map([['nonexistent', 1.0]])
@@ -513,6 +522,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['test'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['test'],
         weights: new Map([['test', 1.0]])
@@ -535,6 +545,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['test', 'document', 'guide'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['test', 'document', 'guide'],
         weights: new Map([
@@ -646,7 +657,8 @@ describe('Scoring Strategies', () => {
 
   describe('calculateHybridScore', () => {
     it('should calculate weighted combination correctly', () => {
-      // SETUP
+      // SETUP - 5 components including concept scoring
+      // Catalog weights: vector=30%, bm25=25%, title=20%, concept=15%, wordnet=10%
       const components: ScoreComponents = {
         vectorScore: 1.0,
         bm25Score: 1.0,
@@ -659,18 +671,18 @@ describe('Scoring Strategies', () => {
       const score = calculateHybridScore(components);
 
       // VERIFY
-      // 1.0 * 0.25 + 1.0 * 0.25 + 1.0 * 0.20 + 1.0 * 0.20 + 1.0 * 0.10 = 1.0
+      // 1.0 * 0.30 + 1.0 * 0.25 + 1.0 * 0.20 + 1.0 * 0.15 + 1.0 * 0.10 = 1.0
       // Use toBeCloseTo for floating point comparison
       expect(score).toBeCloseTo(1.0, 10);
     });
 
     it('should apply correct weights to each component', () => {
-      // SETUP
+      // SETUP - Catalog weights: vector=30%, bm25=25%, title=20%, concept=15%, wordnet=10%
       const components: ScoreComponents = {
-        vectorScore: 1.0,  // 25% weight
+        vectorScore: 1.0,  // 30% weight
         bm25Score: 0.0,    // 25% weight
         titleScore: 0.0,   // 20% weight
-        conceptScore: 0.0, // 20% weight
+        conceptScore: 0.0, // 15% weight
         wordnetScore: 0.0  // 10% weight
       };
 
@@ -678,8 +690,8 @@ describe('Scoring Strategies', () => {
       const score = calculateHybridScore(components);
 
       // VERIFY
-      // Only vector score contributes: 1.0 * 0.25 = 0.25
-      expect(score).toBe(0.25);
+      // Only vector score contributes: 1.0 * 0.30 = 0.30
+      expect(score).toBe(0.30);
     });
 
     it('should handle zero scores', () => {
@@ -700,12 +712,12 @@ describe('Scoring Strategies', () => {
     });
 
     it('should handle mixed scores', () => {
-      // SETUP
+      // SETUP - Catalog weights: vector=30%, bm25=25%, title=20%, concept=15%, wordnet=10%
       const components: ScoreComponents = {
-        vectorScore: 0.8,  // 25% * 0.8 = 0.20
+        vectorScore: 0.8,  // 30% * 0.8 = 0.24
         bm25Score: 0.6,    // 25% * 0.6 = 0.15
         titleScore: 0.5,   // 20% * 0.5 = 0.10
-        conceptScore: 0.4, // 20% * 0.4 = 0.08
+        conceptScore: 0.4, // 15% * 0.4 = 0.06
         wordnetScore: 0.2  // 10% * 0.2 = 0.02
       };
 
@@ -713,8 +725,8 @@ describe('Scoring Strategies', () => {
       const score = calculateHybridScore(components);
 
       // VERIFY
-      // 0.20 + 0.15 + 0.10 + 0.08 + 0.02 = 0.55
-      expect(score).toBeCloseTo(0.55, 2);
+      // 0.24 + 0.15 + 0.10 + 0.06 + 0.02 = 0.57
+      expect(score).toBeCloseTo(0.57, 2);
     });
 
     it('should return value in 0-1 range', () => {
@@ -742,6 +754,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['test'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['test'],
         weights: new Map([['test', 1.0]])
@@ -760,6 +773,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['test'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['test'],
         weights: new Map([['test', 1.0]])
@@ -782,6 +796,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['architecture'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['architecture'],
         weights: new Map([['architecture', 1.0]])
@@ -805,6 +820,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['arch'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['arch'],
         weights: new Map([['arch', 1.0]])
@@ -828,6 +844,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['architecture'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['architecture'], // Lowercase to match weights map
         weights: new Map([['architecture', 1.0]])
@@ -850,6 +867,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['test'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['test', 'test'], // Duplicate term
         weights: new Map([['test', 1.0]])
@@ -873,6 +891,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['test'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['test'],
         weights: new Map([['test', 1.0]])
@@ -895,6 +914,7 @@ describe('Scoring Strategies', () => {
       const expanded: ExpandedQuery = {
         original_terms: ['test'],
         corpus_terms: [],
+        concept_terms: [],
         wordnet_terms: [],
         all_terms: ['test'],
         weights: new Map([['test', 1.0]])

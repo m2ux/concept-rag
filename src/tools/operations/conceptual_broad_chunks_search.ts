@@ -23,7 +23,7 @@ export class ConceptualBroadChunksSearchTool extends BaseTool<ConceptualBroadChu
   }
   
   name = "broad_chunks_search";
-  description = `Search across ALL document chunks using hybrid search (vector similarity + BM25 keyword matching + concept scoring + WordNet expansion).
+  description = `Search across ALL document chunks using hybrid search (vector similarity + BM25 keyword matching + concept matching + WordNet expansion).
 
 USE THIS TOOL WHEN:
 - Searching for specific phrases, keywords, or technical terms across all documents
@@ -35,9 +35,9 @@ USE THIS TOOL WHEN:
 DO NOT USE for:
 - Finding documents by title or getting document overviews (use catalog_search instead)
 - Searching within a single known document (use chunks_search instead)
-- Finding semantically-tagged concept discussions (use concept_search for higher precision)
+- Finding semantically-tagged concept discussions (use concept_search)
 
-RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, concept, and WordNet scores. May include false positives based on keyword matches.`;
+RETURNS: Top 20 chunks ranked by hybrid scoring (35% vector, 35% BM25, 15% concept, 15% WordNet). May include false positives based on keyword matches.`;
   inputSchema = {
     type: "object" as const,
     properties: {
@@ -80,7 +80,7 @@ RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, concept,
     // Delegate to service (Result-based)
     const result = await this.chunkSearchService.searchBroad({
       text: params.text,
-      limit: 10,
+      limit: params.limit || 20,
       debug: params.debug || false
     });
     
@@ -109,21 +109,23 @@ RETURNS: Top 10 chunks ranked by hybrid scoring. Includes vector, BM25, concept,
       };
     }
     
-    // Format results for MCP response
+    // Format results for MCP response, filtering out zero/negative scores
+    // Note: Chunks use concept-aware scoring (35% vector, 35% BM25, 15% concept, 15% WordNet)
     // @ts-expect-error - Type narrowing limitation
-    const formattedResults = result.value.map((r: SearchResult) => ({
-      text: r.text,
-      source: r.source,
-      scores: {
-        hybrid: r.hybridScore.toFixed(3),
-        vector: r.vectorScore.toFixed(3),
-        bm25: r.bm25Score.toFixed(3),
-        concept: r.conceptScore.toFixed(3),
-        wordnet: r.wordnetScore.toFixed(3)
-      },
-      matched_concepts: r.matchedConcepts,
-      expanded_terms: r.expandedTerms
-    }));
+    const formattedResults = result.value
+      .filter((r: SearchResult) => r.hybridScore > 0)
+      .map((r: SearchResult) => ({
+        text: r.text,
+        source: r.source,
+        scores: {
+          hybrid: r.hybridScore.toFixed(3),
+          vector: r.vectorScore.toFixed(3),
+          bm25: r.bm25Score.toFixed(3),
+          concept: r.conceptScore.toFixed(3),
+          wordnet: r.wordnetScore.toFixed(3)
+        },
+        expanded_terms: r.expandedTerms
+      }));
     
     return {
       content: [

@@ -297,7 +297,7 @@ const chunks = await chunksTable
 - [ADR-0007: Concept Extraction](adr0007-concept-extraction-llm.md) - Generates concepts to store
 - [ADR-0008: WordNet Integration](adr0008-wordnet-integration.md) - Enriches concepts table
 - [ADR-0027: Hash-Based Integer IDs](adr0027-hash-based-integer-ids.md) - Later optimization
-- [ADR-0028: Category Storage Strategy](adr0028-category-storage.md) - Similar design for categories
+- [ADR-0028: Category Storage Strategy](adr0028-category-storage-strategy.md) - Similar design for categories
 
 ## References
 

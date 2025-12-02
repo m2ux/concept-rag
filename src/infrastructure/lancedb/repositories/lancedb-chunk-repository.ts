@@ -4,12 +4,11 @@ import { ConceptRepository } from '../../../domain/interfaces/repositories/conce
 import { EmbeddingService } from '../../../domain/interfaces/services/embedding-service.js';
 import { HybridSearchService } from '../../../domain/interfaces/services/hybrid-search-service.js';
 import { Chunk, SearchQuery, SearchResult } from '../../../domain/models/index.js';
-import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseOperationError } from '../../../domain/exceptions.js';
+import { ConceptNotFoundError, InvalidEmbeddingsError } from '../../../domain/exceptions.js';
 import { DatabaseError } from '../../../domain/exceptions/index.js';
 import { parseJsonField } from '../utils/field-parsers.js';
 import { validateChunkRow, detectVectorField } from '../utils/schema-validators.js';
 import { SearchableCollectionAdapter } from '../searchable-collection-adapter.js';
-import { ConceptIdCache } from '../../cache/concept-id-cache.js';
 import { isNone } from '../../../domain/functional/index.js';
 
 /**
@@ -19,14 +18,16 @@ import { isNone } from '../../../domain/functional/index.js';
  * Performance: O(log n) vector search vs O(n) full scan.
  * 
  * Search operations use HybridSearchService for multi-signal ranking.
+ * 
+ * Note: Uses derived text fields (concept_names, catalog_title) for display
+ * and filtering. No ID-to-name caches needed at runtime.
  */
 export class LanceDBChunkRepository implements ChunkRepository {
   constructor(
     private chunksTable: lancedb.Table,
     private conceptRepo: ConceptRepository,
     private embeddingService: EmbeddingService,
-    private hybridSearchService: HybridSearchService,
-    private conceptIdCache: ConceptIdCache
+    private hybridSearchService: HybridSearchService
   ) {}
   
   /**
@@ -34,14 +35,10 @@ export class LanceDBChunkRepository implements ChunkRepository {
    * 
    * Strategy:
    * 1. Load chunks in batches (to handle large databases)
-   * 2. Filter to chunks that contain the concept in their concepts field
+   * 2. Filter to chunks that contain the concept in their concept_names field
    * 3. Return up to limit results
    * 
-   * Note: Previous implementation used vector search, but this failed because
-   * concept embeddings (short phrases) are not semantically similar to chunk
-   * embeddings (full paragraphs). Direct field filtering is more reliable.
-   * 
-   * See: .ai/planning/2025-11-17-empty-chunk-investigation/INVESTIGATION_REPORT.md
+   * Note: Uses derived concept_names field for matching - no cache lookup needed.
    */
   async findByConceptName(concept: string, limit: number): Promise<Chunk[]> {
     const conceptLower = concept.toLowerCase().trim();
@@ -55,8 +52,7 @@ export class LanceDBChunkRepository implements ChunkRepository {
         return [];
       }
       
-      // Load chunks and filter by concepts field
-      // Note: LanceDB loads efficiently, and we can optimize with batching if needed
+      // Load chunks and filter by concept_names field
       const batchSize = 100000;
       const allRows = await this.chunksTable
         .query()
@@ -76,15 +72,15 @@ export class LanceDBChunkRepository implements ChunkRepository {
         
         const chunk = this.mapRowToChunk(row);
         
-        // Check if concept is in chunk's concept list
+        // Check if concept is in chunk's concept_names list
         if (this.chunkContainsConcept(chunk, conceptLower)) {
           matches.push(chunk);
           if (matches.length >= limit) break;
         }
       }
       
-      // Sort by concept density (most concept-rich first)
-      matches.sort((a, b) => (b.conceptDensity || 0) - (a.conceptDensity || 0));
+      // Sort by concept count (most concept-rich first)
+      matches.sort((a, b) => (b.conceptIds?.length || 0) - (a.conceptIds?.length || 0));
       
       return matches.slice(0, limit);
     } catch (error) {
@@ -100,22 +96,76 @@ export class LanceDBChunkRepository implements ChunkRepository {
     }
   }
   
-  async findBySource(source: string, limit: number): Promise<Chunk[]> {
-    // LanceDB doesn't support SQL WHERE on non-indexed columns efficiently
-    // Best approach: vector search + filter, or use source as query
-    const sourceEmbedding = this.embeddingService.generateEmbedding(source);
+  async findByTitle(title: string, limit: number): Promise<Chunk[]> {
+    // Search chunks by catalog_title using vector similarity
+    const titleEmbedding = this.embeddingService.generateEmbedding(title);
     
     const results = await this.chunksTable
-      .vectorSearch(sourceEmbedding)
+      .vectorSearch(titleEmbedding)
       .limit(limit * 2)  // Get extra for filtering
       .toArray();
     
     return results
-      .filter((row: any) => row.source && row.source.toLowerCase().includes(source.toLowerCase()))
+      .filter((row: any) => row.catalog_title && row.catalog_title.toLowerCase().includes(title.toLowerCase()))
       .slice(0, limit)
       .map((row: any) => this.mapRowToChunk(row));
   }
   
+  async findByCatalogId(catalogId: number, limit: number): Promise<Chunk[]> {
+    // Direct integer lookup - most efficient
+    try {
+      const results = await this.chunksTable
+        .query()
+        .where(`catalog_id = ${catalogId}`)
+        .limit(limit)
+        .toArray();
+      
+      return results.map((row: any) => this.mapRowToChunk(row));
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to find chunks for catalog ID ${catalogId}`,
+        'query',
+        error as Error
+      );
+    }
+  }
+  
+  /**
+   * Find chunks by source path using catalog_title field.
+   * 
+   * @deprecated Use findByCatalogId instead for better performance.
+   * This method exists for backward compatibility only.
+   */
+  async findBySource(sourcePath: string, limit: number): Promise<Chunk[]> {
+    console.warn('findBySource is deprecated - use findByCatalogId for better performance');
+    
+    try {
+      // Search by catalog_title field which stores the document title
+      const sourceMatch = sourcePath.toLowerCase();
+      const results = await this.chunksTable
+        .query()
+        .limit(100000)  // Get all to filter
+        .toArray();
+      
+      // Filter by catalog_title containing the source path
+      const filtered = results
+        .filter((row: any) => {
+          const title = (row.catalog_title || '').toLowerCase();
+          return title.includes(sourceMatch) || sourceMatch.includes(title);
+        })
+        .slice(0, limit);
+      
+      return filtered.map((row: any) => this.mapRowToChunk(row));
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to find chunks for source "${sourcePath}"`,
+        'query',
+        error as Error
+      );
+    }
+  }
+  
+
   async search(query: SearchQuery): Promise<SearchResult[]> {
     // Use hybrid search for multi-signal ranking
     const limit = query.limit || 10;
@@ -138,51 +188,84 @@ export class LanceDBChunkRepository implements ChunkRepository {
   
   // Helper methods
   
+  /**
+   * Check if chunk contains a concept using derived concept_names field.
+   * No cache lookup needed - uses text field directly.
+   */
   private chunkContainsConcept(chunk: Chunk, concept: string): boolean {
-    if (!chunk.concepts || chunk.concepts.length === 0) {
-      return false;
+    // Use derived concept_names field directly (new schema)
+    if (chunk.conceptNames && chunk.conceptNames.length > 0 && chunk.conceptNames[0] !== '') {
+      return chunk.conceptNames.some((c: string) => {
+        const cLower = c.toLowerCase();
+        return cLower === concept || 
+               cLower.includes(concept) || 
+               concept.includes(cLower);
+      });
     }
     
-    return chunk.concepts.some((c: string) => {
-      const cLower = c.toLowerCase();
-      return cLower === concept || 
-             cLower.includes(concept) || 
-             concept.includes(cLower);
-    });
+    // No concept_names available
+    return false;
   }
   
+  /**
+   * Map a database row to a Chunk domain model.
+   */
   private mapRowToChunk(row: any): Chunk {
     // Detect which field contains the vector (handles 'vector' vs 'embeddings' naming)
     const vectorField = detectVectorField(row);
     const embeddings = vectorField ? row[vectorField] : undefined;
     
-    // Resolve concepts: prefer new format (concept_ids) over old format (concepts)
-    let concepts: string[] = [];
+    // Parse concept_ids (native array in normalized schema, JSON string in legacy, or Arrow Vector)
+    let conceptIds: number[] = [];
     if (row.concept_ids) {
-      // NEW FORMAT: Use concept IDs and resolve to names via cache
-      try {
-        const conceptIds = parseJsonField(row.concept_ids);
-        concepts = this.conceptIdCache.getNames(conceptIds);
-      } catch (error) {
-        console.warn('[ChunkRepository] Failed to parse concept_ids, falling back to concepts:', error);
-        // Fallback to old format
-        concepts = parseJsonField(row.concepts);
+      if (Array.isArray(row.concept_ids)) {
+        conceptIds = row.concept_ids;
+      } else if (typeof row.concept_ids === 'object' && row.concept_ids !== null && 'toArray' in row.concept_ids) {
+        // Arrow Vector - convert to JavaScript array
+        conceptIds = Array.from(row.concept_ids.toArray());
+      } else if (typeof row.concept_ids === 'string') {
+        // JSON string
+        conceptIds = parseJsonField<number>(row.concept_ids);
       }
-    } else {
-      // OLD FORMAT: Use concept names directly
-      concepts = parseJsonField(row.concepts);
+    }
+    
+    // Parse page_number directly
+    let pageNumber: number | undefined;
+    if (row.page_number !== undefined && row.page_number !== null) {
+      pageNumber = typeof row.page_number === 'number' ? row.page_number : parseInt(row.page_number);
+    }
+    
+    // Parse concept_density (may be stored or computed)
+    let conceptDensity: number | undefined;
+    if (row.concept_density !== undefined && row.concept_density !== null) {
+      conceptDensity = typeof row.concept_density === 'number' ? row.concept_density : parseFloat(row.concept_density);
+    }
+    
+    // Parse concept_names (DERIVED field for display and text search)
+    let conceptNames: string[] | undefined;
+    if (row.concept_names) {
+      if (Array.isArray(row.concept_names)) {
+        conceptNames = row.concept_names;
+      } else if (typeof row.concept_names === 'object' && row.concept_names !== null && 'toArray' in row.concept_names) {
+        // Arrow Vector - convert to JavaScript array
+        conceptNames = Array.from(row.concept_names.toArray());
+      } else if (typeof row.concept_names === 'string') {
+        // JSON string
+        conceptNames = parseJsonField<string>(row.concept_names);
+      }
     }
     
     return {
-      id: row.id || '',
+      id: typeof row.id === 'number' ? row.id : parseInt(row.id) || 0,
       text: row.text || '',
-      source: row.source || '',
+      catalogId: row.catalog_id || 0,
+      catalogTitle: row.catalog_title || '',  // DERIVED: document title for display
       hash: row.hash || '',
-      concepts,
-      conceptCategories: parseJsonField(row.concept_categories),
-      conceptDensity: row.concept_density || 0,
-      embeddings  // May be undefined if no vector field found
+      conceptIds,
+      conceptNames,  // DERIVED: for display and text search
+      embeddings,  // May be undefined if no vector field found
+      pageNumber,
+      conceptDensity
     };
   }
 }
-

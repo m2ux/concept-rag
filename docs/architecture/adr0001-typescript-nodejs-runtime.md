@@ -201,7 +201,7 @@ node dist/conceptual_index.js    # Run compiled
 
 - [ADR-0002: LanceDB for Vector Storage](adr0002-lancedb-vector-storage.md) - Database choice complements TypeScript
 - [ADR-0003: MCP Protocol](adr0003-mcp-protocol.md) - Protocol requires TypeScript SDK
-- [ADR-0019: Vitest Testing](adr0019-vitest-testing.md) - Testing framework for TypeScript
+- [ADR-0019: Vitest Testing](adr0019-vitest-testing-framework.md) - Testing framework for TypeScript
 - [ADR-0020: TypeScript Strict Mode](adr0020-typescript-strict-mode.md) - Later evolution
 
 ## References

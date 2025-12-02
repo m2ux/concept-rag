@@ -231,9 +231,9 @@ This implementation became the foundation for later enhancements:
 
 - [ADR-0002: LanceDB](adr0002-lancedb-vector-storage.md) - Database supports hybrid queries
 - [ADR-0004: RAG Architecture](adr0004-rag-architecture.md) - Retrieval strategy enhancement
-- [ADR-0007: Concept Extraction](adr0007-concept-extraction.md) - Added as 4th signal same day
+- [ADR-0007: Concept Extraction](adr0007-concept-extraction-llm.md) - Added as 4th signal same day
 - [ADR-0008: WordNet Integration](adr0008-wordnet-integration.md) - Added as 5th signal same day
-- [ADR-0022: HybridSearchService](adr0022-hybrid-search-service.md) - Later service extraction
+- [ADR-0022: HybridSearchService](adr0022-hybrid-search-service-extraction.md) - Later service extraction
 
 ## References
 

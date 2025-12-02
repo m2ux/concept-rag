@@ -18,4 +18,5 @@ export { EmbeddingCache } from './embedding-cache.js';
 // ID mapping caches
 export { ConceptIdCache } from './concept-id-cache.js';
 export { CategoryIdCache } from './category-id-cache.js';
+export { CatalogSourceCache } from './catalog-source-cache.js';
 

@@ -11,15 +11,15 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { ApplicationContainer } from '../../application/container.js';
-import { createTestDatabase, TestDatabaseFixture } from './test-db-setup.js';
+import { useExistingTestDatabase, TestDatabaseFixture } from './test-db-setup.js';
 
 describe('ApplicationContainer Integration Tests', () => {
   let fixture: TestDatabaseFixture;
   let container: ApplicationContainer;
   
   beforeAll(async () => {
-    // ARRANGE: Setup test database
-    fixture = createTestDatabase('application-container');
+    // ARRANGE: Use existing test_db with real sample-docs data
+    fixture = useExistingTestDatabase('application-container');
     await fixture.setup();
     
     // Create ApplicationContainer with test database
@@ -46,9 +46,9 @@ describe('ApplicationContainer Integration Tests', () => {
       const tools = container.getAllTools();
       const toolNames = tools.map(t => t.name);
       
-      // VERIFY
+      // VERIFY - Base tools registered by container
       expect(tools.length).toBeGreaterThanOrEqual(5);
-      expect(toolNames).toContain('concept_search');
+      expect(toolNames).toContain('concept_search');  // For concept-based chunk search
       expect(toolNames).toContain('catalog_search');
       expect(toolNames).toContain('chunks_search');
       expect(toolNames).toContain('broad_chunks_search');
@@ -217,24 +217,22 @@ describe('ApplicationContainer Integration Tests', () => {
     it('should provide category repository if categories table exists', () => {
       // EXERCISE
       const categoryRepo = container.getCategoryRepository();
-      const categoryCache = container.getCategoryIdCache();
       
       // VERIFY
       // May be undefined if categories table doesn't exist in test database
       // This is acceptable for backward compatibility
-      if (categoryRepo) {
-        expect(categoryCache).toBeDefined();
-      }
+      // With real test_db, category repo should be available
+      expect(categoryRepo).toBeDefined();
     });
     
-    it('should register category tools when category cache is available', () => {
+    it('should register category tools when category repository is available', () => {
       // EXERCISE
       const tools = container.getAllTools();
       const toolNames = tools.map(t => t.name);
-      const hasCategoryCache = container.getCategoryIdCache() !== undefined;
+      const hasCategoryRepo = container.getCategoryRepository() !== undefined;
       
       // VERIFY
-      if (hasCategoryCache) {
+      if (hasCategoryRepo) {
         expect(toolNames).toContain('category_search');
         expect(toolNames).toContain('list_categories');
         expect(toolNames).toContain('list_concepts_in_category');
@@ -262,15 +260,21 @@ describe('ApplicationContainer Integration Tests', () => {
       }
     });
     
-    it('should initialize caches during container initialization', () => {
-      // VERIFY
-      const categoryCache = container.getCategoryIdCache();
+    it('should initialize repositories during container initialization', () => {
+      // VERIFY - Category repository should be available
+      const categoryRepo = container.getCategoryRepository();
       // ConceptIdCache is a singleton, so we can't directly access it
       // But if tools work, it's initialized
       
-      // Verify tools work (proves caches are initialized)
-      const tool = container.getTool('concept_search');
-      expect(tool).toBeDefined();
+      // Verify category tools are registered (proves repositories are initialized)
+      if (categoryRepo) {
+        const tool = container.getTool('category_search');
+        expect(tool).toBeDefined();
+      }
+      
+      // Verify concept search tool works (proves caches are initialized)
+      const conceptTool = container.getTool('concept_search');
+      expect(conceptTool).toBeDefined();
     });
   });
   

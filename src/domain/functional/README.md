@@ -422,14 +422,6 @@ See individual module files for complete API documentation:
 - `option.ts` - Option<T> type and utilities
 - `railway.ts` - Railway Oriented Programming utilities
 
-## Testing
-
-All functional types have comprehensive test coverage (217 tests):
-- `__tests__/result.test.ts` - 51 tests
-- `__tests__/either.test.ts` - 50 tests
-- `__tests__/option.test.ts` - 73 tests
-- `__tests__/railway.test.ts` - 43 tests
-
 ## Further Reading
 
 - [Railway Oriented Programming](https://fsharpforfunandprofit.com/rop/) by Scott Wlaschin

@@ -26,18 +26,17 @@ export class ConceptualCatalogSearchTool extends BaseTool<ConceptualCatalogSearc
   description = `Search document summaries and metadata to discover relevant documents. Uses title matching, concept matching, summary analysis, and semantic similarity.
 
 USE THIS TOOL WHEN:
-- Discovering what documents are available in the library ("What documents do I have?")
-- Finding documents about a general topic or domain
-- Looking for documents by title, author, or subject area
+- Finding documents about a specific topic or subject area
+- Looking for documents by title, author, or keywords
 - Need document-level results rather than specific chunks
 - Starting exploratory research to identify relevant sources
 
 DO NOT USE for:
+- Listing all documents (use list_categories then category_search instead)
 - Finding specific information within documents (use broad_chunks_search or chunks_search)
-- Tracking specific concept usage across chunks (use concept_search)
-- Deep content analysis (use broad_chunks_search)
+- Tracking specific concept usage across chunks (use concept_chunks)
 
-RETURNS: Top 5 documents with text previews, hybrid scores (including strong title matching bonus), matched concepts, and query expansion details.`;
+RETURNS: Top 10 documents with text previews, hybrid scores (including strong title matching bonus), matched concepts, and query expansion details.`;
   inputSchema = {
     type: "object" as const,
     properties: {
@@ -80,7 +79,7 @@ RETURNS: Top 5 documents with text previews, hybrid scores (including strong tit
     // Delegate to service (Result-based)
     const result = await this.catalogSearchService.searchCatalog({
       text: params.text,
-      limit: 5,
+      limit: 10,
       debug: params.debug || false
     });
     
@@ -109,22 +108,23 @@ RETURNS: Top 5 documents with text previews, hybrid scores (including strong tit
       };
     }
     
-    // Format results for MCP response
+    // Format results for MCP response, filtering out zero/negative scores
     // @ts-expect-error - Type narrowing limitation
-    const formattedResults = result.value.map((r: SearchResult) => ({
-      source: r.source,
-      text_preview: r.text.slice(0, 200) + '...',
-      scores: {
-        hybrid: r.hybridScore.toFixed(3),
-        vector: r.vectorScore.toFixed(3),
-        bm25: r.bm25Score.toFixed(3),
-        title: r.titleScore.toFixed(3),
-        concept: r.conceptScore.toFixed(3),
-        wordnet: r.wordnetScore.toFixed(3)
-      },
-      matched_concepts: r.matchedConcepts,
-      expanded_terms: r.expandedTerms
-    }));
+    const formattedResults = result.value
+      .filter((r: SearchResult) => r.hybridScore > 0)
+      .map((r: SearchResult) => ({
+        source: r.source,
+        summary: r.text,  // Full summary (not truncated)
+        scores: {
+          hybrid: r.hybridScore.toFixed(3),
+          vector: r.vectorScore.toFixed(3),
+          bm25: r.bm25Score.toFixed(3),
+          title: r.titleScore.toFixed(3),
+          concept: r.conceptScore.toFixed(3),
+          wordnet: r.wordnetScore.toFixed(3)
+        },
+        expanded_terms: r.expandedTerms
+      }));
     
     return {
       content: [

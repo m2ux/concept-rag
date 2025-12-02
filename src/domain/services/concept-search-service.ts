@@ -1,243 +1,369 @@
 /**
- * Result-Based Concept Search Service
+ * Concept Search Service
  * 
- * This service provides functional error handling for concept search operations
- * using Result types instead of exceptions. It complements the exception-based
- * ConceptSearchService for callers who prefer functional composition.
+ * Provides comprehensive concept retrieval using document-level navigation:
+ * Concept → Documents (via catalogIds) → Chunks
  * 
- * **Use this when you want to:**
- * - Compose search operations functionally
- * - Handle errors explicitly without try-catch
- * - Use railway patterns (retry, fallback, etc.)
+ * This service orchestrates multi-level retrieval to provide rich context
+ * for each concept, including:
+ * - Concept metadata (summary, related concepts, WordNet relations)
+ * - Documents where concept appears
+ * - Chunks from those documents (with concept density ranking)
+ * 
+ * **Hybrid Search**: When EmbeddingService is provided, uses 4-signal hybrid scoring:
+ * - 40% Name matching (exact/partial concept name match)
+ * - 30% Vector similarity (semantic search)
+ * - 20% BM25 (keyword matching in summary)
+ * - 10% Synonym/hierarchy matching
+ * 
+ * **Design**: Follows the Facade pattern to coordinate multiple repositories.
  */
 
 import { ChunkRepository } from '../interfaces/repositories/chunk-repository.js';
-import { ConceptRepository } from '../interfaces/repositories/concept-repository.js';
+import { ConceptRepository, ScoredConcept } from '../interfaces/repositories/concept-repository.js';
+import { CatalogRepository } from '../interfaces/repositories/catalog-repository.js';
+import { EmbeddingService } from '../interfaces/services/embedding-service.js';
 import { Chunk, Concept } from '../models/index.js';
-import { Result, Ok, Err } from '../functional/result.js';
-import type { Option } from '../functional/index.js';
-import { fromNullable, foldOption, toNullable } from '../functional/index.js';
-import { InputValidator } from './validation/InputValidator.js';
+import { isSome, foldOption } from '../functional/index.js';
+import { hashToId } from '../../infrastructure/utils/hash.js';
 
 /**
- * Parameters for concept search.
+ * Source document with concept context.
+ */
+export interface SourceWithPages {
+  /** Document catalog ID */
+  catalogId: number;
+  
+  /** Document source path */
+  source: string;
+  
+  /** Document title (extracted from source) */
+  title: string;
+  
+  /** Page numbers where concept appears (from chunks) */
+  pageNumbers: number[];
+  
+  /** Text previews from relevant chunks */
+  pagePreviews: string[];
+  
+  /** How this document matched: 'primary' (direct concept) or 'related' (via related concept) */
+  matchType: 'primary' | 'related';
+  
+  /** If matchType is 'related', the concept that linked to this document */
+  viaConcept?: string;
+}
+
+/**
+ * Chunk with enhanced metadata for hierarchical retrieval.
+ */
+export interface EnrichedChunk {
+  /** The chunk data */
+  chunk: Chunk;
+  
+  /** Page number this chunk is from */
+  pageNumber: number;
+  
+  /** Concept density score (0-1) */
+  conceptDensity: number;
+  
+  /** Source document title */
+  documentTitle: string;
+}
+
+/**
+ * Complete hierarchical concept search result.
+ */
+export interface ConceptSearchResult {
+  /** Search query */
+  query: string;
+  
+  /** Matched concept name (normalized) */
+  concept: string;
+  
+  /** Concept ID (hash-based) */
+  conceptId: number;
+  
+  /** One-sentence concept summary (LLM-generated) */
+  summary: string;
+  
+  /** Related concepts from concept graph */
+  relatedConcepts: string[];
+  
+  /** WordNet synonyms */
+  synonyms: string[];
+  
+  /** WordNet broader terms (hypernyms) */
+  broaderTerms: string[];
+  
+  /** WordNet narrower terms (hyponyms) */
+  narrowerTerms: string[];
+  
+  /** Source documents with context */
+  sources: SourceWithPages[];
+  
+  /** Enriched chunks with hierarchical context */
+  chunks: EnrichedChunk[];
+  
+  /** Total number of documents where concept appears */
+  totalDocuments: number;
+  
+  /** Total number of chunks with this concept */
+  totalChunks: number;
+  
+  /** Hybrid search scores (only when using hybrid search) */
+  scores?: {
+    hybridScore: number;
+    vectorScore: number;
+    bm25Score: number;
+    nameScore: number;
+    wordnetScore: number;
+  };
+}
+
+/**
+ * Parameters for hierarchical concept search.
  */
 export interface ConceptSearchParams {
   /** Concept name to search for */
   concept: string;
   
-  /** Maximum results to return */
-  limit: number;
+  /** Maximum chunks to return per source (default: 3) */
+  chunksPerSource?: number;
+  
+  /** Maximum total chunks (default: 10) */
+  maxChunks?: number;
+  
+  /** Maximum sources (default: 5) */
+  maxSources?: number;
   
   /** Optional source filter */
   sourceFilter?: string;
-  
-  /** Sort strategy */
-  sortBy?: 'density' | 'relevance' | 'source';
 }
 
 /**
- * Concept search result with metadata.
- */
-export interface ConceptSearchResult {
-  concept: string;
-  // @ts-expect-error - Type narrowing limitation
-  conceptMetadata: Option<Concept>;
-  chunks: Chunk[];
-  relatedConcepts: string[];
-  totalFound: number;
-}
-
-/**
- * Search error types
- */
-export type SearchError =
-  | { type: 'validation'; field: string; message: string }
-  | { type: 'database'; message: string }
-  | { type: 'concept_not_found'; concept: string }
-  | { type: 'unknown'; message: string };
-
-/**
- * Concept search service with Result-based error handling.
+ * Service for hierarchical concept retrieval.
  * 
- * Returns Result<T, SearchError> instead of throwing exceptions,
- * enabling functional composition and explicit error handling.
+ * Coordinates concept → documents → chunks navigation to provide comprehensive
+ * context for any concept in the knowledge base.
+ * 
+ * When EmbeddingService is provided, uses hybrid search (vector + name + summary + synonyms).
+ * Without EmbeddingService, falls back to exact name matching.
  */
 export class ConceptSearchService {
-  private validator = new InputValidator();
-  
   constructor(
+    private conceptRepo: ConceptRepository,
     private chunkRepo: ChunkRepository,
-    private conceptRepo: ConceptRepository
+    private catalogRepo: CatalogRepository,
+    private embeddingService?: EmbeddingService
   ) {}
   
   /**
-   * Search for chunks tagged with a specific concept.
+   * Perform hierarchical concept search.
+   * 
+   * Uses hybrid scoring when EmbeddingService is available:
+   * - 40% Name matching
+   * - 30% Vector similarity
+   * - 20% BM25 on summary
+   * - 10% Synonym matching
+   * 
+   * Falls back to exact name matching otherwise.
    * 
    * @param params - Search parameters
-   * @returns Result containing concept search results or error
-   * 
-   * @example
-   * ```typescript
-   * const result = await service.searchConcept({
-   *   concept: 'dependency injection',
-   *   limit: 10,
-   *   sortBy: 'density'
-   * });
-   * 
-   * if (result.ok) {
-   *   console.log('Found:', result.value.chunks.length, 'chunks');
-   * } else {
-   *   console.error('Error:', result.error);
-   * }
-   * ```
-   * 
-   * @example With Railway Pattern
-   * ```typescript
-   * const result = await pipe(
-   *   () => service.searchConcept({ concept: 'ddd', limit: 10 }),
-   *   async (searchResult) => enrichChunks(searchResult.chunks),
-   *   async (enriched) => formatOutput(enriched)
-   * )();
-   * ```
+   * @returns Comprehensive concept result with multi-level context
    */
-  async searchConcept(
-    params: Partial<ConceptSearchParams>
-  ): Promise<Result<ConceptSearchResult, SearchError>> {
-    // Validate parameters
-    try {
-      this.validator.validateConceptSearch(params);
-    } catch (error) {
-      return Err({
-        type: 'validation',
-        field: 'params',
-        message: error instanceof Error ? error.message : String(error)
-      });
+  async search(params: ConceptSearchParams): Promise<ConceptSearchResult> {
+    const conceptQuery = params.concept.toLowerCase().trim();
+    const chunksPerSource = params.chunksPerSource ?? 3;
+    const maxChunks = params.maxChunks ?? 10;
+    const maxSources = params.maxSources ?? 5;
+    
+    // 1. Find concept using hybrid search or exact match
+    let matchedConcept: Concept | undefined;
+    let conceptId: number;
+    let scores: ConceptSearchResult['scores'] | undefined;
+    
+    // Try hybrid search if embedding service is available
+    if (this.embeddingService && this.conceptRepo.searchByHybrid) {
+      const queryVector = this.embeddingService.generateEmbedding(conceptQuery);
+      const hybridResults = await this.conceptRepo.searchByHybrid(conceptQuery, queryVector, 1);
+      
+      if (hybridResults.length > 0) {
+        const topResult = hybridResults[0] as ScoredConcept;
+        matchedConcept = topResult;
+        conceptId = hashToId(topResult.name.toLowerCase().trim());
+        scores = {
+          hybridScore: topResult.hybridScore,
+          vectorScore: topResult.vectorScore,
+          bm25Score: topResult.bm25Score,
+          nameScore: topResult.nameScore,
+          wordnetScore: topResult.wordnetScore
+        };
+      } else {
+        conceptId = hashToId(conceptQuery);
+      }
+    } else {
+      // Fallback to exact name match
+      conceptId = hashToId(conceptQuery);
+      const conceptOpt = await this.conceptRepo.findByName(conceptQuery);
+      if (isSome(conceptOpt)) {
+        matchedConcept = conceptOpt.value;
+      }
     }
     
-    const validParams = params as ConceptSearchParams;
-    const conceptLower = validParams.concept.toLowerCase().trim();
+    // Extract concept data
+    let catalogIds: number[] = [];
+    const conceptData = matchedConcept ? {
+      summary: matchedConcept.summary || '',
+      relatedConcepts: matchedConcept.relatedConcepts || [],
+      synonyms: matchedConcept.synonyms || [],
+      broaderTerms: matchedConcept.broaderTerms || [],
+      narrowerTerms: matchedConcept.narrowerTerms || []
+    } : {
+      summary: '',
+      relatedConcepts: [] as string[],
+      synonyms: [] as string[],
+      broaderTerms: [] as string[],
+      narrowerTerms: [] as string[]
+    };
     
-    try {
-      // Get concept metadata using Option for type-safe nullable handling
-      // @ts-expect-error - Type narrowing limitation
-      const conceptMetadataOpt: Option<Concept> = 
-        await this.conceptRepo.findByName(conceptLower);
+    if (matchedConcept) {
+      catalogIds = matchedConcept.catalogIds || [];
+      conceptId = hashToId(matchedConcept.name.toLowerCase().trim());
+    }
+    
+    // 2. Expand to include documents from related concepts
+    // Build a map of catalogId → { matchType, viaConcept }
+    const catalogSourceMap = new Map<number, { matchType: 'primary' | 'related'; viaConcept?: string }>();
+    
+    // Add primary concept's documents
+    for (const catId of catalogIds) {
+      catalogSourceMap.set(catId, { matchType: 'primary' });
+    }
+    
+    // Look up related concepts and add their documents
+    const relatedConceptNames = conceptData.relatedConcepts || [];
+    for (const relatedName of relatedConceptNames) {
+      if (!relatedName) continue;
       
-      // Find matching chunks
-      const candidateChunks = await this.chunkRepo.findByConceptName(
-        conceptLower,
-        validParams.limit * 2
-      );
-      
-      const totalFound = candidateChunks.length;
-      
-      // Apply source filter if provided
-      let filteredChunks = candidateChunks;
-      if (validParams.sourceFilter) {
-        const filterLower = validParams.sourceFilter.toLowerCase();
-        filteredChunks = candidateChunks.filter(chunk =>
-          chunk.source.toLowerCase().includes(filterLower)
-        );
-      }
-      
-      // Sort results
-      const sortedChunks = this.sortChunks(
-        filteredChunks,
-        validParams.sortBy || 'density',
-        conceptLower
-      );
-      
-      // Limit results
-      const limitedChunks = sortedChunks.slice(0, validParams.limit);
-      
-      // Extract related concepts using Option composition
-      const relatedConcepts = foldOption(
-        conceptMetadataOpt,
-        () => [],
-        // @ts-expect-error - Type narrowing limitation
-        (concept) => concept.relatedConcepts?.slice(0, 10) || []
-      );
-      
-      return Ok({
-        concept: validParams.concept,
-        conceptMetadata: conceptMetadataOpt,
-        chunks: limitedChunks,
-        relatedConcepts,
-        totalFound
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.constructor.name === 'DatabaseError') {
-          return Err({
-            type: 'database',
-            message: error.message
-          });
+      // Find the related concept
+      const relatedOpt = await this.conceptRepo.findByName(relatedName);
+      if (isSome(relatedOpt)) {
+        const relatedConcept = relatedOpt.value;
+        const relatedCatalogIds = relatedConcept.catalogIds || [];
+        
+        // Add related concept's documents (if not already from primary)
+        for (const catId of relatedCatalogIds) {
+          if (!catalogSourceMap.has(catId)) {
+            catalogSourceMap.set(catId, { matchType: 'related', viaConcept: relatedName });
+          }
         }
       }
+    }
+    
+    // Get all unique catalog IDs (primary first, then related)
+    const allCatalogIds = Array.from(catalogSourceMap.keys());
+    const primaryIds = allCatalogIds.filter(id => catalogSourceMap.get(id)?.matchType === 'primary');
+    const relatedIds = allCatalogIds.filter(id => catalogSourceMap.get(id)?.matchType === 'related');
+    const orderedCatalogIds = [...primaryIds, ...relatedIds];
+    
+    const totalDocuments = orderedCatalogIds.length;
+    
+    // 3. Build sources from catalogIds
+    const sources: SourceWithPages[] = [];
+    const enrichedChunks: EnrichedChunk[] = [];
+    let totalChunks = 0;
+    
+    // Limit to maxSources
+    const limitedCatalogIds = orderedCatalogIds.slice(0, maxSources);
+    
+    for (const catalogId of limitedCatalogIds) {
+      const sourceInfo = catalogSourceMap.get(catalogId)!;
       
-      return Err({
-        type: 'unknown',
-        message: error instanceof Error ? error.message : String(error)
+      // Get document metadata
+      const catalogOpt = await this.catalogRepo.findById(catalogId);
+      const source = isSome(catalogOpt) && catalogOpt.value.source 
+        ? catalogOpt.value.source 
+        : `Document ${catalogId}`;
+      const title = this.extractTitle(source);
+      
+      // Find chunks from this document that have the concept
+      const docChunks = await this.chunkRepo.findByCatalogId(catalogId, 100);
+      totalChunks += docChunks.length;
+      
+      // For primary matches, filter to chunks with primary concept
+      // For related matches, filter to chunks with the related concept
+      const targetConceptId = sourceInfo.matchType === 'primary' 
+        ? conceptId 
+        : hashToId((sourceInfo.viaConcept || '').toLowerCase().trim());
+      
+      const conceptChunks = docChunks
+        .filter(chunk => chunk.conceptIds?.includes(targetConceptId))
+        .slice(0, chunksPerSource);
+      
+      // Collect page numbers from chunks
+      const pageNumbers = [...new Set(conceptChunks.map(c => c.pageNumber ?? 0))].sort((a, b) => a - b);
+      
+      // Build source info
+      sources.push({
+        catalogId,
+        source,
+        title,
+        pageNumbers,
+        pagePreviews: conceptChunks.slice(0, 3).map(c => c.text.substring(0, 200)),
+        matchType: sourceInfo.matchType,
+        viaConcept: sourceInfo.viaConcept
       });
-    }
-  }
-  
-  /**
-   * Sort chunks according to specified strategy.
-   */
-  private sortChunks(
-    chunks: Chunk[],
-    sortBy: 'density' | 'relevance' | 'source',
-    concept: string
-  ): Chunk[] {
-    const sorted = [...chunks];
-    
-    switch (sortBy) {
-      case 'density':
-        return sorted.sort((a, b) => 
-          (b.conceptDensity || 0) - (a.conceptDensity || 0)
-        );
       
-      case 'relevance':
-        return sorted.sort((a, b) => {
-          const relA = this.calculateRelevance(a, concept);
-          const relB = this.calculateRelevance(b, concept);
-          return relB - relA;
+      // Enrich chunks with hierarchical metadata
+      for (const chunk of conceptChunks) {
+        if (enrichedChunks.length >= maxChunks) break;
+        
+        enrichedChunks.push({
+          chunk,
+          pageNumber: chunk.pageNumber ?? 0,
+          conceptDensity: chunk.conceptDensity ?? 0,
+          documentTitle: title
         });
+      }
       
-      case 'source':
-        return sorted.sort((a, b) => 
-          a.source.localeCompare(b.source)
-        );
-      
-      default:
-        return sorted;
+      if (enrichedChunks.length >= maxChunks) break;
     }
+    
+    // 3. Sort enriched chunks by concept density
+    enrichedChunks.sort((a, b) => b.conceptDensity - a.conceptDensity);
+    
+    const matchedConceptName = matchedConcept?.name || conceptQuery;
+    
+    return {
+      query: params.concept,
+      concept: matchedConceptName,
+      conceptId,
+      summary: conceptData.summary,
+      relatedConcepts: conceptData.relatedConcepts.slice(0, 10),
+      synonyms: conceptData.synonyms,
+      broaderTerms: conceptData.broaderTerms,
+      narrowerTerms: conceptData.narrowerTerms,
+      sources,
+      chunks: enrichedChunks.slice(0, maxChunks),
+      totalDocuments,
+      totalChunks,
+      scores
+    };
   }
   
   /**
-   * Calculate relevance score for a chunk.
+   * Extract a readable title from a source path.
    */
-  /** @internal - Exposed for testing */
-  calculateRelevance(chunk: Chunk, concept: string): number {
-    let score = 0;
+  private extractTitle(source: string): string {
+    // Get filename without extension
+    const filename = source.split('/').pop() || source;
+    const withoutExt = filename.replace(/\.(pdf|epub|txt|md)$/i, '');
     
-    // Concept density (0-1)
-    score += (chunk.conceptDensity || 0) * 0.5;
-    
-    // Concept appears in chunk
-    if (chunk.concepts?.includes(concept)) {
-      score += 0.3;
-    }
-    
-    // Text length (prefer substantial chunks)
-    const textLength = chunk.text.length;
-    if (textLength > 200 && textLength < 2000) {
-      score += 0.2;
-    }
-    
-    return score;
+    // Clean up common patterns
+    return withoutExt
+      .replace(/_/g, ' ')
+      .replace(/--/g, ' - ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 }
-

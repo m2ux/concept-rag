@@ -313,3 +313,10 @@ cython_debug/
 .archive
 sample-docs
 logs
+.envrc
+data
+preprod_db
+# Database backups
+backups/
+db/
+test_db/

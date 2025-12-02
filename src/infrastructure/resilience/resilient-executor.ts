@@ -429,12 +429,12 @@ export class ResilienceProfiles {
   
   /**
    * Profile for search operations.
-   * - 5s timeout
+   * - 30s timeout (broad hybrid search with large corpus can be slow)
    * - 2 retries
    * - Bulkhead (15 concurrent, 30 queued)
    */
   static readonly SEARCH: Omit<ResilienceOptions, 'name'> = {
-    timeout: 5000,
+    timeout: 30000,
     retry: {
       maxRetries: 2,
       initialDelayMs: 200,

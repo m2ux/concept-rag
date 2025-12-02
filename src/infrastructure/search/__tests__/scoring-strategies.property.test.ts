@@ -372,12 +372,12 @@ describe('Scoring Functions Property-Based Tests', () => {
             // Skip if result is NaN
             if (isNaN(hybridScore)) return true;
             
-            // Calculate expected weighted average
+            // Calculate expected weighted average (catalog weights: 30/25/20/15/10)
             const expected = (
-              vectorScore * 0.25 +
+              vectorScore * 0.30 +
               bm25Score * 0.25 +
               titleScore * 0.20 +
-              conceptScore * 0.20 +
+              conceptScore * 0.15 +
               wordnetScore * 0.10
             );
             

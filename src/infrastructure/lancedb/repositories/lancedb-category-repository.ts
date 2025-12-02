@@ -8,10 +8,9 @@
 import type { Table } from '@lancedb/lancedb';
 import type { CategoryRepository } from '../../../domain/interfaces/category-repository';
 import type { Category } from '../../../domain/models/category';
-import { DatabaseError, RecordNotFoundError } from '../../../domain/exceptions/index.js';
+import { DatabaseError } from '../../../domain/exceptions/index.js';
 // @ts-expect-error - Type narrowing limitation
 import type { Option } from "../../../../__tests__/test-helpers/../../domain/functional/index.js";
-import { fromNullable } from '../../../domain/functional/option.js';
 
 /**
  * Parse JSON field safely
@@ -42,7 +41,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
       // Using explicit high limit to ensure all categories are loaded for cache initialization
       const rows = await this.table
         .query()
-        .limit(10000) // 10x safety margin over max expected categories
+        .limit(100000) // LanceDB defaults to 10 without explicit limit
         .toArray();
       return rows.map((row: any) => this.mapRowToCategory(row));
     } catch (error) {
@@ -133,6 +132,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
       const rows = await this.table
         .query()
         .where('parent_category_id IS NULL')
+        .limit(100000)  // LanceDB defaults to 10 without explicit limit
         .toArray();
       return rows.map((row: any) => this.mapRowToCategory(row));
     } catch (error) {
@@ -149,6 +149,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
       const rows = await this.table
         .query()
         .where(`parent_category_id = ${parentId}`)
+        .limit(100000)  // LanceDB defaults to 10 without explicit limit
         .toArray();
       return rows.map((row: any) => this.mapRowToCategory(row));
     } catch (error) {
@@ -202,6 +203,73 @@ export class LanceDBCategoryRepository implements CategoryRepository {
   }
 
   /**
+   * Resolve a category by name, ID, or alias.
+   * Returns the category if found, null otherwise.
+   * 
+   * @param nameOrIdOrAlias - Category name, numeric ID, or alias
+   * @returns Category if found
+   */
+  async resolveCategory(nameOrIdOrAlias: string): Promise<Category | null> {
+    // Try as alias first
+    const byAlias = await this.findByAlias(nameOrIdOrAlias);
+    if (byAlias) return byAlias;
+    
+    // Try as exact name
+    const byName = await this.findByName(nameOrIdOrAlias);
+    if (byName) return byName;
+    
+    // Try as numeric ID
+    const numericId = parseInt(nameOrIdOrAlias, 10);
+    if (!isNaN(numericId)) {
+      const byId = await this.findById(numericId);
+      if (byId) return byId;
+    }
+    
+    // Fallback: fuzzy search by name (partial match)
+    const matches = await this.searchByName(nameOrIdOrAlias);
+    if (matches.length > 0) {
+      // Return the best match (first result from searchByName)
+      return matches[0];
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get the hierarchy path names for a category (from root to this category).
+   * @param categoryId - Category ID
+   * @returns Array of category names from root to this category
+   */
+  async getHierarchyPath(categoryId: number): Promise<string[]> {
+    const path: string[] = [];
+    let currentId: number | null = categoryId;
+    
+    // Walk up the hierarchy
+    while (currentId !== null) {
+      const cat = await this.findById(currentId);
+      if (!cat) break;
+      
+      path.unshift(cat.category);
+      currentId = cat.parentCategoryId;
+      
+      // Prevent infinite loops
+      if (path.length > 10) break;
+    }
+    
+    return path;
+  }
+
+  /**
+   * Get child category IDs for a category.
+   * @param parentId - Parent category ID
+   * @returns Array of child category IDs
+   */
+  async getChildIds(parentId: number): Promise<number[]> {
+    const children = await this.findChildren(parentId);
+    return children.map(c => c.id);
+  }
+
+  /**
    * Map LanceDB row to Category domain model
    */
   private mapRowToCategory(row: any): Category {
@@ -209,6 +277,7 @@ export class LanceDBCategoryRepository implements CategoryRepository {
       id: row.id,
       category: row.category || '',
       description: row.description || '',
+      summary: row.summary || '',
       parentCategoryId: row.parent_category_id ?? null,
       aliases: parseJsonField(row.aliases, []),
       relatedCategories: parseJsonField(row.related_categories, []),

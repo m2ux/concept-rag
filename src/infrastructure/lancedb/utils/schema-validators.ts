@@ -101,7 +101,8 @@ export function validateEmbeddings(
  * 
  * @example
  * ```typescript
- * validateRequiredFields(row, ['id', 'text', 'source'], 'chunk');
+ * validateRequiredFields(row, ['text'], 'chunk');
+ * validateRequiredFields(row, ['source'], 'catalog');
  * ```
  */
 export function validateRequiredFields(
@@ -226,10 +227,13 @@ export function detectVectorField(row: any): 'vector' | 'embeddings' | null {
 /**
  * Validate chunk row has all required fields with correct types.
  * 
- * **Validation Rules**:
- * - Required: id, text, source, hash
+ * **Validation Rules (v7)**:
+ * - Required: text (id and hash are optional/auto-generated)
+ * - Optional: catalog_title (derived from catalog.title)
  * - Vector: Must be 384-dimensional array
- * - JSON fields: concepts, concept_categories (optional but must be valid JSON if present)
+ * - JSON fields: concept_ids, concept_names (optional but must be valid if present)
+ * 
+ * **Note**: The `source` field was removed in v7. Use `catalog_title` for display.
  * 
  * @param row - Chunk row from LanceDB
  * @throws {SchemaValidationError} If validation fails
@@ -243,8 +247,8 @@ export function detectVectorField(row: any): 'vector' | 'embeddings' | null {
  * ```
  */
 export function validateChunkRow(row: any): void {
-  // Validate required fields (id and hash are optional as they may be auto-generated)
-  validateRequiredFields(row, ['text', 'source'], 'chunk');
+  // Validate required fields (v7: text only; id/hash auto-generated, source removed)
+  validateRequiredFields(row, ['text'], 'chunk');
   
   // Validate vector field
   const vectorField = detectVectorField(row);
@@ -258,33 +262,31 @@ export function validateChunkRow(row: any): void {
   }
   validateEmbeddings(row, vectorField, 'chunk');
   
-  // Validate JSON fields (optional but must be valid if present)
-  if (row.concepts !== null && row.concepts !== undefined) {
-    validateJsonField(row, 'concepts', 'chunk');
-  }
+  // Validate array fields (optional but must be valid if present)
   if (row.concept_ids !== null && row.concept_ids !== undefined) {
     validateJsonField(row, 'concept_ids', 'chunk');
-  }
-  if (row.concept_categories !== null && row.concept_categories !== undefined) {
-    validateJsonField(row, 'concept_categories', 'chunk');
   }
 }
 
 /**
  * Validate concept row has all required fields with correct types.
  * 
- * **Validation Rules**:
- * - Required: concept, concept_type, category
+ * **Validation Rules (Normalized Schema)**:
+ * - Required: concept
  * - Vector: Must be 384-dimensional array
- * - JSON fields: sources, related_concepts, synonyms, etc. (optional)
+ * - Array fields: catalog_ids, adjacent_ids (native arrays, not JSON)
+ * - Optional JSON fields: synonyms, broader_terms, narrower_terms
  * 
  * @param row - Concept row from LanceDB
  * @throws {SchemaValidationError} If validation fails
  * @throws {InvalidEmbeddingsError} If embeddings are invalid
  */
 export function validateConceptRow(row: any): void {
-  // Validate required fields (concept_type is optional for backward compatibility)
-  validateRequiredFields(row, ['concept', 'category'], 'concept');
+  // Validate required name field (support both 'name' and legacy 'concept' field)
+  const conceptName = row.name || row.concept;
+  if (conceptName === undefined || conceptName === null) {
+    throw new SchemaValidationError('name', 'string', 'missing', { entityName: 'concept' });
+  }
   
   // Validate vector field
   const vectorField = detectVectorField(row);
@@ -295,15 +297,15 @@ export function validateConceptRow(row: any): void {
       'missing',
       {
         entityName: 'concept',
-        conceptName: row.concept,
+        conceptName: row.name,
         message: 'No vector field found - concept cannot be used for vector search'
       }
     );
   }
-  validateEmbeddings(row, vectorField, row.concept || 'concept');
+  validateEmbeddings(row, vectorField, row.name || 'concept');
   
-  // Validate JSON fields (all optional for concepts)
-  const jsonFields = ['sources', 'catalog_ids', 'related_concepts', 'synonyms', 'broader_terms', 'narrower_terms'];
+  // Validate optional JSON fields (only WordNet fields remain as JSON)
+  const jsonFields = ['synonyms', 'broader_terms', 'narrower_terms'];
   for (const field of jsonFields) {
     if (row[field] !== null && row[field] !== undefined) {
       validateJsonField(row, field, 'concept');
@@ -314,16 +316,28 @@ export function validateConceptRow(row: any): void {
 /**
  * Validate catalog row has all required fields.
  * 
- * Note: Catalog uses same structure as chunks but with rich concepts object.
+ * **Validation Rules (v7)**:
+ * - Required: source (document file path)
+ * - Optional: title, summary, concept_ids, concept_names, category_ids, category_names
+ * - Vector: Must be 384-dimensional array
  * 
  * @param row - Catalog row from LanceDB
  * @throws {SchemaValidationError} If validation fails
  */
 export function validateCatalogRow(row: any): void {
-  // Same validation as chunks
-  validateChunkRow(row);
+  // Catalog rows require source (the document file path)
+  validateRequiredFields(row, ['source'], 'catalog');
   
-  // Note: Catalog's concepts field is a rich object, not simple array
-  // We already validated it's valid JSON in validateChunkRow
+  // Validate vector field
+  const vectorField = detectVectorField(row);
+  if (!vectorField) {
+    throw new SchemaValidationError(
+      'vector or embeddings',
+      'array',
+      'missing',
+      { entityName: 'catalog', rowId: row.id, message: 'No vector field found' }
+    );
+  }
+  validateEmbeddings(row, vectorField, 'catalog');
 }
 

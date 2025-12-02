@@ -3,14 +3,16 @@ A concept is an abstract or concrete idea that can be identified, defined, and
 reused across texts. Concepts enable semantic search by capturing the MEANING 
 of content at multiple levels of abstraction.
 
-Extract ALL significant concepts from this document as JSON.
+Extract ALL significant concepts from this document as JSON, with a one-sentence 
+summary for each concept based on how it appears in this specific document.
 
 {CONTENT}
 
-Return JSON with these 3 fields:
-1. primary_concepts: Array of 80-150 strings (concepts at ALL levels: themes, methods, terms)
+Return JSON with these 2 fields:
+1. primary_concepts: Array of 80-150 objects, each with:
+   - "name": concept name (string, NO parenthetical clarifications)
+   - "summary": two-sentence definition based on this document's context (string, 30-50 words)
 2. categories: Array of 3-7 strings (academic/professional domain names)
-3. related_concepts: Array of 20-40 strings (related concepts from adjacent domains)
 
 EXTRACTION STRATEGY:
 Think hierarchically - extract concepts at THREE levels:
@@ -27,6 +29,37 @@ Think hierarchically - extract concepts at THREE levels:
    Examples: "ideality index", "contradiction matrix", "exaptive bootstrapping"
    Test: "Would this appear in a domain glossary or index?"
 
+CONCEPT NAME RULES:
+- Use clean, readable names WITHOUT parenthetical clarifications
+- Add domain context as part of the name itself, not in parentheses
+- Put any clarifying information in the summary, NOT the name
+
+Examples of GOOD names:
+- "military strategy" (not "military strategy (principles)")
+- "command and control" (not "command and control (civil-military relations)")
+- "terrain analysis" (not "terrain and topography analysis (ground classification)")
+- "spy operations" (not "intelligence and espionage (spycraft)")
+- "deception tactics" (not "deception and surprise (strategic deception)")
+
+Examples of BAD names (avoid these patterns):
+- "concept name (clarification)" ❌
+- "term (subtype)" ❌
+- "idea (context)" ❌
+
+SUMMARY REQUIREMENTS:
+For each concept, write a TWO-SENTENCE summary (30-50 words) that:
+- Sentence 1: Core definition - what the concept IS
+- Sentence 2: Context/application - how it's USED in this document
+- INCLUDES any clarifying context that might otherwise go in parentheses
+- Avoids starting with "A concept that..." or similar phrasing
+- Provides actionable understanding with domain-specific vocabulary
+
+Examples:
+- Good: "Systematic planning and conduct of armed conflict to achieve political objectives. Emphasizes deception, timing, logistics, terrain exploitation, and unified command to minimize costs while maximizing strategic advantage."
+- Good: "A technique for achieving loose coupling by passing dependencies to objects rather than having them create their own. Enables easier testing, modularity, and runtime configuration of component relationships."
+- Bad: "A concept related to innovation." (too vague, too short)
+- Bad: "Exaptive bootstrapping refers to..." (unnecessary prefix)
+
 IMPORTANT RULES:
 
 ✅ DO EXTRACT:
@@ -35,13 +68,26 @@ IMPORTANT RULES:
 - Concepts that unify multiple discussions
 - Book/chapter titles if they're conceptual (e.g., "innovation algorithm")
 
+⚠️ SPECIFICITY REQUIREMENTS:
+- Avoid generic single words that could be ambiguous across domains
+- Add domain context AS PART OF THE NAME (not in parentheses):
+  → "strategy" → "strategy pattern" (software) or "military strategy" (warfare)
+  → "factory" → "factory pattern" (software) or "factory automation" (manufacturing)
+  → "observer" → "observer pattern" (software) or "participant observation" (research)
+- Prefer "X pattern", "X principle", "X framework" over bare terms when applicable
+- If a concept is domain-specific, include enough context for disambiguation
+  → Good: "separation of concerns", "dependency injection", "feedback loops"
+  → Bad: "separation", "dependency", "feedback" (too generic)
+
 ❌ DO NOT EXTRACT:
+- Generic single words without domain context (e.g., "strategy", "pattern", "system")
 - Specific instances (e.g., "the 2015 study", "Company X's approach")  
 - Temporal phrases (e.g., "during the crisis", "in recent years")
 - Pure actions without conceptual content (e.g., "balancing three priorities")
   → But DO extract the concepts involved (e.g., "balance", "priority management")
 - Names of people, organizations, locations
 - Dates, page numbers, figure references
+- NEVER use parentheses in concept names
 
 CATEGORIES:
 Use standard academic/professional domain names:
@@ -49,5 +95,14 @@ Use standard academic/professional domain names:
 - Bad: "innovation", "systems", "psychology" (too broad)
 - Bad: "TRIZ su-field analysis" (too specific)
 
-Use lowercase. Output complete JSON with ALL fields fully populated.
+Use lowercase for concept names. Output complete JSON with ALL fields fully populated.
 
+Example output format:
+{
+  "primary_concepts": [
+    {"name": "dependency injection", "summary": "A technique for achieving loose coupling by passing dependencies to objects rather than having them create their own. Enables easier testing, modularity, and runtime configuration of component relationships."},
+    {"name": "separation of concerns", "summary": "Organizing code into distinct sections where each addresses a specific aspect of functionality. Reduces complexity by isolating changes and enabling independent development of modules."},
+    {"name": "military strategy", "summary": "Systematic planning and conduct of armed conflict to achieve political objectives. Emphasizes deception, timing, logistics, terrain exploitation, and unified command to minimize costs while maximizing strategic advantage."}
+  ],
+  "categories": ["software architecture", "design patterns", "object-oriented programming"]
+}

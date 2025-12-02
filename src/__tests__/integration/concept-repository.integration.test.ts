@@ -49,11 +49,8 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       
       // ASSERT: Concept should be found with correct data
       expect(isSome(conceptOpt)).toBe(true);
-      expect(isSome(conceptOpt)).toBe(true);
       // @ts-expect-error - Type narrowing limitation
-      expect((conceptOpt as { tag: "some"; value: Concept }).value.concept).toBe('clean architecture');
-      // @ts-expect-error - Type narrowing limitation
-      expect((conceptOpt as { tag: "some"; value: Concept }).value.category).toBe('Architecture Pattern');
+      expect((conceptOpt as { tag: "some"; value: Concept }).value.name).toBe('clean architecture');
     });
     
     it('should handle case-insensitive lookup', async () => {
@@ -74,9 +71,9 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       expect(isSome(mixedOpt)).toBe(true);
       if (isSome(lowerOpt) && isSome(upperOpt) && isSome(mixedOpt)) {
         // @ts-expect-error - Type narrowing limitation
-        expect(upperOpt.value.concept).toBe(lowerOpt.value.concept);
+        expect(upperOpt.value.name).toBe(lowerOpt.value.name);
         // @ts-expect-error - Type narrowing limitation
-        expect(mixedOpt.value.concept).toBe(lowerOpt.value.concept);
+        expect(mixedOpt.value.name).toBe(lowerOpt.value.name);
       }
     });
     
@@ -130,15 +127,14 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       // ACT: Retrieve concept
       const conceptOpt = await conceptRepo.findByName(conceptName);
       
-      // ASSERT: Verify all field mappings from LanceDB to domain model
-      expect(isSome(conceptOpt)).toBe(true);
+      // ASSERT: Verify all field mappings from LanceDB to domain model (normalized schema)
       expect(isSome(conceptOpt)).toBe(true);
       const c = conceptOpt.value;
       
       // String fields
-      expect(c.concept).toBeDefined();
-      expect(typeof c.concept).toBe('string');
-      expect(c.concept).toBe('dependency injection');
+      expect(c.name).toBeDefined();
+      expect(typeof c.name).toBe('string');
+      expect(c.name).toBe('dependency injection');
       
       // Vector field (critical)
       expect(c.embeddings).toBeDefined();
@@ -149,52 +145,35 @@ describe('LanceDBConceptRepository - Integration Tests', () => {
       expect(isArray || hasLength).toBe(true);
       expect(c.embeddings.length).toBe(384);
       
-      expect(c.category).toBeDefined();
-      expect(typeof c.category).toBe('string');
-      expect(c.category).toBe('Design Pattern');
-      
       // Number fields
       expect(c.weight).toBeDefined();
       expect(typeof c.weight).toBe('number');
       expect(c.weight).toBeGreaterThan(0);
       expect(c.weight).toBeLessThanOrEqual(1);
       
-      expect(c.chunkCount).toBeDefined();
-      expect(typeof c.chunkCount).toBe('number');
-      expect(c.chunkCount).toBeGreaterThan(0);
+      // Array fields (normalized schema uses native arrays, not JSON)
+      expect(c.catalogIds).toBeDefined();
+      expect(Array.isArray(c.catalogIds)).toBe(true);
       
-      // Array fields (JSON deserialized)
-      expect(c.sources).toBeDefined();
-      expect(Array.isArray(c.sources)).toBe(true);
-      expect(c.sources.length).toBeGreaterThan(0);
-      
-      expect(c.relatedConcepts).toBeDefined();
-      expect(Array.isArray(c.relatedConcepts)).toBe(true);
+      expect(c.adjacentIds).toBeDefined();
+      expect(Array.isArray(c.adjacentIds)).toBe(true);
     });
     
-    it('should parse JSON fields correctly', async () => {
-      // ARRANGE: Concept with JSON-stringified array fields
+    it('should handle array fields correctly', async () => {
+      // ARRANGE: Concept with array fields (normalized schema uses native arrays)
       const conceptName = 'clean architecture';
       
       // ACT: Retrieve concept
       const conceptOpt = await conceptRepo.findByName(conceptName);
       
-      // ASSERT: JSON fields should be deserialized to arrays
+      // ASSERT: Array fields should be properly mapped
       expect(isSome(conceptOpt)).toBe(true);
-      expect(isSome(conceptOpt)).toBe(true);
-      // Sources array
-      expect(Array.isArray(conceptOpt.value.sources)).toBe(true);
-      // @ts-expect-error - Type narrowing limitation
-      expect((conceptOpt as { tag: "some"; value: Concept }).value.sources.length).toBeGreaterThan(0);
-      // @ts-expect-error - Type narrowing limitation
-      expect((conceptOpt as { tag: "some"; value: Concept }).value.sources[0]).toContain('.pdf');
       
-      // Related concepts array
-      expect(Array.isArray(conceptOpt.value.relatedConcepts)).toBe(true);
-      // @ts-expect-error - Type narrowing limitation
-      expect((conceptOpt as { tag: "some"; value: Concept }).value.relatedConcepts.length).toBeGreaterThan(0);
-      // @ts-expect-error - Type narrowing limitation
-      expect((conceptOpt as { tag: "some"; value: Concept }).value.relatedConcepts).toContain('layered architecture');
+      // catalogIds array (replaces sources)
+      expect(Array.isArray(conceptOpt.value.catalogIds)).toBe(true);
+      
+      // adjacentIds array (replaces relatedConcepts)
+      expect(Array.isArray(conceptOpt.value.adjacentIds)).toBe(true);
     });
   });
   

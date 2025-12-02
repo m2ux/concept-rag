@@ -1,27 +1,32 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
-import { ConceptSearchService } from "../../domain/services/index.js";
-import { InputValidator } from "../../domain/services/validation/index.js";
-import { isSome, isErr } from "../../domain/functional/index.js";
+import { ConceptSearchService, ConceptSearchResult, EnrichedChunk, SourceWithPages } from "../../domain/services/concept-search-service.js";
 
 export interface ConceptSearchParams extends ToolParams {
+  /** The concept to search for */
   concept: string;
+  
+  /** Maximum sources to return (default: 20) */
   limit?: number;
+  
+  /** Optional source path filter */
   source_filter?: string;
+  
+  /** Show debug information */
+  debug?: boolean;
 }
 
 /**
- * MCP tool for concept search.
+ * MCP tool for hierarchical concept search.
  * 
- * This is a thin adapter that:
- * - Validates MCP parameters
- * - Delegates to ConceptSearchService for business logic
- * - Formats results as MCP response
+ * Provides comprehensive concept retrieval using hierarchical navigation:
+ * Concept → Pages → Chunks
  * 
- * Business logic is in ConceptSearchService for testability and reusability.
+ * Returns:
+ * - Concept metadata (summary, synonyms, related concepts)
+ * - Source documents with page-level context
+ * - Enriched chunks sorted by concept density
  */
 export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
-  private validator = new InputValidator();
-  
   constructor(
     private conceptSearchService: ConceptSearchService
   ) {
@@ -29,11 +34,13 @@ export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
   }
   
   name = "concept_search";
-  description = `Find all chunks tagged with a specific concept from the concept-enriched index. 
-  
+  description = `Find chunks associated with a concept, organized by source documents (hierarchical view).
+
+Uses fuzzy matching to find the concept, then **expands to include documents from lexically-related concepts**.
+For example: "software architecture" → also finds documents via "complexity software", "software design".
+
 USE THIS TOOL WHEN:
 - Searching for a conceptual topic (e.g., "innovation", "leadership", "strategic thinking")
-- You want semantically-tagged, high-precision results about a concept
 - Tracking where and how a concept is discussed across your library
 - Research queries focused on understanding a specific concept
 
@@ -42,22 +49,31 @@ DO NOT USE for:
 - Finding documents by title (use catalog_search instead)
 - Searching within a known document (use chunks_search instead)
 
-RETURNS: Concept-tagged chunks with concept_density scores, related concepts, and semantic categories. Results are from the concept-enriched index and have been semantically validated during extraction.`;
+RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
+- Concept metadata: summary, synonyms, broader/narrower terms
+- Source documents with match_type: 'primary' (direct) or 'related' (via linked concept)
+- Chunks: text with page numbers and concept density ranking`;
+
   inputSchema = {
     type: "object" as const,
     properties: {
       concept: {
         type: "string",
-        description: "The concept to search for - use conceptual terms not exact phrases (e.g., 'innovation' not 'innovation process', 'leadership' not 'leadership in organizations')",
+        description: "The concept to search for - use conceptual terms not exact phrases (e.g., 'innovation' not 'innovation process')",
       },
       limit: {
         type: "number",
-        description: "Maximum number of results to return (default: 10)",
-        default: 10
+        description: "Maximum number of sources to return (default: 20)",
+        default: 20
       },
       source_filter: {
         type: "string",
-        description: "Optional: Filter results to documents containing this text in their source path",
+        description: "Optional: Filter results to documents containing this text in their source path"
+      },
+      debug: {
+        type: "boolean",
+        description: "Show debug information",
+        default: false
       }
     },
     required: ["concept"],
@@ -65,20 +81,16 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
 
   async execute(params: ConceptSearchParams) {
     // Validate input
-    try {
-      this.validator.validateConceptSearch(params);
-    } catch (error: any) {
-      console.error(`❌ Validation failed: ${error.message}`);
+    if (!params.concept || params.concept.trim() === '') {
       return {
         isError: true,
         content: [{
           type: "text" as const,
           text: JSON.stringify({
             error: {
-              code: error.code || 'VALIDATION_ERROR',
-              message: error.message,
-              field: error.field,
-              context: error.context
+              code: 'VALIDATION_ERROR',
+              message: 'Concept name is required',
+              field: 'concept'
             },
             timestamp: new Date().toISOString()
           })
@@ -86,29 +98,33 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
       };
     }
     
-    const limit = params.limit || 10;
+    const maxSources = params.limit || 20;
     
-    console.error(`🔍 Searching for concept: "${params.concept}"`);
+    console.error(`🔍 Hierarchical concept search: "${params.concept}"`);
     
-    // Delegate to service for business logic
-    const result = await this.conceptSearchService.searchConcept({
-      concept: params.concept,
-      limit: limit,
-      sourceFilter: params.source_filter,
-      sortBy: 'density'
-    });
-    
-    // Handle Result type
-    if (isErr(result)) {
-      const error = result.error;
-      const errorMessage = 
-        error.type === 'validation' ? error.message :
-        error.type === 'database' ? error.message :
-        error.type === 'concept_not_found' ? `Concept not found: ${error.concept}` :
-        error.type === 'unknown' ? error.message :
-        'An unknown error occurred';
+    try {
+      // Perform hierarchical search
+      const result = await this.conceptSearchService.search({
+        concept: params.concept,
+        maxSources,
+        maxChunks: maxSources * 3, // ~3 chunks per source
+        chunksPerSource: 3,
+        sourceFilter: params.source_filter
+      });
       
-      console.error(`❌ Search failed: ${errorMessage}`);
+      // Format for MCP response
+      const formatted = this.formatResult(result, params.debug);
+      
+      console.error(`✅ Found: ${result.totalDocuments} documents, ${result.chunks.length} chunks across ${result.sources.length} sources`);
+      
+      return {
+        content: [
+          { type: "text" as const, text: JSON.stringify(formatted, null, 2) },
+        ],
+        isError: false,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       return {
         isError: true,
         content: [{
@@ -116,67 +132,79 @@ RETURNS: Concept-tagged chunks with concept_density scores, related concepts, an
           text: JSON.stringify({
             error: {
               code: 'SEARCH_ERROR',
-              message: errorMessage,
-              type: error.type
+              message: message
             },
             timestamp: new Date().toISOString()
           })
         }]
       };
     }
-    
-    // @ts-expect-error - Type narrowing limitation
-    const searchResult = result.value;
-    console.error(`✅ Found ${searchResult.chunks.length} matching chunks`);
-    
-    // Format as MCP response (pure presentation logic)
-    return this.formatMCPResponse(searchResult);
   }
   
   /**
-   * Format service result as MCP response.
-   * Pure presentation logic - converts domain model to MCP JSON format.
+   * Format hierarchical result for LLM consumption.
    */
-  private formatMCPResponse(result: any) {
-    // Format chunk results
-    const formattedChunks = result.chunks.map((chunk: any) => ({
-          text: chunk.text,
-          source: chunk.source,
-          concept_density: (chunk.conceptDensity || 0).toFixed(3),
-          concepts_in_chunk: chunk.concepts || [],
-          categories: chunk.conceptCategories || [],
-      relevance: this.conceptSearchService.calculateRelevance(chunk, result.concept)
+  private formatResult(result: ConceptSearchResult, debug?: boolean) {
+    // Format sources with page context and match type
+    const sources = result.sources.map((s: SourceWithPages) => ({
+      title: s.title,
+      pages: s.pageNumbers,
+      match_type: s.matchType,  // 'primary' or 'related'
+      via_concept: s.viaConcept,  // If 'related', the concept that linked here
+      page_previews: debug ? s.pagePreviews : undefined
     }));
-      
-    // Build response object
-      const response: any = {
-      concept: result.concept,
-      total_chunks_found: result.totalFound,
-      results: formattedChunks
-      };
-      
-      // Add concept metadata if available
-    if (isSome(result.conceptMetadata)) {
-        const metadata = result.conceptMetadata.value;
-        response.concept_metadata = {
-        category: metadata.category,
-        weight: metadata.weight,
-        chunk_count: metadata.chunkCount,
-        sources_count: metadata.sources.length
-        };
-        
-      // Add related concepts
-      if (result.relatedConcepts.length > 0) {
-        response.related_concepts = result.relatedConcepts;
-        }
-      }
+    
+    // Format chunks with enhanced metadata - use direct fields
+    const chunks = result.chunks.map((e: EnrichedChunk) => {
+      // Use derived concept_names field directly (new schema has this populated)
+      const conceptNames = (e.chunk.conceptNames && e.chunk.conceptNames.length > 0 && e.chunk.conceptNames[0] !== '')
+        ? e.chunk.conceptNames.slice(0, 10)
+        : [];
       
       return {
-        content: [
-          { type: "text" as const, text: JSON.stringify(response, null, 2) },
-        ],
-        isError: false,
+        text: e.chunk.text,
+        title: e.chunk.catalogTitle || e.documentTitle || '',
+        page: e.pageNumber,
+        concept_density: e.conceptDensity.toFixed(3),
+        concepts: conceptNames
       };
+    });
+    
+    return {
+      concept: result.concept,
+      concept_id: result.conceptId,
+      summary: result.summary,
+      
+      // Semantic relationships
+      related_concepts: result.relatedConcepts,
+      synonyms: result.synonyms,
+      broader_terms: result.broaderTerms,
+      narrower_terms: result.narrowerTerms,
+      
+      // Sources with page-level context
+      sources,
+      
+      // Enriched chunks (ranked by concept_density)
+      chunks,
+      
+      // Statistics
+      stats: {
+        total_documents: result.totalDocuments,
+        total_chunks: result.totalChunks,
+        sources_returned: result.sources.length,
+        chunks_returned: result.chunks.length
+      },
+      
+      // Detailed hybrid search scores (always shown for debugging)
+      ...(result.scores ? {
+        scores: {
+          hybrid: result.scores.hybridScore.toFixed(3),
+          name: result.scores.nameScore.toFixed(3),
+          vector: result.scores.vectorScore.toFixed(3),
+          bm25: result.scores.bm25Score.toFixed(3),
+          wordnet: result.scores.wordnetScore.toFixed(3)
+        }
+      } : {})
+    };
   }
 }
-

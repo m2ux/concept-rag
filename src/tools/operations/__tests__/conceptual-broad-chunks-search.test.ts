@@ -63,7 +63,7 @@ describe('ConceptualBroadChunksSearchTool', () => {
       // SETUP
       const testResults = Array.from({ length: 15 }, (_, i) =>
         createTestSearchResult({
-          id: `chunk-${i}`,
+          id: 5000 + i,
           source: `/test/doc${i}.pdf`,
           text: `Test chunk ${i} about testing`
         })

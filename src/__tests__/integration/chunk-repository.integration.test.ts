@@ -44,6 +44,8 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
     // Initialize ConceptIdCache for integer ID resolution
     const { ConceptIdCache } = await import('../../infrastructure/cache/concept-id-cache.js');
     const conceptIdCache = ConceptIdCache.getInstance();
+    // Clear any existing cache (singleton might be initialized from previous test)
+    conceptIdCache.clear();
     await conceptIdCache.initialize(conceptRepo);
     
     chunkRepo = new LanceDBChunkRepository(
@@ -72,7 +74,8 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       expect(chunks).toBeDefined();
       expect(chunks.length).toBeGreaterThan(0);
       expect(chunks[0].text).toContain('architecture');
-      expect(chunks[0].concepts).toContain('clean architecture');
+      // Note: chunks no longer store concept names, only conceptIds (normalized schema)
+      expect(chunks[0].conceptIds).toBeDefined();
     });
     
     it('should respect limit parameter', async () => {
@@ -139,39 +142,39 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
   });
   
   describe('findBySource', () => {
-    it('should find chunks from specific source', async () => {
-      // ARRANGE: Known source in test data
-      const sourcePath = '/docs/architecture/clean-architecture.pdf';
+    it('should find chunks by catalog title', async () => {
+      // ARRANGE: Use catalog_title from test data (v7 schema uses catalog_title, not source)
+      const catalogTitle = 'Clean Architecture';
       const limit = 10;
       
-      // ACT: Query chunks by exact source path
-      const chunks = await chunkRepo.findBySource(sourcePath, limit);
+      // ACT: Query chunks by catalog title
+      const chunks = await chunkRepo.findBySource(catalogTitle, limit);
       
-      // ASSERT: Verify chunks from specific source
+      // ASSERT: Verify chunks were found (matching via catalog_title)
       expect(chunks).toBeDefined();
       expect(chunks.length).toBeGreaterThan(0);
-      expect(chunks[0].source).toBe(sourcePath);
+      expect(typeof chunks[0].catalogId).toBe('number');  // Hash-based integer
     });
     
-    it('should handle partial source matching', async () => {
-      // ARRANGE: Partial path that matches multiple sources
-      const partialPath = 'architecture';
+    it('should handle partial title matching', async () => {
+      // ARRANGE: Partial title that matches
+      const partialTitle = 'architecture';
       
-      // ACT: Query with partial source match
-      const chunks = await chunkRepo.findBySource(partialPath, 10);
+      // ACT: Query with partial title match
+      const chunks = await chunkRepo.findBySource(partialTitle, 10);
       
-      // ASSERT: Should find chunks with 'architecture' in source path
+      // ASSERT: Should find chunks with 'architecture' in catalog_title
       expect(chunks).toBeDefined();
       expect(chunks.length).toBeGreaterThan(0);
-      expect(chunks[0].source).toContain('architecture');
+      expect(typeof chunks[0].catalogId).toBe('number');  // Hash-based integer
     });
     
-    it('should return empty array for non-existent source', async () => {
-      // ARRANGE: Source path not in test data
-      const nonExistentSource = '/nonexistent/path.pdf';
+    it('should return empty array for non-existent title', async () => {
+      // ARRANGE: Title not in test data
+      const nonExistentTitle = 'nonexistent-document-title-xyz';
       
-      // ACT: Query for non-existent source
-      const chunks = await chunkRepo.findBySource(nonExistentSource, 10);
+      // ACT: Query for non-existent title
+      const chunks = await chunkRepo.findBySource(nonExistentTitle, 10);
       
       // ASSERT: Should return empty array without error
       expect(chunks).toEqual([]);
@@ -197,7 +200,7 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       // Verify search result structure includes all scoring components
       const first = results[0];
       expect(first.text).toBeDefined();
-      expect(first.source).toBeDefined();
+      expect(first.catalogId).toBeDefined();  // catalogId instead of source
       expect(first.hybridScore).toBeDefined();
       expect(first.vectorScore).toBeDefined();
       expect(first.bm25Score).toBeDefined();
@@ -248,13 +251,13 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
   
   describe('field mapping validation', () => {
     it('should correctly map all chunk fields from LanceDB', async () => {
-      // ARRANGE: Query for specific chunk
-      const sourcePath = '/docs/principles/solid.pdf';
+      // ARRANGE: Query for specific chunk using catalog_title
+      const catalogTitle = 'SOLID Principles';
       
       // ACT: Retrieve chunk
-      const chunks = await chunkRepo.findBySource(sourcePath, 1);
+      const chunks = await chunkRepo.findBySource(catalogTitle, 1);
       
-      // ASSERT: Verify all field mappings from LanceDB to domain model
+      // ASSERT: Verify all field mappings from LanceDB to domain model (normalized schema)
       expect(chunks.length).toBe(1);
       const chunk = chunks[0];
       
@@ -262,19 +265,12 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       expect(chunk.text).toBeDefined();
       expect(typeof chunk.text).toBe('string');
       
-      expect(chunk.source).toBeDefined();
-      expect(typeof chunk.source).toBe('string');
+      expect(chunk.catalogId).toBeDefined();
+      expect(typeof chunk.catalogId).toBe('number');  // Hash-based integer ID
       
-      // Array fields (JSON deserialized)
-      expect(chunk.concepts).toBeDefined();
-      expect(Array.isArray(chunk.concepts)).toBe(true);
-      
-      expect(chunk.conceptCategories).toBeDefined();
-      expect(Array.isArray(chunk.conceptCategories)).toBe(true);
-      
-      // Number fields
-      expect(chunk.conceptDensity).toBeDefined();
-      expect(typeof chunk.conceptDensity).toBe('number');
+      // Array fields (native arrays - normalized schema)
+      expect(chunk.conceptIds).toBeDefined();
+      expect(Array.isArray(chunk.conceptIds)).toBe(true);
       
       // embeddings is optional, but if present should be array of correct dimension
       if (chunk.embeddings) {
@@ -286,21 +282,17 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
       }
     });
     
-    it('should parse JSON fields correctly', async () => {
-      // ARRANGE: Chunk with JSON-stringified array fields
-      const sourcePath = '/docs/principles/solid.pdf';
+    it('should handle array fields correctly', async () => {
+      // ARRANGE: Chunk with array fields (normalized schema uses native arrays)
+      const catalogTitle = 'SOLID Principles';
       
       // ACT: Retrieve chunk
-      const chunks = await chunkRepo.findBySource(sourcePath, 1);
+      const chunks = await chunkRepo.findBySource(catalogTitle, 1);
+      expect(chunks.length).toBeGreaterThan(0);
       const chunk = chunks[0];
       
-      // ASSERT: JSON fields should be deserialized to arrays
-      expect(Array.isArray(chunk.concepts)).toBe(true);
-      expect(chunk.concepts!.length).toBeGreaterThan(0);
-      expect(chunk.concepts).toContain('solid principles');
-      
-      expect(Array.isArray(chunk.conceptCategories)).toBe(true);
-      expect(chunk.conceptCategories!.length).toBeGreaterThan(0);
+      // ASSERT: ID-based array fields should be native arrays
+      expect(Array.isArray(chunk.conceptIds)).toBe(true);
     });
   });
   

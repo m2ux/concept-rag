@@ -5,24 +5,60 @@
  * Follows Four-Phase Test pattern from TDD for Embedded C (Grenning).
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
 import { ConceptualChunksSearchTool } from '../conceptual_chunks_search.js';
 import { ChunkSearchService } from '../../../domain/services/index.js';
+import { ConceptIdCache } from '../../../infrastructure/cache/concept-id-cache.js';
+import { CatalogSourceCache } from '../../../infrastructure/cache/catalog-source-cache.js';
 import {
   FakeChunkRepository,
-  createTestChunk
+  FakeCatalogRepository,
+  FakeConceptRepository,
+  createTestChunk,
+  createTestSearchResult
 } from '../../../__tests__/test-helpers/index.js';
 
 describe('ConceptualChunksSearchTool', () => {
   let chunkRepo: FakeChunkRepository;
+  let catalogRepo: FakeCatalogRepository;
+  let conceptRepo: FakeConceptRepository;
   let service: ChunkSearchService;
   let tool: ConceptualChunksSearchTool;
+  
+  beforeAll(async () => {
+    // Initialize global caches for tests
+    conceptRepo = new FakeConceptRepository();
+    const conceptIdCache = ConceptIdCache.getInstance();
+    conceptIdCache.clear();
+    await conceptIdCache.initialize(conceptRepo);
+    
+    // Initialize CatalogSourceCache with a fake catalog repo
+    const fakeCatalogRepo = new FakeCatalogRepository();
+    fakeCatalogRepo.addDocument(createTestSearchResult({
+      id: 12345678,
+      catalogId: 12345678,
+      source: '/test/doc.pdf',
+      text: 'Test document'
+    }));
+    const catalogSourceCache = CatalogSourceCache.getInstance();
+    catalogSourceCache.clear();
+    await catalogSourceCache.initialize(fakeCatalogRepo);
+  });
   
   beforeEach(() => {
     // SETUP - Fresh repositories and service for each test
     chunkRepo = new FakeChunkRepository();
-    service = new ChunkSearchService(chunkRepo);
-    tool = new ConceptualChunksSearchTool(service);
+    catalogRepo = new FakeCatalogRepository();
+    service = new ChunkSearchService(chunkRepo, catalogRepo);
+    tool = new ConceptualChunksSearchTool(service, catalogRepo);
+    
+    // Add a default catalog entry for test documents
+    catalogRepo.addDocument(createTestSearchResult({
+      id: 12345678,
+      catalogId: 12345678,
+      source: '/test/doc.pdf',
+      text: 'Test document'
+    }));
   });
   
   describe('execute', () => {
@@ -30,16 +66,18 @@ describe('ConceptualChunksSearchTool', () => {
       // SETUP
       const testChunks = [
         createTestChunk({
-          id: 'chunk-1',
-          source: '/test/doc.pdf',
+          id: 1001,
+          
+          catalogId: 12345678,  // matches catalog entry
           text: 'First chunk about testing',
-          concepts: ['testing']
+          conceptIds: [123456]
         }),
         createTestChunk({
-          id: 'chunk-2',
-          source: '/test/doc.pdf',
+          id: 1002,
+          
+          catalogId: 12345678,  // matches catalog entry
           text: 'Second chunk',
-          concepts: ['testing']
+          conceptIds: [123456]
         })
       ];
       testChunks.forEach(chunk => chunkRepo.addChunk(chunk));
@@ -63,12 +101,13 @@ describe('ConceptualChunksSearchTool', () => {
       expect(parsedContent[0].text).toBeDefined();
     });
     
-    it('should respect limit parameter (defaults to 5)', async () => {
-      // SETUP
-      const testChunks = Array.from({ length: 10 }, (_, i) =>
+    it('should respect limit parameter (defaults to 20)', async () => {
+      // SETUP - Add more than 20 chunks
+      const testChunks = Array.from({ length: 25 }, (_, i) =>
         createTestChunk({
-          id: `chunk-${i}`,
-          source: '/test/doc.pdf',
+          id: 5000 + i,
+          
+          catalogId: 12345678,  // matches catalog entry
           text: `Chunk ${i}`
         })
       );
@@ -82,17 +121,17 @@ describe('ConceptualChunksSearchTool', () => {
       
       // VERIFY
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.length).toBeLessThanOrEqual(5);
+      expect(parsedContent.length).toBeLessThanOrEqual(20);
     });
     
     it('should include concept information', async () => {
       // SETUP
       const testChunk = createTestChunk({
-        id: 'chunk-1',
-        source: '/test/doc.pdf',
+        id: 1001,
+        
+        catalogId: 12345678,  // matches catalog entry
         text: 'Test chunk',
-        concepts: ['testing', 'unit tests'],
-        conceptCategories: ['software engineering']
+        conceptIds: [111111, 222222],
       });
       chunkRepo.addChunk(testChunk);
       
@@ -104,9 +143,8 @@ describe('ConceptualChunksSearchTool', () => {
       
       // VERIFY
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent[0].concepts).toBeDefined();
-      expect(Array.isArray(parsedContent[0].concepts)).toBe(true);
-      expect(parsedContent[0].categories).toBeDefined();
+      expect(parsedContent[0].concept_ids).toBeDefined();
+      expect(Array.isArray(parsedContent[0].concept_ids)).toBe(true);
     });
     
     it('should handle empty results', async () => {
@@ -125,7 +163,7 @@ describe('ConceptualChunksSearchTool', () => {
     
     it('should handle errors gracefully', async () => {
       // SETUP - Simulate error
-      chunkRepo.findBySource = async () => {
+      chunkRepo.findByCatalogId = async () => {
         throw new Error('Database error');
       };
       

@@ -14,6 +14,7 @@
 import type { CategoryIdCache } from '../../infrastructure/cache/category-id-cache.js';
 import type { CatalogRepository } from '../../domain/interfaces/repositories/catalog-repository.js';
 import type { ConceptRepository } from '../../domain/interfaces/repositories/concept-repository.js';
+import { isSome } from '../../domain/functional/option.js';
 
 export interface ListConceptsInCategoryParams {
   /**
@@ -82,17 +83,13 @@ export async function listConceptsInCategory(
   const concepts = [];
   for (const conceptId of conceptsToFetch) {
     try {
-      const concept = await conceptRepo.findById(conceptId);
-      if (concept) {
+      const conceptOption = await conceptRepo.findById(conceptId);
+      if (isSome(conceptOption)) {
+        const concept = conceptOption.value;
         concepts.push({
           id: conceptId,
-          // @ts-expect-error - Type narrowing limitation
-          name: concept.concept,
-          // @ts-expect-error - Type narrowing limitation
-          type: concept.conceptType,
-          // @ts-expect-error - Type narrowing limitation
-          documentCount: concept.sources?.length || 0,
-          // @ts-expect-error - Type narrowing limitation
+          name: concept.name,
+          documentCount: concept.catalogIds?.length || 0,
           weight: concept.weight || 0
         });
       }

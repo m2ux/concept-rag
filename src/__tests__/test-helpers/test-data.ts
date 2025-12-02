@@ -19,13 +19,11 @@ import { Chunk, Concept, SearchResult } from '../../domain/models/index.js';
  */
 export function createTestChunk(overrides?: Partial<Chunk>): Chunk {
   return {
-    id: 'test-chunk-1',
+    id: 777888999,
     text: 'This is a test chunk about innovation and creativity in software development.',
-    source: '/test/documents/test-document.pdf',
+    catalogId: 12345678,  // Use catalogId lookup to get source
     hash: 'abc123def456',
-    concepts: ['innovation', 'creativity', 'software development'],
-    conceptCategories: ['business', 'technology', 'design'],
-    conceptDensity: 0.75,
+    conceptIds: [123456, 234567, 345678],
     ...overrides
   };
 }
@@ -38,18 +36,15 @@ export function createTestChunk(overrides?: Partial<Chunk>): Chunk {
  */
 export function createTestConcept(overrides?: Partial<Concept>): Concept {
   return {
-    concept: 'innovation',
-    conceptType: 'thematic',
-    category: 'business',
-    sources: ['/test/documents/test-document.pdf'],
+    name: 'innovation',
+    catalogIds: [12345678, 87654321],
+    adjacentIds: [11111111, 22222222, 33333333],
     relatedConcepts: ['creativity', 'disruption', 'change'],
     synonyms: ['novelty', 'originality'],
     broaderTerms: ['change', 'transformation'],
     narrowerTerms: ['breakthrough', 'invention'],
     embeddings: createTestEmbedding(),
     weight: 1.0,
-    chunkCount: 15,
-    enrichmentSource: 'corpus',
     ...overrides
   };
 }
@@ -68,7 +63,7 @@ export function createTestSearchResult(overrides?: Partial<SearchResult>): Searc
     vectorScore: 0.75,
     bm25Score: 0.8,
     titleScore: 0.5,
-    conceptScore: 0.9,
+    conceptScore: 0.7,
     wordnetScore: 0.6,
     hybridScore: 0.77,
     ...overrides
@@ -96,7 +91,7 @@ export function createTestEmbedding(dimension: number = 384, value: number = 0.5
 export function createTestChunks(count: number, overrides?: Partial<Chunk>): Chunk[] {
   return Array.from({ length: count }, (_, i) => 
     createTestChunk({
-      id: `test-chunk-${i + 1}`,
+      id: 1000000 + i,
       text: `Test chunk ${i + 1} with some unique content about concept ${i}.`,
       ...overrides
     })
@@ -113,7 +108,7 @@ export function createTestChunks(count: number, overrides?: Partial<Chunk>): Chu
 export function createTestConcepts(count: number, baseWord: string = 'concept'): Concept[] {
   return Array.from({ length: count }, (_, i) =>
     createTestConcept({
-      concept: `${baseWord}-${i + 1}`,
+      name: `${baseWord}-${i + 1}`,
       weight: 1.0 - (i * 0.1)
     })
   );

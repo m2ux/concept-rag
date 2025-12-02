@@ -1,4 +1,4 @@
-import { EmbeddingError, RateLimitError, ValidationError } from '../../domain/exceptions/index.js';
+import { RateLimitError, ValidationError } from '../../domain/exceptions/index.js';
 
 /**
  * Configuration for retry behavior.

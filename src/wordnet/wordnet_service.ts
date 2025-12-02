@@ -25,7 +25,7 @@ export class WordNetService {
             this.cacheLoaded = true;
             console.error(`📚 Loaded ${this.cache.size} WordNet entries from cache`);
         } catch (e) {
-            console.error('📚 No WordNet cache found, starting fresh');
+            console.warn('📚 No WordNet cache found, starting fresh');
             this.cacheLoaded = true;
         }
     }

@@ -121,38 +121,26 @@ describe('LanceDBCatalogRepository - Integration Tests', () => {
       }
     });
     
-    it('should handle case-insensitive source lookup', async () => {
+    it('should use exact source path matching (case-sensitive)', async () => {
+      // Note: Hash-based IDs are case-sensitive, so exact path is required
       const lowerOpt = await catalogRepo.findBySource('/docs/architecture/clean-architecture.pdf');
       const upperOpt = await catalogRepo.findBySource('/DOCS/ARCHITECTURE/CLEAN-ARCHITECTURE.PDF');
       
+      // Exact path should be found
       expect(isSome(lowerOpt)).toBe(true);
-      expect(isSome(upperOpt)).toBe(true);
-      if (isSome(lowerOpt) && isSome(upperOpt)) {
-        // @ts-expect-error - Type narrowing limitation
-        expect(lowerOpt.value.source).toBe(upperOpt.value.source);
-      }
+      // Different case should not match (hash-based lookup is case-sensitive)
+      expect(isNone(upperOpt)).toBe(true);
     });
     
-    it('should return low-scored result for non-existent source', async () => {
+    it('should return None for non-existent source', async () => {
       // ARRANGE: Query for source not in test data
       const nonExistentSource = '/nonexistent/document.pdf';
       
       // ACT: Query for non-existent source
       const resultOpt = await catalogRepo.findBySource(nonExistentSource);
       
-      // ASSERT: Hybrid search returns result but with very low score
-      // (This is correct behavior - hybrid search always returns results)
-      expect(isSome(resultOpt)).toBe(true);
-      
-      if (isSome(resultOpt)) {
-        const result = resultOpt.value;
-        // Should have low/zero scores since it doesn't match anything closely
-        // @ts-expect-error - Type narrowing limitation
-        expect(result.hybridScore).toBeLessThan(0.5);
-        // Title score should be 0 (no match)
-        // @ts-expect-error - Type narrowing limitation
-        expect(result.titleScore).toBe(0);
-      }
+      // ASSERT: Should return None for non-existent document
+      expect(isNone(resultOpt)).toBe(true);
     });
     
     it('should use hybrid search for source lookup', async () => {
@@ -202,7 +190,7 @@ describe('LanceDBCatalogRepository - Integration Tests', () => {
       expect(typeof doc.vectorScore).toBe('number');
       expect(typeof doc.bm25Score).toBe('number');
       expect(typeof doc.titleScore).toBe('number');
-      expect(typeof doc.conceptScore).toBe('number');
+      
       expect(typeof doc.wordnetScore).toBe('number');
     });
     
@@ -251,7 +239,7 @@ describe('LanceDBCatalogRepository - Integration Tests', () => {
       });
       
       // Find the TypeScript document
-      const tsDoc = results.find(r => r.source.includes('typescript'));
+      const tsDoc = results.find(r => r.source?.includes('typescript'));
       
       if (tsDoc) {
         expect(tsDoc.titleScore).toBeGreaterThan(0);

@@ -8,12 +8,12 @@
  * @param field - Field value from database
  * @returns Parsed array or empty array if invalid
  */
-export function parseJsonField(field: any): string[] {
+export function parseJsonField<T = string>(field: any): T[] {
   if (!field) return [];
-  if (Array.isArray(field)) return field;
+  if (Array.isArray(field)) return field as T[];
   if (typeof field === 'string') {
     try {
-      return JSON.parse(field);
+      return JSON.parse(field) as T[];
     } catch {
       return [];
     }

@@ -17,7 +17,7 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { createTestDatabase, TestDatabaseFixture } from './test-db-setup.js';
+import { useExistingTestDatabase, TestDatabaseFixture } from './test-db-setup.js';
 import { ApplicationContainer } from '../../application/container.js';
 
 describe('MCP Tools End-to-End Integration Tests', () => {
@@ -25,8 +25,8 @@ describe('MCP Tools End-to-End Integration Tests', () => {
   let container: ApplicationContainer;
   
   beforeAll(async () => {
-    // ARRANGE: Setup test database
-    fixture = createTestDatabase('mcp-tools-e2e');
+    // ARRANGE: Use existing test_db with real sample-docs data
+    fixture = useExistingTestDatabase('mcp-tools-e2e');
     await fixture.setup();
     
     // Create ApplicationContainer with test database
@@ -56,8 +56,8 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         
         const content = JSON.parse(result.content[0].text);
         expect(content.concept).toBe('clean architecture');
-        expect(Array.isArray(content.results)).toBe(true);
-        expect(content.total_chunks_found).toBeGreaterThanOrEqual(0);
+        expect(Array.isArray(content.chunks)).toBe(true);  // Uses 'chunks' not 'results'
+        expect(content.stats.total_chunks).toBeGreaterThanOrEqual(0);
       });
       
       it('should handle non-existent concepts gracefully', async () => {
@@ -70,9 +70,10 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         // ASSERT
         expect(result).toBeDefined();
         expect(result.content).toHaveLength(1);
-        // Should return empty results, not error
+        expect(result.isError).toBe(false);
+        // Should return empty or found results, not error
         const content = JSON.parse(result.content[0].text);
-        expect(Array.isArray(content.results)).toBe(true);
+        expect(Array.isArray(content.chunks)).toBe(true);  // Uses 'chunks' not 'results'
       });
       
       it('should respect limit parameter', async () => {
@@ -83,8 +84,11 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const result = await tool.execute({ concept: 'clean architecture', limit: 2 });
         
         // ASSERT
+        expect(result.isError).toBe(false);
         const content = JSON.parse(result.content[0].text);
-        expect(content.results.length).toBeLessThanOrEqual(2);
+        // Tool uses 'chunks' array, and limit applies to sources not chunks
+        expect(Array.isArray(content.chunks)).toBe(true);
+        expect(content.stats.sources_returned).toBeLessThanOrEqual(2);
       });
     });
     
@@ -198,8 +202,10 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         expect(result).toBeDefined();
         // Should return empty results or error, not crash
         const content = JSON.parse(result.content[0].text);
+        // May return error object or empty results array
+        const isErrorResponse = content.error !== undefined;
         const results = Array.isArray(content) ? content : content.results;
-        expect(Array.isArray(results)).toBe(true);
+        expect(isErrorResponse || Array.isArray(results)).toBe(true);
       });
     });
     
@@ -283,10 +289,10 @@ describe('MCP Tools End-to-End Integration Tests', () => {
       // ARRANGE & ACT
       const tools = container.getAllTools();
       const toolNames = tools.map(t => t.name);
-      const hasCategoryCache = container.getCategoryIdCache() !== undefined;
+      const hasCategoryRepo = container.getCategoryRepository() !== undefined;
       
       // ASSERT
-      if (hasCategoryCache) {
+      if (hasCategoryRepo) {
         expect(toolNames).toContain('category_search');
         expect(toolNames).toContain('list_categories');
         expect(toolNames).toContain('list_concepts_in_category');
@@ -296,7 +302,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
     describe('category_search tool', () => {
       it('should search documents by category when available', async () => {
         // ARRANGE
-        if (!container.getCategoryIdCache()) {
+        if (!container.getCategoryRepository()) {
           // Skip if categories not available
           return;
         }
@@ -312,14 +318,15 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         expect(result.isError).toBe(false);
         
         const content = JSON.parse(result.content[0].text);
-        expect(Array.isArray(content) || Array.isArray(content.results)).toBe(true);
+        // category_search returns { category, statistics, documents, ... }
+        expect(content.documents !== undefined || Array.isArray(content.results) || Array.isArray(content)).toBe(true);
       });
     });
     
     describe('list_categories tool', () => {
       it('should list all categories when available', async () => {
         // ARRANGE
-        if (!container.getCategoryIdCache()) {
+        if (!container.getCategoryRepository()) {
           // Skip if categories not available
           return;
         }
@@ -342,7 +349,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
     describe('list_concepts_in_category tool', () => {
       it('should list concepts in category when available', async () => {
         // ARRANGE
-        if (!container.getCategoryIdCache()) {
+        if (!container.getCategoryRepository()) {
           // Skip if categories not available
           return;
         }

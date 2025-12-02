@@ -34,12 +34,12 @@ async function runLiveTests() {
   let totalTests = 0;
   
   try {
-    // Test 1: concept_search - Find chunks by concept
-    console.log('📊 Test 1: concept_search');
+    // Test 1: concept_chunks - Find chunks by concept
+    console.log('📊 Test 1: concept_chunks');
     console.log('-'.repeat(70));
     totalTests++;
     try {
-      const tool = container.getTool('concept_search');
+      const tool = container.getTool('concept_chunks');
       const result = await tool.execute({ concept: 'healthcare', limit: 5 });
       
       const content = JSON.parse(result.content[0].text);

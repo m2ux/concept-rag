@@ -1,13 +1,8 @@
 #!/usr/bin/env tsx
-
-import * as lancedb from '@lancedb/lancedb';
-import { Document } from "@langchain/core/documents";
-import { ConceptExtractor } from '../src/concepts/concept_extractor.js';
-import { ConceptChunkMatcher } from '../src/concepts/concept_chunk_matcher.js';
-import { ConceptIndexBuilder } from '../src/concepts/concept_index.js';
-
 /**
  * Seed specific documents (by hash prefix or filename pattern)
+ * 
+ * Schema v7 compatible: Uses catalog_id for chunk lookups, concept_ids/concept_names
  * 
  * This script is useful when:
  * - Documents were never processed (skipped during initial seeding)
@@ -26,9 +21,31 @@ import { ConceptIndexBuilder } from '../src/concepts/concept_index.js';
  *   npx tsx scripts/seed_specific.ts --source "DistributedSystems/Transaction Processing_"
  */
 
+import * as lancedb from '@lancedb/lancedb';
+import { Document } from "@langchain/core/documents";
+import { ConceptExtractor } from '../src/concepts/concept_extractor.js';
+import { ConceptChunkMatcher } from '../src/concepts/concept_chunk_matcher.js';
+import { ConceptIndexBuilder } from '../src/concepts/concept_index.js';
+import { hashToId } from '../src/infrastructure/utils/hash.js';
+
 interface TargetDocument {
   entry: any;
   reason: string;
+}
+
+/**
+ * Parse array field from LanceDB (handles native arrays, Arrow Vectors, JSON strings)
+ */
+function parseArrayField<T>(value: any): T[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'object' && 'toArray' in value) {
+    return Array.from(value.toArray());
+  }
+  if (typeof value === 'string') {
+    try { return JSON.parse(value); } catch { return []; }
+  }
+  return [];
 }
 
 async function main() {
@@ -169,15 +186,16 @@ async function main() {
   for (let i = 0; i < targets.length; i++) {
     const { entry, reason } = targets[i];
     const filename = entry.source.split('/').pop();
+    const catalogId = typeof entry.id === 'number' ? entry.id : parseInt(entry.id, 10);
     
     console.log(`[${i + 1}/${targets.length}] 🔧 Seeding: ${filename}`);
     console.log(`   Previous: ${reason}`);
     
     try {
-      // Load chunks for this document
+      // Load chunks for this document (v7: use catalog_id instead of source)
       const docChunks = await chunksTable
         .query()
-        .where(`source = "${entry.source}"`)
+        .where(`catalog_id = ${catalogId}`)
         .limit(10000)
         .toArray();
       
@@ -219,6 +237,7 @@ async function main() {
         pageContent: '',
         metadata: {
           source: entry.source,
+          catalogId: catalogId,
           hash: entry.hash,
           concepts: concepts
         }
@@ -245,11 +264,12 @@ async function main() {
     return;
   }
   
-  // Update catalog
+  // Update catalog (v7: uses concept_ids/concept_names)
   console.log(`📝 Updating catalog with seeded concepts...`);
   
   for (const doc of seededDocs) {
     const source = doc.metadata.source;
+    const catalogId = doc.metadata.catalogId;
     const concepts = doc.metadata.concepts;
     
     try {
@@ -262,7 +282,7 @@ async function main() {
       // First, get the full record to preserve all fields
       const existingRecords = await catalogTable
         .query()
-        .where(`source = "${source}"`)
+        .where(`id = ${catalogId}`)
         .limit(1)
         .toArray();
       
@@ -273,38 +293,73 @@ async function main() {
       
       const existingRecord = existingRecords[0];
       
-      // Update the concepts field while preserving everything else
+      // v7: Store concept_ids and concept_names (native arrays)
+      // Handle concept objects with { name, summary } or plain strings
+      const rawConcepts = concepts.primary_concepts || concepts.concepts || [];
+      const primaryConcepts = rawConcepts
+        .map((c: any) => typeof c === 'string' ? c : c?.name)
+        .filter((name: any) => typeof name === 'string' && name.trim());
+      const conceptIds = primaryConcepts.map((name: string) => hashToId(name.toLowerCase().trim()));
+      const conceptNames = primaryConcepts.map((name: string) => name.toLowerCase().trim());
+      const categoryNames = (concepts.categories || [])
+        .filter((name: any) => typeof name === 'string' && name.trim());
+      
+      // Convert existing Arrow Vectors to native arrays before spreading
+      const vector = Array.isArray(existingRecord.vector) ? existingRecord.vector :
+                     (existingRecord.vector?.toArray ? Array.from(existingRecord.vector.toArray()) : []);
+      const existingCategoryIds = parseArrayField<number>(existingRecord.category_ids);
+      
+      // Update the concepts fields while preserving everything else
       const updatedRecord = {
-        ...existingRecord,
-        concepts: JSON.stringify(concepts)
+        id: existingRecord.id,
+        source: existingRecord.source,
+        title: existingRecord.title,
+        summary: existingRecord.summary || '',
+        hash: existingRecord.hash,
+        vector: vector,
+        concept_ids: conceptIds.length > 0 ? conceptIds : [0],
+        concept_names: conceptNames.length > 0 ? conceptNames : [''],
+        category_ids: existingCategoryIds.length > 0 ? existingCategoryIds : [0],
+        category_names: categoryNames.length > 0 ? categoryNames : [''],
+        origin_hash: existingRecord.origin_hash || '',
+        author: existingRecord.author || '',
+        year: existingRecord.year || 0,
+        publisher: existingRecord.publisher || '',
+        isbn: existingRecord.isbn || ''
       };
       
       // Delete old record and add updated one
-      await catalogTable.delete(`source = "${source}"`);
+      await catalogTable.delete(`id = ${catalogId}`);
       await catalogTable.add([updatedRecord]);
       
-      console.log(`   ✅ Updated: ${source.split('/').pop()}`);
+      // Verify the update persisted
+      const verifyRecord = await catalogTable.query().where(`id = ${catalogId}`).limit(1).toArray();
+      const verifyNames = parseArrayField<string>(verifyRecord[0]?.concept_names);
+      const validCount = verifyNames.filter(n => n && n !== '').length;
+      
+      console.log(`   ✅ Updated: ${source.split('/').pop()} (${validCount} concepts saved)`);
     } catch (error) {
       console.error(`   ❌ Failed to update ${source}: ${error}`);
     }
   }
   
-  // Enrich chunks
+  // Enrich chunks (v7: use catalog_id, concept_ids, concept_names)
   console.log(`🔄 Enriching chunks for seeded documents...`);
   
   const matcher = new ConceptChunkMatcher();
   let totalUpdated = 0;
   
   for (const doc of seededDocs) {
-    const source = doc.metadata.source;
+    const catalogId = doc.metadata.catalogId;
+    const catalogTitle = doc.metadata.source.split('/').pop()?.replace(/\.[^.]+$/, '') || '';
     const documentConcepts = doc.metadata.concepts;
     
-    console.log(`   📦 Processing chunks for: ${source.split('/').pop()}`);
+    console.log(`   📦 Processing chunks for: ${catalogTitle}`);
     
-    // Load chunks
+    // Load chunks (v7: use catalog_id instead of source)
     const chunks = await chunksTable
       .query()
-      .where(`source = "${source}"`)
+      .where(`catalog_id = ${catalogId}`)
       .limit(10000)
       .toArray();
     
@@ -312,24 +367,38 @@ async function main() {
     
     // Enrich all chunks in memory (fast)
     console.log(`      🔄 Enriching chunks...`);
-    const updatedChunks = chunks.map(chunk => {
+    const updatedChunks = chunks.map((chunk: any) => {
       const matched = matcher.matchConceptsToChunk(
         chunk.text || '',
         documentConcepts
       );
       
+      // v7: Use concept_ids and concept_names (native arrays)
+      const conceptIds = matched.concepts.map((name: string) => hashToId(name.toLowerCase().trim()));
+      const conceptNames = matched.concepts.map((name: string) => name.toLowerCase().trim());
+      
+      // Convert vector if needed
+      const vector = Array.isArray(chunk.vector) ? chunk.vector :
+                     (chunk.vector?.toArray ? Array.from(chunk.vector.toArray()) : []);
+      
       return {
-        ...chunk,
-        concepts: JSON.stringify(matched.concepts),
-        concept_categories: JSON.stringify(matched.categories),
-        concept_density: matched.concept_density
+        id: chunk.id,
+        catalog_id: catalogId,
+        catalog_title: catalogTitle,
+        text: chunk.text || '',
+        hash: chunk.hash || '',
+        vector: vector,
+        concept_ids: conceptIds.length > 0 ? conceptIds : [0],
+        concept_names: conceptNames.length > 0 ? conceptNames : [''],
+        concept_density: matched.concept_density,
+        page_number: chunk.page_number || 0
       };
     });
     
     console.log(`      🗑️  Deleting old chunks...`);
     try {
-      // Delete ALL chunks for this document at once (much faster than individual deletes)
-      await chunksTable.delete(`source = "${source}"`);
+      // Delete ALL chunks for this document at once (v7: use catalog_id)
+      await chunksTable.delete(`catalog_id = ${catalogId}`);
       
       console.log(`      ➕  Adding updated chunks...`);
       // Add all updated chunks back in batches of 500 (LanceDB limit)
@@ -352,73 +421,81 @@ async function main() {
   
   console.log(`   ✅ Total chunks updated: ${totalUpdated}`);
   
-  // Rebuild concept index
+  // Rebuild concept index (v7: uses concept_names arrays)
   console.log(`🧠 Rebuilding concept index...`);
   
   const allCatalogRows = await catalogTable.query().limit(100000).toArray();
   const allChunks = await chunksTable.query().limit(1000000).toArray();
   
-  // Transform catalog rows into Document objects for concept builder
-  const allCatalogFresh = allCatalogRows.map((row: any) => {
-    // Safe JSON parsing for catalog concepts
-    let concepts = row.concepts;
-    if (typeof concepts === 'string' && concepts.trim()) {
-      try {
-        concepts = JSON.parse(concepts);
-      } catch {
-        concepts = { primary_concepts: [], categories: [], related_concepts: [] };
-      }
-    } else if (!concepts) {
-      concepts = { primary_concepts: [], categories: [], related_concepts: [] };
+  // Build source → catalog ID map from ACTUAL catalog table IDs (foreign key constraint)
+  const sourceToCatalogId = new Map<string, number>();
+  for (const r of allCatalogRows) {
+    if (r.source && r.id !== undefined) {
+      sourceToCatalogId.set(r.source, typeof r.id === 'number' ? r.id : parseInt(r.id, 10));
     }
-    
-    return new Document({
-      pageContent: row.text || '',
-      metadata: {
-        source: row.source,
-        hash: row.hash,
-        concepts: concepts
-      }
-    });
-  });
+  }
+  console.log(`   ✅ Built source→catalogId map with ${sourceToCatalogId.size} entries`);
   
-  const docs = allChunks.map((chunk: any) => {
-    // Safe JSON parsing with fallbacks
-    let concepts = chunk.concepts;
-    if (typeof concepts === 'string' && concepts.trim()) {
-      try {
-        concepts = JSON.parse(concepts);
-      } catch {
-        concepts = [];
-      }
-    } else if (!concepts) {
-      concepts = [];
-    }
-    
-    let conceptCategories = chunk.concept_categories;
-    if (typeof conceptCategories === 'string' && conceptCategories.trim()) {
-      try {
-        conceptCategories = JSON.parse(conceptCategories);
-      } catch {
-        conceptCategories = [];
-      }
-    } else if (!conceptCategories) {
-      conceptCategories = [];
-    }
-    
-    return new Document({
-      pageContent: chunk.text || '',
-      metadata: {
-        source: chunk.source,
-        concepts: concepts,
-        concept_categories: conceptCategories,
-        concept_density: chunk.concept_density || 0
-      }
+  // Transform catalog rows into Document objects for concept builder
+  // v7: Use concept_names array instead of concepts JSON
+  const allCatalogFresh = allCatalogRows
+    .filter((row: any) => {
+      const conceptNames = parseArrayField<string>(row.concept_names);
+      const validConcepts = conceptNames.filter((n: any) => n && n !== '' && n !== 0);
+      return row.source && validConcepts.length > 0;
+    })
+    .map((row: any) => {
+      const conceptNames = parseArrayField<string>(row.concept_names)
+        .filter((n: any) => n && n !== '' && n !== 0);
+      const categoryNames = parseArrayField<string>(row.category_names)
+        .filter((n: any) => n && n !== '' && n !== 0);
+      
+      // Build ConceptMetadata structure expected by ConceptIndexBuilder
+      const concepts = {
+        primary_concepts: conceptNames,
+        categories: categoryNames,
+        related_concepts: []
+      };
+      
+      return new Document({
+        pageContent: row.summary || '',
+        metadata: {
+          source: row.source,
+          hash: row.hash,
+          concepts: concepts
+        }
+      });
     });
-  });
+  
+  console.log(`   ✅ Found ${allCatalogFresh.length} catalog entries with concepts`);
   
   const conceptBuilder = new ConceptIndexBuilder();
-  const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogFresh, docs);
+  // Pass actual catalog IDs from the database (foreign key constraint)
+  const conceptRecords = await conceptBuilder.buildConceptIndex(allCatalogFresh, sourceToCatalogId);
+  
+  // Build chunk_ids for each concept (reverse mapping from chunks → concepts)
+  console.log(`   🔗 Building concept → chunk_ids mapping...`);
+  const conceptToChunkIds = new Map<number, number[]>();
+  
+  for (const chunk of allChunks) {
+    const chunkId = chunk.id;
+    const conceptIds = parseArrayField<number>(chunk.concept_ids)
+      .filter((id: any) => id && id !== 0);
+    
+    for (const conceptId of conceptIds) {
+      if (!conceptToChunkIds.has(conceptId)) {
+        conceptToChunkIds.set(conceptId, []);
+      }
+      conceptToChunkIds.get(conceptId)!.push(chunkId);
+    }
+  }
+  
+  // Update concept records with chunk_ids
+  for (const concept of conceptRecords) {
+    const conceptId = hashToId(concept.name.toLowerCase().trim());
+    const chunkIds = conceptToChunkIds.get(conceptId) || [];
+    concept.chunk_ids = chunkIds;
+  }
   
   console.log(`   ✅ Built ${conceptRecords.length} concept records`);
   
@@ -430,7 +507,7 @@ async function main() {
     // Table might not exist
   }
   
-  const conceptsTable = await db.createTable('concepts', conceptRecords, { mode: 'create' });
+  await conceptBuilder.createConceptTable(db, conceptRecords, 'concepts');
   console.log(`   ✅ Created new concepts table with ${conceptRecords.length} records`);
   
   console.log(`✅ Seeding complete!`);

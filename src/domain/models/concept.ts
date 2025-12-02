@@ -4,50 +4,69 @@
  * Concepts are semantic entities identified in documents through AI extraction.
  * They are enriched with:
  * - WordNet relationships (synonyms, broader/narrower terms)
- * - Cross-document connections (sources, related concepts)
+ * - Cross-document connections via catalogIds
  * - Vector embeddings for similarity search
- * 
- * **Types**:
- * - **Thematic**: Abstract ideas or themes (e.g., 'innovation', 'leadership')
- * - **Terminology**: Technical terms or domain-specific vocabulary (e.g., 'REST API', 'microservice')
  * 
  * @example
  * ```typescript
  * const concept: Concept = {
- *   concept: 'machine learning',
- *   conceptType: 'thematic',
- *   category: 'artificial intelligence',
- *   sources: ['/docs/ai-intro.pdf', '/docs/ml-guide.pdf'],
+ *   name: 'machine learning',
+ *   catalogIds: [12345678, 87654321],
+ *   adjacentIds: [11111111, 22222222],  // co-occurrence
+ *   relatedIds: [33333333, 44444444],   // lexical links
  *   relatedConcepts: ['deep learning', 'neural networks'],
  *   synonyms: ['ML', 'statistical learning'],
  *   broaderTerms: ['artificial intelligence'],
  *   narrowerTerms: ['supervised learning', 'unsupervised learning'],
- *   embeddings: [0.1, 0.2, ...], // 384 dimensions
- *   weight: 0.85,
- *   chunkCount: 42,
- *   enrichmentSource: 'hybrid'
+ *   embeddings: [0.1, 0.2, ...],
+ *   weight: 0.85
  * };
  * ```
  */
 export interface Concept {
   /** The concept name (e.g., 'dependency injection', 'REST API') */
-  concept: string;
+  name: string;
+  
+  /** LLM-generated one-sentence summary of the concept */
+  summary?: string;
+  
+  /** 
+   * Document catalog IDs where this concept appears (hash-based integers).
+   * Primary authoritative field for document references.
+   */
+  catalogIds?: number[];
+
+  /**
+   * Chunk IDs where this concept appears (hash-based integers).
+   * Enables fast concept → chunks lookups without scanning chunks table.
+   */
+  chunkIds?: number[];
   
   /**
-   * Type of concept:
-   * - `thematic`: Abstract ideas or themes
-   * - `terminology`: Technical terms or domain vocabulary
+   * Denormalized catalog titles - DERIVED field for display and text search.
+   * Resolved from catalog_ids → catalog.source (title extracted from path).
+   * Enables human-readable document display without lookup.
    */
-  conceptType: 'thematic' | 'terminology';
+  catalogTitles?: string[];
   
-  /** Semantic category the concept belongs to (e.g., 'software design patterns') */
-  category: string;
+  /** 
+   * Adjacent concept IDs - co-occurrence based (concepts appearing together in documents).
+   * Hash-based integers.
+   */
+  adjacentIds?: number[];
   
-  /** Document sources where this concept appears */
-  sources: string[];
+  /** 
+   * Related concept IDs - lexically linked (concepts sharing significant words).
+   * E.g., "military strategy" ↔ "strategy pattern" share "strategy".
+   * Hash-based integers.
+   */
+  relatedIds?: number[];
   
-  /** Other concepts frequently mentioned alongside this one */
-  relatedConcepts: string[];
+  /** 
+   * Related concept names (resolved from relatedIds or adjacentIds).
+   * May be populated for API compatibility.
+   */
+  relatedConcepts?: string[];
   
   /** Alternative names or abbreviations (from WordNet or corpus analysis) */
   synonyms?: string[];
@@ -63,16 +82,4 @@ export interface Concept {
   
   /** Importance weight (0-1, based on frequency and centrality) */
   weight: number;
-  
-  /** Number of chunks containing this concept */
-  chunkCount?: number;
-  
-  /**
-   * Source of semantic enrichment:
-   * - `corpus`: Extracted from document analysis alone
-   * - `wordnet`: Enriched with WordNet relationships
-   * - `hybrid`: Both corpus extraction and WordNet enrichment
-   */
-  enrichmentSource: 'corpus' | 'wordnet' | 'hybrid';
 }
-

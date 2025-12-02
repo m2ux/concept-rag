@@ -458,14 +458,10 @@ src/domain/functional/
 ├── option.ts (185 lines)
 ├── railway.ts (515 lines)
 ├── index.ts (exports)
-└── __tests__/
-    ├── result.test.ts (51 tests)
-    ├── either.test.ts (50 tests)
-    ├── option.test.ts (51 tests)
-    └── railway.test.ts (34 tests)
+└── README.md
 ```
 
-**Test Coverage**: 186 tests, 100% passing
+**Note**: Unit tests for functional types were removed in December 2025 as over-testing of simple utility types. The implementations are stable and well-documented.
 
 ### Phase 2: Repository Option Methods ✅
 
