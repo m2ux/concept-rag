@@ -240,7 +240,7 @@ Catalog   Chunks   Concepts   Categories
    (Vector + BM25 + Concepts + WordNet)
 ```
 
-**Four-Table Normalized Schema (v7):**
+**Four-Table Normalized Schema:**
 - **Catalog**: Document metadata with derived `concept_names`, `category_names`
 - **Chunks**: Text segments with `catalog_title`, `concept_names`
 - **Concepts**: Deduplicated index with lexical/adjacent relationships
