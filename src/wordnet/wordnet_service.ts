@@ -188,6 +188,203 @@ export class WordNetService {
         };
     }
     
+    /**
+     * Get broader terms (hypernyms) for a word.
+     * 
+     * Returns generalized/parent concepts from WordNet hierarchy.
+     * Example: "dog" → ["canine", "mammal", "animal"]
+     * 
+     * @param word - Word to look up
+     * @param depth - How many levels up to traverse (default: 1)
+     * @returns Array of broader terms
+     */
+    async getBroaderTerms(
+        word: string,
+        depth: number = 1
+    ): Promise<string[]> {
+        const synsets = await this.getSynsets(word);
+        
+        if (synsets.length === 0) {
+            return [];
+        }
+        
+        const broaderTerms = new Set<string>();
+        
+        // Get hypernyms from all synsets at requested depth
+        for (const synset of synsets) {
+            for (const hypernym of synset.hypernyms) {
+                broaderTerms.add(hypernym.toLowerCase());
+                
+                // If depth > 1, recursively get hypernyms
+                if (depth > 1) {
+                    const moreHypernyms = await this.getBroaderTerms(hypernym, depth - 1);
+                    for (const h of moreHypernyms) {
+                        broaderTerms.add(h.toLowerCase());
+                    }
+                }
+            }
+        }
+        
+        return [...broaderTerms];
+    }
+    
+    /**
+     * Get narrower terms (hyponyms) for a word.
+     * 
+     * Returns specialized/child concepts from WordNet hierarchy.
+     * Example: "animal" → ["mammal", "bird", "fish", "reptile"]
+     * 
+     * @param word - Word to look up
+     * @param depth - How many levels down to traverse (default: 1)
+     * @returns Array of narrower terms
+     */
+    async getNarrowerTerms(
+        word: string,
+        depth: number = 1
+    ): Promise<string[]> {
+        const synsets = await this.getSynsets(word);
+        
+        if (synsets.length === 0) {
+            return [];
+        }
+        
+        const narrowerTerms = new Set<string>();
+        
+        // Get hyponyms from all synsets at requested depth
+        for (const synset of synsets) {
+            for (const hyponym of synset.hyponyms) {
+                narrowerTerms.add(hyponym.toLowerCase());
+                
+                // If depth > 1, recursively get hyponyms
+                if (depth > 1) {
+                    const moreHyponyms = await this.getNarrowerTerms(hyponym, depth - 1);
+                    for (const h of moreHyponyms) {
+                        narrowerTerms.add(h.toLowerCase());
+                    }
+                }
+            }
+        }
+        
+        return [...narrowerTerms];
+    }
+    
+    /**
+     * Get synonyms for a word.
+     * 
+     * Returns words with the same meaning from WordNet.
+     * 
+     * @param word - Word to look up
+     * @returns Array of synonyms
+     */
+    async getSynonyms(word: string): Promise<string[]> {
+        const synsets = await this.getSynsets(word);
+        
+        if (synsets.length === 0) {
+            return [];
+        }
+        
+        const synonyms = new Set<string>();
+        
+        for (const synset of synsets) {
+            for (const syn of synset.synonyms) {
+                const synLower = syn.toLowerCase();
+                // Don't include the original word as a synonym
+                if (synLower !== word.toLowerCase()) {
+                    synonyms.add(synLower);
+                }
+            }
+        }
+        
+        return [...synonyms];
+    }
+    
+    /**
+     * Get related terms in all directions (synonyms, broader, narrower).
+     * 
+     * Useful for comprehensive term expansion.
+     * 
+     * @param word - Word to look up
+     * @returns Object with all related terms
+     */
+    async getAllRelatedTerms(
+        word: string
+    ): Promise<{
+        synonyms: string[];
+        broader: string[];
+        narrower: string[];
+    }> {
+        const [synonyms, broader, narrower] = await Promise.all([
+            this.getSynonyms(word),
+            this.getBroaderTerms(word, 1),
+            this.getNarrowerTerms(word, 1)
+        ]);
+        
+        return { synonyms, broader, narrower };
+    }
+    
+    /**
+     * Find the path between two concepts in WordNet hierarchy.
+     * 
+     * Useful for understanding semantic distance between concepts.
+     * Returns undefined if no path found within max depth.
+     * 
+     * @param term1 - First term
+     * @param term2 - Second term
+     * @param maxDepth - Maximum search depth (default: 5)
+     * @returns Path array or undefined
+     */
+    async findHierarchyPath(
+        term1: string,
+        term2: string,
+        maxDepth: number = 5
+    ): Promise<string[] | undefined> {
+        const term2Lower = term2.toLowerCase();
+        const visited = new Set<string>();
+        
+        // BFS to find path
+        const queue: Array<{ term: string; path: string[] }> = [
+            { term: term1, path: [term1] }
+        ];
+        
+        while (queue.length > 0) {
+            const { term, path } = queue.shift()!;
+            
+            if (path.length > maxDepth) {
+                continue;
+            }
+            
+            const termLower = term.toLowerCase();
+            
+            if (termLower === term2Lower) {
+                return path;
+            }
+            
+            if (visited.has(termLower)) {
+                continue;
+            }
+            visited.add(termLower);
+            
+            // Get related terms
+            const synsets = await this.getSynsets(term);
+            for (const synset of synsets) {
+                // Check hypernyms
+                for (const hypernym of synset.hypernyms) {
+                    if (!visited.has(hypernym.toLowerCase())) {
+                        queue.push({ term: hypernym, path: [...path, hypernym] });
+                    }
+                }
+                // Check hyponyms
+                for (const hyponym of synset.hyponyms) {
+                    if (!visited.has(hyponym.toLowerCase())) {
+                        queue.push({ term: hyponym, path: [...path, hyponym] });
+                    }
+                }
+            }
+        }
+        
+        return undefined;
+    }
+    
     // Get synsets from WordNet
     async getSynsets(word: string): Promise<WordNetSynset[]> {
         // Ensure cache is loaded
