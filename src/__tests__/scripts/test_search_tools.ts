@@ -203,7 +203,11 @@ async function runToolTest(
   toolName: string
 ): Promise<TestResult> {
   try {
-    const response = await tool.execute({ text: query, debug: false });
+    // concept_search uses 'concept' param, others use 'text'
+    const params = toolName === 'concept_search' 
+      ? { concept: query, debug: false }
+      : { text: query, debug: false };
+    const response = await tool.execute(params);
     
     if (response.isError) {
       return {
@@ -218,8 +222,14 @@ async function runToolTest(
       };
     }
     
-    const results = JSON.parse(response.content[0].text);
-    const resultCount = Array.isArray(results) ? results.length : 0;
+    const parsed = JSON.parse(response.content[0].text);
+    
+    // Handle different response formats
+    // - catalog_search, broad_chunks_search: array of results
+    // - concept_search: { concept, chunks, stats, scores }
+    const isConceptSearch = toolName === 'concept_search';
+    const results = isConceptSearch ? (parsed.chunks || []) : (Array.isArray(parsed) ? parsed : []);
+    const resultCount = results.length;
     
     if (resultCount === 0) {
       return {
@@ -234,17 +244,35 @@ async function runToolTest(
     }
     
     const top = results[0];
-    const topScore = parseFloat(top.scores?.hybrid || top.hybridScore || '0');
-    const topResult = top.source || top.concept || top.text?.slice(0, 50) || 'Unknown';
     
-    // Extract scores if available
-    const scores = top.scores ? {
-      vector: parseFloat(top.scores.vector || '0'),
-      bm25: parseFloat(top.scores.bm25 || '0'),
-      title: parseFloat(top.scores.title || '0'),
-      wordnet: parseFloat(top.scores.wordnet || '0'),
-      hybrid: topScore
-    } : undefined;
+    // Get scores based on tool type
+    let topScore: number;
+    let scores: any;
+    
+    if (isConceptSearch) {
+      // concept_search has scores at root level
+      topScore = parseFloat(parsed.scores?.hybrid || '0');
+      scores = parsed.scores ? {
+        vector: parseFloat(parsed.scores.vector || '0'),
+        bm25: parseFloat(parsed.scores.bm25 || '0'),
+        name: parseFloat(parsed.scores.name || '0'),
+        wordnet: parseFloat(parsed.scores.wordnet || '0'),
+        hybrid: topScore
+      } : undefined;
+    } else {
+      topScore = parseFloat(top.scores?.hybrid || top.hybridScore || '0');
+      scores = top.scores ? {
+        vector: parseFloat(top.scores.vector || '0'),
+        bm25: parseFloat(top.scores.bm25 || '0'),
+        title: parseFloat(top.scores.title || '0'),
+        wordnet: parseFloat(top.scores.wordnet || '0'),
+        hybrid: topScore
+      } : undefined;
+    }
+    
+    const topResult = isConceptSearch 
+      ? (parsed.concept || top.title || 'Unknown')
+      : (top.source || top.concept || top.text?.slice(0, 50) || 'Unknown');
     
     return {
       tool: toolName,
