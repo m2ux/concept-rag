@@ -6,7 +6,6 @@ import {
 import * as path from 'path';
 import { Document } from "@langchain/core/documents";
 import * as fs from 'fs';
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import * as crypto from 'crypto';
 import * as defaults from './src/config.js';
 import { ConceptExtractor } from './src/concepts/concept_extractor.js';
@@ -32,7 +31,7 @@ import {
   type DataCompletenessCheck
 } from './src/infrastructure/seeding/index.js';
 import { generateCategorySummaries } from './src/concepts/summary_generator.js';
-import { parseFilenameMetadata, normalizeText } from './src/infrastructure/utils/filename-metadata-parser.js';
+import { parseFilenameMetadata } from './src/infrastructure/utils/filename-metadata-parser.js';
 import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
 import { ConceptEnricher } from './src/concepts/concept_enricher.js';
 import { ParallelConceptExtractor, DocumentSet } from './src/concepts/parallel-concept-extractor.js';
