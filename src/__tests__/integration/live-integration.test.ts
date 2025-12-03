@@ -7,7 +7,7 @@
  * 3. Dependency injection is properly wired
  */
 
-import { ApplicationContainer } from '../../src/application/container.js';
+import { ApplicationContainer } from '../../application/container.js';
 
 // Database path - defaults to test database
 const DB_PATH = process.env.DB_PATH || './db/test';

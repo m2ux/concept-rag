@@ -7,7 +7,7 @@
 set -e  # Exit on error
 
 TEST_DB="./db/test"
-SAMPLE_DOCS="../../sample-docs"
+SAMPLE_DOCS="./sample-docs"
 
 echo "╔════════════════════════════════════════════════════════════════╗"
 echo "║     SAFE TEST DATABASE SETUP                                   ║"
@@ -45,7 +45,7 @@ echo "📦 Creating test database with sample healthcare documents..."
 echo ""
 
 # Run seeding (will skip concept extraction if no API key)
-npx tsx ../../hybrid_fast_seed.ts \
+npx tsx hybrid_fast_seed.ts \
     --dbpath "$TEST_DB" \
     --filesdir "$SAMPLE_DOCS" \
     --overwrite
@@ -59,6 +59,6 @@ echo "✅ Test database created at: $TEST_DB"
 echo "✅ Main database preserved at: ~/.concept_rag"
 echo ""
 echo "Next step: Run integration tests"
-echo "  npx tsx test/integration/live-integration.test.ts"
+echo "  npx tsx src/__tests__/integration/live-integration.test.ts"
 echo ""
 

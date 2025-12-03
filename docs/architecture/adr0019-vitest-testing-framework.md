@@ -79,7 +79,7 @@ export default defineConfig({
 - `concept-search.test.ts` - 9 tests (tool with fake repositories)
 
 **Integration Tests (5 tests):** [Source: `PR-DESCRIPTION.md`, line 67]
-- `test/integration/live-integration.test.ts` - All 5 MCP tools with real database
+- `src/__tests__/integration/live-integration.test.ts` - All 5 MCP tools with real database
 
 **Test Helpers:** [Source: `src/__tests__/test-helpers/`]
 - Mock repositories (fakes implementing interfaces)
