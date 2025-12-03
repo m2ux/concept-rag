@@ -86,36 +86,6 @@ npx tsx hybrid_fast_seed.ts \
 npx tsx hybrid_fast_seed.ts \
   --dbpath ~/.concept_rag \
   --filesdir ~/Documents/my-pdfs
-
-# Parallel concept extraction (10 documents concurrently, default)
-npx tsx hybrid_fast_seed.ts \
-  --dbpath ~/.concept_rag \
-  --filesdir ~/Documents/my-pdfs \
-  --parallel 15
-
-# Resume interrupted seeding (skip checkpoint documents)
-npx tsx hybrid_fast_seed.ts \
-  --dbpath ~/.concept_rag \
-  --filesdir ~/Documents/my-pdfs \
-  --resume
-
-# Clear checkpoint and start fresh
-npx tsx hybrid_fast_seed.ts \
-  --dbpath ~/.concept_rag \
-  --filesdir ~/Documents/my-pdfs \
-  --clean-checkpoint
-
-# Rebuild concept index (after algorithm updates)
-npx tsx hybrid_fast_seed.ts \
-  --dbpath ~/.concept_rag \
-  --filesdir ~/Documents/my-pdfs \
-  --rebuild-concepts
-
-# Fix incomplete catalog records
-npx tsx hybrid_fast_seed.ts \
-  --dbpath ~/.concept_rag \
-  --filesdir ~/Documents/my-pdfs \
-  --auto-reseed
 ```
 
 **Seeding Options:**
