@@ -1,17 +1,39 @@
 import { spawn } from 'child_process';
 import * as fs from 'fs/promises';
 import { WordNetSynset } from '../concepts/types.js';
+import { 
+    SynsetSelectionStrategy, 
+    SelectionContext, 
+    defaultStrategy 
+} from './strategies/index.js';
 
 export class WordNetService {
     private cache = new Map<string, WordNetSynset[]>();
     private cacheFile = './data/caches/wordnet_cache.json';
     private cacheLoaded = false;
+    private selectionStrategy: SynsetSelectionStrategy;
     
-    constructor() {
+    constructor(strategy?: SynsetSelectionStrategy) {
+        this.selectionStrategy = strategy || defaultStrategy;
         // Load cache asynchronously (don't block constructor)
         this.loadCache().catch(err => {
             console.debug('WordNet cache load failed:', err.message);
         });
+    }
+    
+    /**
+     * Set the synset selection strategy.
+     * Allows runtime switching of disambiguation algorithms.
+     */
+    setStrategy(strategy: SynsetSelectionStrategy): void {
+        this.selectionStrategy = strategy;
+    }
+    
+    /**
+     * Get the current selection strategy name.
+     */
+    getStrategyName(): string {
+        return this.selectionStrategy.name;
     }
     
     // Load cache from disk
@@ -61,6 +83,50 @@ export class WordNetService {
         this.cache.set(cacheKey, result);
         
         return result;
+    }
+    
+    /**
+     * Get the best synset for a word using the configured selection strategy.
+     * 
+     * Uses the strategy pattern to select the most appropriate synset
+     * based on query context and domain hints.
+     * 
+     * @param word - Word to look up
+     * @param context - Selection context for disambiguation
+     * @returns Best matching synset or undefined if not found
+     */
+    async getContextualSynset(
+        word: string, 
+        context: SelectionContext
+    ): Promise<WordNetSynset | undefined> {
+        const synsets = await this.getSynsets(word);
+        
+        if (synsets.length === 0) {
+            return undefined;
+        }
+        
+        return this.selectionStrategy.selectSynset(synsets, context);
+    }
+    
+    /**
+     * Score all synsets for a word using the configured strategy.
+     * 
+     * @param word - Word to look up
+     * @param context - Selection context for scoring
+     * @returns Array of synsets with scores, sorted by score descending
+     */
+    async scoreSynsets(
+        word: string,
+        context: SelectionContext
+    ): Promise<Array<{ synset: WordNetSynset; score: number }>> {
+        const synsets = await this.getSynsets(word);
+        
+        const scored = synsets.map(synset => ({
+            synset,
+            score: this.selectionStrategy.scoreSynset(synset, context)
+        }));
+        
+        return scored.sort((a, b) => b.score - a.score);
     }
     
     private async wordnetLookup(word: string): Promise<WordNetSynset[]> {
