@@ -8,8 +8,6 @@ import { Document } from "@langchain/core/documents";
 import * as fs from 'fs';
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import * as crypto from 'crypto';
-import { execSync, spawn } from 'child_process';
-import * as os from 'os';
 import * as defaults from './src/config.js';
 import { ConceptExtractor } from './src/concepts/concept_extractor.js';
 import { ConceptIndexBuilder } from './src/concepts/concept_index.js';
@@ -26,6 +24,7 @@ import { ConceptEnricher } from './src/concepts/concept_enricher.js';
 import { ParallelConceptExtractor, DocumentSet } from './src/concepts/parallel-concept-extractor.js';
 import { ProgressBarDisplay, createProgressBarDisplay } from './src/infrastructure/cli/progress-bar-display.js';
 import { SimpleEmbeddingService } from './src/infrastructure/embeddings/simple-embedding-service.js';
+import { processWithTesseract } from './src/infrastructure/ocr/index.js';
 
 // Shared embedding service instance for consistent embeddings
 const embeddingService = new SimpleEmbeddingService();
@@ -64,39 +63,6 @@ function writeToLog(level: string, ...args: any[]) {
  * The environment variable must be set before the script runs because
  * the native Rust module reads it during initialization (before any code executes).
  */
-
-// ASCII progress bar utility with gradual progress for both stages
-function drawProgressBar(stage: 'converting' | 'processing', current: number, total: number, width: number = 40): string {
-    let percentage: number;
-    let statusText: string;
-    
-    if (stage === 'converting') {
-        // PDF conversion progress: 0% to 15%
-        // Since pdftoppm is synchronous, we show either start (~1%) or complete (15%)
-        if (current >= total) {
-            percentage = 15;
-            statusText = `Converted ${total} pages to images`;
-        } else {
-            percentage = current === 0 ? 1 : Math.round((current / Math.max(total, 1)) * 15);
-            statusText = `Converting page ${current}/${total} to images`;
-        }
-    } else {
-        // OCR processing: 15% to 100% (85% of total work)
-        const ocrProgress = (current / total) * 85;
-        percentage = Math.round(15 + ocrProgress);
-        statusText = `OCR processing page ${current}/${total}`;
-    }
-    
-    const filled = Math.round((percentage / 100) * width);
-    const empty = width - filled;
-    
-    const bar = '█'.repeat(filled) + '░'.repeat(empty);
-    const progress = `🔍 OCR Progress: [${bar}] ${percentage}% (${statusText})`;
-    
-    // Pad with spaces to ensure complete line overwrite (120 chars should cover most terminals)
-    const paddedProgress = progress.padEnd(120, ' ');
-    return paddedProgress;
-}
 
 // Handle unhandled promise rejections to prevent crashes
 process.on('unhandledRejection', (reason: any, promise) => {
@@ -268,242 +234,6 @@ async function callOpenRouterChat(text: string): Promise<string> {
 
     const data = await response.json();
     return data.choices[0].message.content.trim();
-}
-
-// Convert PDF file to base64 for LLM OCR processing
-function pdfToBase64(filePath: string): string {
-    const fileBuffer = fs.readFileSync(filePath);
-    return fileBuffer.toString('base64');
-}
-
-// OCR processing (using local Tesseract)
-async function callOpenRouterOCR(pdfPath: string): Promise<{ documents: Document[], ocrStats: { totalPages: number, totalChars: number, success: boolean } }> {
-    
-    const tempDir = os.tmpdir();
-    const fileName = path.basename(pdfPath, '.pdf');
-    const tempImagePrefix = path.join(tempDir, `ocr_${fileName}`);
-    
-    try {
-        // Step 1: Check if required tools are available
-        try {
-            execSync('pdftoppm --help', { stdio: 'ignore' });
-            execSync('tesseract --help', { stdio: 'ignore' });
-            execSync('pdfinfo -h', { stdio: 'ignore' });
-        } catch (toolError) {
-            throw new Error('Required tools missing. Install: sudo apt install poppler-utils tesseract-ocr (Ubuntu) or brew install poppler tesseract (macOS)');
-        }
-        
-        // Step 2: Get page count first
-        let pageCount = 1;
-        try {
-            // Get actual page count using pdfinfo
-            const pdfInfo = execSync(`pdfinfo "${pdfPath}"`, { encoding: 'utf-8', stdio: 'pipe' });
-            const pageMatch = pdfInfo.match(/Pages:\s*(\d+)/);
-            if (pageMatch) {
-                pageCount = parseInt(pageMatch[1]);
-            }
-        } catch (infoError) {
-            // If pdfinfo fails, we'll detect from generated images
-        }
-        
-        // Show conversion start (1% progress to indicate activity)
-        process.stdout.write('\r' + drawProgressBar('converting', 0, pageCount));
-        
-        // Convert PDF to PNG images with real-time progress monitoring
-        // Using spawn instead of execSync so we can track progress
-        await new Promise<void>((resolve, reject) => {
-            const pdftoppm = spawn('pdftoppm', ['-png', '-r', '150', pdfPath, tempImagePrefix]);
-            
-            let conversionError = '';
-            
-            if (process.env.DEBUG_OCR) {
-                pdftoppm.stderr?.on('data', (data) => {
-                    console.log(`\n🔧 pdftoppm: ${data}`);
-                });
-            }
-            
-            pdftoppm.stderr?.on('data', (data) => {
-                conversionError += data.toString();
-            });
-            
-            // Monitor progress by checking generated files
-            const progressCheckInterval = setInterval(() => {
-                try {
-                    const currentFiles = fs.readdirSync(tempDir)
-                        .filter((file: string) => file.startsWith(path.basename(tempImagePrefix)) && file.endsWith('.png'));
-                    
-                    if (currentFiles.length > 0) {
-                        process.stdout.write('\r' + drawProgressBar('converting', currentFiles.length, pageCount));
-                    }
-                } catch (checkError) {
-                    // Ignore errors during progress check
-                }
-            }, 500); // Check every 500ms
-            
-            pdftoppm.on('close', (code) => {
-                clearInterval(progressCheckInterval);
-                
-                if (code === 0) {
-                    // Show conversion complete (15%)
-                    process.stdout.write('\r' + drawProgressBar('converting', pageCount, pageCount));
-                    resolve();
-                } else {
-                    reject(new Error(`PDF conversion failed with code ${code}: ${conversionError}`));
-                }
-            });
-            
-            pdftoppm.on('error', (err) => {
-                clearInterval(progressCheckInterval);
-                reject(new Error(`Failed to start pdftoppm: ${err.message}`));
-            });
-            
-            // Set timeout
-            setTimeout(() => {
-                clearInterval(progressCheckInterval);
-                pdftoppm.kill();
-                reject(new Error('PDF conversion timeout (>10 minutes)'));
-            }, 600000);
-        });
-        
-        // Step 3: Find all generated image files
-        const imageFiles = fs.readdirSync(tempDir)
-            .filter((file: string) => file.startsWith(path.basename(tempImagePrefix)) && file.endsWith('.png'))
-            .sort() // Ensure proper page order
-            .map((file: string) => path.join(tempDir, file));
-        
-        if (imageFiles.length === 0) {
-            throw new Error('No image files generated from PDF conversion');
-        }
-        
-        // Step 4: OCR each image with Tesseract
-        const documents: Document[] = [];
-        let totalChars = 0;
-        let errorCount = 0;
-        
-        for (let i = 0; i < imageFiles.length; i++) {
-            const imageFile = imageFiles[i];
-            const pageNumber = i + 1;
-            
-            // Update progress bar
-            process.stdout.write('\r' + drawProgressBar('processing', pageNumber, imageFiles.length));
-            
-            try {
-                // Run tesseract on the image (suppress stderr to avoid progress bar interference)
-                const ocrText = execSync(`tesseract "${imageFile}" stdout`, { 
-                    encoding: 'utf-8',
-                    timeout: 60000, // 1 minute timeout per page
-                    stdio: ['pipe', 'pipe', 'ignore'] // stdin, stdout, stderr - ignore stderr
-                });
-                
-                if (ocrText && ocrText.trim().length > 10) {
-                    const cleanText = ocrText.trim();
-                    totalChars += cleanText.length;
-                    
-                    documents.push(new Document({
-                        pageContent: cleanText,
-                        metadata: {
-                            source: pdfPath,
-                            page_number: pageNumber,
-                            ocr_processed: true,
-                            ocr_method: 'tesseract_local',
-                            ocr_confidence: 'good'
-                        }
-                    }));
-                } else {
-                    // Still create a document to maintain page structure
-                    documents.push(new Document({
-                        pageContent: '[No text content detected on this page]',
-                        metadata: {
-                            source: pdfPath,
-                            page_number: pageNumber,
-                            ocr_processed: true,
-                            ocr_method: 'tesseract_local',
-                            ocr_confidence: 'low'
-                        }
-                    }));
-                }
-                
-            } catch (pageError: any) {
-                errorCount++;
-                
-                // Create error document to maintain page structure
-                documents.push(new Document({
-                    pageContent: `[OCR failed for this page: ${pageError.message}]`,
-                    metadata: {
-                        source: pdfPath,
-                        page_number: pageNumber,
-                        ocr_processed: false,
-                        ocr_method: 'tesseract_local',
-                        ocr_error: pageError.message
-                    }
-                }));
-            }
-            
-            // Clean up the temporary image file
-            try {
-                fs.unlinkSync(imageFile);
-            } catch (cleanupError) {
-                // Ignore cleanup errors
-            }
-        }
-        
-        // Clear progress line and show completion
-        process.stdout.write('\r' + ' '.repeat(120) + '\r');
-        console.log(`✅ OCR completed: ${imageFiles.length} pages, ${totalChars} chars${errorCount > 0 ? `, ${errorCount} errors` : ''}`);
-        
-        const ocrStats = {
-            totalPages: documents.length,
-            totalChars: totalChars,
-            success: documents.length > 0 && totalChars > 50
-        };
-        
-        return { documents, ocrStats };
-        
-    } catch (error: any) {
-        console.log(`❌ Tesseract OCR failed: ${error.message}`);
-        
-        // Clean up any remaining temporary files
-        try {
-            const tempFiles = fs.readdirSync(tempDir)
-                .filter((file: string) => file.startsWith(path.basename(tempImagePrefix)))
-                .map((file: string) => path.join(tempDir, file));
-            
-            tempFiles.forEach((file: string) => {
-                try { fs.unlinkSync(file); } catch {}
-            });
-        } catch {}
-        
-        // Return fallback placeholder
-        const placeholderText = `Tesseract OCR failed for this PDF.
-File: ${path.basename(pdfPath)}
-Error: ${error.message}
-
-To fix this, ensure you have installed:
-- Ubuntu/Debian: sudo apt install poppler-utils tesseract-ocr
-- macOS: brew install poppler tesseract
-- Windows: Install from official sources
-
-Alternative: Process manually with other OCR tools.`;
-
-        const documents = [new Document({
-            pageContent: placeholderText,
-            metadata: {
-                source: pdfPath,
-                page_number: 1,
-                ocr_processed: false,
-                ocr_method: 'tesseract_failed',
-                ocr_error: error.message
-            }
-        })];
-        
-        const ocrStats = {
-            totalPages: 1,
-            totalChars: placeholderText.length,
-            success: false
-        };
-        
-        return { documents, ocrStats };
-    }
 }
 
 function truncateFilePath(filePath: string, maxLength: number = 180): string {
@@ -962,7 +692,7 @@ async function loadDocumentsWithErrorHandling(
                 if (fileExt === '.pdf') {
                     try {
                         console.log(`🔍 OCR processing: ${truncateFilePath(relativePath)}`);
-                        const ocrResult = await callOpenRouterOCR(docFile);
+                        const ocrResult = await processWithTesseract(docFile);
                         
                         if (ocrResult && ocrResult.documents && ocrResult.documents.length > 0) {
                             // Add hash to OCR'd document metadata for proper tracking
