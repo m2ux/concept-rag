@@ -84,7 +84,7 @@ cp .env.example .env
    - Update README.md if adding features
    - Update USAGE.md for user-facing changes
    - Add JSDoc comments for new functions
-   - Update tool-selection-guide.md if adding/modifying tools
+   - Update [tool-selection-guide.md](docs/tool-selection-guide.md) if adding/modifying tools
 
 5. **Test your changes**:
    ```bash

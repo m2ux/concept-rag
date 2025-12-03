@@ -10,7 +10,7 @@
 
 ## 🎯 Quick Tool Selection
 
-**For AI Agents:** See [tool-selection-guide.md](tool-selection-guide.md) for comprehensive tool selection decision tree and comparison matrix.
+**For AI Agents:** See [tool-selection-guide.md](docs/tool-selection-guide.md) for comprehensive tool selection decision tree and comparison matrix.
 
 **Quick Decision:**
 1. Looking for documents? → `catalog_search`
@@ -514,7 +514,7 @@ npx tsx scripts/view_document_metadata.ts "Sun Tzu"
 
 **Important:** For conceptual research (e.g., "innovation", "leadership"), use `concept_search` for 100% precision with semantically-tagged results. Use `broad_chunks_search` for keyword/phrase searches.
 
-See [tool-selection-guide.md](tool-selection-guide.md) for detailed selection criteria.
+See [tool-selection-guide.md](docs/tool-selection-guide.md) for detailed selection criteria.
 
 ### Performance
 
