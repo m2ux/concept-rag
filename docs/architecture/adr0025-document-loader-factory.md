@@ -280,6 +280,3 @@ class PDFDocumentLoader implements IDocumentLoader {
 - Documented in: 01-implementation-plan.md, 02-implementation-complete.md lines 19-30
 
 **Traceability:** .ai/planning/2025-11-15-ebook-format-support/
-
-
-

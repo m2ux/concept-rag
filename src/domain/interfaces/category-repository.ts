@@ -79,4 +79,3 @@ export interface CategoryRepository {
    */
   getChildIds(parentId: number): Promise<number[]>;
 }
-

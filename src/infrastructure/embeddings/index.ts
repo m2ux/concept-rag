@@ -10,5 +10,3 @@ export {
   createEmbeddingService,
   UnsupportedEmbeddingProviderError
 } from './embedding-provider-factory.js';
-
-

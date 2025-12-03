@@ -280,6 +280,3 @@ DEBUG_OCR=1 npx tsx hybrid_fast_seed.ts --dbpath ~/.concept_rag --filesdir ~/doc
 - DeepSeek alternative evaluated and rejected
 
 **Traceability:** .ai/planning/2025-10-21-ocr-evaluation/
-
-
-

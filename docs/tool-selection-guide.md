@@ -810,4 +810,3 @@ Use these test cases to validate tool selection:
 ---
 
 *This guide is based on empirical analysis showing concept_search achieved 100% relevance vs. broad_chunks_search at 0% relevance for conceptual queries, validating the need for clear tool selection guidance.*
-

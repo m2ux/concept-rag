@@ -290,4 +290,3 @@ function printTestResult(result: TestResult) {
 }
 
 main().catch(console.error);
-

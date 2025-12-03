@@ -78,4 +78,3 @@ export type CategoryCreate = Omit<Category, 'documentCount' | 'chunkCount' | 'co
  * Type for category updates (all fields optional except id)
  */
 export type CategoryUpdate = Partial<Omit<Category, 'id'>> & { id: number };
-

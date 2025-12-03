@@ -455,4 +455,3 @@ describe('MCP Tools End-to-End Integration Tests', () => {
     });
   });
 });
-

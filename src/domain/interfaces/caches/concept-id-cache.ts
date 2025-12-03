@@ -161,4 +161,3 @@ export interface IConceptIdCache {
 export interface ConceptRepositoryForCache {
   findAll(): Promise<any[]>;
 }
-

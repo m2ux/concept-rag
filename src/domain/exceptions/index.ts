@@ -75,4 +75,3 @@ export {
   DocumentParseError,
   DocumentTooLargeError
 } from './document.js';
-

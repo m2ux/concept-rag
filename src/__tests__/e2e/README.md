@@ -238,4 +238,3 @@ When updating resilience patterns:
 4. Update this README with new tests
 
 ---
-

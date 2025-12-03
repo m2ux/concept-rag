@@ -279,6 +279,3 @@ Simpler three-layer (Presentation/Business/Data).
 - Metrics from: PR-DESCRIPTION.md lines 19-25, 63-69
 
 **Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
-
-
-

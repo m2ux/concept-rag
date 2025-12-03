@@ -134,4 +134,3 @@ export async function categorySearch(
     categoriesSearched: categoryIdsToSearch.map(id => categoryCache.getName(id))
   }, null, 2);
 }
-

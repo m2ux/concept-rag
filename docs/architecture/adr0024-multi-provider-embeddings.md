@@ -254,5 +254,3 @@ OLLAMA_MODEL=nomic-embed-text
 - Git commit: b05192e1
 
 **Traceability:** .ai/planning/2025-11-15-alternative-embedding-providers/
-
-

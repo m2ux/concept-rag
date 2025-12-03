@@ -33,4 +33,3 @@ export class SearchableCollectionAdapter implements SearchableCollection {
     return this.name;
   }
 }
-

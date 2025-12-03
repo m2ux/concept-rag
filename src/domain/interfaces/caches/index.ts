@@ -7,4 +7,3 @@
 
 export { IConceptIdCache, ConceptRepositoryForCache } from './concept-id-cache.js';
 export { ICategoryIdCache, CategoryRepositoryForCache } from './category-id-cache.js';
-

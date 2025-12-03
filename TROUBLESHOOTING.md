@@ -880,4 +880,3 @@ When something doesn't work, try these in order:
 - [ ] Check logs for specific error messages
 
 **Still stuck?** Open a [GitHub Issue](https://github.com/m2ux/concept-rag/issues) with details!
-

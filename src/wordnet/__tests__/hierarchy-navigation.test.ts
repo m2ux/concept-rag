@@ -274,4 +274,3 @@ describe('WordNet Hierarchy Navigation', () => {
     }, 30000);
   });
 });
-

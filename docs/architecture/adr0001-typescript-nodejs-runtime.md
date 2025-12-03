@@ -216,4 +216,3 @@ node dist/conceptual_index.js    # Run compiled
 **Attribution:**
 - Inherited from upstream lance-mcp (adiom-data team)
 - Evidence: Git clone commit 082c38e2
-

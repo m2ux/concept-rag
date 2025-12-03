@@ -66,4 +66,3 @@ export class NoResultsError extends SearchError {
     this.context.query = query;
   }
 }
-

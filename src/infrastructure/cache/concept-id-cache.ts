@@ -308,4 +308,3 @@ export class ConceptIdCache implements IConceptIdCache {
     return this.idToName.has(conceptId);
   }
 }
-

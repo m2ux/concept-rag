@@ -315,4 +315,3 @@ export function fromNullable<T, E>(
 ): Result<T, E> {
   return value != null ? Ok(value) : Err(error);
 }
-

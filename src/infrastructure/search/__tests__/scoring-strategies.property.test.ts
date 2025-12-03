@@ -522,4 +522,3 @@ describe('Scoring Functions Property-Based Tests', () => {
     });
   });
 });
-

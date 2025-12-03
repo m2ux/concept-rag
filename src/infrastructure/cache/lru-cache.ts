@@ -282,4 +282,3 @@ export class LRUCache<K, V> {
     this.metrics.hitRate = total > 0 ? this.metrics.hits / total : 0;
   }
 }
-

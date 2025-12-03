@@ -340,4 +340,3 @@ export function validateCatalogRow(row: any): void {
   }
   validateEmbeddings(row, vectorField, 'catalog');
 }
-

@@ -367,4 +367,3 @@ export class CategoryIdCache implements ICategoryIdCache {
     this.initialized = false;
   }
 }
-

@@ -206,4 +206,3 @@ describe('Concept Index Rebuild Integration', () => {
         expect(existingRecords[0]).not.toHaveProperty('concepts'); // NOT in normalized schema
     });
 });
-

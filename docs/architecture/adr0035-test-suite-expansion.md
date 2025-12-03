@@ -467,4 +467,3 @@ Note: As of 2025-11-23, there are 5 intermittent test failures in query expansio
 - Pull Request: #11
 - Test Count: 690+ tests (690 passing, 5 intermittent timeouts)
 - Coverage: 76.51% statements, 68.87% branches
-

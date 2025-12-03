@@ -467,4 +467,3 @@ See [SECURITY.md](SECURITY.md) for details.
 ---
 
 **Can't find your question?** Open a [GitHub Discussion](https://github.com/m2ux/concept-rag/discussions) and we'll add it to this FAQ!
-

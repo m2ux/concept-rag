@@ -391,4 +391,3 @@ describe('LanceDBChunkRepository - Integration Tests', () => {
     });
   });
 });
-

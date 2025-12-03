@@ -372,4 +372,3 @@ describe('ValidationResult chaining', () => {
     expect(result.errors).toHaveLength(1); // Length check fails
   });
 });
-

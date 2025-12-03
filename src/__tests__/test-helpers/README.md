@@ -115,4 +115,3 @@ Every test follows:
 - **"Continuous Delivery"** (Humble & Farley) - Testing with dependency injection
 - **"Domain-Driven Design"** (Evans) - Test data builders
 - **"Code That Fits in Your Head"** (Seemann) - Repository pattern testing
-

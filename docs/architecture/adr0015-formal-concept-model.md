@@ -267,6 +267,3 @@ EXTRACTION GUIDELINES:
 - Documented in: FORMAL_CONCEPT_DEFINITION.md
 
 **Traceability:** .ai/planning/2025-11-13-concept-extraction-enhancement/
-
-
-

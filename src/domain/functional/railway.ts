@@ -409,4 +409,3 @@ export function ensure<T, E>(
     return result;
   };
 }
-

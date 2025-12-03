@@ -258,4 +258,3 @@ export class FakeCatalogRepository implements CatalogRepository {
     return this.documents.size;
   }
 }
-

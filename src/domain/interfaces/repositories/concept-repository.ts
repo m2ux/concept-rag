@@ -220,4 +220,3 @@ export interface ScoredConcept extends Concept {
   /** WordNet/synonym matching score (0-1) */
   wordnetScore: number;
 }
-

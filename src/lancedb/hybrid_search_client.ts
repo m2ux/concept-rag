@@ -190,5 +190,3 @@ export async function connectToLanceDB(databaseUrl: string, chunksTableName: str
 export async function closeLanceDB() {
   await client?.close();
 }
-
-

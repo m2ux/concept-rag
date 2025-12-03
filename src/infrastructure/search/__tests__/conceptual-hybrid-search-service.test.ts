@@ -605,4 +605,3 @@ describe('ConceptualHybridSearchService', () => {
     });
   });
 });
-

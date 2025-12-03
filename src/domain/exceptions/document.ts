@@ -68,4 +68,3 @@ export class DocumentTooLargeError extends DocumentError {
     this.context.maxSizeBytes = maxSizeBytes;
   }
 }
-

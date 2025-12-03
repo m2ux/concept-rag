@@ -90,4 +90,3 @@ export class PDFDocumentLoader implements IDocumentLoader {
     return ['.pdf'];
   }
 }
-

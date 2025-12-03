@@ -301,4 +301,3 @@ npx @modelcontextprotocol/inspector dist/index.js PATH_TO_INDEX
 **Attribution:**
 - Inherited from upstream lance-mcp (adiom-data team)
 - Evidence: Git clone commit 082c38e2
-

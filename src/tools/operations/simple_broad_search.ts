@@ -41,4 +41,3 @@ export class SimpleBroadSearchTool extends BaseTool<BroadSearchParams> {
     }
   }
 }
-

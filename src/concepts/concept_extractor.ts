@@ -801,5 +801,3 @@ export class ConceptExtractor {
             return content;
     }
 }
-
-

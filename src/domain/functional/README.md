@@ -427,4 +427,3 @@ See individual module files for complete API documentation:
 - [Railway Oriented Programming](https://fsharpforfunandprofit.com/rop/) by Scott Wlaschin
 - [Rust Result Documentation](https://doc.rust-lang.org/std/result/)
 - [Functional Programming in TypeScript](https://gcanti.github.io/fp-ts/)
-

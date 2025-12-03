@@ -90,4 +90,3 @@ export interface IDocumentLoader {
    */
   getSupportedExtensions(): string[];
 }
-

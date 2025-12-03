@@ -277,4 +277,3 @@ export function calculateDynamicHybridScore(
     (components.wordnetScore * weights.wordnetWeight)
   );
 }
-

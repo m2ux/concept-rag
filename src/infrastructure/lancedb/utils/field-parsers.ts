@@ -55,5 +55,3 @@ export const parseJsonField = parseArrayField;
 export function escapeSqlString(input: string): string {
   return input.replace(/'/g, "''");
 }
-
-

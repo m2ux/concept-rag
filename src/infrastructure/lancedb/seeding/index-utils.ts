@@ -109,4 +109,3 @@ export async function createIndexIfNeeded(
     console.log(`⏭️  Skipping index creation (${dataSize} vectors < ${MIN_VECTORS_FOR_INDEX} minimum for IVF_PQ)`);
   }
 }
-

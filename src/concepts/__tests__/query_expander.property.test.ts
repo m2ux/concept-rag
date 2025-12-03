@@ -224,4 +224,3 @@ describe('Query Expansion Property-Based Tests', () => {
     });
   });
 });
-

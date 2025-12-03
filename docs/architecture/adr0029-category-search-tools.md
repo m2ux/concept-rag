@@ -255,5 +255,3 @@ Each tool has detailed description guiding AI agent usage:
 - Testing: IMPLEMENTATION-COMPLETE.md lines 32-38
 
 **Traceability:** .ai/planning/2025-11-19-category-search-feature/
-
-

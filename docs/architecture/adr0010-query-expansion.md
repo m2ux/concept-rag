@@ -312,6 +312,3 @@ const allTerms = [
 - Metrics from: IMPLEMENTATION_COMPLETE.md lines 32-35, 133-136, 148-152
 
 **Traceability:** .ai/planning/2025-10-13-conceptual-search-implementation/
-
-
-

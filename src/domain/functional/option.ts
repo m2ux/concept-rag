@@ -331,4 +331,3 @@ export function contains<T>(option: Option<T>, value: T): boolean {
 export function exists<T>(option: Option<T>, predicate: (value: T) => boolean): boolean {
   return isSome(option) && predicate(option.value);
 }
-

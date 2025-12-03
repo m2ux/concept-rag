@@ -301,5 +301,3 @@ docs.forEach(doc => {
 - Documented in: IMPLEMENTATION-COMPLETE.md lines 84-107
 
 **Traceability:** .ai/planning/2025-11-19-category-search-feature/
-
-

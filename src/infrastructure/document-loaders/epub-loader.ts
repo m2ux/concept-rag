@@ -247,4 +247,3 @@ export class EPUBDocumentLoader implements IDocumentLoader {
     return ['.epub'];
   }
 }
-

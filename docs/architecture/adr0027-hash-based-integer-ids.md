@@ -311,5 +311,3 @@ class CategoryIdCache {
 - Metrics from: IMPLEMENTATION-COMPLETE.md lines 84-92
 
 **Traceability:** .ai/planning/2025-11-19-category-search-feature/, .ai/planning/2025-11-19-integer-id-optimization/
-
-

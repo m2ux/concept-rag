@@ -123,4 +123,3 @@ export function parseFilenameMetadata(sourcePath: string): FilenameMetadata {
     
     return result;
 }
-

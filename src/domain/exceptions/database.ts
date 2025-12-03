@@ -84,4 +84,3 @@ export class TransactionError extends DatabaseError {
     this.context.transactionOp = operation;
   }
 }
-

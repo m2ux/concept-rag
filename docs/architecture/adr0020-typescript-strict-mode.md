@@ -249,6 +249,3 @@ return concept.category;  // OK: undefined handled
 - Documented in: 12-typescript-strict-mode-complete.md
 
 **Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
-
-
-

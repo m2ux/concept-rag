@@ -303,6 +303,3 @@ export class FakeChunkRepository implements IChunkRepository {
 - Design documented in: 02-implementation-plan.md lines 28-424
 
 **Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
-
-
-

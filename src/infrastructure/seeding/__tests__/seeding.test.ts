@@ -134,4 +134,3 @@ describe('DEFAULT_DOCUMENT_EXTENSIONS', () => {
     expect(DEFAULT_DOCUMENT_EXTENSIONS).toContain('.mobi');
   });
 });
-

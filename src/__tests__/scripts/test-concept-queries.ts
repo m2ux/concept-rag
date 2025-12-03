@@ -50,4 +50,3 @@ async function testConceptQueries() {
 }
 
 testConceptQueries().catch(console.error);
-

@@ -143,4 +143,3 @@ export function createEmbeddingService(config: EmbeddingConfig): EmbeddingServic
   const factory = new EmbeddingProviderFactory(config);
   return factory.createFromConfig();
 }
-

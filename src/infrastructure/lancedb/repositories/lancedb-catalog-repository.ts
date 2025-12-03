@@ -305,4 +305,3 @@ export class LanceDBCatalogRepository implements CatalogRepository {
   }
   
 }
-

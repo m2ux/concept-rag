@@ -74,4 +74,3 @@ export class InvalidEmbeddingDimensionsError extends EmbeddingError {
     this.context.actual = actual;
   }
 }
-

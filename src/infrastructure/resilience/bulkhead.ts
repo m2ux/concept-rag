@@ -285,4 +285,3 @@ export class Bulkhead {
     return (this.queue.length / this.config.maxQueue) * 100;
   }
 }
-

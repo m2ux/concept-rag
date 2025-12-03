@@ -308,6 +308,3 @@ npx tsx hybrid_fast_seed.ts \
 - Metrics from: INCREMENTAL_SEEDING_GUIDE.md lines 5, 128-145
 
 **Traceability:** .ai/planning/2025-11-12-seeding-and-enrichment-guides/
-
-
-

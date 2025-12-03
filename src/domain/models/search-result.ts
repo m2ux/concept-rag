@@ -138,4 +138,3 @@ export interface SearchQuery {
   /** Enable debug logging for score breakdown (outputs to stderr) */
   debug?: boolean;
 }
-

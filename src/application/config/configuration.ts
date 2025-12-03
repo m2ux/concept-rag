@@ -255,4 +255,3 @@ export class Configuration implements IConfiguration {
 export function getConfiguration(): Configuration {
   return Configuration.getInstance();
 }
-

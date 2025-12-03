@@ -249,6 +249,3 @@ Are they asking questions/phrases? → broad_chunks_search
 - Investigation: tool-documentation-enhancement/README.md lines 14-22
 
 **Traceability:** .ai/planning/2025-11-13-tool-documentation-enhancement/, .ai/planning/2025-11-19-category-search-feature/
-
-
-

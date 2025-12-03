@@ -548,4 +548,3 @@ export function createProgressBarDisplay(
 
   return new ProgressBarDisplay(workerCount, options);
 }
-

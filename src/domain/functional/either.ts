@@ -313,4 +313,3 @@ export function ap<L, R, U>(
   // @ts-expect-error - Type narrowing limitation
   return either;
 }
-

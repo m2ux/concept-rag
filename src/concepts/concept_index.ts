@@ -339,4 +339,3 @@ export class ConceptIndexBuilder {
         }
     }
 }
-

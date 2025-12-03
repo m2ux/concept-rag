@@ -239,4 +239,3 @@ new OllamaEmbeddings({model: defaults.EMBEDDING_MODEL})
 **Attribution:**
 - Inherited from upstream lance-mcp (adiom-data team)
 - Evidence: Git clone commit 082c38e2
-

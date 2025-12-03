@@ -437,4 +437,3 @@ npx ts-node scripts/diagnostics/check-doc-concepts.ts
 | `./db/test` | Default test database (all scripts) |
 | `~/.concept_rag` | Production database |
 | Custom via `argv[2]` | `_check_db.ts` only |
-

@@ -134,6 +134,3 @@ RETURNS: Top 10 documents with text previews, hybrid scores (including strong ti
     };
   }
 }
-
-
-

@@ -298,6 +298,3 @@ npm run test:coverage   # Generate coverage report
 - Test results: 05-testing-infrastructure-complete.md lines 108-126
 
 **Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
-
-
-

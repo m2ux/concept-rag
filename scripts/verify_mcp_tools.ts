@@ -142,4 +142,3 @@ verifyMCPTools()
     console.error('Verification error:', err);
     process.exit(1);
   });
-

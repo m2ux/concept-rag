@@ -116,4 +116,3 @@ describe('Query Expansion Performance Benchmarks', () => {
     });
   });
 });
-

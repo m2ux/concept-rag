@@ -97,4 +97,3 @@ export async function listCategories(
     categories: formattedCategories
   }, null, 2);
 }
-

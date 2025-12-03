@@ -14,4 +14,3 @@ export {
   type OcrResult,
   type OcrProgressCallback
 } from './tesseract-ocr.js';
-

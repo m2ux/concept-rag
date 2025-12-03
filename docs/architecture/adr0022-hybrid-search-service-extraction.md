@@ -283,6 +283,3 @@ describe('HybridSearchService', () => {
 - Documented in: 08-hybrid-search-service-plan.md, 09-hybrid-search-service-complete.md
 
 **Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
-
-
-

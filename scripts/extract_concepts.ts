@@ -196,5 +196,3 @@ if (!["json", "markdown"].includes(outputFormat)) {
 }
 
 extractAndFormatConcepts(documentQuery, outputFormat).catch(console.error);
-
-

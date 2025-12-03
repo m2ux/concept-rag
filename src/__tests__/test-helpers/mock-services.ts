@@ -43,4 +43,3 @@ export class FakeEmbeddingService implements EmbeddingService {
     this.embeddings.clear();
   }
 }
-

@@ -19,4 +19,3 @@ export { EmbeddingCache } from './embedding-cache.js';
 export { ConceptIdCache } from './concept-id-cache.js';
 export { CategoryIdCache } from './category-id-cache.js';
 export { CatalogSourceCache } from './catalog-source-cache.js';
-

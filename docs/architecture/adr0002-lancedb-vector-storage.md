@@ -262,4 +262,3 @@ export async function connectToLanceDB(databaseUrl: string,
 **Attribution:**
 - Inherited from upstream lance-mcp (adiom-data team)
 - Evidence: Git clone commit 082c38e2
-

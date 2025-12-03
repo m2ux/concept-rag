@@ -219,4 +219,3 @@ Documents that fail PDF extraction are skipped with logging.
 **Attribution:**
 - Inherited from upstream lance-mcp (adiom-data team)
 - Evidence: Git clone commit 082c38e2
-

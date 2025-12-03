@@ -171,6 +171,3 @@ If decision is reversed without replacement:
 3. Keep content intact (historical record)
 
 ---
-
-
-

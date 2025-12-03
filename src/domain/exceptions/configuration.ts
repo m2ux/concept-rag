@@ -48,4 +48,3 @@ export class InvalidConfigError extends ConfigurationError {
     this.context.reason = reason;
   }
 }
-

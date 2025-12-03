@@ -136,5 +136,3 @@ RETURNS: Top 20 chunks ranked by hybrid scoring (35% vector, 35% BM25, 15% conce
     };
   }
 }
-
-

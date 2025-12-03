@@ -75,4 +75,3 @@ export abstract class ConceptRAGError extends Error {
     return this instanceof errorClass;
   }
 }
-

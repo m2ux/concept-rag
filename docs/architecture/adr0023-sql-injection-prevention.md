@@ -281,6 +281,3 @@ describe('escapeSql', () => {
 - Investigation: 10-parameterized-sql-investigation.md
 
 **Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
-
-
-

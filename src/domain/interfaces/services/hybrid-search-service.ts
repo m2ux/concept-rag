@@ -136,4 +136,3 @@ export interface HybridSearchService {
     debug?: boolean
   ): Promise<SearchResult[]>;
 }
-

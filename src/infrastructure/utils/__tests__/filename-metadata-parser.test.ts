@@ -267,4 +267,3 @@ describe('parseFilenameMetadata', () => {
         });
     });
 });
-

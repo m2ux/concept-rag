@@ -154,4 +154,3 @@ export interface ICategoryIdCache {
 export interface CategoryRepositoryForCache {
   findAll(): Promise<any[]>;
 }
-

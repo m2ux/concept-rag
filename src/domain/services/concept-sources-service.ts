@@ -487,4 +487,3 @@ export class ConceptSourcesService {
     return yearMatch ? yearMatch[0] : undefined;
   }
 }
-

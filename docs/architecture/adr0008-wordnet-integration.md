@@ -306,6 +306,3 @@ async function getWordNetSynonyms(word: string): Promise<string[]> {
 - Metrics from: IMPLEMENTATION_COMPLETE.md lines 21-25, 133-136, 148-152
 
 **Traceability:** .ai/planning/2025-10-13-conceptual-search-implementation/
-
-
-

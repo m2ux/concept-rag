@@ -287,5 +287,3 @@ await catalogTable.add({
 - Design documented: FINAL-DESIGN-SUMMARY.md lines 7-48
 
 **Traceability:** .ai/planning/2025-11-19-category-search-feature/
-
-

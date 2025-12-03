@@ -250,6 +250,3 @@ If concept not found in concepts table:
 - Problem identified: 01-architecture-review-analysis.md lines 178-194
 
 **Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
-
-
-

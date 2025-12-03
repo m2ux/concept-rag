@@ -245,5 +245,3 @@ function mergeConceptSets(sets: ConceptMetadata[]): ConceptMetadata {
 - Git commit: 82212a34cc
 
 **Traceability:** .ai/planning/2025-11-12-document-processing-improvements/
-
-

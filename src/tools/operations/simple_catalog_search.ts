@@ -41,4 +41,3 @@ export class SimpleCatalogSearchTool extends BaseTool<CatalogSearchParams> {
     }
   }
 }
-

@@ -234,4 +234,3 @@ export async function generateConceptSummaries(
   console.log(`  ✅ Generated ${summaries.size} concept summaries`);
   return summaries;
 }
-

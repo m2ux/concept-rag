@@ -200,6 +200,3 @@ export class QueryExpander {
         return expanded;
     }
 }
-
-
-

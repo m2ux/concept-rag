@@ -281,6 +281,3 @@ for the complete decision tree.
 - Investigation documented: tool-documentation-enhancement/README.md lines 14-22
 
 **Traceability:** .ai/planning/2025-11-13-tool-documentation-enhancement/
-
-
-

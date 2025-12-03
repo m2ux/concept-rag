@@ -262,6 +262,3 @@ for (const doc of documents) {
 - Cost breakdown: Conceptual Search README lines 46-48
 
 **Traceability:** .ai/planning/2025-10-13-conceptual-search-implementation/
-
-
-

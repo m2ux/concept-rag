@@ -213,4 +213,3 @@ describe('ChunkSearchService', () => {
   // the current architecture (now uses catalog IDs, not source paths). 
   // Functionality is covered by integration tests in mcp-tools-integration.test.ts.
 });
-

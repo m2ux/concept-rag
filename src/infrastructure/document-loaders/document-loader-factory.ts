@@ -125,4 +125,3 @@ export class DocumentLoaderFactory {
     return this.loaders.length;
   }
 }
-

@@ -313,6 +313,3 @@ const chunks = await chunksTable
 - Documented in: IMPLEMENTATION_COMPLETE.md lines 47-50, 105-112
 
 **Traceability:** .ai/planning/2025-10-13-conceptual-search-implementation/
-
-
-

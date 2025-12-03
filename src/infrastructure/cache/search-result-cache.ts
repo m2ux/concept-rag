@@ -176,4 +176,3 @@ export class SearchResultCache<T> {
     return this.cache.size;
   }
 }
-

@@ -313,4 +313,3 @@ describe('LanceDBCatalogRepository - Integration Tests', () => {
     });
   });
 });
-

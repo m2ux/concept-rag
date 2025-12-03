@@ -290,6 +290,3 @@ concepts_table:
 - Cost: $0.041/doc documented in planning
 
 **Traceability:** Every metric traces to .ai/planning/2025-10-13-conceptual-search-implementation/ folder
-
-
-

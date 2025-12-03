@@ -66,4 +66,3 @@ export interface EmbeddingService {
    */
   generateEmbedding(text: string): number[];
 }
-

@@ -607,6 +607,3 @@ print(json.dumps(results))
         return expanded;
     }
 }
-
-
-

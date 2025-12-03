@@ -303,5 +303,3 @@ All from Project Gutenberg (public domain)
 - Testing: 02-implementation-complete.md lines 76-141
 
 **Traceability:** .ai/planning/2025-11-15-ebook-format-support/
-
-

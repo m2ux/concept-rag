@@ -88,4 +88,3 @@ export class SimpleEmbeddingService implements EmbeddingService {
     return Math.abs(hash);
   }
 }
-

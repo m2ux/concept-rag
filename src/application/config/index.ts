@@ -27,4 +27,3 @@ export type {
   LoggingConfig,
   Environment
 } from './types.js';
-

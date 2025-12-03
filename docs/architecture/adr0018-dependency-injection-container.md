@@ -284,6 +284,3 @@ const tool = new ConceptSearchTool(
 - Phase 2 documented in: 02-implementation-plan.md
 
 **Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
-
-
-

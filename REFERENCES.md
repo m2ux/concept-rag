@@ -170,4 +170,3 @@ When introducing new patterns or architectural concepts:
 ---
 
 *Last Updated: November 2025*
-

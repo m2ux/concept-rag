@@ -434,4 +434,3 @@ describe('E2E: Document Pipeline Resilience', () => {
     console.log('✓ Services remained isolated despite different performance');
   }, 45000);
 });
-

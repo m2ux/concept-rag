@@ -341,4 +341,3 @@ export class LanceDBConceptRepository implements ConceptRepository {
     };
   }
 }
-

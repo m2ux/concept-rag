@@ -438,4 +438,3 @@ The error hierarchy strikes a balance between simplicity and expressiveness, pro
 - Implementation: `.ai/planning/2025-11-22-error-handling-implementation/`
 - Pull Request: #12
 - Test Coverage: 100% for error classes, 90.62% for validation service
-

@@ -258,4 +258,3 @@ describe('DocumentError', () => {
     expect(error.context.maxSizeBytes).toBe(10000000);
   });
 });
-

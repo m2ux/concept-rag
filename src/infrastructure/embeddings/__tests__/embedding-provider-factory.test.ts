@@ -195,4 +195,3 @@ describe('UnsupportedEmbeddingProviderError', () => {
     expect(error.message).toContain('simple, other');
   });
 });
-

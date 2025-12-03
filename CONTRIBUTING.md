@@ -431,4 +431,3 @@ Contributors will be:
 - Recognized in the project README
 
 Thank you for contributing to Concept-RAG! 🎉
-

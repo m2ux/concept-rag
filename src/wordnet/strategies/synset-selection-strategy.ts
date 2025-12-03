@@ -61,4 +61,3 @@ export interface SynsetSelectionStrategy {
     context: SelectionContext
   ): number;
 }
-

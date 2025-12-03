@@ -129,6 +129,3 @@ export interface ChunkWithConcepts {
     category_ids?: number[];
     metadata?: any;
 }
-
-
-

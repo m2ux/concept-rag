@@ -128,4 +128,3 @@ export async function listConceptsInCategory(
     note: 'Concepts are category-agnostic and appear across multiple categories'
   }, null, 2);
 }
-

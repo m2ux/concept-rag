@@ -584,4 +584,3 @@ describe('createProgressBarDisplay', () => {
     expect(display).toBeInstanceOf(ProgressBarDisplay);
   });
 });
-
