@@ -207,14 +207,15 @@ describe('WordNet Hierarchy Navigation', () => {
       // Path may or may not exist depending on WordNet structure
     }, 60000);
     
-    it('should return undefined for unrelated terms', async () => {
-      // EXERCISE
-      const path = await service.findHierarchyPath('computer', 'pizza', 3);
+    it('should return undefined for unrelated terms with short max depth', async () => {
+      // EXERCISE - use very short maxDepth to ensure fast completion
+      const path = await service.findHierarchyPath('computer', 'pizza', 1);
       
       // VERIFY
-      // These are semantically unrelated, likely no short path
-      // Could return undefined or a very long path
-    }, 60000);
+      // These are semantically unrelated, no direct connection
+      // With maxDepth=1, should return undefined quickly
+      expect(path).toBeUndefined();
+    }, 30000);
     
     it('should return single-element path for same term', async () => {
       // EXERCISE
