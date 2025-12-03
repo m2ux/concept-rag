@@ -11,11 +11,16 @@ import {
   calculateTitleScore,
   calculateWordNetBonus,
   calculateConceptMatchScore,
-  calculateCatalogHybridScore,
-  calculateChunkHybridScore,
   getMatchedConcepts,
   type ExpandedQuery
 } from './scoring-strategies.js';
+import {
+  analyzeQuery,
+  getAdjustedCatalogWeights,
+  getAdjustedChunkWeights,
+  calculateDynamicHybridScore,
+  type QueryAnalysis
+} from './dynamic-weights.js';
 
 /**
  * Hybrid search implementation using multiple ranking signals.
@@ -96,8 +101,19 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     // Step 1: Expand query with corpus concepts and WordNet synonyms
     const expanded = await this.queryExpander.expandQuery(queryText);
     
+    // Step 1.5: Analyze query for dynamic weight adjustment
+    const queryAnalysis = analyzeQuery(expanded);
+    const collectionName = collection.getName().toLowerCase();
+    const isChunkSearch = collectionName.includes('chunk');
+    
+    // Get adjusted weights based on query characteristics
+    const weights = isChunkSearch
+      ? getAdjustedChunkWeights(queryAnalysis)
+      : getAdjustedCatalogWeights(queryAnalysis);
+    
     if (debug) {
       this.printQueryExpansion(expanded);
+      this.printWeightAdjustment(queryAnalysis, weights);
     }
     
     // Step 2: Generate query embedding and perform vector search
@@ -140,14 +156,11 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       
       const wordnetScore = calculateWordNetBonus(expanded.wordnet_terms, searchableText);
       
-      // Calculate hybrid score based on collection type
-      // Chunks don't have meaningful titles - use chunk-specific scoring
-      const collectionName = collection.getName().toLowerCase();
-      const isChunkSearch = collectionName.includes('chunk');
-      
-      const hybridScore = isChunkSearch
-        ? calculateChunkHybridScore({ vectorScore, bm25Score, titleScore, conceptScore, wordnetScore })
-        : calculateCatalogHybridScore({ vectorScore, bm25Score, titleScore, conceptScore, wordnetScore });
+      // Calculate hybrid score using dynamic weights (adjusted based on query characteristics)
+      const hybridScore = calculateDynamicHybridScore(
+        { vectorScore, bm25Score, titleScore, conceptScore, wordnetScore },
+        weights
+      );
       
       // Parse array fields (may be Arrow Vectors from LanceDB)
       const parseArrayField = (value: any): number[] => {
@@ -235,6 +248,14 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       }
       console.error();
     });
+  }
+  
+  private printWeightAdjustment(analysis: QueryAnalysis, weights: { wordnetWeight: number }): void {
+    if (analysis.wordnetBoostFactor !== 1.0) {
+      console.error('\n⚖️  Dynamic Weight Adjustment:');
+      console.error(`   Reason: ${analysis.boostReason}`);
+      console.error(`   WordNet boost: ${analysis.wordnetBoostFactor.toFixed(2)}x → weight: ${(weights.wordnetWeight * 100).toFixed(1)}%`);
+    }
   }
 }
 

@@ -6,6 +6,7 @@ import { SearchResult } from "../../domain/models/index.js";
 
 export interface ConceptualBroadChunksSearchParams extends ToolParams {
   text: string;
+  limit?: number;
   debug?: boolean;
 }
 

@@ -13,7 +13,7 @@
  * - Design Patterns (OOP patterns)
  */
 
-import { ApplicationContainer } from '../src/application/container.js';
+import { ApplicationContainer } from '../../application/container.js';
 import * as lancedb from '@lancedb/lancedb';
 import * as fs from 'fs';
 

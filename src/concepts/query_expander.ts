@@ -1,6 +1,7 @@
 import * as lancedb from "@lancedb/lancedb";
 import { ExpandedQuery } from './types.js';
 import { WordNetService } from '../wordnet/wordnet_service.js';
+import { ContextAwareStrategy } from '../wordnet/strategies/index.js';
 import { EmbeddingService } from '../domain/interfaces/services/embedding-service.js';
 import { ConceptRepository } from '../domain/interfaces/repositories/concept-repository.js';
 
@@ -13,9 +14,11 @@ export class QueryExpander {
     constructor(
         conceptTable: lancedb.Table, 
         embeddingService: EmbeddingService,
-        conceptRepo?: ConceptRepository
+        conceptRepo?: ConceptRepository,
+        wordnetService?: WordNetService
     ) {
-        this.wordnet = new WordNetService();
+        // Use provided WordNetService or create one with context-aware synset selection
+        this.wordnet = wordnetService || new WordNetService(new ContextAwareStrategy());
         this.conceptTable = conceptTable;
         this.embeddingService = embeddingService;
         this.conceptRepo = conceptRepo;
