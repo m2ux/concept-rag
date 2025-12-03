@@ -5,7 +5,7 @@
  * WordNet synset based on context and domain requirements.
  */
 
-export { 
+export type { 
   SynsetSelectionStrategy, 
   SelectionContext 
 } from './synset-selection-strategy.js';

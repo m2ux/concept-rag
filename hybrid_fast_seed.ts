@@ -6,10 +6,7 @@ import {
 import * as path from 'path';
 import { Document } from "@langchain/core/documents";
 import * as fs from 'fs';
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import * as crypto from 'crypto';
-import { execSync, spawn } from 'child_process';
-import * as os from 'os';
 import * as defaults from './src/config.js';
 import { ConceptExtractor } from './src/concepts/concept_extractor.js';
 import { ConceptIndexBuilder } from './src/concepts/concept_index.js';
@@ -18,12 +15,32 @@ import { DocumentLoaderFactory } from './src/infrastructure/document-loaders/doc
 import { PDFDocumentLoader } from './src/infrastructure/document-loaders/pdf-loader.js';
 import { EPUBDocumentLoader } from './src/infrastructure/document-loaders/epub-loader.js';
 import { hashToId, generateStableId } from './src/infrastructure/utils/hash.js';
+import { parseArrayField } from './src/infrastructure/lancedb/utils/field-parsers.js';
+import {
+  calculatePartitions,
+  createOptimizedIndex,
+  buildCategoryIdMap
+} from './src/infrastructure/lancedb/seeding/index.js';
+import {
+  checkDocumentCompleteness,
+  catalogRecordExists,
+  deleteIncompleteDocumentData,
+  findDocumentFilesRecursively,
+  getDatabaseSize,
+  truncateFilePath,
+  type DataCompletenessCheck
+} from './src/infrastructure/seeding/index.js';
 import { generateCategorySummaries } from './src/concepts/summary_generator.js';
-import { parseFilenameMetadata, normalizeText } from './src/infrastructure/utils/filename-metadata-parser.js';
+import { parseFilenameMetadata } from './src/infrastructure/utils/filename-metadata-parser.js';
 import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
 import { ConceptEnricher } from './src/concepts/concept_enricher.js';
 import { ParallelConceptExtractor, DocumentSet } from './src/concepts/parallel-concept-extractor.js';
 import { ProgressBarDisplay, createProgressBarDisplay } from './src/infrastructure/cli/progress-bar-display.js';
+import { SimpleEmbeddingService } from './src/infrastructure/embeddings/simple-embedding-service.js';
+import { processWithTesseract } from './src/infrastructure/ocr/index.js';
+
+// Shared embedding service instance for consistent embeddings
+const embeddingService = new SimpleEmbeddingService();
 
 // Setup timestamped logging
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
@@ -59,39 +76,6 @@ function writeToLog(level: string, ...args: any[]) {
  * The environment variable must be set before the script runs because
  * the native Rust module reads it during initialization (before any code executes).
  */
-
-// ASCII progress bar utility with gradual progress for both stages
-function drawProgressBar(stage: 'converting' | 'processing', current: number, total: number, width: number = 40): string {
-    let percentage: number;
-    let statusText: string;
-    
-    if (stage === 'converting') {
-        // PDF conversion progress: 0% to 15%
-        // Since pdftoppm is synchronous, we show either start (~1%) or complete (15%)
-        if (current >= total) {
-            percentage = 15;
-            statusText = `Converted ${total} pages to images`;
-        } else {
-            percentage = current === 0 ? 1 : Math.round((current / Math.max(total, 1)) * 15);
-            statusText = `Converting page ${current}/${total} to images`;
-        }
-    } else {
-        // OCR processing: 15% to 100% (85% of total work)
-        const ocrProgress = (current / total) * 85;
-        percentage = Math.round(15 + ocrProgress);
-        statusText = `OCR processing page ${current}/${total}`;
-    }
-    
-    const filled = Math.round((percentage / 100) * width);
-    const empty = width - filled;
-    
-    const bar = '█'.repeat(filled) + '░'.repeat(empty);
-    const progress = `🔍 OCR Progress: [${bar}] ${percentage}% (${statusText})`;
-    
-    // Pad with spaces to ensure complete line overwrite (120 chars should cover most terminals)
-    const paddedProgress = progress.padEnd(120, ' ');
-    return paddedProgress;
-}
 
 // Handle unhandled promise rejections to prevent crashes
 process.on('unhandledRejection', (reason: any, promise) => {
@@ -265,291 +249,6 @@ async function callOpenRouterChat(text: string): Promise<string> {
     return data.choices[0].message.content.trim();
 }
 
-// Convert PDF file to base64 for LLM OCR processing
-function pdfToBase64(filePath: string): string {
-    const fileBuffer = fs.readFileSync(filePath);
-    return fileBuffer.toString('base64');
-}
-
-// OCR processing (using local Tesseract)
-async function callOpenRouterOCR(pdfPath: string): Promise<{ documents: Document[], ocrStats: { totalPages: number, totalChars: number, success: boolean } }> {
-    
-    const tempDir = os.tmpdir();
-    const fileName = path.basename(pdfPath, '.pdf');
-    const tempImagePrefix = path.join(tempDir, `ocr_${fileName}`);
-    
-    try {
-        // Step 1: Check if required tools are available
-        try {
-            execSync('pdftoppm --help', { stdio: 'ignore' });
-            execSync('tesseract --help', { stdio: 'ignore' });
-            execSync('pdfinfo -h', { stdio: 'ignore' });
-        } catch (toolError) {
-            throw new Error('Required tools missing. Install: sudo apt install poppler-utils tesseract-ocr (Ubuntu) or brew install poppler tesseract (macOS)');
-        }
-        
-        // Step 2: Get page count first
-        let pageCount = 1;
-        try {
-            // Get actual page count using pdfinfo
-            const pdfInfo = execSync(`pdfinfo "${pdfPath}"`, { encoding: 'utf-8', stdio: 'pipe' });
-            const pageMatch = pdfInfo.match(/Pages:\s*(\d+)/);
-            if (pageMatch) {
-                pageCount = parseInt(pageMatch[1]);
-            }
-        } catch (infoError) {
-            // If pdfinfo fails, we'll detect from generated images
-        }
-        
-        // Show conversion start (1% progress to indicate activity)
-        process.stdout.write('\r' + drawProgressBar('converting', 0, pageCount));
-        
-        // Convert PDF to PNG images with real-time progress monitoring
-        // Using spawn instead of execSync so we can track progress
-        await new Promise<void>((resolve, reject) => {
-            const pdftoppm = spawn('pdftoppm', ['-png', '-r', '150', pdfPath, tempImagePrefix]);
-            
-            let conversionError = '';
-            
-            if (process.env.DEBUG_OCR) {
-                pdftoppm.stderr?.on('data', (data) => {
-                    console.log(`\n🔧 pdftoppm: ${data}`);
-                });
-            }
-            
-            pdftoppm.stderr?.on('data', (data) => {
-                conversionError += data.toString();
-            });
-            
-            // Monitor progress by checking generated files
-            const progressCheckInterval = setInterval(() => {
-                try {
-                    const currentFiles = fs.readdirSync(tempDir)
-                        .filter((file: string) => file.startsWith(path.basename(tempImagePrefix)) && file.endsWith('.png'));
-                    
-                    if (currentFiles.length > 0) {
-                        process.stdout.write('\r' + drawProgressBar('converting', currentFiles.length, pageCount));
-                    }
-                } catch (checkError) {
-                    // Ignore errors during progress check
-                }
-            }, 500); // Check every 500ms
-            
-            pdftoppm.on('close', (code) => {
-                clearInterval(progressCheckInterval);
-                
-                if (code === 0) {
-                    // Show conversion complete (15%)
-                    process.stdout.write('\r' + drawProgressBar('converting', pageCount, pageCount));
-                    resolve();
-                } else {
-                    reject(new Error(`PDF conversion failed with code ${code}: ${conversionError}`));
-                }
-            });
-            
-            pdftoppm.on('error', (err) => {
-                clearInterval(progressCheckInterval);
-                reject(new Error(`Failed to start pdftoppm: ${err.message}`));
-            });
-            
-            // Set timeout
-            setTimeout(() => {
-                clearInterval(progressCheckInterval);
-                pdftoppm.kill();
-                reject(new Error('PDF conversion timeout (>10 minutes)'));
-            }, 600000);
-        });
-        
-        // Step 3: Find all generated image files
-        const imageFiles = fs.readdirSync(tempDir)
-            .filter((file: string) => file.startsWith(path.basename(tempImagePrefix)) && file.endsWith('.png'))
-            .sort() // Ensure proper page order
-            .map((file: string) => path.join(tempDir, file));
-        
-        if (imageFiles.length === 0) {
-            throw new Error('No image files generated from PDF conversion');
-        }
-        
-        // Step 4: OCR each image with Tesseract
-        const documents: Document[] = [];
-        let totalChars = 0;
-        let errorCount = 0;
-        
-        for (let i = 0; i < imageFiles.length; i++) {
-            const imageFile = imageFiles[i];
-            const pageNumber = i + 1;
-            
-            // Update progress bar
-            process.stdout.write('\r' + drawProgressBar('processing', pageNumber, imageFiles.length));
-            
-            try {
-                // Run tesseract on the image (suppress stderr to avoid progress bar interference)
-                const ocrText = execSync(`tesseract "${imageFile}" stdout`, { 
-                    encoding: 'utf-8',
-                    timeout: 60000, // 1 minute timeout per page
-                    stdio: ['pipe', 'pipe', 'ignore'] // stdin, stdout, stderr - ignore stderr
-                });
-                
-                if (ocrText && ocrText.trim().length > 10) {
-                    const cleanText = ocrText.trim();
-                    totalChars += cleanText.length;
-                    
-                    documents.push(new Document({
-                        pageContent: cleanText,
-                        metadata: {
-                            source: pdfPath,
-                            page_number: pageNumber,
-                            ocr_processed: true,
-                            ocr_method: 'tesseract_local',
-                            ocr_confidence: 'good'
-                        }
-                    }));
-                } else {
-                    // Still create a document to maintain page structure
-                    documents.push(new Document({
-                        pageContent: '[No text content detected on this page]',
-                        metadata: {
-                            source: pdfPath,
-                            page_number: pageNumber,
-                            ocr_processed: true,
-                            ocr_method: 'tesseract_local',
-                            ocr_confidence: 'low'
-                        }
-                    }));
-                }
-                
-            } catch (pageError: any) {
-                errorCount++;
-                
-                // Create error document to maintain page structure
-                documents.push(new Document({
-                    pageContent: `[OCR failed for this page: ${pageError.message}]`,
-                    metadata: {
-                        source: pdfPath,
-                        page_number: pageNumber,
-                        ocr_processed: false,
-                        ocr_method: 'tesseract_local',
-                        ocr_error: pageError.message
-                    }
-                }));
-            }
-            
-            // Clean up the temporary image file
-            try {
-                fs.unlinkSync(imageFile);
-            } catch (cleanupError) {
-                // Ignore cleanup errors
-            }
-        }
-        
-        // Clear progress line and show completion
-        process.stdout.write('\r' + ' '.repeat(120) + '\r');
-        console.log(`✅ OCR completed: ${imageFiles.length} pages, ${totalChars} chars${errorCount > 0 ? `, ${errorCount} errors` : ''}`);
-        
-        const ocrStats = {
-            totalPages: documents.length,
-            totalChars: totalChars,
-            success: documents.length > 0 && totalChars > 50
-        };
-        
-        return { documents, ocrStats };
-        
-    } catch (error: any) {
-        console.log(`❌ Tesseract OCR failed: ${error.message}`);
-        
-        // Clean up any remaining temporary files
-        try {
-            const tempFiles = fs.readdirSync(tempDir)
-                .filter((file: string) => file.startsWith(path.basename(tempImagePrefix)))
-                .map((file: string) => path.join(tempDir, file));
-            
-            tempFiles.forEach((file: string) => {
-                try { fs.unlinkSync(file); } catch {}
-            });
-        } catch {}
-        
-        // Return fallback placeholder
-        const placeholderText = `Tesseract OCR failed for this PDF.
-File: ${path.basename(pdfPath)}
-Error: ${error.message}
-
-To fix this, ensure you have installed:
-- Ubuntu/Debian: sudo apt install poppler-utils tesseract-ocr
-- macOS: brew install poppler tesseract
-- Windows: Install from official sources
-
-Alternative: Process manually with other OCR tools.`;
-
-        const documents = [new Document({
-            pageContent: placeholderText,
-            metadata: {
-                source: pdfPath,
-                page_number: 1,
-                ocr_processed: false,
-                ocr_method: 'tesseract_failed',
-                ocr_error: error.message
-            }
-        })];
-        
-        const ocrStats = {
-            totalPages: 1,
-            totalChars: placeholderText.length,
-            success: false
-        };
-        
-        return { documents, ocrStats };
-    }
-}
-
-// Simple local embedding function using TF-IDF-like approach
-function createSimpleEmbedding(text: string): number[] {
-    // Create a simple 384-dimensional embedding using character/word features
-    const embedding = new Array(384).fill(0);
-    
-    // Use text characteristics to create a unique vector
-    const words = text.toLowerCase().split(/\s+/);
-    const chars = text.toLowerCase();
-    
-    // Fill embedding with features based on text content
-    for (let i = 0; i < Math.min(words.length, 100); i++) {
-        const word = words[i];
-        const hash = simpleHash(word);
-        embedding[hash % 384] += 1;
-    }
-    
-    // Add character-level features
-    for (let i = 0; i < Math.min(chars.length, 1000); i++) {
-        const charCode = chars.charCodeAt(i);
-        embedding[charCode % 384] += 0.1;
-    }
-    
-    // Add length and structure features
-    embedding[0] = text.length / 1000; // Normalized length
-    embedding[1] = words.length / 100; // Normalized word count
-    embedding[2] = (text.match(/\./g) || []).length / 10; // Sentence count
-    
-    // Normalize the vector
-    const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-    return embedding.map(val => norm > 0 ? val / norm : 0);
-}
-
-function simpleHash(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32-bit integer
-    }
-    return Math.abs(hash);
-}
-
-function truncateFilePath(filePath: string, maxLength: number = 180): string {
-    if (filePath.length <= maxLength) {
-        return filePath;
-    }
-    return filePath.slice(0, maxLength - 3) + '...';
-}
-
 async function generateContentOverview(rawDocs: Document[]): Promise<string> {
     const combinedText = rawDocs.map(doc => doc.pageContent).join('\n\n').slice(0, 10000);
     
@@ -561,224 +260,6 @@ async function generateContentOverview(rawDocs: Document[]): Promise<string> {
         console.warn(`⚠️ LLM summarization failed: ${error.message}`);
         return `Document overview (${rawDocs.length} pages)`;
     }
-}
-
-// Check data completeness for a document
-interface DataCompletenessCheck {
-    hasRecord: boolean;
-    hasSummary: boolean;
-    hasConcepts: boolean;
-    hasChunks: boolean;
-    isComplete: boolean;
-    missingComponents: string[];
-}
-
-async function checkDocumentCompleteness(
-    catalogTable: lancedb.Table | null,
-    chunksTable: lancedb.Table | null,
-    hash: string,
-    source: string
-): Promise<DataCompletenessCheck> {
-    const result: DataCompletenessCheck = {
-        hasRecord: false,
-        hasSummary: false,
-        hasConcepts: false,
-        hasChunks: false,
-        isComplete: false,
-        missingComponents: []
-    };
-    
-    try {
-        // Check catalog record exists and has valid data
-        if (catalogTable) {
-            const query = catalogTable.query().where(`hash="${hash}"`).limit(1);
-            const results = await query.toArray();
-            
-            if (results.length > 0) {
-                result.hasRecord = true;
-                const record = results[0];
-                
-                // Check if summary is present and not just a fallback
-                const pageContent = record.text || '';
-                const isFallbackSummary = 
-                    pageContent.startsWith('Document overview (') ||
-                    pageContent.trim().length < 10 ||
-                    pageContent.includes('LLM summarization failed');
-                
-                result.hasSummary = !isFallbackSummary;
-                
-                // Check if concepts were successfully extracted
-                if (record.concepts) {
-                    try {
-                        const concepts = typeof record.concepts === 'string' 
-                            ? JSON.parse(record.concepts)
-                            : record.concepts;
-                        result.hasConcepts = 
-                            concepts && 
-                            concepts.primary_concepts && 
-                            concepts.primary_concepts.length > 0;
-                    } catch (e) {
-                        result.hasConcepts = false;
-                    }
-                } else {
-                    result.hasConcepts = false;
-                }
-                
-                // Debug logging
-                if (process.env.DEBUG_OCR) {
-                    console.log(`🔍 Hash ${hash.slice(0, 8)}...: record=${result.hasRecord}, summary=${result.hasSummary}, concepts=${result.hasConcepts}`);
-                }
-            }
-        }
-        
-        // Check if chunks exist for this document AND have concept metadata
-        if (chunksTable && result.hasRecord) {
-            try {
-                const chunksQuery = chunksTable.query().where(`hash="${hash}"`).limit(10);
-                const chunksResults = await chunksQuery.toArray();
-                result.hasChunks = chunksResults.length > 0;
-                
-                // NEW: Also check if chunks have concept metadata
-                if (result.hasChunks) {
-                    // Sample a few chunks to see if they have concept metadata
-                    let chunksWithConcepts = 0;
-                    for (const chunk of chunksResults) {
-                        try {
-                            const concepts = chunk.concepts ? JSON.parse(chunk.concepts) : [];
-                            if (Array.isArray(concepts) && concepts.length > 0) {
-                                chunksWithConcepts++;
-                            }
-                        } catch (e) {
-                            // Invalid concept data
-                        }
-                    }
-                    
-                    // If less than half of sampled chunks have concepts, mark as incomplete
-                    if (chunksWithConcepts < chunksResults.length / 2) {
-                        result.missingComponents.push('chunk_concepts');
-                        if (process.env.DEBUG_OCR) {
-                            console.log(`🔍 Hash ${hash.slice(0, 8)}... chunks lack concept metadata (${chunksWithConcepts}/${chunksResults.length} enriched)`);
-                        }
-                    }
-                }
-                
-                if (process.env.DEBUG_OCR) {
-                    console.log(`🔍 Hash ${hash.slice(0, 8)}... chunks: ${result.hasChunks}`);
-                }
-            } catch (e) {
-                // Chunks table might not exist yet
-                result.hasChunks = false;
-            }
-        }
-        
-        // Determine what's missing
-        if (!result.hasRecord) {
-            result.missingComponents.push('catalog');
-        }
-        if (!result.hasSummary) {
-            result.missingComponents.push('summary');
-        }
-        if (!result.hasConcepts) {
-            result.missingComponents.push('concepts');
-        }
-        if (!result.hasChunks) {
-            result.missingComponents.push('chunks');
-        }
-        
-        result.isComplete = result.hasRecord && result.hasSummary && result.hasConcepts && result.hasChunks;
-        
-        return result;
-    } catch (error: any) {
-        console.warn(`⚠️ Error checking document completeness for hash ${hash.slice(0, 8)}...: ${error.message}`);
-        return result;
-    }
-}
-
-async function catalogRecordExists(catalogTable: lancedb.Table, hash: string): Promise<boolean> {
-    try {
-        const query = catalogTable.query().where(`hash="${hash}"`).limit(1);
-        const results = await query.toArray();
-        const exists = results.length > 0;
-        
-        // Debug logging for hash checking and OCR persistence troubleshooting
-        if (process.env.DEBUG_OCR && exists) {
-            const record = results[0];
-            console.log(`🔍 Hash ${hash.slice(0, 8)}... found in DB: OCR=${record.ocr_processed || false}, source=${path.basename(record.source || '')}`);
-        }
-        
-        return exists;
-    } catch (error: any) {
-        console.warn(`⚠️ Error checking catalog record for hash ${hash.slice(0, 8)}...: ${error.message}`);
-        return false; // If table doesn't exist or query fails, record doesn't exist
-    }
-}
-
-async function deleteIncompleteDocumentData(
-    catalogTable: lancedb.Table | null,
-    chunksTable: lancedb.Table | null,
-    hash: string,
-    source: string,
-    missingComponents: string[]
-): Promise<void> {
-    try {
-        // Only delete catalog if summary or concepts are missing
-        // (We'll regenerate the catalog entry with corrected data)
-        if (catalogTable && (missingComponents.includes('summary') || missingComponents.includes('concepts'))) {
-            try {
-                await catalogTable.delete(`hash="${hash}"`);
-                console.log(`  🗑️  Deleted incomplete catalog entry for ${path.basename(source)}`);
-            } catch (e) {
-                // Might fail if no matching records, that's okay
-            }
-        }
-        
-        // Only delete chunks if chunks are actually missing or corrupted
-        // NEVER delete chunks if only concept metadata is missing - we'll re-enrich them in-place
-        if (chunksTable && missingComponents.includes('chunks') && !missingComponents.includes('chunk_concepts')) {
-            try {
-                await chunksTable.delete(`hash="${hash}"`);
-                console.log(`  🗑️  Deleted incomplete chunks for ${path.basename(source)}`);
-            } catch (e) {
-                // Might fail if no matching records, that's okay
-            }
-        } else if (missingComponents.includes('chunk_concepts')) {
-            console.log(`  🔄 Preserving chunks for ${path.basename(source)} (will re-enrich with concept metadata)`);
-        } else if (!missingComponents.includes('chunks')) {
-            console.log(`  ✅ Preserving existing chunks for ${path.basename(source)} (${missingComponents.join(', ')} will be regenerated)`);
-        }
-    } catch (error: any) {
-        console.warn(`⚠️ Error deleting incomplete data for ${path.basename(source)}: ${error.message}`);
-    }
-}
-
-async function findDocumentFilesRecursively(
-    dir: string,
-    extensions: string[] = ['.pdf', '.epub', '.mobi']
-): Promise<string[]> {
-    const documentFiles: string[] = [];
-    
-    try {
-        const entries = await fs.promises.readdir(dir, { withFileTypes: true });
-        
-        for (const entry of entries) {
-            const fullPath = path.join(dir, entry.name);
-            
-            if (entry.isDirectory()) {
-                // Recursively search subdirectories
-                const subDirDocs = await findDocumentFilesRecursively(fullPath, extensions);
-                documentFiles.push(...subDirDocs);
-            } else if (entry.isFile()) {
-                const fileExt = path.extname(entry.name).toLowerCase();
-                if (extensions.includes(fileExt)) {
-                    documentFiles.push(fullPath);
-                }
-            }
-        }
-    } catch (error: any) {
-        console.warn(`⚠️ Error scanning directory ${dir}: ${error.message}`);
-    }
-    
-    return documentFiles;
 }
 
 async function loadDocumentsWithErrorHandling(
@@ -999,7 +480,7 @@ async function loadDocumentsWithErrorHandling(
                 if (fileExt === '.pdf') {
                     try {
                         console.log(`🔍 OCR processing: ${truncateFilePath(relativePath)}`);
-                        const ocrResult = await callOpenRouterOCR(docFile);
+                        const ocrResult = await processWithTesseract(docFile);
                         
                         if (ocrResult && ocrResult.documents && ocrResult.documents.length > 0) {
                             // Add hash to OCR'd document metadata for proper tracking
@@ -1119,7 +600,7 @@ async function createLanceTableWithSimpleEmbeddings(
         const baseData: any = {
             id: isCatalog ? hashToId(doc.metadata.source || `doc-${i}`) : hashToId(idSource),
             hash: doc.metadata.hash || '',
-            vector: createSimpleEmbedding(doc.pageContent)
+            vector: embeddingService.generateEmbedding(doc.pageContent)
         };
         
         // Catalog uses 'summary', chunks use 'text'
@@ -1261,17 +742,6 @@ async function createLanceTableWithSimpleEmbeddings(
     console.log(`✅ Generated ${data.length} embeddings locally`);
     
     // Calculate appropriate number of partitions based on dataset size
-    // Rule of thumb: ~100-200 vectors per partition for good cluster quality
-    const calculatePartitions = (dataSize: number): number => {
-        if (dataSize < 100) return 2;
-        if (dataSize < 500) return Math.max(2, Math.floor(dataSize / 100));
-        if (dataSize < 1000) return Math.max(4, Math.floor(dataSize / 150));
-        if (dataSize < 5000) return Math.max(8, Math.floor(dataSize / 300));
-        if (dataSize < 10000) return Math.max(32, Math.floor(dataSize / 300));
-        if (dataSize < 50000) return Math.max(64, Math.floor(dataSize / 400));
-        return 256; // Default for very large datasets (50k+ vectors)
-    };
-    
     const numPartitions = calculatePartitions(data.length);
     
     // Handle existing tables
@@ -1333,37 +803,6 @@ async function createLanceTableWithSimpleEmbeddings(
         }
         
         return table;
-    }
-}
-
-async function createOptimizedIndex(
-    table: lancedb.Table,
-    dataSize: number,
-    numPartitions: number,
-    tableName: string
-): Promise<void> {
-    try {
-        // IVF_PQ requires at least 256 rows for PQ training
-        // This should never be called with < 256, but double-check
-        if (dataSize < 256) {
-            console.log(`⏭️  Skipping index - dataset too small (${dataSize} < 256)`);
-            return;
-        }
-        
-        console.log(`🔧 Creating optimized index for ${tableName} (${dataSize} vectors, ${numPartitions} partitions)...`);
-        
-        await table.createIndex("vector", {
-            config: lancedb.Index.ivfPq({
-                numPartitions: numPartitions,
-                numSubVectors: 16, // For 384-dim vectors
-            })
-        });
-        
-        console.log(`✅ Index created (IVF_PQ) successfully`);
-    } catch (error: any) {
-        // If index creation fails, log warning but continue (table is still usable without index)
-        console.warn(`⚠️  Index creation failed: ${error.message}`);
-        console.warn(`   Table is still functional, searches will use brute-force (slower but accurate)`);
     }
 }
 
@@ -1665,50 +1104,6 @@ Categories: General
     return { catalogRecords, processedInThisRun };
 }
 
-async function getDatabaseSize(dbPath: string): Promise<string> {
-    try {
-        const stats = await fs.promises.stat(dbPath);
-        
-        if (!stats.isDirectory()) {
-            return 'N/A';
-        }
-        
-        // Recursively calculate directory size
-        async function getDirectorySize(dirPath: string): Promise<number> {
-            let totalSize = 0;
-            const items = await fs.promises.readdir(dirPath, { withFileTypes: true });
-            
-            for (const item of items) {
-                const itemPath = path.join(dirPath, item.name);
-                
-                if (item.isDirectory()) {
-                    totalSize += await getDirectorySize(itemPath);
-                } else if (item.isFile()) {
-                    const stats = await fs.promises.stat(itemPath);
-                    totalSize += stats.size;
-                }
-            }
-            
-            return totalSize;
-        }
-        
-        const sizeInBytes = await getDirectorySize(dbPath);
-        
-        // Format size in human-readable format
-        if (sizeInBytes < 1024) {
-            return `${sizeInBytes} B`;
-        } else if (sizeInBytes < 1024 * 1024) {
-            return `${(sizeInBytes / 1024).toFixed(2)} KB`;
-        } else if (sizeInBytes < 1024 * 1024 * 1024) {
-            return `${(sizeInBytes / (1024 * 1024)).toFixed(2)} MB`;
-        } else {
-            return `${(sizeInBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-        }
-    } catch (error) {
-        return 'N/A';
-    }
-}
-
 /**
  * Extract unique categories and create categories table with hash-based IDs
  */
@@ -1781,7 +1176,7 @@ async function createCategoriesTable(
         
         // Generate embedding using simple embedding function (same as used for catalog/chunks)
         const embeddingText = `${category}: ${description}`;
-        const vector = createSimpleEmbedding(embeddingText);
+        const vector = embeddingService.generateEmbedding(embeddingText);
         
         const stats = categoryStats.get(category)!;
         
@@ -1825,38 +1220,6 @@ async function createCategoriesTable(
         });
         console.log("  ✅ Vector index created");
     }
-}
-
-/**
- * Build category ID map for converting category names to hash-based IDs
- */
-function buildCategoryIdMap(categories: Set<string>): Map<string, number> {
-    const categoryIdMap = new Map<string, number>();
-    const existingIds = new Set<number>();
-    
-    const sortedCategories = Array.from(categories).sort();
-    for (const category of sortedCategories) {
-        const categoryId = generateStableId(category, existingIds);
-        existingIds.add(categoryId);
-        categoryIdMap.set(category, categoryId);
-    }
-    
-    return categoryIdMap;
-}
-
-/**
- * Parse array field from LanceDB (handles native arrays, Arrow Vectors, JSON strings)
- */
-function parseArrayField(value: any): any[] {
-    if (!value) return [];
-    if (Array.isArray(value)) return value;
-    if (typeof value === 'object' && 'toArray' in value) {
-        return Array.from(value.toArray());
-    }
-    if (typeof value === 'string') {
-        try { return JSON.parse(value); } catch { return []; }
-    }
-    return [];
 }
 
 async function rebuildConceptIndexFromExistingData(
@@ -2386,7 +1749,7 @@ async function hybridFastSeed() {
                     hash: doc.metadata.hash,
                     catalog_id: sourceToCatalogId.get(doc.metadata.source) || 0,
                     page_number: doc.metadata.page_number || 1,
-                    vector: createSimpleEmbedding(doc.pageContent),
+                    vector: embeddingService.generateEmbedding(doc.pageContent),
                     concept_ids: conceptIds
                 };
                 
