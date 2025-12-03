@@ -63,6 +63,131 @@ export class WordNetService {
         }
     }
     
+    /**
+     * Pre-warm the cache with a list of terms.
+     * 
+     * Useful for pre-populating cache at ingestion time with concept vocabulary
+     * to reduce lookup latency during search operations.
+     * 
+     * @param terms - Array of terms to pre-fetch from WordNet
+     * @param options - Pre-warming options
+     * @returns Statistics about the pre-warming operation
+     */
+    async prewarmCache(
+        terms: string[],
+        options: {
+            /** Skip terms already in cache (default: true) */
+            skipCached?: boolean;
+            /** Maximum concurrent lookups (default: 5) */
+            concurrency?: number;
+            /** Progress callback */
+            onProgress?: (current: number, total: number, term: string) => void;
+        } = {}
+    ): Promise<{ 
+        total: number; 
+        cached: number; 
+        fetched: number; 
+        failed: number;
+        duration: number;
+    }> {
+        const { 
+            skipCached = true, 
+            concurrency = 5,
+            onProgress
+        } = options;
+        
+        // Ensure cache is loaded
+        if (!this.cacheLoaded) {
+            await this.loadCache();
+        }
+        
+        // Deduplicate and normalize terms
+        const uniqueTerms = [...new Set(
+            terms
+                .map(t => t.toLowerCase().trim())
+                .filter(t => t.length > 2)  // Skip very short terms
+        )];
+        
+        const startTime = Date.now();
+        let cached = 0;
+        let fetched = 0;
+        let failed = 0;
+        
+        // Filter terms to process
+        const termsToFetch = skipCached 
+            ? uniqueTerms.filter(t => !this.cache.has(t))
+            : uniqueTerms;
+        
+        cached = uniqueTerms.length - termsToFetch.length;
+        
+        // Process in batches for concurrency control
+        for (let i = 0; i < termsToFetch.length; i += concurrency) {
+            const batch = termsToFetch.slice(i, i + concurrency);
+            
+            await Promise.all(batch.map(async (term, batchIdx) => {
+                try {
+                    const synsets = await this.getSynsets(term);
+                    if (synsets.length > 0) {
+                        fetched++;
+                    } else {
+                        failed++;  // Term not in WordNet
+                    }
+                } catch (e) {
+                    failed++;
+                }
+                
+                if (onProgress) {
+                    onProgress(i + batchIdx + 1, termsToFetch.length, term);
+                }
+            }));
+        }
+        
+        const duration = Date.now() - startTime;
+        
+        return {
+            total: uniqueTerms.length,
+            cached,
+            fetched,
+            failed,
+            duration
+        };
+    }
+    
+    /**
+     * Extract unique words from concept names for cache pre-warming.
+     * 
+     * @param conceptNames - Array of concept names (may be multi-word)
+     * @returns Array of unique words suitable for WordNet lookup
+     */
+    static extractTermsFromConcepts(conceptNames: string[]): string[] {
+        const terms = new Set<string>();
+        
+        for (const name of conceptNames) {
+            // Split on whitespace and common separators
+            const words = name
+                .toLowerCase()
+                .split(/[\s\-_\/]+/)
+                .map(w => w.replace(/[^\w]/g, ''))
+                .filter(w => w.length > 2);
+            
+            for (const word of words) {
+                terms.add(word);
+            }
+        }
+        
+        return [...terms];
+    }
+    
+    /**
+     * Get cache statistics.
+     */
+    getCacheStats(): { size: number; loaded: boolean } {
+        return {
+            size: this.cache.size,
+            loaded: this.cacheLoaded
+        };
+    }
+    
     // Get synsets from WordNet
     async getSynsets(word: string): Promise<WordNetSynset[]> {
         // Ensure cache is loaded

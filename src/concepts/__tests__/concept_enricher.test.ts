@@ -18,6 +18,7 @@ import { WordNetSynset } from '../types.js';
 class MockWordNetService {
   private synsets: Map<string, WordNetSynset[]> = new Map();
   private saveCacheCalled = false;
+  private prewarmCacheCalled = false;
 
   async getSynsets(word: string): Promise<WordNetSynset[]> {
     const key = word.toLowerCase().trim();
@@ -28,6 +29,25 @@ class MockWordNetService {
     this.saveCacheCalled = true;
     return Promise.resolve();
   }
+  
+  async prewarmCache(
+    _terms: string[], 
+    _options?: any
+  ): Promise<{ total: number; cached: number; fetched: number; failed: number; duration: number }> {
+    this.prewarmCacheCalled = true;
+    return { total: 0, cached: 0, fetched: 0, failed: 0, duration: 0 };
+  }
+  
+  static extractTermsFromConcepts(conceptNames: string[]): string[] {
+    const terms = new Set<string>();
+    for (const name of conceptNames) {
+      const words = name.toLowerCase().split(/[\s\-_\/]+/).filter(w => w.length > 2);
+      for (const word of words) {
+        terms.add(word);
+      }
+    }
+    return [...terms];
+  }
 
   // Test helpers
   setSynsets(word: string, synsets: WordNetSynset[]): void {
@@ -37,10 +57,15 @@ class MockWordNetService {
   clear(): void {
     this.synsets.clear();
     this.saveCacheCalled = false;
+    this.prewarmCacheCalled = false;
   }
 
   wasSaveCacheCalled(): boolean {
     return this.saveCacheCalled;
+  }
+  
+  wasPrewarmCacheCalled(): boolean {
+    return this.prewarmCacheCalled;
   }
 }
 
@@ -89,8 +114,8 @@ describe('ConceptEnricher', () => {
       ];
       mockWordNet.setSynsets('architecture', mockSynsets);
 
-      // EXERCISE
-      const enriched = await enricher.enrichConcepts(concepts);
+      // EXERCISE - disable prewarm since mock is set up after enricher creation
+      const enriched = await enricher.enrichConcepts(concepts, { prewarm: false });
 
       // VERIFY
       expect(enriched[0].synonyms).toEqual(['architecture', 'design', 'structure', 'blueprint', 'plan']);
@@ -123,8 +148,8 @@ describe('ConceptEnricher', () => {
       ];
       mockWordNet.setSynsets('testing', mockSynsets);
 
-      // EXERCISE
-      const enriched = await enricher.enrichConcepts(concepts);
+      // EXERCISE - disable prewarm since mock is set up after enricher creation
+      const enriched = await enricher.enrichConcepts(concepts, { prewarm: false });
 
       // VERIFY
       expect(enriched[0].synonyms?.length).toBe(5);
@@ -156,8 +181,8 @@ describe('ConceptEnricher', () => {
       ];
       mockWordNet.setSynsets('pattern', mockSynsets);
 
-      // EXERCISE
-      const enriched = await enricher.enrichConcepts(concepts);
+      // EXERCISE - disable prewarm since mock is set up after enricher creation
+      const enriched = await enricher.enrichConcepts(concepts, { prewarm: false });
 
       // VERIFY
       expect(enriched[0].broader_terms?.length).toBe(3);
@@ -189,8 +214,8 @@ describe('ConceptEnricher', () => {
       ];
       mockWordNet.setSynsets('design', mockSynsets);
 
-      // EXERCISE
-      const enriched = await enricher.enrichConcepts(concepts);
+      // EXERCISE - disable prewarm since mock is set up after enricher creation
+      const enriched = await enricher.enrichConcepts(concepts, { prewarm: false });
 
       // VERIFY
       expect(enriched[0].narrower_terms?.length).toBe(5);
@@ -210,8 +235,8 @@ describe('ConceptEnricher', () => {
       ];
       // No synsets set for this concept
 
-      // EXERCISE
-      const enriched = await enricher.enrichConcepts(concepts);
+      // EXERCISE - disable prewarm since mock is set up after enricher creation
+      const enriched = await enricher.enrichConcepts(concepts, { prewarm: false });
 
       // VERIFY
       expect(enriched[0].synonyms).toBeUndefined();
@@ -260,8 +285,8 @@ describe('ConceptEnricher', () => {
       ];
       mockWordNet.setSynsets('valid concept', mockSynsets);
 
-      // EXERCISE
-      const enriched = await enricher.enrichConcepts(concepts);
+      // EXERCISE - disable prewarm since mock is set up after enricher creation
+      const enriched = await enricher.enrichConcepts(concepts, { prewarm: false });
 
       // VERIFY
       // Both concepts should be returned
@@ -311,8 +336,8 @@ describe('ConceptEnricher', () => {
         definition: 'Design definition'
       }]);
 
-      // EXERCISE
-      const enriched = await enricher.enrichConcepts(concepts);
+      // EXERCISE - disable prewarm since mock is set up after enricher creation
+      const enriched = await enricher.enrichConcepts(concepts, { prewarm: false });
 
       // VERIFY
       expect(enriched.length).toBe(2);
@@ -333,8 +358,8 @@ describe('ConceptEnricher', () => {
       ];
       mockWordNet.setSynsets('test', []);
 
-      // EXERCISE
-      await enricher.enrichConcepts(concepts);
+      // EXERCISE - disable prewarm since mock is set up after enricher creation
+      await enricher.enrichConcepts(concepts, { prewarm: false });
 
       // VERIFY
       expect(mockWordNet.wasSaveCacheCalled()).toBe(true);
@@ -344,8 +369,8 @@ describe('ConceptEnricher', () => {
       // SETUP
       const concepts: ConceptRecord[] = [];
 
-      // EXERCISE
-      const enriched = await enricher.enrichConcepts(concepts);
+      // EXERCISE - disable prewarm since mock is set up after enricher creation
+      const enriched = await enricher.enrichConcepts(concepts, { prewarm: false });
 
       // VERIFY
       expect(enriched).toEqual([]);

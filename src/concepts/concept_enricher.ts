@@ -1,15 +1,84 @@
 import { ConceptRecord } from './types.js';
 import { WordNetService } from '../wordnet/wordnet_service.js';
 
+export interface EnrichmentOptions {
+    /** Pre-warm WordNet cache before enrichment (default: true) */
+    prewarm?: boolean;
+    /** Concurrency for pre-warming (default: 5) */
+    prewarmConcurrency?: number;
+    /** Show pre-warming progress (default: true) */
+    showPrewarmProgress?: boolean;
+}
+
 export class ConceptEnricher {
     private wordnet: WordNetService;
     
-    constructor() {
-        this.wordnet = new WordNetService();
+    constructor(wordnetService?: WordNetService) {
+        this.wordnet = wordnetService || new WordNetService();
     }
     
-    // Enrich concept records with WordNet data
-    async enrichConcepts(concepts: ConceptRecord[]): Promise<ConceptRecord[]> {
+    /**
+     * Pre-warm the WordNet cache with vocabulary from concepts.
+     * Call this before enrichment to reduce individual lookup latency.
+     * 
+     * @param concepts - Concepts to extract vocabulary from
+     * @param options - Pre-warming options
+     */
+    async prewarmCache(
+        concepts: ConceptRecord[],
+        options: { concurrency?: number; showProgress?: boolean } = {}
+    ): Promise<void> {
+        const { concurrency = 5, showProgress = true } = options;
+        
+        // Extract unique terms from concept names
+        const conceptNames = concepts.map(c => c.name);
+        const terms = WordNetService.extractTermsFromConcepts(conceptNames);
+        
+        if (terms.length === 0) {
+            return;
+        }
+        
+        if (showProgress) {
+            console.log(`🔥 Pre-warming WordNet cache with ${terms.length} terms...`);
+        }
+        
+        const stats = await this.wordnet.prewarmCache(terms, {
+            skipCached: true,
+            concurrency,
+            onProgress: showProgress 
+                ? (current, total, _term) => {
+                    const percent = ((current / total) * 100).toFixed(1);
+                    process.stdout.write(`\r  Pre-warming: ${percent}% (${current}/${total})   `);
+                }
+                : undefined
+        });
+        
+        if (showProgress) {
+            process.stdout.write('\r' + ' '.repeat(60) + '\r');
+            console.log(`✅ Pre-warmed ${stats.fetched} terms (${stats.cached} already cached, ${stats.failed} not in WordNet) in ${(stats.duration / 1000).toFixed(1)}s`);
+        }
+    }
+    
+    /**
+     * Enrich concept records with WordNet data.
+     * 
+     * @param concepts - Concepts to enrich
+     * @param options - Enrichment options
+     */
+    async enrichConcepts(
+        concepts: ConceptRecord[],
+        options: EnrichmentOptions = {}
+    ): Promise<ConceptRecord[]> {
+        const { prewarm = true, prewarmConcurrency = 5, showPrewarmProgress = true } = options;
+        
+        // Pre-warm cache if enabled
+        if (prewarm) {
+            await this.prewarmCache(concepts, { 
+                concurrency: prewarmConcurrency, 
+                showProgress: showPrewarmProgress 
+            });
+        }
+        
         console.log(`🔍 Enriching ${concepts.length} concepts with WordNet...`);
         
         let enriched = 0;
