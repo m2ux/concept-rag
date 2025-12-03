@@ -22,6 +22,15 @@ import {
   createOptimizedIndex,
   buildCategoryIdMap
 } from './src/infrastructure/lancedb/seeding/index.js';
+import {
+  checkDocumentCompleteness,
+  catalogRecordExists,
+  deleteIncompleteDocumentData,
+  findDocumentFilesRecursively,
+  getDatabaseSize,
+  truncateFilePath,
+  type DataCompletenessCheck
+} from './src/infrastructure/seeding/index.js';
 import { generateCategorySummaries } from './src/concepts/summary_generator.js';
 import { parseFilenameMetadata, normalizeText } from './src/infrastructure/utils/filename-metadata-parser.js';
 import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
@@ -241,13 +250,6 @@ async function callOpenRouterChat(text: string): Promise<string> {
     return data.choices[0].message.content.trim();
 }
 
-function truncateFilePath(filePath: string, maxLength: number = 180): string {
-    if (filePath.length <= maxLength) {
-        return filePath;
-    }
-    return filePath.slice(0, maxLength - 3) + '...';
-}
-
 async function generateContentOverview(rawDocs: Document[]): Promise<string> {
     const combinedText = rawDocs.map(doc => doc.pageContent).join('\n\n').slice(0, 10000);
     
@@ -259,224 +261,6 @@ async function generateContentOverview(rawDocs: Document[]): Promise<string> {
         console.warn(`⚠️ LLM summarization failed: ${error.message}`);
         return `Document overview (${rawDocs.length} pages)`;
     }
-}
-
-// Check data completeness for a document
-interface DataCompletenessCheck {
-    hasRecord: boolean;
-    hasSummary: boolean;
-    hasConcepts: boolean;
-    hasChunks: boolean;
-    isComplete: boolean;
-    missingComponents: string[];
-}
-
-async function checkDocumentCompleteness(
-    catalogTable: lancedb.Table | null,
-    chunksTable: lancedb.Table | null,
-    hash: string,
-    source: string
-): Promise<DataCompletenessCheck> {
-    const result: DataCompletenessCheck = {
-        hasRecord: false,
-        hasSummary: false,
-        hasConcepts: false,
-        hasChunks: false,
-        isComplete: false,
-        missingComponents: []
-    };
-    
-    try {
-        // Check catalog record exists and has valid data
-        if (catalogTable) {
-            const query = catalogTable.query().where(`hash="${hash}"`).limit(1);
-            const results = await query.toArray();
-            
-            if (results.length > 0) {
-                result.hasRecord = true;
-                const record = results[0];
-                
-                // Check if summary is present and not just a fallback
-                const pageContent = record.text || '';
-                const isFallbackSummary = 
-                    pageContent.startsWith('Document overview (') ||
-                    pageContent.trim().length < 10 ||
-                    pageContent.includes('LLM summarization failed');
-                
-                result.hasSummary = !isFallbackSummary;
-                
-                // Check if concepts were successfully extracted
-                if (record.concepts) {
-                    try {
-                        const concepts = typeof record.concepts === 'string' 
-                            ? JSON.parse(record.concepts)
-                            : record.concepts;
-                        result.hasConcepts = 
-                            concepts && 
-                            concepts.primary_concepts && 
-                            concepts.primary_concepts.length > 0;
-                    } catch (e) {
-                        result.hasConcepts = false;
-                    }
-                } else {
-                    result.hasConcepts = false;
-                }
-                
-                // Debug logging
-                if (process.env.DEBUG_OCR) {
-                    console.log(`🔍 Hash ${hash.slice(0, 8)}...: record=${result.hasRecord}, summary=${result.hasSummary}, concepts=${result.hasConcepts}`);
-                }
-            }
-        }
-        
-        // Check if chunks exist for this document AND have concept metadata
-        if (chunksTable && result.hasRecord) {
-            try {
-                const chunksQuery = chunksTable.query().where(`hash="${hash}"`).limit(10);
-                const chunksResults = await chunksQuery.toArray();
-                result.hasChunks = chunksResults.length > 0;
-                
-                // NEW: Also check if chunks have concept metadata
-                if (result.hasChunks) {
-                    // Sample a few chunks to see if they have concept metadata
-                    let chunksWithConcepts = 0;
-                    for (const chunk of chunksResults) {
-                        try {
-                            const concepts = chunk.concepts ? JSON.parse(chunk.concepts) : [];
-                            if (Array.isArray(concepts) && concepts.length > 0) {
-                                chunksWithConcepts++;
-                            }
-                        } catch (e) {
-                            // Invalid concept data
-                        }
-                    }
-                    
-                    // If less than half of sampled chunks have concepts, mark as incomplete
-                    if (chunksWithConcepts < chunksResults.length / 2) {
-                        result.missingComponents.push('chunk_concepts');
-                        if (process.env.DEBUG_OCR) {
-                            console.log(`🔍 Hash ${hash.slice(0, 8)}... chunks lack concept metadata (${chunksWithConcepts}/${chunksResults.length} enriched)`);
-                        }
-                    }
-                }
-                
-                if (process.env.DEBUG_OCR) {
-                    console.log(`🔍 Hash ${hash.slice(0, 8)}... chunks: ${result.hasChunks}`);
-                }
-            } catch (e) {
-                // Chunks table might not exist yet
-                result.hasChunks = false;
-            }
-        }
-        
-        // Determine what's missing
-        if (!result.hasRecord) {
-            result.missingComponents.push('catalog');
-        }
-        if (!result.hasSummary) {
-            result.missingComponents.push('summary');
-        }
-        if (!result.hasConcepts) {
-            result.missingComponents.push('concepts');
-        }
-        if (!result.hasChunks) {
-            result.missingComponents.push('chunks');
-        }
-        
-        result.isComplete = result.hasRecord && result.hasSummary && result.hasConcepts && result.hasChunks;
-        
-        return result;
-    } catch (error: any) {
-        console.warn(`⚠️ Error checking document completeness for hash ${hash.slice(0, 8)}...: ${error.message}`);
-        return result;
-    }
-}
-
-async function catalogRecordExists(catalogTable: lancedb.Table, hash: string): Promise<boolean> {
-    try {
-        const query = catalogTable.query().where(`hash="${hash}"`).limit(1);
-        const results = await query.toArray();
-        const exists = results.length > 0;
-        
-        // Debug logging for hash checking and OCR persistence troubleshooting
-        if (process.env.DEBUG_OCR && exists) {
-            const record = results[0];
-            console.log(`🔍 Hash ${hash.slice(0, 8)}... found in DB: OCR=${record.ocr_processed || false}, source=${path.basename(record.source || '')}`);
-        }
-        
-        return exists;
-    } catch (error: any) {
-        console.warn(`⚠️ Error checking catalog record for hash ${hash.slice(0, 8)}...: ${error.message}`);
-        return false; // If table doesn't exist or query fails, record doesn't exist
-    }
-}
-
-async function deleteIncompleteDocumentData(
-    catalogTable: lancedb.Table | null,
-    chunksTable: lancedb.Table | null,
-    hash: string,
-    source: string,
-    missingComponents: string[]
-): Promise<void> {
-    try {
-        // Only delete catalog if summary or concepts are missing
-        // (We'll regenerate the catalog entry with corrected data)
-        if (catalogTable && (missingComponents.includes('summary') || missingComponents.includes('concepts'))) {
-            try {
-                await catalogTable.delete(`hash="${hash}"`);
-                console.log(`  🗑️  Deleted incomplete catalog entry for ${path.basename(source)}`);
-            } catch (e) {
-                // Might fail if no matching records, that's okay
-            }
-        }
-        
-        // Only delete chunks if chunks are actually missing or corrupted
-        // NEVER delete chunks if only concept metadata is missing - we'll re-enrich them in-place
-        if (chunksTable && missingComponents.includes('chunks') && !missingComponents.includes('chunk_concepts')) {
-            try {
-                await chunksTable.delete(`hash="${hash}"`);
-                console.log(`  🗑️  Deleted incomplete chunks for ${path.basename(source)}`);
-            } catch (e) {
-                // Might fail if no matching records, that's okay
-            }
-        } else if (missingComponents.includes('chunk_concepts')) {
-            console.log(`  🔄 Preserving chunks for ${path.basename(source)} (will re-enrich with concept metadata)`);
-        } else if (!missingComponents.includes('chunks')) {
-            console.log(`  ✅ Preserving existing chunks for ${path.basename(source)} (${missingComponents.join(', ')} will be regenerated)`);
-        }
-    } catch (error: any) {
-        console.warn(`⚠️ Error deleting incomplete data for ${path.basename(source)}: ${error.message}`);
-    }
-}
-
-async function findDocumentFilesRecursively(
-    dir: string,
-    extensions: string[] = ['.pdf', '.epub', '.mobi']
-): Promise<string[]> {
-    const documentFiles: string[] = [];
-    
-    try {
-        const entries = await fs.promises.readdir(dir, { withFileTypes: true });
-        
-        for (const entry of entries) {
-            const fullPath = path.join(dir, entry.name);
-            
-            if (entry.isDirectory()) {
-                // Recursively search subdirectories
-                const subDirDocs = await findDocumentFilesRecursively(fullPath, extensions);
-                documentFiles.push(...subDirDocs);
-            } else if (entry.isFile()) {
-                const fileExt = path.extname(entry.name).toLowerCase();
-                if (extensions.includes(fileExt)) {
-                    documentFiles.push(fullPath);
-                }
-            }
-        }
-    } catch (error: any) {
-        console.warn(`⚠️ Error scanning directory ${dir}: ${error.message}`);
-    }
-    
-    return documentFiles;
 }
 
 async function loadDocumentsWithErrorHandling(
@@ -1319,50 +1103,6 @@ Categories: General
     }
     
     return { catalogRecords, processedInThisRun };
-}
-
-async function getDatabaseSize(dbPath: string): Promise<string> {
-    try {
-        const stats = await fs.promises.stat(dbPath);
-        
-        if (!stats.isDirectory()) {
-            return 'N/A';
-        }
-        
-        // Recursively calculate directory size
-        async function getDirectorySize(dirPath: string): Promise<number> {
-            let totalSize = 0;
-            const items = await fs.promises.readdir(dirPath, { withFileTypes: true });
-            
-            for (const item of items) {
-                const itemPath = path.join(dirPath, item.name);
-                
-                if (item.isDirectory()) {
-                    totalSize += await getDirectorySize(itemPath);
-                } else if (item.isFile()) {
-                    const stats = await fs.promises.stat(itemPath);
-                    totalSize += stats.size;
-                }
-            }
-            
-            return totalSize;
-        }
-        
-        const sizeInBytes = await getDirectorySize(dbPath);
-        
-        // Format size in human-readable format
-        if (sizeInBytes < 1024) {
-            return `${sizeInBytes} B`;
-        } else if (sizeInBytes < 1024 * 1024) {
-            return `${(sizeInBytes / 1024).toFixed(2)} KB`;
-        } else if (sizeInBytes < 1024 * 1024 * 1024) {
-            return `${(sizeInBytes / (1024 * 1024)).toFixed(2)} MB`;
-        } else {
-            return `${(sizeInBytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-        }
-    } catch (error) {
-        return 'N/A';
-    }
 }
 
 /**
