@@ -18,7 +18,7 @@ describe('ApplicationContainer Integration Tests', () => {
   let container: ApplicationContainer;
   
   beforeAll(async () => {
-    // ARRANGE: Use existing test_db with real sample-docs data
+    // ARRANGE: Use existing db/test with real sample-docs data
     fixture = useExistingTestDatabase('application-container');
     await fixture.setup();
     
@@ -221,7 +221,7 @@ describe('ApplicationContainer Integration Tests', () => {
       // VERIFY
       // May be undefined if categories table doesn't exist in test database
       // This is acceptable for backward compatibility
-      // With real test_db, category repo should be available
+      // With real db/test, category repo should be available
       expect(categoryRepo).toBeDefined();
     });
     

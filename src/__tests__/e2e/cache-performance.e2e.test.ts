@@ -16,7 +16,7 @@ import { ApplicationContainer } from '../../application/container.js';
 
 describe('Cache Performance E2E Tests', () => {
   let container: ApplicationContainer;
-  const testDbPath = process.env.TEST_DB_PATH || '~/.concept_rag_test';
+  const testDbPath = process.env.TEST_DB_PATH || './db/test';
   
   beforeAll(async () => {
     container = new ApplicationContainer();
@@ -158,81 +158,47 @@ describe('Cache Performance E2E Tests', () => {
       expect(duration2).toBeLessThan(duration1);
     });
     
-    it.skip('should handle diverse query patterns efficiently', async () => {
+    it('should handle diverse query patterns efficiently', { timeout: 60000 }, async () => {
       const broadSearchTool = container.getTool('broad_chunks_search');
       
-      // Mix of unique and repeated queries
-      const queries = [
-        'microservices', 'microservices', 'microservices', // 3x repeated
-        'api design', 'api design',                         // 2x repeated
-        'database sharding',                                 // unique
-        'event driven architecture',                         // unique
-        'microservices'                                      // repeated again
-      ];
+      // Test queries - each run twice to verify caching
+      const queries = ['microservices', 'api design', 'database sharding'];
       
       console.log('\n📊 Embedding Cache with Mixed Queries...');
       
-      const times: number[] = [];
-      for (let i = 0; i < queries.length; i++) {
+      // First pass - populate cache (all cache misses)
+      const firstPassTimes: number[] = [];
+      for (const query of queries) {
         const start = performance.now();
-        await broadSearchTool.execute({ text: queries[i], limit: 5 });
+        await broadSearchTool.execute({ text: query, limit: 5 });
         const duration = performance.now() - start;
-        times.push(duration);
-        
-        const status = i > 0 && queries.slice(0, i).includes(queries[i])
-          ? '(cached)'
-          : '(new)';
-        console.log(`  Query ${i + 1}: ${duration.toFixed(2)}ms ${status} - "${queries[i]}"`);
+        firstPassTimes.push(duration);
+        console.log(`  First pass "${query}": ${duration.toFixed(2)}ms (new)`);
       }
       
-      // Later queries should be faster due to caching
-      const firstThree = times.slice(0, 3).reduce((a, b) => a + b, 0) / 3;
-      const lastThree = times.slice(-3).reduce((a, b) => a + b, 0) / 3;
+      // Second pass - should be faster due to caching
+      const secondPassTimes: number[] = [];
+      for (const query of queries) {
+        const start = performance.now();
+        await broadSearchTool.execute({ text: query, limit: 5 });
+        const duration = performance.now() - start;
+        secondPassTimes.push(duration);
+        console.log(`  Second pass "${query}": ${duration.toFixed(2)}ms (cached)`);
+      }
       
-      console.log(`  Avg first 3: ${firstThree.toFixed(2)}ms`);
-      console.log(`  Avg last 3:  ${lastThree.toFixed(2)}ms`);
+      const avgFirst = firstPassTimes.reduce((a, b) => a + b, 0) / firstPassTimes.length;
+      const avgSecond = secondPassTimes.reduce((a, b) => a + b, 0) / secondPassTimes.length;
       
-      // Later queries should benefit from cache (or at least not be slower)
-      // Note: With different queries, cache may not always help
-      expect(lastThree).toBeLessThan(firstThree * 2); // Allow some variance
+      console.log(`  Avg first pass: ${avgFirst.toFixed(2)}ms`);
+      console.log(`  Avg second pass: ${avgSecond.toFixed(2)}ms`);
+      
+      // Second pass (cached) should be significantly faster than first pass
+      expect(avgSecond).toBeLessThan(avgFirst);
     });
   });
   
-  describe('Cache Memory Bounds', () => {
-    it.skip('should not exceed memory limits under heavy load', { timeout: 300000 }, async () => {
-      const catalogSearchTool = container.getTool('catalog_search');
-      
-      console.log('\n📊 Memory Bounds Test (1000 queries)...');
-      
-      const startMemory = process.memoryUsage().heapUsed;
-      console.log(`  Starting heap: ${(startMemory / 1024 / 1024).toFixed(2)}MB`);
-      
-      // Generate 1000 unique queries to test LRU eviction
-      for (let i = 0; i < 1000; i++) {
-        await catalogSearchTool.execute({ 
-          text: `unique query ${i} about software architecture`, 
-          limit: 5 
-        });
-        
-        // Log memory every 100 queries
-        if ((i + 1) % 100 === 0) {
-          const currentMemory = process.memoryUsage().heapUsed;
-          const delta = (currentMemory - startMemory) / 1024 / 1024;
-          console.log(`  After ${i + 1} queries: +${delta.toFixed(2)}MB`);
-        }
-      }
-      
-      const endMemory = process.memoryUsage().heapUsed;
-      const memoryIncrease = (endMemory - startMemory) / 1024 / 1024;
-      
-      console.log(`  Final heap: ${(endMemory / 1024 / 1024).toFixed(2)}MB`);
-      console.log(`  Total increase: ${memoryIncrease.toFixed(2)}MB`);
-      
-      // Cache should stay under 200MB even with 1000 queries
-      // (1K search cache ~100MB, 10K embedding cache ~30MB, plus overhead)
-      expect(memoryIncrease).toBeLessThan(200);
-    });
-  });
+  // NOTE: Memory bounds test removed - 5 minute timeout with 1000 queries is too slow for regular test runs.
+  // Memory behavior is adequately verified by the LRU cache unit tests.
   
   describe('Cache TTL Behavior', () => {
     it('should expire search results after TTL', { timeout: 30000 }, async () => {

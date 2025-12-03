@@ -6,7 +6,7 @@
  * - Full JSON output from tool calls
  * - Pass/fail status
  * 
- * Uses inputs spanning all documents in test_db:
+ * Uses inputs spanning all documents in db/test:
  * - Sun Tzu - Art of War (military strategy)
  * - Clean Architecture (software architecture)
  * - Thinking in Systems (systems thinking)
@@ -90,7 +90,7 @@ async function generateReport(container: ApplicationContainer): Promise<string> 
     report.push('# MCP Tool Test Report - Detailed Output');
     report.push('');
     report.push(`**Generated:** ${new Date().toISOString()}`);
-    report.push(`**Database:** ./test_db`);
+    report.push(`**Database:** db/test`);
     report.push('');
     report.push('---');
     report.push('');
@@ -396,7 +396,7 @@ async function main() {
     const container = new ApplicationContainer();
     
     try {
-        await container.initialize('./test_db');
+        await container.initialize('./db/test');
         console.log('');
         
         const report = await generateReport(container);

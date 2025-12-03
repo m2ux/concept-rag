@@ -21,7 +21,7 @@ function parseArray(value: any): any[] {
 }
 
 async function main() {
-    const dbPath = process.argv[2] || './test_db';
+    const dbPath = process.argv[2] || './db/test';
     const skipWordNet = !process.argv.includes('--with-wordnet');
     
     console.log(`📂 Database: ${dbPath}`);

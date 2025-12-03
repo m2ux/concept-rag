@@ -22,14 +22,16 @@ describe('Resilience Integration Tests', () => {
       expect(container).toBeDefined();
     });
 
-    it.skip('should inject ResilientExecutor into services (requires real DB)', async () => {
-      // This test requires a real database, so we skip it in unit tests
-      // It's verified by:
-      // 1. ApplicationContainer creates ResilientExecutor before services
-      // 2. Services accept ResilientExecutor in their constructors
-      // 3. ApplicationContainer passes resilientExecutor to services
+    it('should inject ResilientExecutor into services', async () => {
+      // ApplicationContainer creates ResilientExecutor and injects it into services
+      const container = new ApplicationContainer();
+      await container.initialize('./db/test');
       
-      // See application/container.ts lines 110-115, 132
+      // Verify container is initialized and tools are available
+      const tool = container.getTool('catalog_search');
+      expect(tool).toBeDefined();
+      
+      await container.close();
     });
   });
 

@@ -1,7 +1,7 @@
 import lancedb from "@lancedb/lancedb";
 
 async function main() {
-  const db = await lancedb.connect("./test_db");
+  const db = await lancedb.connect("./db/test");
   
   const tables = await db.tableNames();
   console.log("Tables:", tables);

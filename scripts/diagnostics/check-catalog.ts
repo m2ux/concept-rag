@@ -1,7 +1,7 @@
 import lancedb from "@lancedb/lancedb";
 
 async function main() {
-  const db = await lancedb.connect("./test_db");
+  const db = await lancedb.connect("./db/test");
   const catalog = await db.openTable("catalog");
   // LanceDB defaults to limit 10 without explicit limit
   const records = await catalog.query().limit(100000).toArray();

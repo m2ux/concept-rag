@@ -4,10 +4,10 @@
  * Provides utilities for creating and tearing down test databases for integration tests.
  * Supports two modes:
  * 1. Fresh temp database with synthetic test data (isolated per test suite)
- * 2. Existing test_db with real sample-docs data (shared, faster)
+ * 2. Existing db/test with real sample-docs data (shared, faster)
  * 
  * **Design**: Test Fixture pattern
- * - Setup creates fresh test database with v7 schema OR uses existing test_db
+ * - Setup creates fresh test database with v7 schema OR uses existing db/test
  * - Teardown cleans up resources (only for temp databases)
  * - Each test suite gets isolated environment
  * 
@@ -26,8 +26,8 @@ import {
   createStandardTestCategories
 } from '../test-helpers/integration-test-data.js';
 
-// Path to the existing test_db with real sample-docs data
-const EXISTING_TEST_DB_PATH = path.resolve(process.cwd(), 'test_db');
+// Path to the existing test database with real sample-docs data
+const EXISTING_TEST_DB_PATH = path.resolve(process.cwd(), './db/test');
 
 /**
  * Test database fixture for integration tests.
@@ -42,7 +42,7 @@ export class TestDatabaseFixture {
     this.useExisting = useExistingDb;
     
     if (useExistingDb && fs.existsSync(EXISTING_TEST_DB_PATH)) {
-      // Use existing test_db with real data
+      // Use existing db/test with real data
       this.testDbPath = EXISTING_TEST_DB_PATH;
     } else {
       // Create unique temp directory for this test suite
@@ -95,7 +95,7 @@ export class TestDatabaseFixture {
   
   /**
    * Clean up test database and resources.
-   * Only removes temp databases, not existing test_db.
+   * Only removes temp databases, not existing db/test.
    */
   async teardown(): Promise<void> {
     // Close connection
@@ -103,7 +103,7 @@ export class TestDatabaseFixture {
       await this.connection.close();
     }
     
-    // Only remove temp database directories, not existing test_db
+    // Only remove temp database directories, not existing db/test
     if (!this.useExisting && fs.existsSync(this.testDbPath)) {
       fs.rmSync(this.testDbPath, { recursive: true, force: true });
     }
@@ -189,7 +189,7 @@ export function createTestDatabase(testSuiteName: string): TestDatabaseFixture {
 }
 
 /**
- * Create a test database fixture using the existing test_db with real sample-docs data.
+ * Create a test database fixture using the existing db/test with real sample-docs data.
  * This is faster and uses real document data for more realistic testing.
  * 
  * @example

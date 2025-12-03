@@ -1,10 +1,10 @@
 /**
- * Test concept queries against the test_db
+ * Test concept queries against db/test
  */
 import * as lancedb from '@lancedb/lancedb';
 
 async function testConceptQueries() {
-    const db = await lancedb.connect('./test_db');
+    const db = await lancedb.connect('./db/test');
     const concepts = await db.openTable('concepts');
     
     // Get all concepts

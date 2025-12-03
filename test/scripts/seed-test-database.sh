@@ -6,7 +6,7 @@
 
 set -e  # Exit on error
 
-TEST_DB="/tmp/concept_rag_test"
+TEST_DB="./db/test"
 SAMPLE_DOCS="../../sample-docs"
 
 echo "╔════════════════════════════════════════════════════════════════╗"
@@ -15,7 +15,7 @@ echo "╚═══════════════════════�
 echo ""
 echo "⚠️  SAFETY GUARANTEE:"
 echo "   ✅ Main database (~/.concept_rag) will NOT be touched"
-echo "   ✅ Test database: $TEST_DB"
+echo "   ✅ Test database: $TEST_DB (relative to project root)"
 echo "   ✅ Sample docs: $SAMPLE_DOCS"
 echo ""
 

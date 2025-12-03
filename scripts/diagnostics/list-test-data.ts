@@ -1,12 +1,12 @@
 import * as lancedb from '@lancedb/lancedb';
 
 async function main() {
-  const db = await lancedb.connect('./test_db');
+  const db = await lancedb.connect('./db/test');
   
   // List documents
   const catalog = await db.openTable('catalog');
   const docs = await catalog.query().limit(50).toArray();
-  console.log('=== Documents in test_db ===');
+  console.log('=== Documents in db/test ===');
   docs.forEach((d: any, i: number) => {
     const title = d.title || d.source?.split('/').pop()?.replace(/\.[^.]+$/, '') || 'Unknown';
     console.log(`${i+1}. ${title}`);

@@ -10,7 +10,7 @@ function parseArray(value: any): any[] {
 }
 
 async function main() {
-  const db = await lancedb.connect("./test_db");
+  const db = await lancedb.connect("./db/test");
   const concepts = await db.openTable("concepts");
   
   const allConcepts = await concepts.query().limit(100000).toArray();

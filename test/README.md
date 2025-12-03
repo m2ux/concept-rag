@@ -451,7 +451,7 @@ Property-based tests use random input generation to verify mathematical invarian
 
 ### Test Database
 
-Tests use a test database at `/tmp/concept_rag_test` seeded with sample documents from `sample-docs/`.
+Tests use a test database at `./db/test` seeded with sample documents from `sample-docs/`.
 
 ```bash
 # Create test database

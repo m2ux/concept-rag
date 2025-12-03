@@ -16,7 +16,7 @@ function parseArray(value: any): any[] {
 }
 
 async function main() {
-    const dbPath = process.argv[2] || './test_db';
+    const dbPath = process.argv[2] || './db/test';
     
     console.log(`📂 Database: ${dbPath}`);
     

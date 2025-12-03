@@ -1,7 +1,7 @@
 import * as lancedb from '@lancedb/lancedb';
 
 async function main() {
-  const dbPath = process.argv[2] || (process.env.HOME + '/.concept_rag');
+  const dbPath = process.argv[2] || './db/test';
   console.log(`Checking database: ${dbPath}\n`);
   
   const db = await lancedb.connect(dbPath);

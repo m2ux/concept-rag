@@ -7,7 +7,7 @@
  * 
  * Usage:
  *   npx tsx scripts/test_search_tools.ts [db-path]
- *   npx tsx scripts/test_search_tools.ts ~/.concept_rag_test
+ *   npx tsx scripts/test_search_tools.ts db/test
  */
 
 import * as lancedb from "@lancedb/lancedb";
@@ -86,7 +86,7 @@ interface TestResult {
 }
 
 async function main() {
-  const dbPath = process.argv[2] || path.join(process.env.HOME || '', '.concept_rag_test');
+  const dbPath = process.argv[2] || './db/test';
   
   console.log('\n🧪 SEARCH TOOLS TEST SUITE');
   console.log('='.repeat(70));

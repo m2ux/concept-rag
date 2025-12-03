@@ -10,7 +10,7 @@ import { LanceDBConceptRepository } from '../src/infrastructure/lancedb/reposito
 async function testBackwardCompat() {
   console.log('=== Testing Backward Compatibility ===\n');
   
-  const dbPath = process.argv[2] || './test_db';
+  const dbPath = process.argv[2] || './db/test';
   console.log(`Database: ${dbPath}\n`);
   
   const db = await lancedb.connect(dbPath);
