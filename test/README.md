@@ -59,9 +59,10 @@ Tests real-world caching performance and effectiveness.
 | [`should demonstrate cache hit rate >60% on repeated queries`](../src/__tests__/e2e/cache-performance.e2e.test.ts#L31) | 5 queries, 2 passes | >30% improvement | Verify cache effectiveness |
 | [`should maintain performance under realistic query patterns`](../src/__tests__/e2e/cache-performance.e2e.test.ts#L84) | 100 queries (70% repeated) | >50% hit rate | Test realistic usage |
 | [`should cache embeddings for repeated texts`](../src/__tests__/e2e/cache-performance.e2e.test.ts#L134) | Same query twice | Second faster | Verify embedding cache |
-| [`should expire search results after TTL`](../src/__tests__/e2e/cache-performance.e2e.test.ts#L238) | Query with TTL | Immediate repeat faster | Verify TTL behavior |
-| [`should handle concurrent queries efficiently`](../src/__tests__/e2e/cache-performance.e2e.test.ts#L265) | 50 parallel queries | All complete, <200ms avg | Verify concurrent access |
-| [`should perform well under realistic usage patterns`](../src/__tests__/e2e/cache-performance.e2e.test.ts#L299) | 200 mixed operations | <50ms avg, >20 ops/sec | Validate performance |
+| [`should handle diverse query patterns efficiently`](../src/__tests__/e2e/cache-performance.e2e.test.ts#L161) | 3 queries, 2 passes | Second pass faster | Verify diverse caching |
+| [`should expire search results after TTL`](../src/__tests__/e2e/cache-performance.e2e.test.ts#L204) | Query with TTL | Immediate repeat faster | Verify TTL behavior |
+| [`should handle concurrent queries efficiently`](../src/__tests__/e2e/cache-performance.e2e.test.ts#L231) | 50 parallel queries | All complete, <200ms avg | Verify concurrent access |
+| [`should perform well under realistic usage patterns`](../src/__tests__/e2e/cache-performance.e2e.test.ts#L265) | 200 mixed operations | <50ms avg, >20 ops/sec | Validate performance |
 
 ### Document Pipeline Resilience ([document-pipeline-resilience.e2e.test.ts](../src/__tests__/e2e/document-pipeline-resilience.e2e.test.ts))
 
@@ -138,9 +139,11 @@ Integration tests verify cross-component workflows with real database interactio
 | Test | Parameters | Pass/Fail Criteria | Purpose |
 |------|------------|-------------------|---------|
 | [`should create ResilientExecutor and RetryService`](../src/__tests__/integration/resilience-integration.test.ts#L15) | Container | Both defined | Verify creation |
-| [`should use ResilientExecutor when provided`](../src/__tests__/integration/resilience-integration.test.ts#L37) | Mock executor | Executor used | Verify injection |
-| [`should work without ResilientExecutor`](../src/__tests__/integration/resilience-integration.test.ts#L52) | No executor | Works | Backward compat |
-| [`should accept ResilientExecutor in connect`](../src/__tests__/integration/resilience-integration.test.ts#L62) | Mock executor | Connection works | Verify DB integration |
+| [`should inject ResilientExecutor into services`](../src/__tests__/integration/resilience-integration.test.ts#L25) | Real DB | Tool works | Verify DI |
+| [`should use ResilientExecutor when provided`](../src/__tests__/integration/resilience-integration.test.ts#L39) | Mock executor | Executor used | Verify injection |
+| [`should work without ResilientExecutor`](../src/__tests__/integration/resilience-integration.test.ts#L54) | No executor | Works | Backward compat |
+| [`should accept ResilientExecutor in connect`](../src/__tests__/integration/resilience-integration.test.ts#L64) | Mock executor | Connection works | Verify DB integration |
+| [`should confirm all integration points exist`](../src/__tests__/integration/resilience-integration.test.ts#L83) | Code inspection | Points verified | Integration docs |
 
 ### Error Handling ([error-handling.integration.test.ts](../src/__tests__/integration/error-handling.integration.test.ts))
 
@@ -296,6 +299,7 @@ Unit tests are fast, isolated tests using test doubles (fakes/mocks).
 | [`should queue operations when at max concurrent`](../src/infrastructure/resilience/__tests__/bulkhead.test.ts#L262) | At max | Queued | Verify queuing |
 | [`should reject when bulkhead is full`](../src/infrastructure/resilience/__tests__/bulkhead.test.ts#L365) | Beyond capacity | BulkheadRejectionError | Verify rejection |
 | [`should track rejection count`](../src/infrastructure/resilience/__tests__/bulkhead.test.ts#L416) | Rejections | Count accurate | Verify rejection count |
+| [`should track all metrics accurately`](../src/infrastructure/resilience/__tests__/bulkhead.test.ts#L465) | 2 success, 1 fail | Correct counts | Verify metrics |
 
 #### Timeout ([timeout.test.ts](../src/infrastructure/resilience/__tests__/timeout.test.ts))
 
@@ -303,8 +307,16 @@ Unit tests are fast, isolated tests using test doubles (fakes/mocks).
 |------|------------|-------------------|---------|
 | [`should define standard timeout values`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L16) | - | Values defined | Verify constants |
 | [`should return operation result if completes before timeout`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L26) | Fast op | Result returned | Verify success |
+| [`should throw TimeoutError if operation exceeds timeout`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L38) | Slow op | TimeoutError | Verify timeout |
+| [`should include operation name and timeout in error`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L55) | Slow op | Error details | Verify error info |
+| [`should timeout even if operation never resolves`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L95) | Hung op | TimeoutError | Verify hung handling |
+| [`should handle zero timeout`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L108) | 0ms timeout | TimeoutError | Edge case |
 | [`should work with operations that reject`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L85) | Reject op | Error propagated | Verify error prop |
-| [`should create a wrapped function with timeout`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L142) | Wrap fn | Wrapped fn works | Verify withTimeout |
+| [`should create a wrapped function with timeout`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L144) | Wrap fn | Wrapped fn works | Verify withTimeout |
+| [`should timeout wrapped function if it takes too long`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L155) | Slow wrapped fn | TimeoutError | Verify wrapped timeout |
+| [`should call onTimeout callback when timeout occurs`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L215) | onTimeout cb | Callback called | Verify callback |
+| [`should work without onTimeout callback`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L269) | No callback | Works | Backward compat |
+| [`should timeout mixed fast/slow operations correctly`](../src/infrastructure/resilience/__tests__/timeout.test.ts#L312) | Mixed ops | Correct behavior | Verify mixed |
 
 #### Graceful Degradation ([graceful-degradation.test.ts](../src/infrastructure/resilience/__tests__/graceful-degradation.test.ts))
 
