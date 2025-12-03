@@ -17,6 +17,11 @@ import { PDFDocumentLoader } from './src/infrastructure/document-loaders/pdf-loa
 import { EPUBDocumentLoader } from './src/infrastructure/document-loaders/epub-loader.js';
 import { hashToId, generateStableId } from './src/infrastructure/utils/hash.js';
 import { parseArrayField } from './src/infrastructure/lancedb/utils/field-parsers.js';
+import {
+  calculatePartitions,
+  createOptimizedIndex,
+  buildCategoryIdMap
+} from './src/infrastructure/lancedb/seeding/index.js';
 import { generateCategorySummaries } from './src/concepts/summary_generator.js';
 import { parseFilenameMetadata, normalizeText } from './src/infrastructure/utils/filename-metadata-parser.js';
 import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
@@ -954,17 +959,6 @@ async function createLanceTableWithSimpleEmbeddings(
     console.log(`✅ Generated ${data.length} embeddings locally`);
     
     // Calculate appropriate number of partitions based on dataset size
-    // Rule of thumb: ~100-200 vectors per partition for good cluster quality
-    const calculatePartitions = (dataSize: number): number => {
-        if (dataSize < 100) return 2;
-        if (dataSize < 500) return Math.max(2, Math.floor(dataSize / 100));
-        if (dataSize < 1000) return Math.max(4, Math.floor(dataSize / 150));
-        if (dataSize < 5000) return Math.max(8, Math.floor(dataSize / 300));
-        if (dataSize < 10000) return Math.max(32, Math.floor(dataSize / 300));
-        if (dataSize < 50000) return Math.max(64, Math.floor(dataSize / 400));
-        return 256; // Default for very large datasets (50k+ vectors)
-    };
-    
     const numPartitions = calculatePartitions(data.length);
     
     // Handle existing tables
@@ -1026,37 +1020,6 @@ async function createLanceTableWithSimpleEmbeddings(
         }
         
         return table;
-    }
-}
-
-async function createOptimizedIndex(
-    table: lancedb.Table,
-    dataSize: number,
-    numPartitions: number,
-    tableName: string
-): Promise<void> {
-    try {
-        // IVF_PQ requires at least 256 rows for PQ training
-        // This should never be called with < 256, but double-check
-        if (dataSize < 256) {
-            console.log(`⏭️  Skipping index - dataset too small (${dataSize} < 256)`);
-            return;
-        }
-        
-        console.log(`🔧 Creating optimized index for ${tableName} (${dataSize} vectors, ${numPartitions} partitions)...`);
-        
-        await table.createIndex("vector", {
-            config: lancedb.Index.ivfPq({
-                numPartitions: numPartitions,
-                numSubVectors: 16, // For 384-dim vectors
-            })
-        });
-        
-        console.log(`✅ Index created (IVF_PQ) successfully`);
-    } catch (error: any) {
-        // If index creation fails, log warning but continue (table is still usable without index)
-        console.warn(`⚠️  Index creation failed: ${error.message}`);
-        console.warn(`   Table is still functional, searches will use brute-force (slower but accurate)`);
     }
 }
 
@@ -1518,23 +1481,6 @@ async function createCategoriesTable(
         });
         console.log("  ✅ Vector index created");
     }
-}
-
-/**
- * Build category ID map for converting category names to hash-based IDs
- */
-function buildCategoryIdMap(categories: Set<string>): Map<string, number> {
-    const categoryIdMap = new Map<string, number>();
-    const existingIds = new Set<number>();
-    
-    const sortedCategories = Array.from(categories).sort();
-    for (const category of sortedCategories) {
-        const categoryId = generateStableId(category, existingIds);
-        existingIds.add(categoryId);
-        categoryIdMap.set(category, categoryId);
-    }
-    
-    return categoryIdMap;
 }
 
 async function rebuildConceptIndexFromExistingData(
