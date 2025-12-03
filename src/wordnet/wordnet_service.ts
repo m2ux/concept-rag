@@ -574,13 +574,18 @@ print(json.dumps(results))
             expanded.set(term.toLowerCase(), 1.0);
         }
         
+        // Build context for strategy-based synset selection
+        const context: SelectionContext = {
+            queryTerms: terms,
+            domainHints: ['software', 'programming', 'technology', 'system']
+        };
+        
         // Add related terms with lower weights
         for (const term of terms) {
-            const synsets = await this.getTechnicalSynsets(term, terms);
+            // Use the configured strategy for synset selection
+            const synset = await this.getContextualSynset(term, context);
             
-            if (synsets.length > 0) {
-                const synset = synsets[0];  // Use most relevant synset
-                
+            if (synset) {
                 // Add synonyms (weight 0.6)
                 for (const syn of synset.synonyms.slice(0, maxSynonyms)) {
                     const key = syn.toLowerCase();
