@@ -18,6 +18,7 @@ import { DocumentLoaderFactory } from './src/infrastructure/document-loaders/doc
 import { PDFDocumentLoader } from './src/infrastructure/document-loaders/pdf-loader.js';
 import { EPUBDocumentLoader } from './src/infrastructure/document-loaders/epub-loader.js';
 import { hashToId, generateStableId } from './src/infrastructure/utils/hash.js';
+import { parseArrayField } from './src/infrastructure/lancedb/utils/field-parsers.js';
 import { generateCategorySummaries } from './src/concepts/summary_generator.js';
 import { parseFilenameMetadata, normalizeText } from './src/infrastructure/utils/filename-metadata-parser.js';
 import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
@@ -1804,21 +1805,6 @@ function buildCategoryIdMap(categories: Set<string>): Map<string, number> {
     }
     
     return categoryIdMap;
-}
-
-/**
- * Parse array field from LanceDB (handles native arrays, Arrow Vectors, JSON strings)
- */
-function parseArrayField(value: any): any[] {
-    if (!value) return [];
-    if (Array.isArray(value)) return value;
-    if (typeof value === 'object' && 'toArray' in value) {
-        return Array.from(value.toArray());
-    }
-    if (typeof value === 'string') {
-        try { return JSON.parse(value); } catch { return []; }
-    }
-    return [];
 }
 
 async function rebuildConceptIndexFromExistingData(
