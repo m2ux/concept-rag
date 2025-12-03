@@ -18,20 +18,6 @@
 
 Concept-RAG is an MCP (Model Context Protocol) server that enables AI assistants like Claude and Cursor to search and interact with your documents using conceptual understanding.
 
-### How is Concept-RAG different from regular document search?
-
-**Traditional search**:
-- Keyword matching only
-- No semantic understanding
-- Miss related concepts
-- Poor for complex queries
-
-**Concept-RAG**:
-- Understands document concepts
-- Semantic matching with WordNet
-- Multiple search modes for different use cases
-- Hybrid ranking for best results
-
 ### What does "conceptual search" mean?
 
 Conceptual search means finding information based on **meaning** rather than exact keywords. For example, searching for "innovation" will also find related concepts like "creative process", "novel solutions", and "breakthrough thinking" because they're semantically related.
@@ -128,6 +114,7 @@ See `prompts/concept-extraction.txt` for the current extraction prompt.
 
 Currently:
 - ✅ PDF (text-based and scanned with OCR fallback)
+- ✅ EPUB (electronic publication format)
 
 Planned:
 - 📋 DOCX, TXT, Markdown, HTML

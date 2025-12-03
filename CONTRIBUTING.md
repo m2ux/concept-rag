@@ -279,7 +279,7 @@ export async function extractConcepts(
 
 2. **Test MCP integration**:
    - Use MCP Inspector for interactive testing
-   - Test all 5 tools
+   - Test all 10 tools
    - Verify error handling
 
 3. **Test edge cases**:

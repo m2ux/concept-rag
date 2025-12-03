@@ -469,7 +469,7 @@ npx tsx scripts/view_document_metadata.ts "Sun Tzu"
 
 ---
 
-### Workflow 3: Document Analysis
+### Workflow 4: Document Analysis
 
 1. **Extract concepts:**
    ```bash
