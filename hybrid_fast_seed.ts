@@ -24,6 +24,10 @@ import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-check
 import { ConceptEnricher } from './src/concepts/concept_enricher.js';
 import { ParallelConceptExtractor, DocumentSet } from './src/concepts/parallel-concept-extractor.js';
 import { ProgressBarDisplay, createProgressBarDisplay } from './src/infrastructure/cli/progress-bar-display.js';
+import { SimpleEmbeddingService } from './src/infrastructure/embeddings/simple-embedding-service.js';
+
+// Shared embedding service instance for consistent embeddings
+const embeddingService = new SimpleEmbeddingService();
 
 // Setup timestamped logging
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
@@ -499,48 +503,6 @@ Alternative: Process manually with other OCR tools.`;
         
         return { documents, ocrStats };
     }
-}
-
-// Simple local embedding function using TF-IDF-like approach
-function createSimpleEmbedding(text: string): number[] {
-    // Create a simple 384-dimensional embedding using character/word features
-    const embedding = new Array(384).fill(0);
-    
-    // Use text characteristics to create a unique vector
-    const words = text.toLowerCase().split(/\s+/);
-    const chars = text.toLowerCase();
-    
-    // Fill embedding with features based on text content
-    for (let i = 0; i < Math.min(words.length, 100); i++) {
-        const word = words[i];
-        const hash = simpleHash(word);
-        embedding[hash % 384] += 1;
-    }
-    
-    // Add character-level features
-    for (let i = 0; i < Math.min(chars.length, 1000); i++) {
-        const charCode = chars.charCodeAt(i);
-        embedding[charCode % 384] += 0.1;
-    }
-    
-    // Add length and structure features
-    embedding[0] = text.length / 1000; // Normalized length
-    embedding[1] = words.length / 100; // Normalized word count
-    embedding[2] = (text.match(/\./g) || []).length / 10; // Sentence count
-    
-    // Normalize the vector
-    const norm = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-    return embedding.map(val => norm > 0 ? val / norm : 0);
-}
-
-function simpleHash(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32-bit integer
-    }
-    return Math.abs(hash);
 }
 
 function truncateFilePath(filePath: string, maxLength: number = 180): string {
@@ -1119,7 +1081,7 @@ async function createLanceTableWithSimpleEmbeddings(
         const baseData: any = {
             id: isCatalog ? hashToId(doc.metadata.source || `doc-${i}`) : hashToId(idSource),
             hash: doc.metadata.hash || '',
-            vector: createSimpleEmbedding(doc.pageContent)
+            vector: embeddingService.generateEmbedding(doc.pageContent)
         };
         
         // Catalog uses 'summary', chunks use 'text'
@@ -1781,7 +1743,7 @@ async function createCategoriesTable(
         
         // Generate embedding using simple embedding function (same as used for catalog/chunks)
         const embeddingText = `${category}: ${description}`;
-        const vector = createSimpleEmbedding(embeddingText);
+        const vector = embeddingService.generateEmbedding(embeddingText);
         
         const stats = categoryStats.get(category)!;
         
@@ -2386,7 +2348,7 @@ async function hybridFastSeed() {
                     hash: doc.metadata.hash,
                     catalog_id: sourceToCatalogId.get(doc.metadata.source) || 0,
                     page_number: doc.metadata.page_number || 1,
-                    vector: createSimpleEmbedding(doc.pageContent),
+                    vector: embeddingService.generateEmbedding(doc.pageContent),
                     concept_ids: conceptIds
                 };
                 
