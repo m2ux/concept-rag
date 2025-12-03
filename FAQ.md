@@ -16,7 +16,7 @@
 
 ### What is Concept-RAG?
 
-Concept-RAG is an MCP (Model Context Protocol) server that enables AI assistants like Claude and Cursor to search and interact with your documents using conceptual understanding. It extracts 80-150+ concepts per document and enables semantic search powered by hybrid ranking (vector + keyword + concept matching).
+Concept-RAG is an MCP (Model Context Protocol) server that enables AI assistants like Claude and Cursor to search and interact with your documents using conceptual understanding.
 
 ### How is Concept-RAG different from regular document search?
 
