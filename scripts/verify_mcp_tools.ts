@@ -14,7 +14,7 @@ import { ConceptIdCache } from '../src/infrastructure/cache/concept-id-cache.js'
 import * as path from 'path';
 
 async function verifyMCPTools() {
-  const dbPath = process.argv[2] || path.join(process.env.HOME || '', '.concept_rag_test');
+  const dbPath = process.argv[2] || './db/test';
   console.log('\n🔍 Verifying MCP tools with migrated database');
   console.log('='.repeat(70));
   console.log(`Database: ${dbPath}`);

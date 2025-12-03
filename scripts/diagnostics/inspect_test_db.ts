@@ -1,7 +1,7 @@
 import { connect } from '@lancedb/lancedb';
 
 async function inspectDatabase() {
-  const db = await connect(`${process.env.HOME}/.concept_rag_test`);
+  const db = await connect('./db/test');
   
   console.log('\n📊 TEST DATABASE INSPECTION');
   console.log('='.repeat(80));

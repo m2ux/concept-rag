@@ -462,7 +462,9 @@ describe('Bulkhead', () => {
   });
   
   describe('Metrics', () => {
-    it.skip('should track all metrics accurately', async () => {
+    it('should track all metrics accurately', async () => {
+      vi.useRealTimers(); // Use real timers for this test
+      
       const bulkhead = new Bulkhead('test-service', {
         maxConcurrent: 2,
         maxQueue: 2,
@@ -480,18 +482,11 @@ describe('Bulkhead', () => {
         });
       
       // 2 successes
-      const promise1 = bulkhead.execute(() => operation(false));
-      await vi.advanceTimersByTimeAsync(11);
-      await promise1;
-      
-      const promise2 = bulkhead.execute(() => operation(false));
-      await vi.advanceTimersByTimeAsync(11);
-      await promise2;
+      await bulkhead.execute(() => operation(false));
+      await bulkhead.execute(() => operation(false));
       
       // 1 failure
-      const promise3 = bulkhead.execute(() => operation(true));
-      await vi.advanceTimersByTimeAsync(11);
-      await expect(promise3).rejects.toThrow();
+      await expect(bulkhead.execute(() => operation(true))).rejects.toThrow();
       
       const metrics = bulkhead.getMetrics();
       expect(metrics.totalExecuted).toBe(3);

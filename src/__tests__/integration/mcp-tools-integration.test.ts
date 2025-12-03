@@ -25,7 +25,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
   let container: ApplicationContainer;
   
   beforeAll(async () => {
-    // ARRANGE: Use existing test_db with real sample-docs data
+    // ARRANGE: Use existing db/test with real sample-docs data
     fixture = useExistingTestDatabase('mcp-tools-e2e');
     await fixture.setup();
     

@@ -7,12 +7,10 @@
  * 3. Dependency injection is properly wired
  */
 
-import { ApplicationContainer } from '../../src/application/container.js';
-import * as os from 'os';
-import * as path from 'path';
+import { ApplicationContainer } from '../../application/container.js';
 
-// Database path
-const DB_PATH = process.env.DB_PATH || path.join(os.homedir(), '.concept_rag');
+// Database path - defaults to test database
+const DB_PATH = process.env.DB_PATH || './db/test';
 
 console.log('🔒 SAFETY CHECK:');
 console.log('   ✅ All search operations are READ-ONLY');

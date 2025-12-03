@@ -1,5 +1,5 @@
 /**
- * Test hierarchical concept search on test_db
+ * Test hierarchical concept search on db/test
  */
 import * as lancedb from '@lancedb/lancedb';
 import { LanceDBConceptRepository } from '../src/infrastructure/lancedb/repositories/lancedb-concept-repository.js';
@@ -24,7 +24,7 @@ async function main() {
   console.log('='.repeat(70));
   
   // Connect to test database
-  const db = await lancedb.connect('./test_db');
+  const db = await lancedb.connect('./db/test');
   
   // Open tables
   const conceptsTable = await db.openTable('concepts');

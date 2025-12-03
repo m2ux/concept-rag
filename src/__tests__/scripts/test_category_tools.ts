@@ -24,7 +24,7 @@ async function testCategoryTools() {
     console.log('\n🧪 TESTING CATEGORY SEARCH TOOLS');
     console.log('='.repeat(80));
     
-    const dbPath = `${process.env.HOME}/.concept_rag_test`;
+    const dbPath = process.argv[2] || './db/test';
     
     // Initialize infrastructure
     console.log('\n1️⃣  Initializing infrastructure...');

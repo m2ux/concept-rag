@@ -72,7 +72,7 @@ function calculateBM25(terms: string[], text: string): number {
 }
 
 async function main() {
-  const db = await lancedb.connect("./test_db");
+  const db = await lancedb.connect("./db/test");
   const catalog = await db.openTable("catalog");
   
   const queryText = "architecture";

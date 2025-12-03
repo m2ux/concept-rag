@@ -231,7 +231,7 @@ All major technical decisions are documented in **[Architecture Decision Records
 - **[API Reference](docs/api-reference.md)** - Complete MCP tool documentation with parameters and scoring weights
 - **[Database Schema](docs/database-schema.md)** - Four-table normalized schema with derived fields
 - **[Tool Selection Guide](docs/tool-selection-guide.md)** - Decision tree for AI agents
-- **[Test Suite](test/README.md)** - Comprehensive test documentation with links to all E2E, integration, unit, and property tests
+- **[Test Suite](src/__tests__/README.md)** - Comprehensive test documentation with links to all E2E, integration, unit, and property tests
 
 ## 💬 Support & Community
 

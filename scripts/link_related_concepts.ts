@@ -130,7 +130,7 @@ async function main() {
   const args = process.argv.slice(2);
   const isDryRun = args.includes('--dry-run');
   const dbPathIdx = args.indexOf('--db');
-  const dbPath = dbPathIdx >= 0 ? args[dbPathIdx + 1] : './test_db';
+  const dbPath = dbPathIdx >= 0 ? args[dbPathIdx + 1] : './db/test';
   const minLengthIdx = args.indexOf('--min-word-length');
   const minWordLength = minLengthIdx >= 0 ? parseInt(args[minLengthIdx + 1]) : 5;
   

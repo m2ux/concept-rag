@@ -1,7 +1,7 @@
 /**
  * Curated MCP Tool Tests
  * 
- * Tests each MCP tool with at least 5 test cases against the test_db.
+ * Tests each MCP tool with at least 5 test cases against db/test.
  * Based on "Art of War" document content.
  */
 
@@ -30,7 +30,7 @@ function log(tool: string, test: string, passed: boolean, message: string) {
  * Load actual concept names from the database for testing
  */
 async function loadActualConcepts() {
-    const db = await lancedb.connect('./test_db');
+    const db = await lancedb.connect('./db/test');
     const concepts = await db.openTable('concepts');
     const all = await concepts.query().limit(100).toArray();
     ACTUAL_CONCEPTS = all.map(c => c.name).filter(n => n);
@@ -488,7 +488,7 @@ async function main() {
     const container = new ApplicationContainer();
     
     try {
-        await container.initialize('./test_db');
+        await container.initialize('./db/test');
         console.log('');
         console.log('='.repeat(60));
         console.log('Running tests...');

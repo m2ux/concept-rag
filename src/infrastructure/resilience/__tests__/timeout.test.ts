@@ -35,33 +35,33 @@ describe('Timeout Utilities', () => {
       expect(result).toBe('success');
     });
     
-    it.skip('should throw TimeoutError if operation exceeds timeout', async () => {
+    it('should throw TimeoutError if operation exceeds timeout', async () => {
+      vi.useRealTimers(); // Use real timers for this test
+      
       const operation = async () => {
         return new Promise<string>((resolve) => {
-          setTimeout(() => resolve('too slow'), 2000);
+          setTimeout(() => resolve('too slow'), 200);
         });
       };
       
-      const promise = withTimeout(operation, 1000, 'slow_op');
-      
-      // Advance past timeout
-      await vi.advanceTimersByTimeAsync(1001);
+      const promise = withTimeout(operation, 50, 'slow_op');
       
       await expect(promise).rejects.toThrow(TimeoutError);
       await expect(promise).rejects.toThrow(
-        "Operation 'slow_op' timed out after 1000ms"
+        "Operation 'slow_op' timed out after 50ms"
       );
     });
     
-    it.skip('should include operation name and timeout in error', async () => {
+    it('should include operation name and timeout in error', async () => {
+      vi.useRealTimers(); // Use real timers for this test
+      
       const operation = async () => {
         return new Promise<void>((resolve) => {
-          setTimeout(() => resolve(), 5000);
+          setTimeout(() => resolve(), 200);
         });
       };
       
-      const promise = withTimeout(operation, 2000, 'my_operation');
-      await vi.advanceTimersByTimeAsync(2001);
+      const promise = withTimeout(operation, 50, 'my_operation');
       
       try {
         await promise;
@@ -70,7 +70,7 @@ describe('Timeout Utilities', () => {
         expect(error).toBeInstanceOf(TimeoutError);
         const timeoutError = error as TimeoutError;
         expect(timeoutError.operationName).toBe('my_operation');
-        expect(timeoutError.timeoutMs).toBe(2000);
+        expect(timeoutError.timeoutMs).toBe(50);
         expect(timeoutError.code).toBe('RESILIENCE_TIMEOUT');
       }
     });
@@ -92,19 +92,22 @@ describe('Timeout Utilities', () => {
       ).rejects.toThrow('operation failed');
     });
     
-    it.skip('should timeout even if operation never resolves', async () => {
+    it('should timeout even if operation never resolves', async () => {
+      vi.useRealTimers(); // Use real timers for this test
+      
       const operation = async () => {
         // Never resolves
         return new Promise<void>(() => {});
       };
       
-      const promise = withTimeout(operation, 500, 'hung_op');
-      await vi.advanceTimersByTimeAsync(501);
+      const promise = withTimeout(operation, 50, 'hung_op');
       
       await expect(promise).rejects.toThrow(TimeoutError);
     });
     
-    it.skip('should handle zero timeout', async () => {
+    it('should handle zero timeout', async () => {
+      vi.useRealTimers(); // Use real timers for this test
+      
       const operation = async () => {
         return new Promise<string>((resolve) => {
           setTimeout(() => resolve('done'), 100);
@@ -112,7 +115,6 @@ describe('Timeout Utilities', () => {
       };
       
       const promise = withTimeout(operation, 0, 'zero_timeout');
-      await vi.advanceTimersByTimeAsync(1);
       
       await expect(promise).rejects.toThrow(TimeoutError);
     });
@@ -150,17 +152,18 @@ describe('Timeout Utilities', () => {
       expect(result).toBe(5);
     });
     
-    it.skip('should timeout wrapped function if it takes too long', async () => {
+    it('should timeout wrapped function if it takes too long', async () => {
+      vi.useRealTimers(); // Use real timers for this test
+      
       const slowFn = async (delay: number) => {
         return new Promise<string>((resolve) => {
           setTimeout(() => resolve('done'), delay);
         });
       };
       
-      const wrappedFn = wrapWithTimeout(slowFn, 1000, 'slow_function');
+      const wrappedFn = wrapWithTimeout(slowFn, 50, 'slow_function');
       
-      const promise = wrappedFn(2000);
-      await vi.advanceTimersByTimeAsync(1001);
+      const promise = wrappedFn(200);
       
       await expect(promise).rejects.toThrow(TimeoutError);
     });
@@ -209,25 +212,25 @@ describe('Timeout Utilities', () => {
       expect(result).toBe('result');
     });
     
-    it.skip('should call onTimeout callback when timeout occurs', async () => {
+    it('should call onTimeout callback when timeout occurs', async () => {
+      vi.useRealTimers(); // Use real timers for this test
+      
       const onTimeout = vi.fn();
       
       const operation = async () => {
         return new Promise<void>((resolve) => {
-          setTimeout(() => resolve(), 2000);
+          setTimeout(() => resolve(), 200);
         });
       };
       
       const promise = withTimeoutConfig(operation, {
-        timeoutMs: 1000,
+        timeoutMs: 50,
         operationName: 'callback_op',
         onTimeout
       });
       
-      await vi.advanceTimersByTimeAsync(1001);
-      
       await expect(promise).rejects.toThrow(TimeoutError);
-      expect(onTimeout).toHaveBeenCalledWith('callback_op', 1000);
+      expect(onTimeout).toHaveBeenCalledWith('callback_op', 50);
       expect(onTimeout).toHaveBeenCalledTimes(1);
     });
     
@@ -263,19 +266,19 @@ describe('Timeout Utilities', () => {
       expect(onTimeout).not.toHaveBeenCalled();
     });
     
-    it.skip('should work without onTimeout callback', async () => {
+    it('should work without onTimeout callback', async () => {
+      vi.useRealTimers(); // Use real timers for this test
+      
       const operation = async () => {
         return new Promise<void>((resolve) => {
-          setTimeout(() => resolve(), 2000);
+          setTimeout(() => resolve(), 200);
         });
       };
       
       const promise = withTimeoutConfig(operation, {
-        timeoutMs: 1000,
+        timeoutMs: 50,
         operationName: 'no_callback_op'
       });
-      
-      await vi.advanceTimersByTimeAsync(1001);
       
       await expect(promise).rejects.toThrow(TimeoutError);
     });
@@ -306,21 +309,22 @@ describe('Timeout Utilities', () => {
       expect(results).toEqual([2, 4, 6]);
     });
     
-    it.skip('should timeout mixed fast/slow operations correctly', async () => {
+    it('should timeout mixed fast/slow operations correctly', async () => {
+      vi.useRealTimers(); // Use real timers for this test
+      
       const fastOp = async () => 'fast';
       const slowOp = async () => {
         return new Promise<string>((resolve) => {
-          setTimeout(() => resolve('slow'), 2000);
+          setTimeout(() => resolve('slow'), 200);
         });
       };
       
       // Test fast operation
-      const fastResult = await withTimeout(fastOp, 1000, 'fast');
+      const fastResult = await withTimeout(fastOp, 100, 'fast');
       expect(fastResult).toBe('fast');
       
       // Test slow operation that should timeout
-      const slowPromise = withTimeout(slowOp, 1000, 'slow');
-      await vi.advanceTimersByTimeAsync(1001);
+      const slowPromise = withTimeout(slowOp, 50, 'slow');
       
       await expect(slowPromise).rejects.toThrow(TimeoutError);
     });
