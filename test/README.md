@@ -460,11 +460,13 @@ bash test/scripts/seed-test-database.sh
 
 ### Test Helpers
 
-**Location**: `src/__tests__/test-helpers/`
+**Location**: [`src/__tests__/test-helpers/`](../src/__tests__/test-helpers/)
 
-- `test-data.ts` - Test data builders (createTestChunk, createTestConcept, etc.)
-- `mock-repositories.ts` - Fake repository implementations
-- `mock-services.ts` - Fake service implementations
+- [`test-data.ts`](../src/__tests__/test-helpers/test-data.ts) - Test data builders (createTestChunk, createTestConcept, etc.)
+- [`mock-repositories.ts`](../src/__tests__/test-helpers/mock-repositories.ts) - Fake repository implementations
+- [`mock-services.ts`](../src/__tests__/test-helpers/mock-services.ts) - Fake service implementations
+- [`index.ts`](../src/__tests__/test-helpers/index.ts) - Re-exports all test helpers
+- [`README.md`](../src/__tests__/test-helpers/README.md) - Test helpers documentation
 
 ---
 

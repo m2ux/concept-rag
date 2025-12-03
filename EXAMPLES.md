@@ -10,6 +10,8 @@ Practical usage scenarios demonstrating the power of conceptual search. Each exa
 - [Example 4: Competitive Analysis](#example-4-competitive-analysis)
 - [Example 5: Learning & Education](#example-5-learning--education)
 - [Example 6: Content Creation](#example-6-content-creation)
+- [Example 7: Library Exploration with Categories](#example-7-library-exploration-with-categories)
+- [Example 8: Concept Attribution Research](#example-8-concept-attribution-research)
 - [Complete Workflow Examples](#complete-workflow-examples)
 
 ---
@@ -454,6 +456,239 @@ chunks_search("innovation paradox", source="/path/to/book.pdf")
 
 ---
 
+## Example 7: Library Exploration with Categories
+
+### Scenario
+You want to explore your document library without knowing exactly what you're looking for.
+
+### Step 1: Discover Available Categories
+
+**Query**: "What categories of documents do I have?"
+
+**Tool**: `list_categories`
+
+**Response**:
+```
+Found 15 categories:
+
+Summary Statistics:
+- Total categories: 15
+- Root categories: 8  
+- Total documents: 127
+
+Categories (sorted by document count):
+1. Software Engineering (45 documents, 2,340 chunks)
+   - Description: Software design, architecture, and development
+   - Aliases: software development, programming
+   - Children: Design Patterns, Testing, Architecture
+   
+2. Machine Learning (28 documents, 1,890 chunks)
+   - Description: ML algorithms, deep learning, AI
+   - Aliases: ML, artificial intelligence, AI
+   
+3. Business Strategy (18 documents, 1,120 chunks)
+   ...
+```
+
+### Step 2: Browse a Category
+
+**Query**: "Show me all software engineering documents"
+
+**Tool**: `category_search`
+
+**Response**:
+```
+Category: Software Engineering
+Description: Software design, architecture, and development
+Hierarchy: Root > Software Engineering
+Aliases: software development, programming
+
+Statistics:
+- Documents: 45
+- Chunks: 2,340
+- Unique concepts: 890
+
+Documents (showing 10 of 45):
+
+1. "Clean Architecture" by Robert C. Martin
+   Preview: A comprehensive guide to software architecture principles...
+   Primary concepts: dependency rule, boundaries, use cases
+   
+2. "Design Patterns" by Gang of Four
+   Preview: Catalog of reusable object-oriented software design patterns...
+   Primary concepts: factory pattern, observer pattern, singleton
+   
+3. "Domain-Driven Design" by Eric Evans
+   ...
+```
+
+### Step 3: Analyze Category Concepts
+
+**Query**: "What concepts are discussed in software engineering documents?"
+
+**Tool**: `list_concepts_in_category`
+
+**Response**:
+```
+Category: Software Engineering
+Total unique concepts: 890
+Showing top 30 by document count:
+
+1. dependency injection (appears in 32 documents, weight: 0.95)
+2. design patterns (appears in 28 documents, weight: 0.92)
+3. clean architecture (appears in 24 documents, weight: 0.88)
+4. SOLID principles (appears in 22 documents, weight: 0.85)
+5. unit testing (appears in 20 documents, weight: 0.82)
+6. microservices (appears in 18 documents, weight: 0.78)
+...
+```
+
+### Complete Library Exploration Workflow
+
+```
+Step 1: Get overview
+  list_categories → see all subject areas
+
+Step 2: Browse interesting category
+  category_search("software engineering") → see documents
+
+Step 3: Understand domain vocabulary
+  list_concepts_in_category("software engineering") → see key concepts
+
+Step 4: Deep dive on concept
+  concept_search("dependency injection") → find passages
+
+Step 5: Research specific document
+  chunks_search("constructor injection", source="/path/to/book.pdf")
+```
+
+### Value
+- **Systematic exploration**: Navigate your library by subject area
+- **Discover hidden gems**: Find documents you forgot you had
+- **Understand coverage**: See what topics are well-represented
+- **Build domain knowledge**: Learn the vocabulary of each subject area
+
+---
+
+## Example 8: Concept Attribution Research
+
+### Scenario
+You're writing a paper and need to cite sources for specific concepts. You need to know which documents discuss each concept.
+
+### Step 1: Find Sources for a Concept (Union)
+
+**Query**: "Which books discuss dependency injection?"
+
+**Tool**: `source_concepts`
+
+**Response**:
+```
+Concept: "dependency injection"
+Found in 8 documents:
+
+1. "Clean Architecture" by Robert C. Martin (2017)
+   /documents/clean_architecture.pdf
+   Summary: Comprehensive guide to software architecture...
+   Primary concepts: dependency rule, boundaries, clean architecture
+   Categories: Software Engineering, Architecture
+   
+2. "Dependency Injection in .NET" by Mark Seemann (2019)
+   /documents/di_dotnet.pdf
+   Summary: In-depth exploration of DI patterns...
+   Primary concepts: DI containers, composition root, pure DI
+
+3. "Design Patterns" by Gang of Four (1994)
+   ...
+```
+
+### Step 2: Find Sources for Multiple Concepts
+
+**Query**: "Which documents discuss both TDD and DI?"
+
+**Tool**: `source_concepts` (with array)
+
+**Input**:
+```json
+{
+  "concept": ["test driven development", "dependency injection"],
+  "include_metadata": true
+}
+```
+
+**Response**:
+```
+Searching for 2 concepts: TDD, dependency injection
+Found 12 documents (union):
+
+Sources matching both concepts (2):
+1. "Clean Architecture" by Robert C. Martin
+   Matches: test driven development [0], dependency injection [1]
+   
+2. "Growing Object-Oriented Software" by Freeman & Pryce
+   Matches: test driven development [0], dependency injection [1]
+
+Sources matching 1 concept:
+3. "Test Driven Development" by Kent Beck
+   Matches: test driven development [0]
+   
+4. "Dependency Injection in .NET" by Mark Seemann
+   Matches: dependency injection [1]
+...
+```
+
+### Step 3: Compare Per-Concept Sources
+
+**Query**: "I need separate source lists for TDD vs BDD"
+
+**Tool**: `concept_sources`
+
+**Input**:
+```json
+{
+  "concept": ["test driven development", "behavior driven development"],
+  "include_metadata": false
+}
+```
+
+**Response**:
+```
+Per-concept source arrays:
+
+[0] "test driven development" (5 sources):
+  - Test Driven Development by Kent Beck
+  - Clean Architecture by Robert C. Martin
+  - Growing Object-Oriented Software by Freeman & Pryce
+  - Refactoring by Martin Fowler
+  - Working Effectively with Legacy Code by Michael Feathers
+
+[1] "behavior driven development" (3 sources):
+  - BDD in Action by John Ferguson Smart
+  - Specification by Example by Gojko Adzic
+  - Growing Object-Oriented Software by Freeman & Pryce
+```
+
+### Source Attribution Decision Tree
+
+```
+Need to find sources for concepts?
+│
+├── Single concept or merged list
+│   └── source_concepts (returns union with concept_indices)
+│   Example: "Which books mention microservices?"
+│
+└── Separate lists per concept
+    └── concept_sources (returns array of arrays)
+    Example: "Compare sources: TDD vs BDD vs ATDD"
+```
+
+### Value
+- **Accurate citations**: Know exactly which sources discuss each concept
+- **Research thoroughness**: Ensure comprehensive coverage
+- **Comparative analysis**: See which sources cover multiple concepts
+- **Bibliography building**: Generate per-concept source lists
+
+---
+
 ## Complete Workflow Examples
 
 ### Workflow 1: Systematic Literature Review
@@ -635,7 +870,7 @@ Step 6: Make Informed Decision
 
 See also:
 - [USAGE.md](USAGE.md) - Tool details and workflows
-- [tool-selection-guide.md](tool-selection-guide.md) - Choosing the right tool
+- [API Reference](docs/api-reference.md) - Complete tool specifications and selection guide
 - [FAQ.md](FAQ.md) - Common questions
 
 ---

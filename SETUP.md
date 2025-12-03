@@ -82,7 +82,7 @@ npx tsx hybrid_fast_seed.ts \
 3. 📝 **Summarization** - Grok-4-fast generates document summaries
 4. 🌐 **WordNet Enrichment** - Adds synonyms, broader/narrower terms
 5. ⚡ **Embedding Generation** - Creates 384-dimensional vectors locally
-6. 💾 **Database Storage** - Saves to 3 LanceDB tables (catalog, chunks, concepts)
+6. 💾 **Database Storage** - Saves to 4 LanceDB tables (catalog, chunks, concepts, categories)
 
 **Time & Cost:**
 - Initial 100 documents: ~25 minutes + ~$4.80
@@ -191,7 +191,7 @@ echo ~/.concept_rag    # Copy this for second path (database location)
 
 ### Using MCP Inspector
 
-Interactive testing tool for all 5 search operations:
+Interactive testing tool for all 10 MCP operations:
 
 ```bash
 npx @modelcontextprotocol/inspector dist/conceptual_index.js ~/.concept_rag
@@ -274,14 +274,16 @@ After successful setup, you'll have:
 ~/.concept_rag/
 ├── catalog.lance/        # Document summaries and metadata
 ├── chunks.lance/         # Text chunks with concept tags
-└── concepts.lance/       # Extracted concepts with relationships
+├── concepts.lance/       # Extracted concepts with relationships
+└── categories.lance/     # Hierarchical category taxonomy
 ```
 
 ### Table Contents
 
-- **Catalog** (~1 entry per document): Summaries, primary concepts, technical terms
-- **Chunks** (~10-50 per document): Text segments with embeddings and concept tags
-- **Concepts** (~80-150 per document): Unique concepts with WordNet enrichment
+- **Catalog** (~1 entry per document): Summaries, primary concepts, technical terms, derived `concept_names` and `category_names`
+- **Chunks** (~10-50 per document): Text segments with embeddings, concept tags, and derived `catalog_title`
+- **Concepts** (~80-150 per document): Unique concepts with WordNet enrichment and lexical relationships
+- **Categories** (varies): Hierarchical taxonomy with parent/child relationships and statistics
 
 ### Storage Requirements
 

@@ -320,3 +320,5 @@ preprod_db
 backups/
 db/
 test_db/
+
+AGENTS.md

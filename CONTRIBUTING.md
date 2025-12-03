@@ -84,7 +84,7 @@ cp .env.example .env
    - Update README.md if adding features
    - Update USAGE.md for user-facing changes
    - Add JSDoc comments for new functions
-   - Update tool-selection-guide.md if adding/modifying tools
+   - Update [tool-selection-guide.md](docs/tool-selection-guide.md) if adding/modifying tools
 
 5. **Test your changes**:
    ```bash
@@ -279,7 +279,7 @@ export async function extractConcepts(
 
 2. **Test MCP integration**:
    - Use MCP Inspector for interactive testing
-   - Test all 5 tools
+   - Test all 10 tools
    - Verify error handling
 
 3. **Test edge cases**:

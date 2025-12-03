@@ -345,7 +345,7 @@ echo $OPENROUTER_API_KEY
    2. chunks_search with source path → search within document
    ```
 
-4. **See tool-selection-guide.md** for choosing the right tool
+4. **See [tool-selection-guide.md](docs/tool-selection-guide.md)** for choosing the right tool
 
 ### Slow search queries
 
