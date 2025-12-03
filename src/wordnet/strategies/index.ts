@@ -15,3 +15,8 @@ export {
   defaultStrategy 
 } from './first-synset-strategy.js';
 
+export {
+  ContextAwareStrategy,
+  contextAwareStrategy
+} from './context-aware-strategy.js';
+
