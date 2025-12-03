@@ -114,7 +114,7 @@ async function main() {
   }
   
   // Load the application container for tool access
-  const { ApplicationContainer } = await import('../src/application/container.js');
+  const { ApplicationContainer } = await import('../../application/container.js');
   const container = new ApplicationContainer();
   await container.initialize(dbPath);
   
