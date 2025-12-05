@@ -217,6 +217,66 @@ async function saveCategoriesIncremental(
   await db.createTable('categories', migratedCategories, { mode: 'overwrite' });
 }
 
+/**
+ * Preflight check: Verify OpenRouter API key is valid before starting any operations.
+ * Makes a minimal chat completion request to detect 401/403 errors early.
+ */
+async function verifyApiKey(apiKey: string): Promise<void> {
+  console.log('🔑 Verifying OpenRouter API key...');
+  
+  try {
+    // Use chat completions endpoint with minimal request (requires auth, unlike /models)
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://github.com/adiom-data/lance-mcp',
+        'X-Title': 'Concept-RAG API Verification'
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-4o-mini',  // Cheapest model for validation
+        messages: [{ role: 'user', content: 'hi' }],
+        max_tokens: 1  // Minimal tokens to minimize cost
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      let errorMessage: string;
+      
+      try {
+        const parsed = JSON.parse(errorData);
+        errorMessage = parsed.error?.message || errorData;
+      } catch {
+        errorMessage = errorData;
+      }
+      
+      if (response.status === 401 || response.status === 403) {
+        console.error('');
+        console.error('❌ API KEY VALIDATION FAILED');
+        console.error('━'.repeat(50));
+        console.error(`   Status: ${response.status} ${response.statusText}`);
+        console.error(`   Error: ${errorMessage}`);
+        console.error('');
+        console.error('   Your OpenRouter API key is invalid or expired.');
+        console.error('   Please check your OPENROUTER_API_KEY in .envrc');
+        console.error('━'.repeat(50));
+        process.exit(1);
+      }
+      
+      console.warn(`⚠️  API check returned ${response.status}: ${errorMessage}`);
+      console.warn('   Proceeding anyway - API may still work for completions.');
+      return;
+    }
+    
+    console.log('✅ API key verified');
+  } catch (error) {
+    console.warn(`⚠️  Could not verify API key: ${(error as Error).message}`);
+    console.warn('   Proceeding anyway - check your network connection if errors occur.');
+  }
+}
+
 async function populateSummaries(
   dbPath: string,
   options: {
@@ -232,6 +292,9 @@ async function populateSummaries(
     console.error('❌ OPENROUTER_API_KEY environment variable not set');
     process.exit(1);
   }
+
+  // Preflight check: verify API key before any database operations
+  await verifyApiKey(apiKey);
 
   const batchSize = options.batchSize || DEFAULT_BATCH_SIZE;
   
@@ -275,7 +338,7 @@ async function populateSummaries(
       
       for (let i = 0; i < needsSummary.length; i += batchSize) {
         const batch = needsSummary.slice(i, i + batchSize);
-        const names = batch.map(c => c.concept);
+        const names = batch.map(c => c.name);
         const batchNum = Math.floor(i / batchSize) + 1;
         const processed = Math.min(i + batchSize, needsSummary.length);
         
@@ -288,7 +351,7 @@ async function populateSummaries(
         // Match results back to concepts
         for (const result of results) {
           const concept = batch.find(c => 
-            c.concept.toLowerCase() === result.name.toLowerCase()
+            c.name.toLowerCase() === result.name.toLowerCase()
           );
           if (concept && result.summary) {
             updates.set(concept.id, result.summary);

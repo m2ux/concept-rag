@@ -219,6 +219,68 @@ function validateArgs() {
     }
 }
 
+/**
+ * Preflight check: Verify OpenRouter API key is valid before starting any operations.
+ * Makes a minimal chat completion request to detect 401/403 errors early.
+ */
+async function verifyApiKey(): Promise<void> {
+    console.log('🔑 Verifying OpenRouter API key...');
+    
+    try {
+        // Use chat completions endpoint with minimal request (requires auth, unlike /models)
+        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${openrouterApiKey}`,
+                'Content-Type': 'application/json',
+                'HTTP-Referer': 'https://github.com/adiom-data/lance-mcp',
+                'X-Title': 'Concept-RAG API Verification'
+            },
+            body: JSON.stringify({
+                model: 'openai/gpt-4o-mini',  // Cheapest model for validation
+                messages: [{ role: 'user', content: 'hi' }],
+                max_tokens: 1  // Minimal tokens to minimize cost
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.text();
+            let errorMessage: string;
+            
+            try {
+                const parsed = JSON.parse(errorData);
+                errorMessage = parsed.error?.message || errorData;
+            } catch {
+                errorMessage = errorData;
+            }
+            
+            if (response.status === 401 || response.status === 403) {
+                console.error('');
+                console.error('❌ API KEY VALIDATION FAILED');
+                console.error('━'.repeat(50));
+                console.error(`   Status: ${response.status} ${response.statusText}`);
+                console.error(`   Error: ${errorMessage}`);
+                console.error('');
+                console.error('   Your OpenRouter API key is invalid or expired.');
+                console.error('   Please check your OPENROUTER_API_KEY in .envrc');
+                console.error('━'.repeat(50));
+                process.exit(1);
+            }
+            
+            // Other errors (rate limit, server error) - warn but continue
+            console.warn(`⚠️  API check returned ${response.status}: ${errorMessage}`);
+            console.warn('   Proceeding anyway - API may still work for completions.');
+            return;
+        }
+        
+        console.log('✅ API key verified');
+    } catch (error) {
+        // Network error - warn but don't block (could be temporary)
+        console.warn(`⚠️  Could not verify API key: ${error.message}`);
+        console.warn('   Proceeding anyway - check your network connection if errors occur.');
+    }
+}
+
 // LLM API call for summarization
 async function callOpenRouterChat(text: string): Promise<string> {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -1360,6 +1422,9 @@ async function rebuildConceptIndexFromExistingData(
 
 async function hybridFastSeed() {
     validateArgs();
+    
+    // Preflight check: verify API key before any database operations
+    await verifyApiKey();
 
     // Initialize checkpoint for resumable seeding
     const checkpointPath = SeedingCheckpoint.getDefaultPath(databaseDir);
