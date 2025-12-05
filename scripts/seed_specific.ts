@@ -48,6 +48,66 @@ function parseArrayField<T>(value: any): T[] {
   return [];
 }
 
+/**
+ * Preflight check: Verify OpenRouter API key is valid before starting any operations.
+ * Makes a minimal chat completion request to detect 401/403 errors early.
+ */
+async function verifyApiKey(apiKey: string): Promise<void> {
+  console.log('🔑 Verifying OpenRouter API key...');
+  
+  try {
+    // Use chat completions endpoint with minimal request (requires auth, unlike /models)
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://github.com/adiom-data/lance-mcp',
+        'X-Title': 'Concept-RAG API Verification'
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-4o-mini',  // Cheapest model for validation
+        messages: [{ role: 'user', content: 'hi' }],
+        max_tokens: 1  // Minimal tokens to minimize cost
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      let errorMessage: string;
+      
+      try {
+        const parsed = JSON.parse(errorData);
+        errorMessage = parsed.error?.message || errorData;
+      } catch {
+        errorMessage = errorData;
+      }
+      
+      if (response.status === 401 || response.status === 403) {
+        console.error('');
+        console.error('❌ API KEY VALIDATION FAILED');
+        console.error('━'.repeat(50));
+        console.error(`   Status: ${response.status} ${response.statusText}`);
+        console.error(`   Error: ${errorMessage}`);
+        console.error('');
+        console.error('   Your OpenRouter API key is invalid or expired.');
+        console.error('   Please check your OPENROUTER_API_KEY in .envrc');
+        console.error('━'.repeat(50));
+        process.exit(1);
+      }
+      
+      console.warn(`⚠️  API check returned ${response.status}: ${errorMessage}`);
+      console.warn('   Proceeding anyway - API may still work for completions.');
+      return;
+    }
+    
+    console.log('✅ API key verified');
+  } catch (error) {
+    console.warn(`⚠️  Could not verify API key: ${(error as Error).message}`);
+    console.warn('   Proceeding anyway - check your network connection if errors occur.');
+  }
+}
+
 async function main() {
   const dbPath = process.env.CONCEPT_RAG_DB || process.env.HOME + '/.concept_rag';
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -56,6 +116,9 @@ async function main() {
     console.error('❌ OPENROUTER_API_KEY environment variable not set');
     process.exit(1);
   }
+  
+  // Preflight check: verify API key before any database operations
+  await verifyApiKey(apiKey);
   
   // Parse command line arguments
   const args = process.argv.slice(2);
