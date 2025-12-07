@@ -40,6 +40,7 @@ import { SimpleEmbeddingService } from './src/infrastructure/embeddings/simple-e
 import { processWithTesseract } from './src/infrastructure/ocr/index.js';
 import { PaperDetector, detectDocumentType } from './src/infrastructure/document-loaders/paper-detector.js';
 import { PaperMetadataExtractor, extractPaperMetadata } from './src/infrastructure/document-loaders/paper-metadata-extractor.js';
+import { ReferencesDetector, detectReferencesStart, ReferencesDetectionResult } from './src/infrastructure/document-loaders/references-detector.js';
 
 // Shared embedding service instance for consistent embeddings
 const embeddingService = new SimpleEmbeddingService();
@@ -553,10 +554,17 @@ async function loadDocumentsWithErrorHandling(
                 // Detect document type and extract paper metadata
                 const paperMetadata = detectAndExtractPaperMetadata(docs, path.basename(docFile));
                 
+                // Detect references section for papers
+                let referencesStart: ReferencesDetectionResult | undefined;
+                if (paperMetadata.documentType === 'paper') {
+                    referencesStart = detectReferencesStart(docs);
+                }
+                
                 // Add hash and paper metadata to all document pages for tracking
                 docs.forEach(doc => {
                     doc.metadata.hash = hash;
                     doc.metadata.paperMetadata = paperMetadata;
+                    doc.metadata.referencesStart = referencesStart;
                 });
                 
                 documents.push(...docs);
@@ -747,6 +755,9 @@ async function createLanceTableWithSimpleEmbeddings(
             // Add catalog_title (derived from filename) for display
             const fileMeta = parseFilenameMetadata(doc.metadata.source || '');
             baseData.catalog_title = fileMeta.title || '';
+            
+            // Mark if chunk is from references section (for filtering in search)
+            baseData.is_reference = doc.metadata.is_reference ?? false;
         }
         
         // Add bibliographic fields for catalog entries (parsed from filename)
@@ -1721,7 +1732,8 @@ async function hybridFastSeed() {
             hash: doc.metadata.hash,
             ocr_processed: doc.metadata.ocr_processed,
             ocr_method: doc.metadata.ocr_method,
-            paperMetadata: doc.metadata.paperMetadata  // Preserve paper detection
+            paperMetadata: doc.metadata.paperMetadata,  // Preserve paper detection
+            referencesStart: doc.metadata.referencesStart  // Preserve references detection
         };
     }
 
@@ -1774,6 +1786,39 @@ async function hybridFastSeed() {
     const newChunks = docsNeedingNewChunks.length > 0 
         ? await splitter.splitDocuments(docsNeedingNewChunks)
         : [];
+    
+    // Mark reference chunks for papers
+    // Build source -> references detection map
+    const sourceReferencesMap = new Map<string, ReferencesDetectionResult>();
+    for (const doc of docsNeedingNewChunks) {
+        const source = doc.metadata.source;
+        if (source && doc.metadata.referencesStart && !sourceReferencesMap.has(source)) {
+            sourceReferencesMap.set(source, doc.metadata.referencesStart);
+        }
+    }
+    
+    // Mark chunks that are from reference sections
+    if (sourceReferencesMap.size > 0) {
+        const referencesDetector = new ReferencesDetector();
+        let refChunkCount = 0;
+        
+        for (const chunk of newChunks) {
+            const source = chunk.metadata.source;
+            const referencesStart = sourceReferencesMap.get(source);
+            
+            if (referencesStart?.found) {
+                const info = referencesDetector.isReferenceChunk(chunk, referencesStart);
+                chunk.metadata.is_reference = info.isReference;
+                if (info.isReference) refChunkCount++;
+            } else {
+                chunk.metadata.is_reference = false;
+            }
+        }
+        
+        if (refChunkCount > 0) {
+            console.log(`📚 Marked ${refChunkCount} chunks as reference content (will be excluded from semantic search)`);
+        }
+    }
     
     // Combine new chunks with existing chunks needing enrichment
     const docs = [...newChunks, ...existingChunksNeedingEnrichment];
