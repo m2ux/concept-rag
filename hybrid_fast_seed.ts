@@ -1011,13 +1011,17 @@ Key Concepts: ${conceptNames.join(', ')}
 Categories: ${concepts.categories.join(', ')}
 `.trim();
         
+        // Get paper metadata from first page (shared across all pages)
+        const paperMetadata = docs[0]?.metadata?.paperMetadata;
+        
         const catalogRecord = new Document({ 
             pageContent: enrichedContent, 
             metadata: { 
                 source, 
                 hash,
                 ocr_processed: isOcrProcessed,
-                concepts: concepts  // STORE STRUCTURED CONCEPTS
+                concepts: concepts,  // STORE STRUCTURED CONCEPTS
+                paperMetadata: paperMetadata  // PAPER DETECTION METADATA
             } 
         });
         
@@ -1161,6 +1165,7 @@ async function processDocumentsParallel(
         const docs = docsBySource[result.source];
         const contentOverview = await generateContentOverview(docs);
         const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
+        const paperMetadata = docs[0]?.metadata?.paperMetadata;
         
         // Extract concept names
         const conceptNames = result.concepts!.primary_concepts.map((c: any) => 
@@ -1181,7 +1186,8 @@ Categories: ${result.concepts!.categories.join(', ')}
                 source: result.source,
                 hash: result.hash,
                 ocr_processed: isOcrProcessed,
-                concepts: result.concepts
+                concepts: result.concepts,
+                paperMetadata: paperMetadata  // PAPER DETECTION METADATA
             }
         });
         
@@ -1195,6 +1201,7 @@ Categories: ${result.concepts!.categories.join(', ')}
         const docs = docsBySource[result.source];
         const contentOverview = await generateContentOverview(docs);
         const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
+        const paperMetadata = docs[0]?.metadata?.paperMetadata;
         
         // Use empty concepts for failed documents
         const emptyConcepts = {
@@ -1215,7 +1222,8 @@ Categories: General
                 source: result.source,
                 hash: result.hash,
                 ocr_processed: isOcrProcessed,
-                concepts: emptyConcepts
+                concepts: emptyConcepts,
+                paperMetadata: paperMetadata  // PAPER DETECTION METADATA
             }
         });
         
@@ -1703,7 +1711,7 @@ async function hybridFastSeed() {
         process.exit(0);
     }
 
-    // Simplify metadata but preserve hash and OCR information
+    // Simplify metadata but preserve hash, OCR, and paper detection information
     // Extract page_number from loc.pageNumber (LangChain format) or direct field
     for (const doc of rawDocs) {
         const pageNumber = doc.metadata.page_number ?? doc.metadata.loc?.pageNumber ?? 1;
@@ -1712,7 +1720,8 @@ async function hybridFastSeed() {
             source: doc.metadata.source,
             hash: doc.metadata.hash,
             ocr_processed: doc.metadata.ocr_processed,
-            ocr_method: doc.metadata.ocr_method
+            ocr_method: doc.metadata.ocr_method,
+            paperMetadata: doc.metadata.paperMetadata  // Preserve paper detection
         };
     }
 
