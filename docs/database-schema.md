@@ -194,6 +194,9 @@ Papers are distinguished from books using heuristics:
 | `concept_names` | `string[]` | **DERIVED:** Concept names for display and text search |
 | `concept_density` | `number` | Concept richness score: `concept_ids.length / (word_count / 10)` |
 | `page_number` | `number` | Page number in source document (from PDF loader) |
+| `is_reference` | `boolean` | True if chunk is from bibliography/references section |
+| `has_math` | `boolean` | True if chunk contains mathematical content (symbols, equations) |
+| `has_extraction_issues` | `boolean` | True if chunk has extraction quality issues (e.g., garbled math) |
 
 > **Note:** The `source` field was removed in v7. Chunks store `catalog_title` for display and `catalog_id` for joins. Tools should use `catalog_title` directly.
 > 
@@ -213,7 +216,10 @@ Papers are distinguished from books using heuristics:
   vector: Float32Array(384),
   concept_ids: [3847293847, 1928374652, 2837465928],
   concept_names: ["clean architecture", "separation of concerns", "dependency rule"],  // DERIVED
-  page_number: 15
+  page_number: 15,
+  is_reference: false,  // Not from bibliography section
+  has_math: false,  // No mathematical content
+  has_extraction_issues: false  // Clean extraction
 }
 ```
 
@@ -529,6 +535,28 @@ The v7 schema eliminates the need for runtime ID-to-name caches by storing deriv
 | `source` | **Removed** - Use `catalog_title` for display |
 | `catalog_title` | **Added** - Document title from catalog (derived) |
 | `concept_names` | **Added** - Concept names for display (derived) |
+
+### Research Paper Fields (v8)
+
+New fields added for research paper support:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `is_reference` | `boolean` | True if chunk is from references/bibliography section |
+| `has_math` | `boolean` | True if chunk contains mathematical content |
+| `has_extraction_issues` | `boolean` | True if extraction quality issues detected |
+
+**Mathematical Content Detection:**
+- Greek letters (α, β, γ, etc.)
+- Mathematical symbols (∑, ∫, ∂, etc.)
+- Subscripts/superscripts (x₁, x²)
+- LaTeX commands that leaked through
+- **Garbled math:** Detects broken PDF extraction where Mathematical Alphanumeric Symbols (U+1D400-U+1D7FF) appear as Hangul syllables (U+D400-U+D7FF)
+
+**Use Cases:**
+- `is_reference=true`: Exclude from semantic search (citations not meaningful for content search)
+- `has_math=true`: Route to specialized math-aware processing
+- `has_extraction_issues=true`: Flag for OCR fallback or manual review
 
 ### Removed: ID Mapping Caches
 

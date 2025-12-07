@@ -41,6 +41,7 @@ import { processWithTesseract } from './src/infrastructure/ocr/index.js';
 import { PaperDetector, detectDocumentType } from './src/infrastructure/document-loaders/paper-detector.js';
 import { PaperMetadataExtractor, extractPaperMetadata } from './src/infrastructure/document-loaders/paper-metadata-extractor.js';
 import { ReferencesDetector, detectReferencesStart, ReferencesDetectionResult } from './src/infrastructure/document-loaders/references-detector.js';
+import { MathContentHandler } from './src/infrastructure/document-loaders/math-content-handler.js';
 
 // Shared embedding service instance for consistent embeddings
 const embeddingService = new SimpleEmbeddingService();
@@ -758,6 +759,12 @@ async function createLanceTableWithSimpleEmbeddings(
             
             // Mark if chunk is from references section (for filtering in search)
             baseData.is_reference = doc.metadata.is_reference ?? false;
+            
+            // Mark if chunk has mathematical content
+            baseData.has_math = doc.metadata.has_math ?? false;
+            
+            // Mark if chunk has extraction quality issues (garbled math)
+            baseData.has_extraction_issues = doc.metadata.has_extraction_issues ?? false;
         }
         
         // Add bibliographic fields for catalog entries (parsed from filename)
@@ -1817,6 +1824,29 @@ async function hybridFastSeed() {
         
         if (refChunkCount > 0) {
             console.log(`📚 Marked ${refChunkCount} chunks as reference content (will be excluded from semantic search)`);
+        }
+    }
+    
+    // Detect mathematical content in chunks
+    {
+        const mathHandler = new MathContentHandler();
+        let mathChunkCount = 0;
+        let issueChunkCount = 0;
+        
+        for (const chunk of newChunks) {
+            const analysis = mathHandler.analyze(chunk.pageContent);
+            chunk.metadata.has_math = analysis.hasMath;
+            chunk.metadata.has_extraction_issues = analysis.hasExtractionIssues;
+            
+            if (analysis.hasMath) mathChunkCount++;
+            if (analysis.hasExtractionIssues) issueChunkCount++;
+        }
+        
+        if (mathChunkCount > 0) {
+            console.log(`🔢 Detected ${mathChunkCount} chunks with mathematical content`);
+        }
+        if (issueChunkCount > 0) {
+            console.log(`⚠️  Found ${issueChunkCount} chunks with extraction issues (garbled math)`);
         }
     }
     
