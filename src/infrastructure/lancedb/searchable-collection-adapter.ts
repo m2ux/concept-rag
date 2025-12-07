@@ -14,7 +14,7 @@
  */
 
 import * as lancedb from "@lancedb/lancedb";
-import { SearchableCollection } from "../../domain/interfaces/services/hybrid-search-service.js";
+import { SearchableCollection, VectorSearchOptions } from "../../domain/interfaces/services/hybrid-search-service.js";
 
 export class SearchableCollectionAdapter implements SearchableCollection {
   constructor(
@@ -22,11 +22,15 @@ export class SearchableCollectionAdapter implements SearchableCollection {
     private name: string
   ) {}
   
-  async vectorSearch(queryVector: number[], limit: number): Promise<any[]> {
-    return await this.table
-      .vectorSearch(queryVector)
-      .limit(limit)
-      .toArray();
+  async vectorSearch(queryVector: number[], limit: number, options?: VectorSearchOptions): Promise<any[]> {
+    let query = this.table.vectorSearch(queryVector);
+    
+    // Apply filter if provided (e.g., "is_reference = false")
+    if (options?.filter) {
+      query = query.where(options.filter);
+    }
+    
+    return await query.limit(limit).toArray();
   }
   
   getName(): string {

@@ -214,7 +214,8 @@ describe('ConceptualHybridSearchService', () => {
       // VERIFY - Should request 15 results (5 * 3) for reranking
       expect(vectorSearchSpy).toHaveBeenCalledWith(
         expect.any(Array),
-        15 // limit * 3
+        15, // limit * 3
+        expect.any(Object) // options (may include filter)
       );
     });
   });

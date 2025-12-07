@@ -1,6 +1,17 @@
 import { SearchResult } from '../../models/search-result.js';
 
 /**
+ * Options for vector search operations.
+ */
+export interface VectorSearchOptions {
+  /**
+   * SQL-like filter expression for pre-filtering results.
+   * Example: "is_reference = false" to exclude reference chunks.
+   */
+  filter?: string;
+}
+
+/**
  * Abstraction for a searchable collection with vector capabilities.
  * 
  * This interface decouples the domain layer from LanceDB specifics.
@@ -16,9 +27,10 @@ export interface SearchableCollection {
    * 
    * @param queryVector - The embedding vector to search with
    * @param limit - Maximum number of results
+   * @param options - Optional search options including filters
    * @returns Promise of search results with similarity scores
    */
-  vectorSearch(queryVector: number[], limit: number): Promise<any[]>;
+  vectorSearch(queryVector: number[], limit: number, options?: VectorSearchOptions): Promise<any[]>;
   
   /**
    * Get the name/identifier of this collection (for logging/debugging).
@@ -79,6 +91,23 @@ export interface SearchableCollection {
  * @see {@link SearchResult} for result format with score breakdown
  * @see {@link ConceptualHybridSearchService} for the implementation
  */
+/**
+ * Options for hybrid search operations.
+ */
+export interface HybridSearchOptions {
+  /** Enable debug logging to stderr */
+  debug?: boolean;
+  
+  /** Exclude reference/bibliography chunks from results (chunks only) */
+  excludeReferences?: boolean;
+  
+  /** Exclude chunks with math extraction issues (chunks only) */
+  excludeExtractionIssues?: boolean;
+  
+  /** Custom SQL-like filter expression */
+  filter?: string;
+}
+
 export interface HybridSearchService {
   /**
    * Perform hybrid search on a searchable collection using multi-signal ranking.
@@ -99,10 +128,15 @@ export interface HybridSearchService {
    * - Score breakdown for each result
    * - Matched concepts
    * 
+   * **Filtering** (chunk search only):
+   * - `excludeReferences`: Filters out bibliography/reference sections
+   * - `excludeExtractionIssues`: Filters out chunks with garbled math
+   * - `filter`: Custom SQL-like filter expression
+   * 
    * @param collection - The searchable collection to query (chunks or catalog)
    * @param queryText - Natural language query or keywords (e.g., 'microservice patterns')
    * @param limit - Maximum number of results to return (typically 5-20, default: 5)
-   * @param debug - Enable debug logging to stderr for query expansion and score breakdown
+   * @param options - Search options (debug, filters)
    * @returns Promise resolving to array of search results ranked by hybrid score (highest first)
    * @throws {Error} If collection access fails
    * @throws {Error} If query expansion fails
@@ -117,23 +151,23 @@ export interface HybridSearchService {
    *   catalogCollection,
    *   'distributed systems patterns',
    *   5,
-   *   true // shows query expansion and score breakdown
+   *   { debug: true }
    * );
    * 
-   * // Process results
-   * results.forEach((result, idx) => {
-   *   console.log(`${idx + 1}. ${result.source}`);
-   *   console.log(`   Hybrid Score: ${result.hybridScore.toFixed(3)}`);
-   *   console.log(`   Matched: ${result.matchedConcepts.join(', ')}`);
-   *   console.log(`   Text: ${result.text.substring(0, 100)}...`);
-   * });
+   * // Exclude reference sections from chunk search
+   * const results = await hybridSearch.search(
+   *   chunksCollection,
+   *   'consensus algorithms',
+   *   20,
+   *   { excludeReferences: true }
+   * );
    * ```
    */
   search(
     collection: SearchableCollection,
     queryText: string,
     limit: number,
-    debug?: boolean
+    options?: HybridSearchOptions | boolean  // boolean for backward compatibility (debug)
   ): Promise<SearchResult[]>;
 }
 

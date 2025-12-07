@@ -183,5 +183,11 @@ export interface SearchQuery {
   
   /** Enable debug logging for score breakdown (outputs to stderr) */
   debug?: boolean;
+  
+  /** Exclude reference/bibliography chunks from results (default: true for chunk searches) */
+  excludeReferences?: boolean;
+  
+  /** Exclude chunks with extraction issues (garbled math) */
+  excludeExtractionIssues?: boolean;
 }
 
