@@ -606,4 +606,3 @@ describe('ConceptualHybridSearchService', () => {
     });
   });
 });
-

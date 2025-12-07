@@ -329,4 +329,3 @@ describe('Combined Detection and Extraction - Integration', () => {
     }
   }, 120000);
 });
-

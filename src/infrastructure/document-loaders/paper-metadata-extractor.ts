@@ -562,4 +562,3 @@ export const paperMetadataExtractor = new PaperMetadataExtractor();
 export function extractPaperMetadata(docs: Document[]): PaperMetadata {
   return paperMetadataExtractor.extract(docs);
 }
-

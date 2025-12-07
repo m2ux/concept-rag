@@ -198,4 +198,3 @@ describe('Math Content Handling - Integration', () => {
     });
   });
 });
-

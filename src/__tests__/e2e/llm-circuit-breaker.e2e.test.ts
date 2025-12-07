@@ -289,11 +289,3 @@ describe('E2E: LLM Circuit Breaker', () => {
     expect(metrics.failures).toBe(0); // Reset on recovery
   }, 15000);
 });
-
-
-
-
-
-
-
-

@@ -431,4 +431,3 @@ export function detectDocumentType(
 ): DocumentTypeInfo {
   return paperDetector.detect(docs, filename, pdfMetadata);
 }
-

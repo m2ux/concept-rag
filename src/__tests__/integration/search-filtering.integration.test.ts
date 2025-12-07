@@ -157,4 +157,3 @@ describe('Search Filtering - Integration', () => {
     });
   });
 });
-

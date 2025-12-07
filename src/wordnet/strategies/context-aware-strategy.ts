@@ -260,5 +260,3 @@ export class ContextAwareStrategy implements SynsetSelectionStrategy {
  * Pre-configured context-aware strategy instance.
  */
 export const contextAwareStrategy = new ContextAwareStrategy();
-
-

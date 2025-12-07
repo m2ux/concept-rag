@@ -393,4 +393,3 @@ describe('Research Paper Metadata Fields - Integration Tests', () => {
     }, 30000);  // Extended timeout for WordNet initialization
   });
 });
-

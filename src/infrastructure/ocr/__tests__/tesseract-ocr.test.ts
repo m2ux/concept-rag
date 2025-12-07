@@ -146,5 +146,3 @@ describe('pdfToBase64', () => {
     }
   });
 });
-
-

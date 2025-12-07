@@ -330,11 +330,3 @@ describe('E2E: Bulkhead Under Load', () => {
     console.log('✓ Independent bulkheads protected resources correctly');
   }, 20000);
 });
-
-
-
-
-
-
-
-

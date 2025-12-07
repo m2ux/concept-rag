@@ -165,11 +165,3 @@ function hashConceptName(name: string): number {
 }
 
 populateCategoryStats().catch(console.error);
-
-
-
-
-
-
-
-

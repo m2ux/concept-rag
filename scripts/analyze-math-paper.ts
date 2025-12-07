@@ -64,4 +64,3 @@ async function analyzeMathPaper() {
 }
 
 analyzeMathPaper().catch(console.error);
-

@@ -491,4 +491,3 @@ export function hasMathContent(text: string): boolean {
 export function recoverGarbledMath(text: string): string {
   return mathContentHandler.recoverGarbledMath(text);
 }
-

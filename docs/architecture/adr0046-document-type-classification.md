@@ -156,4 +156,3 @@ Could rely solely on PDF metadata for classification.
 
 - [Research Paper Support Work Package](.ai/planning/research-paper-support.md)
 - [Database Schema](../database-schema.md)
-

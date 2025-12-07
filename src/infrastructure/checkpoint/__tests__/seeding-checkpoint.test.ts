@@ -373,11 +373,3 @@ describe('SeedingCheckpoint', () => {
         });
     });
 });
-
-
-
-
-
-
-
-

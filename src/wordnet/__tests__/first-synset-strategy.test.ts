@@ -214,5 +214,3 @@ describe('FirstSynsetStrategy', () => {
     });
   });
 });
-
-

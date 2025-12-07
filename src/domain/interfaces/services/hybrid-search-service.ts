@@ -170,4 +170,3 @@ export interface HybridSearchService {
     options?: HybridSearchOptions | boolean  // boolean for backward compatibility (debug)
   ): Promise<SearchResult[]>;
 }
-

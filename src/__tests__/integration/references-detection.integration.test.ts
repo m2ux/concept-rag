@@ -231,4 +231,3 @@ describe('References Detection - Integration with Sample Papers', () => {
     }, 120000);
   });
 });
-

@@ -190,4 +190,3 @@ export interface SearchQuery {
   /** Exclude chunks with extraction issues (garbled math) */
   excludeExtractionIssues?: boolean;
 }
-

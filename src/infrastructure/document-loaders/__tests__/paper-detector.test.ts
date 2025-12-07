@@ -290,4 +290,3 @@ describe('PaperDetector', () => {
     });
   });
 });
-

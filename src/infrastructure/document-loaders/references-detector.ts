@@ -335,4 +335,3 @@ export function filterReferenceChunks(
 ): Document[] {
   return referencesDetector.filterReferenceChunks(chunks, referencesStart);
 }
-

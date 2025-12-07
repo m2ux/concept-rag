@@ -96,5 +96,3 @@ Called immediately after argument validation, before any file scanning or databa
 **Cons:**
 - Requires cookie authentication, doesn't work with Bearer tokens
 - Returns 401 even for valid API keys when using Authorization header
-
-

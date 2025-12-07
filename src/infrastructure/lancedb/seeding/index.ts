@@ -17,5 +17,3 @@ export {
   buildCategoryStats,
   type CategoryStats
 } from './category-utils.js';
-
-
