@@ -38,6 +38,8 @@ import { ParallelConceptExtractor, DocumentSet } from './src/concepts/parallel-c
 import { ProgressBarDisplay, createProgressBarDisplay } from './src/infrastructure/cli/progress-bar-display.js';
 import { SimpleEmbeddingService } from './src/infrastructure/embeddings/simple-embedding-service.js';
 import { processWithTesseract } from './src/infrastructure/ocr/index.js';
+import { PaperDetector, detectDocumentType } from './src/infrastructure/document-loaders/paper-detector.js';
+import { PaperMetadataExtractor, extractPaperMetadata } from './src/infrastructure/document-loaders/paper-metadata-extractor.js';
 
 // Shared embedding service instance for consistent embeddings
 const embeddingService = new SimpleEmbeddingService();
@@ -324,6 +326,49 @@ async function generateContentOverview(rawDocs: Document[]): Promise<string> {
     }
 }
 
+/**
+ * Detect document type and extract paper metadata if applicable.
+ * Returns metadata for populating catalog research paper fields.
+ */
+function detectAndExtractPaperMetadata(
+    docs: Document[],
+    filename: string
+): {
+    documentType: 'book' | 'paper' | 'article' | 'unknown';
+    doi?: string;
+    arxivId?: string;
+    venue?: string;
+    keywords?: string[];
+    abstract?: string;
+    authors?: string[];
+} {
+    const detector = new PaperDetector();
+    const extractor = new PaperMetadataExtractor();
+    
+    // Detect document type
+    const typeInfo = detector.detect(docs, filename);
+    
+    // Only extract detailed metadata for papers
+    if (typeInfo.documentType === 'paper' || typeInfo.documentType === 'article') {
+        const metadata = extractor.extract(docs);
+        
+        return {
+            documentType: typeInfo.documentType,
+            doi: typeInfo.doi || metadata.doi,
+            arxivId: typeInfo.arxivId || metadata.arxivId,
+            venue: metadata.venue,
+            keywords: metadata.keywords,
+            abstract: metadata.abstract,
+            authors: metadata.authors
+        };
+    }
+    
+    // For books/unknown, just return the detected type
+    return {
+        documentType: typeInfo.documentType
+    };
+}
+
 async function loadDocumentsWithErrorHandling(
     filesDir: string, 
     catalogTable: lancedb.Table | null, 
@@ -505,9 +550,13 @@ async function loadDocumentsWithErrorHandling(
                     throw new Error('Document contains no content');
                 }
                 
-                // Add hash to all document pages for tracking
+                // Detect document type and extract paper metadata
+                const paperMetadata = detectAndExtractPaperMetadata(docs, path.basename(docFile));
+                
+                // Add hash and paper metadata to all document pages for tracking
                 docs.forEach(doc => {
                     doc.metadata.hash = hash;
+                    doc.metadata.paperMetadata = paperMetadata;
                 });
                 
                 documents.push(...docs);
@@ -525,7 +574,10 @@ async function loadDocumentsWithErrorHandling(
                 } else {
                     contentInfo = `${docs.length} docs`;
                 }
-                console.log(`📥 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
+                // Add document type indicator for papers
+                const typeIndicator = paperMetadata.documentType === 'paper' ? '📄' : 
+                                     paperMetadata.documentType === 'book' ? '📚' : '📥';
+                console.log(`${typeIndicator} [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo}, ${paperMetadata.documentType})`);
                 
                 // Check --max-docs limit (only counts newly processed, not skipped)
                 newlyProcessedCount++;
@@ -545,9 +597,16 @@ async function loadDocumentsWithErrorHandling(
                         const ocrResult = await processWithTesseract(docFile);
                         
                         if (ocrResult && ocrResult.documents && ocrResult.documents.length > 0) {
-                            // Add hash to OCR'd document metadata for proper tracking
+                            // Detect document type for OCR'd documents
+                            const paperMetadata = detectAndExtractPaperMetadata(
+                                ocrResult.documents, 
+                                path.basename(docFile)
+                            );
+                            
+                            // Add hash and paper metadata to OCR'd document metadata
                             ocrResult.documents.forEach(doc => {
                                 doc.metadata.hash = hash;
+                                doc.metadata.paperMetadata = paperMetadata;
                             });
                             
                             documents.push(...ocrResult.documents);
@@ -701,14 +760,17 @@ async function createLanceTableWithSimpleEmbeddings(
             baseData.year = fileMeta.year || 0;         // Publication year from filename
             baseData.publisher = fileMeta.publisher || '';  // Publisher name from filename
             baseData.isbn = fileMeta.isbn || '';        // ISBN from filename
-            // Research paper metadata fields (defaults - will be populated by metadata extractor)
-            baseData.document_type = 'unknown';  // 'book' | 'paper' | 'article' | 'unknown'
-            baseData.doi = '';                   // Digital Object Identifier
-            baseData.arxiv_id = '';              // ArXiv identifier (e.g., "2204.11193v1")
-            baseData.venue = '';                 // Journal/conference name
-            baseData.keywords = [''];            // Paper keywords (placeholder for LanceDB)
-            baseData.abstract = '';              // Paper abstract (distinct from summary)
-            baseData.authors = [''];             // Array of authors (placeholder for LanceDB)
+            
+            // Research paper metadata fields - populate from paper detection if available
+            const paperMeta = doc.metadata.paperMetadata;
+            baseData.document_type = paperMeta?.documentType || 'unknown';
+            baseData.doi = paperMeta?.doi || '';
+            baseData.arxiv_id = paperMeta?.arxivId || '';
+            baseData.venue = paperMeta?.venue || '';
+            // Use placeholder arrays for LanceDB schema inference when no data
+            baseData.keywords = paperMeta?.keywords?.length ? paperMeta.keywords : [''];
+            baseData.abstract = paperMeta?.abstract || '';
+            baseData.authors = paperMeta?.authors?.length ? paperMeta.authors : [''];
             // DERIVED fields with placeholders for LanceDB schema inference
             baseData.concept_ids = [0];     // Will be overwritten if concepts exist
             baseData.concept_names = [''];  // DERIVED: Will be overwritten if concepts exist
