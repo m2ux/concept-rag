@@ -97,6 +97,14 @@ export interface IntegrationCatalogData {
   year: number;
   publisher: string;
   isbn: string;
+  // Research paper metadata fields
+  document_type: string;    // 'book' | 'paper' | 'article' | 'unknown'
+  doi: string;              // Digital Object Identifier
+  arxiv_id: string;         // ArXiv identifier
+  venue: string;            // Journal/conference name
+  keywords: string[];       // Paper keywords
+  abstract: string;         // Paper abstract (distinct from summary)
+  authors: string[];        // Array of authors (for multi-author papers)
   [key: string]: unknown;
 }
 
@@ -190,7 +198,15 @@ export function createIntegrationTestCatalogEntry(overrides?: Partial<Integratio
     author: 'Robert C. Martin',
     year: 2017,
     publisher: 'Pearson',
-    isbn: '9780134494166'
+    isbn: '9780134494166',
+    // Research paper metadata fields (defaults for books)
+    document_type: 'book',
+    doi: '',
+    arxiv_id: '',
+    venue: '',
+    keywords: [''],  // Placeholder for LanceDB type inference
+    abstract: '',
+    authors: ['']    // Placeholder for LanceDB type inference
   };
   
   return { ...defaults, ...overrides };

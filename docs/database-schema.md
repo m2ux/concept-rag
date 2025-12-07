@@ -43,7 +43,7 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
 |--------|------|-------------|
 | `id` | `number` | Hash-based integer ID (FNV-1a of source path) |
 | `source` | `string` | Document file path (unique identifier) |
-| `title` | `string` | Document title (parsed from filename) |
+| `title` | `string` | Document title (parsed from filename or content) |
 | `summary` | `string` | LLM-generated document summary |
 | `hash` | `string` | SHA-256 content hash for deduplication |
 | `vector` | `Float32Array` | 384-dimensional embedding of summary |
@@ -56,6 +56,13 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
 | `year` | `number` | Publication year (parsed from filename) |
 | `publisher` | `string` | Publisher name (parsed from filename) |
 | `isbn` | `string` | ISBN (parsed from filename, preserved with hyphens) |
+| `document_type` | `string` | Document classification: 'book', 'paper', 'article', 'unknown' |
+| `doi` | `string` | Digital Object Identifier (e.g., "10.1109/MS.2022.3166266") |
+| `arxiv_id` | `string` | ArXiv identifier (e.g., "2204.11193v1") |
+| `venue` | `string` | Publication venue (journal/conference name) |
+| `keywords` | `string[]` | Keywords from paper metadata or extraction |
+| `abstract` | `string` | Paper abstract (distinct from LLM summary) |
+| `authors` | `string[]` | Array of author names (for multi-author papers) |
 
 #### Filename Metadata Parsing
 
@@ -77,7 +84,37 @@ Effective software testing -- Elfriede Dustin -- December 18, 2002 -- Addison-We
 - Fields that cannot be parsed are left empty (string) or zero (number)
 - If no `--` delimiters exist, entire filename (without extension) becomes the title
 
-#### Example Record
+#### Research Paper Metadata Extraction
+
+For research papers (especially LaTeX-generated PDFs like arXiv preprints), metadata is extracted from multiple sources:
+
+**1. Filename Patterns:**
+- ArXiv IDs: `2204.11193v1.pdf` → `arxiv_id: "2204.11193v1"`
+- DOI-based: `10.1109-MS.2022.3166266.pdf` → `doi: "10.1109/MS.2022.3166266"`
+
+**2. PDF Metadata Dictionary:**
+- Title, Author, Subject, Keywords (when available)
+- Often empty for LaTeX-generated PDFs
+
+**3. Content-Based Extraction:**
+- Title: First prominent text on page 1
+- Authors: Names following title, before abstract
+- Abstract: Text following "Abstract" heading
+- Keywords: Extracted from "Keywords:" section if present
+
+**Document Type Detection:**
+Papers are distinguished from books using heuristics:
+- Page count (papers typically <50 pages)
+- Presence of "Abstract" section
+- Citation patterns (`[1], [2]` style references)
+- Filename patterns (arXiv ID, DOI)
+
+**Priority Order:**
+1. Content-based extraction (most reliable for LaTeX PDFs)
+2. PDF metadata dictionary (for publisher PDFs)
+3. Filename parsing (fallback)
+
+#### Example Record (Book)
 
 ```typescript
 {
@@ -96,7 +133,46 @@ Effective software testing -- Elfriede Dustin -- December 18, 2002 -- Addison-We
   author: "Robert Martin",
   year: 2017,
   publisher: "Pearson",
-  isbn: "9780134494166"
+  isbn: "9780134494166",
+  // Research paper fields (empty for books)
+  document_type: "book",
+  doi: "",
+  arxiv_id: "",
+  venue: "",
+  keywords: [],
+  abstract: "",
+  authors: []
+}
+```
+
+#### Example Record (Research Paper)
+
+```typescript
+{
+  id: 1029384756,
+  source: "/home/user/papers/2204.11193v1.pdf",
+  title: "Exploring Security Practices of Smart Contract Developers",
+  summary: "Study examining how developers approach security in smart contract development...",
+  hash: "a1b2c3d4e5f6...",
+  vector: Float32Array(384),
+  concept_ids: [1111111111, 2222222222],
+  concept_names: ["smart contracts", "blockchain security"],
+  category_ids: [3333333333],
+  category_names: ["blockchain", "security"],
+  // Bibliographic fields
+  origin_hash: "",
+  author: "Tanusree Sharma et al.",
+  year: 2022,
+  publisher: "",
+  isbn: "",
+  // Research paper fields (extracted from content/metadata)
+  document_type: "paper",
+  doi: "",
+  arxiv_id: "2204.11193v1",
+  venue: "arXiv preprint",
+  keywords: ["smart contract", "security", "blockchain", "developer"],
+  abstract: "Smart contracts are self-executing programs that run on blockchains...",
+  authors: ["Tanusree Sharma", "Zhixuan Zhou", "Andrew Miller", "Yang Wang"]
 }
 ```
 
@@ -430,6 +506,7 @@ await chunksTable.createIndex("vector", {
 | 2025-11-28 | Removed ID mapping caches (ConceptIdCache, CatalogSourceCache, CategoryIdCache) | - |
 | 2025-11-28 | Added `summary` field to concepts (extracted with concept) | - |
 | 2025-11-29 | Parallel concept extraction support (SharedRateLimiter, ParallelConceptExtractor) | - |
+| 2025-12-07 | Added research paper metadata fields: `document_type`, `doi`, `arxiv_id`, `venue`, `keywords`, `abstract`, `authors` | - |
 
 ---
 

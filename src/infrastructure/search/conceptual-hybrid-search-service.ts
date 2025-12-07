@@ -177,6 +177,35 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       // For catalog: use source (document path)
       const sourceValue = row.source || row.catalog_title || '';
       
+      // Parse research paper array fields (keywords, authors)
+      const parseKeywords = (): string[] | undefined => {
+        if (!row.keywords) return undefined;
+        let arr: string[];
+        if (Array.isArray(row.keywords)) {
+          arr = row.keywords;
+        } else if (typeof row.keywords === 'object' && 'toArray' in row.keywords) {
+          arr = Array.from(row.keywords.toArray()) as string[];
+        } else {
+          return undefined;
+        }
+        const filtered = arr.filter((k: string) => k && k.trim());
+        return filtered.length > 0 ? filtered : undefined;
+      };
+      
+      const parseAuthors = (): string[] | undefined => {
+        if (!row.authors) return undefined;
+        let arr: string[];
+        if (Array.isArray(row.authors)) {
+          arr = row.authors;
+        } else if (typeof row.authors === 'object' && 'toArray' in row.authors) {
+          arr = Array.from(row.authors.toArray()) as string[];
+        } else {
+          return undefined;
+        }
+        const filtered = arr.filter((a: string) => a && a.trim());
+        return filtered.length > 0 ? filtered : undefined;
+      };
+      
       const result: SearchResult = {
         id: row.id || '',
         text: searchableText,  // Use text for chunks, summary for catalog
@@ -196,7 +225,15 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         wordnetScore,
         hybridScore,
         matchedConcepts: getMatchedConcepts(expanded, row),
-        expandedTerms: expanded.all_terms.slice(0, 10)  // Top 10 terms
+        expandedTerms: expanded.all_terms.slice(0, 10),  // Top 10 terms
+        // Research paper metadata fields (pass through from row)
+        documentType: row.document_type || undefined,
+        doi: row.doi || undefined,
+        arxivId: row.arxiv_id || undefined,
+        venue: row.venue || undefined,
+        keywords: parseKeywords(),
+        abstract: row.abstract || undefined,
+        authors: parseAuthors()
       };
       
       return result;

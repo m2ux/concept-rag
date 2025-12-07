@@ -178,6 +178,30 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       }
     }
     
+    // Parse keywords array (research paper field)
+    let keywords: string[] | undefined;
+    if (doc.keywords) {
+      if (Array.isArray(doc.keywords)) {
+        keywords = doc.keywords.filter((k: string) => k && k.trim());
+      } else if (typeof doc.keywords === 'object' && 'toArray' in doc.keywords) {
+        keywords = (Array.from(doc.keywords.toArray()) as string[]).filter((k: string) => k && k.trim());
+      } else if (typeof doc.keywords === 'string') {
+        keywords = (this.parseJsonArray(doc.keywords) as string[]).filter((k: string) => k && k.trim());
+      }
+    }
+    
+    // Parse authors array (research paper field)
+    let authors: string[] | undefined;
+    if (doc.authors) {
+      if (Array.isArray(doc.authors)) {
+        authors = doc.authors.filter((a: string) => a && a.trim());
+      } else if (typeof doc.authors === 'object' && 'toArray' in doc.authors) {
+        authors = (Array.from(doc.authors.toArray()) as string[]).filter((a: string) => a && a.trim());
+      } else if (typeof doc.authors === 'string') {
+        authors = (this.parseJsonArray(doc.authors) as string[]).filter((a: string) => a && a.trim());
+      }
+    }
+    
     return {
       id: doc.id,
       catalogId: doc.id,  // For catalog entries, catalogId = id
@@ -195,7 +219,15 @@ export class LanceDBCatalogRepository implements CatalogRepository {
       bm25Score: 0,
       titleScore: 1.0,
       conceptScore: 0,
-      wordnetScore: 0
+      wordnetScore: 0,
+      // Research paper metadata fields
+      documentType: doc.document_type || undefined,
+      doi: doc.doi || undefined,
+      arxivId: doc.arxiv_id || undefined,
+      venue: doc.venue || undefined,
+      keywords: keywords && keywords.length > 0 ? keywords : undefined,
+      abstract: doc.abstract || undefined,
+      authors: authors && authors.length > 0 ? authors : undefined
     };
   }
   

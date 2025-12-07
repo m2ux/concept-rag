@@ -701,6 +701,14 @@ async function createLanceTableWithSimpleEmbeddings(
             baseData.year = fileMeta.year || 0;         // Publication year from filename
             baseData.publisher = fileMeta.publisher || '';  // Publisher name from filename
             baseData.isbn = fileMeta.isbn || '';        // ISBN from filename
+            // Research paper metadata fields (defaults - will be populated by metadata extractor)
+            baseData.document_type = 'unknown';  // 'book' | 'paper' | 'article' | 'unknown'
+            baseData.doi = '';                   // Digital Object Identifier
+            baseData.arxiv_id = '';              // ArXiv identifier (e.g., "2204.11193v1")
+            baseData.venue = '';                 // Journal/conference name
+            baseData.keywords = [''];            // Paper keywords (placeholder for LanceDB)
+            baseData.abstract = '';              // Paper abstract (distinct from summary)
+            baseData.authors = [''];             // Array of authors (placeholder for LanceDB)
             // DERIVED fields with placeholders for LanceDB schema inference
             baseData.concept_ids = [0];     // Will be overwritten if concepts exist
             baseData.concept_names = [''];  // DERIVED: Will be overwritten if concepts exist
