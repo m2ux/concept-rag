@@ -56,7 +56,7 @@ Concept-RAG uses a four-table normalized architecture optimized for concept-heav
 | `year` | `number` | Publication year (parsed from filename) |
 | `publisher` | `string` | Publisher name (parsed from filename) |
 | `isbn` | `string` | ISBN (parsed from filename, preserved with hyphens) |
-| `document_type` | `string` | Document classification: 'book', 'paper', 'article', 'unknown' |
+| `document_type` | `string` | Document classification: 'book', 'paper', 'magazine', 'article', 'unknown' |
 | `doi` | `string` | Digital Object Identifier (e.g., "10.1109/MS.2022.3166266") |
 | `arxiv_id` | `string` | ArXiv identifier (e.g., "2204.11193v1") |
 | `venue` | `string` | Publication venue (journal/conference name) |

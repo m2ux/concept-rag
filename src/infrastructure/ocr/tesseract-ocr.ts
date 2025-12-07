@@ -391,3 +391,4 @@ function cleanupTempFiles(tempDir: string, tempImagePrefix: string): void {
   }
 }
 
+

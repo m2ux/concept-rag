@@ -2,7 +2,7 @@
  * Integration Tests for Research Paper Metadata Fields
  * 
  * Tests the new research paper metadata fields added to the catalog schema:
- * - document_type: 'book' | 'paper' | 'article' | 'unknown'
+ * - document_type: 'book' | 'paper' | 'magazine' | 'article' | 'unknown'
  * - doi: Digital Object Identifier
  * - arxiv_id: ArXiv identifier
  * - venue: Journal/conference name

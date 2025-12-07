@@ -114,7 +114,7 @@ export interface SearchResult extends Chunk {
    * Document type classification.
    * Determined by heuristics: page count, section patterns, metadata.
    */
-  documentType?: 'book' | 'paper' | 'article' | 'unknown';
+  documentType?: 'book' | 'paper' | 'magazine' | 'article' | 'unknown';
   
   /**
    * Digital Object Identifier for academic papers.

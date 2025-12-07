@@ -336,7 +336,7 @@ function detectAndExtractPaperMetadata(
     docs: Document[],
     filename: string
 ): {
-    documentType: 'book' | 'paper' | 'article' | 'unknown';
+    documentType: 'book' | 'paper' | 'magazine' | 'article' | 'unknown';
     doi?: string;
     arxivId?: string;
     venue?: string;
