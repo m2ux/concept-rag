@@ -167,7 +167,7 @@ const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {
     string: ["dbpath", "filesdir", "max-docs", "parallel"]
 });
 
-const databaseDir = argv["dbpath"] || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag");
+const databaseDir = argv["dbpath"] || process.env.CONCEPT_RAG_DB_PATH || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag");
 const filesDir = argv["filesdir"];
 const overwrite = argv["overwrite"];
 const rebuildConcepts = argv["rebuild-concepts"];
