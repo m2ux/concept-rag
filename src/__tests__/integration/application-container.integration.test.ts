@@ -11,15 +11,16 @@
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { ApplicationContainer } from '../../application/container.js';
-import { useExistingTestDatabase, TestDatabaseFixture } from './test-db-setup.js';
+import { createTestDatabase, TestDatabaseFixture } from './test-db-setup.js';
 
 describe('ApplicationContainer Integration Tests', () => {
   let fixture: TestDatabaseFixture;
   let container: ApplicationContainer;
   
   beforeAll(async () => {
-    // ARRANGE: Use existing db/test with real sample-docs data
-    fixture = useExistingTestDatabase('application-container');
+    // ARRANGE: Use synthetic test data with correct schema
+    // This ensures the test database has all required fields (is_reference, has_math, etc.)
+    fixture = createTestDatabase('application-container');
     await fixture.setup();
     
     // Create ApplicationContainer with test database
