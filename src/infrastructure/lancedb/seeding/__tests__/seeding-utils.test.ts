@@ -167,4 +167,3 @@ describe('buildCategoryStats', () => {
     expect(stats.get('AI')?.sources.size).toBe(1); // Only 1 unique source
   });
 });
-

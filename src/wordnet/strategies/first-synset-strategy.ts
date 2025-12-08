@@ -56,4 +56,3 @@ export class FirstSynsetStrategy implements SynsetSelectionStrategy {
  * Default strategy instance for convenience.
  */
 export const defaultStrategy = new FirstSynsetStrategy();
-

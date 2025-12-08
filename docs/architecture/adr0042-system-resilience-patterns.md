@@ -408,6 +408,3 @@ Each pattern provides detailed metrics:
 - Branch: feat/system-resilience-patterns
 
 **Traceability:** .ai/planning/2025-11-25-resilience-patterns/
-
-
-

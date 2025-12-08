@@ -1,4 +1,4 @@
-import { HybridSearchService, SearchableCollection } from '../../domain/interfaces/services/hybrid-search-service.js';
+import { HybridSearchService, SearchableCollection, HybridSearchOptions, VectorSearchOptions } from '../../domain/interfaces/services/hybrid-search-service.js';
 import { EmbeddingService } from '../../domain/interfaces/services/embedding-service.js';
 import { SearchResult } from '../../domain/models/search-result.js';
 import { QueryExpander } from '../../concepts/query_expander.js';
@@ -62,8 +62,15 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     collection: SearchableCollection,
     queryText: string,
     limit: number = 5,
-    debug: boolean = false
+    options: HybridSearchOptions | boolean = false
   ): Promise<SearchResult[]> {
+    // Normalize options (backward compatibility: boolean = debug flag)
+    const normalizedOptions: HybridSearchOptions = typeof options === 'boolean' 
+      ? { debug: options } 
+      : options;
+    
+    const debug = normalizedOptions.debug ?? false;
+    
     // Check cache first (if enabled and not in debug mode)
     if (this.cache && !debug) {
       const cacheKey = `${collection.getName()}:${queryText}`;
@@ -76,7 +83,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     // Wrap search operation with resilience if available
     if (this.resilientExecutor) {
       return this.resilientExecutor.execute(
-        () => this.performSearch(collection, queryText, limit, debug),
+        () => this.performSearch(collection, queryText, limit, normalizedOptions),
         {
           ...ResilienceProfiles.SEARCH,
           name: 'hybrid_search'
@@ -85,7 +92,7 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     }
     
     // Fallback: execute without resilience (backward compatible)
-    return this.performSearch(collection, queryText, limit, debug);
+    return this.performSearch(collection, queryText, limit, normalizedOptions);
   }
   
   /**
@@ -96,8 +103,10 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     collection: SearchableCollection,
     queryText: string,
     limit: number,
-    debug: boolean
+    options: HybridSearchOptions
   ): Promise<SearchResult[]> {
+    const debug = options.debug ?? false;
+    
     // Step 1: Expand query with corpus concepts and WordNet synonyms
     const expanded = await this.queryExpander.expandQuery(queryText);
     
@@ -116,9 +125,38 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       this.printWeightAdjustment(queryAnalysis, weights);
     }
     
+    // Build filter expression for chunk search
+    const vectorSearchOptions: VectorSearchOptions = {};
+    if (isChunkSearch) {
+      const filterParts: string[] = [];
+      
+      // Exclude reference chunks (bibliography/citations)
+      if (options.excludeReferences) {
+        filterParts.push('is_reference = false');
+      }
+      
+      // Exclude chunks with extraction issues (garbled math)
+      if (options.excludeExtractionIssues) {
+        filterParts.push('has_extraction_issues = false');
+      }
+      
+      // Add custom filter if provided
+      if (options.filter) {
+        filterParts.push(options.filter);
+      }
+      
+      // Combine filters with AND
+      if (filterParts.length > 0) {
+        vectorSearchOptions.filter = filterParts.join(' AND ');
+        if (debug) {
+          console.error(`🔍 Filter: ${vectorSearchOptions.filter}`);
+        }
+      }
+    }
+    
     // Step 2: Generate query embedding and perform vector search
     const queryVector = this.embeddingService.generateEmbedding(queryText);
-    const vectorResults = await collection.vectorSearch(queryVector, limit * 3);  // Get 3x results for reranking
+    const vectorResults = await collection.vectorSearch(queryVector, limit * 3, vectorSearchOptions);  // Get 3x results for reranking
     
     // Step 3: Score each result with all ranking signals
     const scoredResults = vectorResults.map((row: any) => {
@@ -177,6 +215,35 @@ export class ConceptualHybridSearchService implements HybridSearchService {
       // For catalog: use source (document path)
       const sourceValue = row.source || row.catalog_title || '';
       
+      // Parse research paper array fields (keywords, authors)
+      const parseKeywords = (): string[] | undefined => {
+        if (!row.keywords) return undefined;
+        let arr: string[];
+        if (Array.isArray(row.keywords)) {
+          arr = row.keywords;
+        } else if (typeof row.keywords === 'object' && 'toArray' in row.keywords) {
+          arr = Array.from(row.keywords.toArray()) as string[];
+        } else {
+          return undefined;
+        }
+        const filtered = arr.filter((k: string) => k && k.trim());
+        return filtered.length > 0 ? filtered : undefined;
+      };
+      
+      const parseAuthors = (): string[] | undefined => {
+        if (!row.authors) return undefined;
+        let arr: string[];
+        if (Array.isArray(row.authors)) {
+          arr = row.authors;
+        } else if (typeof row.authors === 'object' && 'toArray' in row.authors) {
+          arr = Array.from(row.authors.toArray()) as string[];
+        } else {
+          return undefined;
+        }
+        const filtered = arr.filter((a: string) => a && a.trim());
+        return filtered.length > 0 ? filtered : undefined;
+      };
+      
       const result: SearchResult = {
         id: row.id || '',
         text: searchableText,  // Use text for chunks, summary for catalog
@@ -196,7 +263,15 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         wordnetScore,
         hybridScore,
         matchedConcepts: getMatchedConcepts(expanded, row),
-        expandedTerms: expanded.all_terms.slice(0, 10)  // Top 10 terms
+        expandedTerms: expanded.all_terms.slice(0, 10),  // Top 10 terms
+        // Research paper metadata fields (pass through from row)
+        documentType: row.document_type || undefined,
+        doi: row.doi || undefined,
+        arxivId: row.arxiv_id || undefined,
+        venue: row.venue || undefined,
+        keywords: parseKeywords(),
+        abstract: row.abstract || undefined,
+        authors: parseAuthors()
       };
       
       return result;
@@ -258,4 +333,3 @@ export class ConceptualHybridSearchService implements HybridSearchService {
     }
   }
 }
-

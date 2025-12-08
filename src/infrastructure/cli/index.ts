@@ -12,10 +12,3 @@ export {
   type ProgressDisplayState,
   type ProgressBarDisplayOptions,
 } from './progress-bar-display.js';
-
-
-
-
-
-
-

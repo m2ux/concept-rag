@@ -169,16 +169,21 @@ export class LanceDBChunkRepository implements ChunkRepository {
   async search(query: SearchQuery): Promise<SearchResult[]> {
     // Use hybrid search for multi-signal ranking
     const limit = query.limit || 10;
-    const debug = query.debug || false;
     
     // Wrap table in adapter to prevent infrastructure leakage
     const collection = new SearchableCollectionAdapter(this.chunksTable, 'chunks');
     
+    // Pass filter options through to hybrid search
+    // Default: exclude references for chunk search (users typically want content, not citations)
     return await this.hybridSearchService.search(
       collection,
       query.text,
       limit,
-      debug
+      {
+        debug: query.debug ?? false,
+        excludeReferences: query.excludeReferences ?? true,  // Default to excluding refs
+        excludeExtractionIssues: query.excludeExtractionIssues ?? false
+      }
     );
   }
   

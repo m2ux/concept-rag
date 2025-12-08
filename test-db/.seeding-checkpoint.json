@@ -1,0 +1,21 @@
+{
+  "processedHashes": [
+    "cb78cd5bff64782413324532120694992c8dc392ca22dfee767bed73960f0bca",
+    "63966068258e3280302e21eec91cb27bbef5b903db61ade8efc9039e74cfc83a",
+    "b620515c020f4fab7230f7f705778036e3b631f08eb28a558e752edd24e9ed3a",
+    "33a518b64c6fe13d5073910b3cbee9ea0cfad52a9f6a58b3d596a67c2d16cc28",
+    "1b21f898293ff7b91b7fd9fee4f28df2bacc9e5af509744d6246cffe563b8084",
+    "4500b364a0be44576009cac8e1e679b19722d3743b7396080cedfbb1e782b736",
+    "62b8c1d73bdde2e8c4c7f1a0d56576e3617dc548e344a1f0c7587a742a7a66bd",
+    "9e3051da792bd30a5ce0e3eb51b340de56a8ae365c5383712019bad69176eed9"
+  ],
+  "stage": "complete",
+  "lastFile": "sample-docs/Papers/p1739-arun.pdf",
+  "lastUpdatedAt": "2025-12-07T17:29:55.257Z",
+  "totalProcessed": 8,
+  "totalFailed": 0,
+  "failedFiles": [],
+  "version": 1,
+  "databasePath": "./test-db",
+  "filesDir": "./sample-docs/Papers"
+}

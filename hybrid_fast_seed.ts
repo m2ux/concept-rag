@@ -38,6 +38,10 @@ import { ParallelConceptExtractor, DocumentSet } from './src/concepts/parallel-c
 import { ProgressBarDisplay, createProgressBarDisplay } from './src/infrastructure/cli/progress-bar-display.js';
 import { SimpleEmbeddingService } from './src/infrastructure/embeddings/simple-embedding-service.js';
 import { processWithTesseract } from './src/infrastructure/ocr/index.js';
+import { PaperDetector, detectDocumentType } from './src/infrastructure/document-loaders/paper-detector.js';
+import { PaperMetadataExtractor, extractPaperMetadata } from './src/infrastructure/document-loaders/paper-metadata-extractor.js';
+import { ReferencesDetector, detectReferencesStart, ReferencesDetectionResult } from './src/infrastructure/document-loaders/references-detector.js';
+import { MathContentHandler } from './src/infrastructure/document-loaders/math-content-handler.js';
 
 // Shared embedding service instance for consistent embeddings
 const embeddingService = new SimpleEmbeddingService();
@@ -324,6 +328,49 @@ async function generateContentOverview(rawDocs: Document[]): Promise<string> {
     }
 }
 
+/**
+ * Detect document type and extract paper metadata if applicable.
+ * Returns metadata for populating catalog research paper fields.
+ */
+function detectAndExtractPaperMetadata(
+    docs: Document[],
+    filename: string
+): {
+    documentType: 'book' | 'paper' | 'article' | 'unknown';
+    doi?: string;
+    arxivId?: string;
+    venue?: string;
+    keywords?: string[];
+    abstract?: string;
+    authors?: string[];
+} {
+    const detector = new PaperDetector();
+    const extractor = new PaperMetadataExtractor();
+    
+    // Detect document type
+    const typeInfo = detector.detect(docs, filename);
+    
+    // Only extract detailed metadata for papers
+    if (typeInfo.documentType === 'paper' || typeInfo.documentType === 'article') {
+        const metadata = extractor.extract(docs);
+        
+        return {
+            documentType: typeInfo.documentType,
+            doi: typeInfo.doi || metadata.doi,
+            arxivId: typeInfo.arxivId || metadata.arxivId,
+            venue: metadata.venue,
+            keywords: metadata.keywords,
+            abstract: metadata.abstract,
+            authors: metadata.authors
+        };
+    }
+    
+    // For books/unknown, just return the detected type
+    return {
+        documentType: typeInfo.documentType
+    };
+}
+
 async function loadDocumentsWithErrorHandling(
     filesDir: string, 
     catalogTable: lancedb.Table | null, 
@@ -505,9 +552,20 @@ async function loadDocumentsWithErrorHandling(
                     throw new Error('Document contains no content');
                 }
                 
-                // Add hash to all document pages for tracking
+                // Detect document type and extract paper metadata
+                const paperMetadata = detectAndExtractPaperMetadata(docs, path.basename(docFile));
+                
+                // Detect references section for papers
+                let referencesStart: ReferencesDetectionResult | undefined;
+                if (paperMetadata.documentType === 'paper') {
+                    referencesStart = detectReferencesStart(docs);
+                }
+                
+                // Add hash and paper metadata to all document pages for tracking
                 docs.forEach(doc => {
                     doc.metadata.hash = hash;
+                    doc.metadata.paperMetadata = paperMetadata;
+                    doc.metadata.referencesStart = referencesStart;
                 });
                 
                 documents.push(...docs);
@@ -525,7 +583,10 @@ async function loadDocumentsWithErrorHandling(
                 } else {
                     contentInfo = `${docs.length} docs`;
                 }
-                console.log(`📥 [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo})`);
+                // Add document type indicator for papers
+                const typeIndicator = paperMetadata.documentType === 'paper' ? '📄' : 
+                                     paperMetadata.documentType === 'book' ? '📚' : '📥';
+                console.log(`${typeIndicator} [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (${contentInfo}, ${paperMetadata.documentType})`);
                 
                 // Check --max-docs limit (only counts newly processed, not skipped)
                 newlyProcessedCount++;
@@ -545,9 +606,16 @@ async function loadDocumentsWithErrorHandling(
                         const ocrResult = await processWithTesseract(docFile);
                         
                         if (ocrResult && ocrResult.documents && ocrResult.documents.length > 0) {
-                            // Add hash to OCR'd document metadata for proper tracking
+                            // Detect document type for OCR'd documents
+                            const paperMetadata = detectAndExtractPaperMetadata(
+                                ocrResult.documents, 
+                                path.basename(docFile)
+                            );
+                            
+                            // Add hash and paper metadata to OCR'd document metadata
                             ocrResult.documents.forEach(doc => {
                                 doc.metadata.hash = hash;
+                                doc.metadata.paperMetadata = paperMetadata;
                             });
                             
                             documents.push(...ocrResult.documents);
@@ -688,6 +756,15 @@ async function createLanceTableWithSimpleEmbeddings(
             // Add catalog_title (derived from filename) for display
             const fileMeta = parseFilenameMetadata(doc.metadata.source || '');
             baseData.catalog_title = fileMeta.title || '';
+            
+            // Mark if chunk is from references section (for filtering in search)
+            baseData.is_reference = doc.metadata.is_reference ?? false;
+            
+            // Mark if chunk has mathematical content
+            baseData.has_math = doc.metadata.has_math ?? false;
+            
+            // Mark if chunk has extraction quality issues (garbled math)
+            baseData.has_extraction_issues = doc.metadata.has_extraction_issues ?? false;
         }
         
         // Add bibliographic fields for catalog entries (parsed from filename)
@@ -701,6 +778,17 @@ async function createLanceTableWithSimpleEmbeddings(
             baseData.year = fileMeta.year || 0;         // Publication year from filename
             baseData.publisher = fileMeta.publisher || '';  // Publisher name from filename
             baseData.isbn = fileMeta.isbn || '';        // ISBN from filename
+            
+            // Research paper metadata fields - populate from paper detection if available
+            const paperMeta = doc.metadata.paperMetadata;
+            baseData.document_type = paperMeta?.documentType || 'unknown';
+            baseData.doi = paperMeta?.doi || '';
+            baseData.arxiv_id = paperMeta?.arxivId || '';
+            baseData.venue = paperMeta?.venue || '';
+            // Use placeholder arrays for LanceDB schema inference when no data
+            baseData.keywords = paperMeta?.keywords?.length ? paperMeta.keywords : [''];
+            baseData.abstract = paperMeta?.abstract || '';
+            baseData.authors = paperMeta?.authors?.length ? paperMeta.authors : [''];
             // DERIVED fields with placeholders for LanceDB schema inference
             baseData.concept_ids = [0];     // Will be overwritten if concepts exist
             baseData.concept_names = [''];  // DERIVED: Will be overwritten if concepts exist
@@ -941,13 +1029,17 @@ Key Concepts: ${conceptNames.join(', ')}
 Categories: ${concepts.categories.join(', ')}
 `.trim();
         
+        // Get paper metadata from first page (shared across all pages)
+        const paperMetadata = docs[0]?.metadata?.paperMetadata;
+        
         const catalogRecord = new Document({ 
             pageContent: enrichedContent, 
             metadata: { 
                 source, 
                 hash,
                 ocr_processed: isOcrProcessed,
-                concepts: concepts  // STORE STRUCTURED CONCEPTS
+                concepts: concepts,  // STORE STRUCTURED CONCEPTS
+                paperMetadata: paperMetadata  // PAPER DETECTION METADATA
             } 
         });
         
@@ -1091,6 +1183,7 @@ async function processDocumentsParallel(
         const docs = docsBySource[result.source];
         const contentOverview = await generateContentOverview(docs);
         const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
+        const paperMetadata = docs[0]?.metadata?.paperMetadata;
         
         // Extract concept names
         const conceptNames = result.concepts!.primary_concepts.map((c: any) => 
@@ -1111,7 +1204,8 @@ Categories: ${result.concepts!.categories.join(', ')}
                 source: result.source,
                 hash: result.hash,
                 ocr_processed: isOcrProcessed,
-                concepts: result.concepts
+                concepts: result.concepts,
+                paperMetadata: paperMetadata  // PAPER DETECTION METADATA
             }
         });
         
@@ -1125,6 +1219,7 @@ Categories: ${result.concepts!.categories.join(', ')}
         const docs = docsBySource[result.source];
         const contentOverview = await generateContentOverview(docs);
         const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
+        const paperMetadata = docs[0]?.metadata?.paperMetadata;
         
         // Use empty concepts for failed documents
         const emptyConcepts = {
@@ -1145,7 +1240,8 @@ Categories: General
                 source: result.source,
                 hash: result.hash,
                 ocr_processed: isOcrProcessed,
-                concepts: emptyConcepts
+                concepts: emptyConcepts,
+                paperMetadata: paperMetadata  // PAPER DETECTION METADATA
             }
         });
         
@@ -1633,7 +1729,7 @@ async function hybridFastSeed() {
         process.exit(0);
     }
 
-    // Simplify metadata but preserve hash and OCR information
+    // Simplify metadata but preserve hash, OCR, and paper detection information
     // Extract page_number from loc.pageNumber (LangChain format) or direct field
     for (const doc of rawDocs) {
         const pageNumber = doc.metadata.page_number ?? doc.metadata.loc?.pageNumber ?? 1;
@@ -1642,7 +1738,9 @@ async function hybridFastSeed() {
             source: doc.metadata.source,
             hash: doc.metadata.hash,
             ocr_processed: doc.metadata.ocr_processed,
-            ocr_method: doc.metadata.ocr_method
+            ocr_method: doc.metadata.ocr_method,
+            paperMetadata: doc.metadata.paperMetadata,  // Preserve paper detection
+            referencesStart: doc.metadata.referencesStart  // Preserve references detection
         };
     }
 
@@ -1695,6 +1793,62 @@ async function hybridFastSeed() {
     const newChunks = docsNeedingNewChunks.length > 0 
         ? await splitter.splitDocuments(docsNeedingNewChunks)
         : [];
+    
+    // Mark reference chunks for papers
+    // Build source -> references detection map
+    const sourceReferencesMap = new Map<string, ReferencesDetectionResult>();
+    for (const doc of docsNeedingNewChunks) {
+        const source = doc.metadata.source;
+        if (source && doc.metadata.referencesStart && !sourceReferencesMap.has(source)) {
+            sourceReferencesMap.set(source, doc.metadata.referencesStart);
+        }
+    }
+    
+    // Mark chunks that are from reference sections
+    if (sourceReferencesMap.size > 0) {
+        const referencesDetector = new ReferencesDetector();
+        let refChunkCount = 0;
+        
+        for (const chunk of newChunks) {
+            const source = chunk.metadata.source;
+            const referencesStart = sourceReferencesMap.get(source);
+            
+            if (referencesStart?.found) {
+                const info = referencesDetector.isReferenceChunk(chunk, referencesStart);
+                chunk.metadata.is_reference = info.isReference;
+                if (info.isReference) refChunkCount++;
+            } else {
+                chunk.metadata.is_reference = false;
+            }
+        }
+        
+        if (refChunkCount > 0) {
+            console.log(`📚 Marked ${refChunkCount} chunks as reference content (will be excluded from semantic search)`);
+        }
+    }
+    
+    // Detect mathematical content in chunks
+    {
+        const mathHandler = new MathContentHandler();
+        let mathChunkCount = 0;
+        let issueChunkCount = 0;
+        
+        for (const chunk of newChunks) {
+            const analysis = mathHandler.analyze(chunk.pageContent);
+            chunk.metadata.has_math = analysis.hasMath;
+            chunk.metadata.has_extraction_issues = analysis.hasExtractionIssues;
+            
+            if (analysis.hasMath) mathChunkCount++;
+            if (analysis.hasExtractionIssues) issueChunkCount++;
+        }
+        
+        if (mathChunkCount > 0) {
+            console.log(`🔢 Detected ${mathChunkCount} chunks with mathematical content`);
+        }
+        if (issueChunkCount > 0) {
+            console.log(`⚠️  Found ${issueChunkCount} chunks with extraction issues (garbled math)`);
+        }
+    }
     
     // Combine new chunks with existing chunks needing enrichment
     const docs = [...newChunks, ...existingChunksNeedingEnrichment];
@@ -2086,7 +2240,3 @@ hybridFastSeed().catch((error) => {
     logStream.end();
     process.exit(1);
 });
-
-
-
-

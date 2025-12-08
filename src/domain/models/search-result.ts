@@ -105,6 +105,52 @@ export interface SearchResult extends Chunk {
    * Foreign keys to the categories table.
    */
   categoryIds?: number[];
+  
+  // ============================================
+  // Research Paper Metadata Fields
+  // ============================================
+  
+  /**
+   * Document type classification.
+   * Determined by heuristics: page count, section patterns, metadata.
+   */
+  documentType?: 'book' | 'paper' | 'article' | 'unknown';
+  
+  /**
+   * Digital Object Identifier for academic papers.
+   * Format: "10.1109/MS.2022.3166266"
+   */
+  doi?: string;
+  
+  /**
+   * ArXiv identifier for preprints.
+   * Format: "2204.11193" or "2204.11193v1"
+   */
+  arxivId?: string;
+  
+  /**
+   * Publication venue (journal or conference name).
+   * Examples: "IEEE Software", "NeurIPS 2023", "Journal of Finance"
+   */
+  venue?: string;
+  
+  /**
+   * Keywords from paper metadata or extracted from content.
+   * Native array for text search.
+   */
+  keywords?: string[];
+  
+  /**
+   * Paper abstract (distinct from LLM-generated summary).
+   * Extracted from document content or PDF metadata.
+   */
+  abstract?: string;
+  
+  /**
+   * Array of author names (for multi-author papers).
+   * Complements the single 'author' string field for papers with many authors.
+   */
+  authors?: string[];
 }
 
 /**
@@ -137,5 +183,10 @@ export interface SearchQuery {
   
   /** Enable debug logging for score breakdown (outputs to stderr) */
   debug?: boolean;
+  
+  /** Exclude reference/bibliography chunks from results (default: true for chunk searches) */
+  excludeReferences?: boolean;
+  
+  /** Exclude chunks with extraction issues (garbled math) */
+  excludeExtractionIssues?: boolean;
 }
-
