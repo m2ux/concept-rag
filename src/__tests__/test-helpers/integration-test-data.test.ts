@@ -149,6 +149,27 @@ describe('Integration Test Data Builders', () => {
       expect(typeof chunk.concept_density).toBe('number');
       expect(typeof chunk.page_number).toBe('number');
     });
+    
+    it('should include content classification fields with defaults', () => {
+      const chunk = createIntegrationTestChunk();
+      
+      // Content classification fields (ADR-0046)
+      expect(chunk.is_reference).toBe(false);
+      expect(chunk.has_extraction_issues).toBe(false);
+      expect(chunk.has_math).toBe(false);
+    });
+    
+    it('should allow overriding content classification fields', () => {
+      const chunk = createIntegrationTestChunk({
+        is_reference: true,
+        has_extraction_issues: true,
+        has_math: true
+      });
+      
+      expect(chunk.is_reference).toBe(true);
+      expect(chunk.has_extraction_issues).toBe(true);
+      expect(chunk.has_math).toBe(true);
+    });
   });
   
   describe('createIntegrationTestConcept', () => {
@@ -260,3 +281,4 @@ describe('Integration Test Data Builders', () => {
     });
   });
 });
+

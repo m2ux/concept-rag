@@ -43,6 +43,9 @@ export const TEST_CATALOG_IDS = {
 
 /**
  * Integration test chunk data (for LanceDB table) - v7 schema
+ * 
+ * Includes all fields from the production schema to ensure schema compatibility
+ * in integration tests.
  */
 export interface IntegrationChunkData {
   id: number;
@@ -55,6 +58,10 @@ export interface IntegrationChunkData {
   concept_names: string[];  // DERIVED: for display and text search
   concept_density?: number;
   page_number?: number;
+  // Document content classification fields (ADR-0046)
+  is_reference: boolean;         // True if chunk is from references/bibliography section
+  has_extraction_issues: boolean; // True if chunk has garbled math or OCR issues
+  has_math: boolean;             // True if chunk contains mathematical content
   [key: string]: unknown;
 }
 
@@ -128,6 +135,9 @@ export interface IntegrationCategoryData {
 
 /**
  * Creates an integration test chunk with sensible defaults (v7 schema)
+ * 
+ * Includes all production schema fields with sensible defaults for testing.
+ * Content classification fields default to false (typical content chunk).
  */
 export function createIntegrationTestChunk(overrides?: Partial<IntegrationChunkData>): IntegrationChunkData {
   const catalogId = overrides?.catalog_id || TEST_CATALOG_IDS['clean-architecture'];
@@ -143,7 +153,11 @@ export function createIntegrationTestChunk(overrides?: Partial<IntegrationChunkD
     concept_ids: conceptNames.map(name => TEST_CONCEPTS[name as keyof typeof TEST_CONCEPTS] || hashToId(name)),
     concept_names: conceptNames,  // DERIVED
     concept_density: 0.15,
-    page_number: 1
+    page_number: 1,
+    // Content classification defaults (ADR-0046)
+    is_reference: false,          // Most chunks are content, not references
+    has_extraction_issues: false, // Test data has no extraction issues
+    has_math: false               // Default to no math content
   };
   
   return { ...defaults, ...overrides };

@@ -7,14 +7,20 @@
  * - WordNet synonym and hypernym expansion
  * 
  * Follows Four-Phase Test pattern from TDD for Embedded C (Grenning).
+ * 
+ * **Note**: WordNet initialization can be slow (30+ seconds), so all tests
+ * in this file have extended timeouts configured via vitest.config options.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { QueryExpander } from '../query_expander.js';
 import { EmbeddingService } from '../../domain/interfaces/services/embedding-service.js';
 import { WordNetService } from '../../wordnet/wordnet_service.js';
 import { createTestEmbedding } from '../../__tests__/test-helpers/test-data.js';
 import * as lancedb from '@lancedb/lancedb';
+
+// Global timeout for all tests in this file (WordNet initialization can be slow)
+const TEST_TIMEOUT = 30000;
 
 /**
  * Mock WordNetService for testing
@@ -105,7 +111,7 @@ class MockEmbeddingService implements EmbeddingService {
   }
 }
 
-describe('QueryExpander', () => {
+describe('QueryExpander', { timeout: TEST_TIMEOUT }, () => {
   let expander: QueryExpander;
   let mockConceptTable: MockConceptTable;
   let mockEmbeddingService: MockEmbeddingService;
@@ -159,7 +165,7 @@ describe('QueryExpander', () => {
       expect(expanded.original_terms).not.toContain('an');
       expect(expanded.original_terms).toContain('software');
       expect(expanded.original_terms).toContain('architecture');
-    });
+    }, 30000); // Extended timeout for potential WordNet initialization
 
     it('should remove punctuation from terms', async () => {
       // SETUP
@@ -520,7 +526,7 @@ describe('QueryExpander', () => {
       // Special characters should be removed, valid terms kept
       expect(expanded.original_terms.length).toBeGreaterThan(0);
       expect(expanded.original_terms.every(t => !/[^\w\s]/.test(t))).toBe(true);
-    });
+    }, 30000); // Extended timeout for WordNet initialization
   });
 
   describe('expandQuery - corpus expansion edge cases', () => {
@@ -535,7 +541,7 @@ describe('QueryExpander', () => {
       // VERIFY
       expect(expanded.corpus_terms).toEqual([]);
       expect(expanded.original_terms.length).toBeGreaterThan(0);
-    });
+    }, 30000); // Extended timeout for WordNet initialization
 
     it('should handle invalid JSON in related_concepts', async () => {
       // SETUP
