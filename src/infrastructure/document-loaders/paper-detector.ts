@@ -16,7 +16,7 @@
  * ```typescript
  * const detector = new PaperDetector();
  * const result = detector.detect(docs, filename, pdfMetadata);
- * console.log(result.documentType); // 'paper' | 'book' | 'magazine' | 'article' | 'unknown'
+ * console.log(result.documentType); // 'paper' | 'book' | 'article' | 'unknown'
  * console.log(result.confidence);   // 0.85
  * console.log(result.signals);      // ['page_count', 'has_abstract', ...]
  * ```
@@ -29,7 +29,7 @@ import { Document } from "@langchain/core/documents";
  */
 export interface DocumentTypeInfo {
   /** Classified document type */
-  documentType: 'book' | 'paper' | 'magazine' | 'article' | 'unknown';
+  documentType: 'book' | 'paper' | 'article' | 'unknown';
   
   /** Confidence score 0-1 */
   confidence: number;
@@ -269,18 +269,18 @@ export class PaperDetector {
     const totalWeight = paperScore + bookScore;
     const paperConfidence = totalWeight > 0 ? paperScore / totalWeight : 0.5;
     
-    // Check for magazine article characteristics
-    const isMagazine = this.detectMagazineArticle(allText, pageCount);
+    // Check for professional article characteristics (magazines, trade publications)
+    const isArticle = this.detectArticle(allText, pageCount);
     
     // Determine document type
-    let documentType: 'book' | 'paper' | 'magazine' | 'article' | 'unknown';
+    let documentType: 'book' | 'paper' | 'article' | 'unknown';
     let confidence: number;
     
-    if (isMagazine.isMagazine) {
-      // Magazine article detected
-      documentType = 'magazine';
-      confidence = isMagazine.confidence;
-      matchedSignals.push(...isMagazine.signals);
+    if (isArticle.isArticle) {
+      // Professional article detected (IEEE Software, CACM, etc.)
+      documentType = 'article';
+      confidence = isArticle.confidence;
+      matchedSignals.push(...isArticle.signals);
     } else if (arxivId || doi) {
       // Strong signal: definitely a paper
       documentType = 'paper';
@@ -291,11 +291,8 @@ export class PaperDetector {
     } else if (paperConfidence <= 0.35) {
       documentType = 'book';
       confidence = 1 - paperConfidence;
-    } else if (paperConfidence >= 0.5) {
-      // Borderline - might be an article
-      documentType = 'article';
-      confidence = paperConfidence;
     } else {
+      // Borderline - can't determine with confidence
       documentType = 'unknown';
       confidence = 0.5;
     }
@@ -310,80 +307,79 @@ export class PaperDetector {
   }
   
   /**
-   * Detect if document is a magazine article.
+   * Detect if document is a professional article.
    * 
-   * Magazine articles have distinct characteristics:
-   * - Published in professional magazines (IEEE Software, CACM, etc.)
+   * Professional articles have distinct characteristics:
+   * - Published in trade magazines (IEEE Software, CACM, etc.)
    * - Short (typically 2-8 pages)
    * - Column/Editor format
    * - No formal "Abstract" section
-   * - Conversational tone
+   * - Conversational tone, fewer citations
    */
-  private detectMagazineArticle(
+  private detectArticle(
     fullText: string, 
     pageCount: number
-  ): { isMagazine: boolean; confidence: number; signals: string[] } {
+  ): { isArticle: boolean; confidence: number; signals: string[] } {
     const signals: string[] = [];
     let score = 0;
     
-    // Magazine publication patterns - these need to be specific to magazine format, not just mentions
-    // Only match in the first 500 chars (masthead area) to avoid citation matches
+    // Article publication patterns - only match in first 500 chars (masthead area)
     const firstText = fullText.substring(0, 500);
     
-    const magazinePatterns = [
-      // These patterns should only match magazine mastheads, not citations
+    const articlePatterns = [
+      // Trade magazine mastheads
       { pattern: /IEEE\s+SOFTWARE/i, weight: 0.5, name: 'ieee_software', text: firstText },
       { pattern: /IEEE\s+Computer(?!\s+Society)/i, weight: 0.5, name: 'ieee_computer', text: firstText },
       { pattern: /IEEE\s+Spectrum/i, weight: 0.5, name: 'ieee_spectrum', text: firstText },
       { pattern: /Communications\s+of\s+the\s+ACM/i, weight: 0.5, name: 'cacm', text: firstText },
       { pattern: /ACM\s+Queue/i, weight: 0.5, name: 'acm_queue', text: firstText },
       { pattern: /Dr\.\s*Dobb/i, weight: 0.5, name: 'dr_dobbs', text: firstText },
-      // Column format is a strong magazine indicator
+      // Column format indicators
       { pattern: /\bPRAGMATIC\s+DESIGNER\b/i, weight: 0.4, name: 'column_pragmatic', text: firstText },
       { pattern: /Editor:\s*[A-Z][a-z]+\s+[A-Z][a-z]+/i, weight: 0.4, name: 'editor_format', text: firstText },
-      // "PUBLISHED BY THE IEEE COMPUTER SOCIETY" at the top is a strong indicator
+      // Publisher masthead
       { pattern: /PUBLISHED\s+BY\s+THE\s+IEEE\s+COMPUTER\s+SOCIETY/i, weight: 0.5, name: 'ieee_cs_published', text: firstText },
     ];
     
-    for (const { pattern, weight, name, text } of magazinePatterns) {
+    for (const { pattern, weight, name, text } of articlePatterns) {
       if (pattern.test(text)) {
         score += weight;
-        signals.push(`magazine_${name}`);
+        signals.push(`article_${name}`);
       }
     }
     
-    // Short page count is typical for magazine articles
+    // Short page count is typical for articles
     if (pageCount >= 2 && pageCount <= 8) {
       score += 0.2;
-      signals.push('magazine_short');
+      signals.push('article_short');
     }
     
-    // No abstract is common in magazine articles
+    // No abstract is common in articles
     if (!/\bABSTRACT\b/i.test(fullText.substring(0, 3000))) {
       score += 0.1;
-      signals.push('magazine_no_abstract');
+      signals.push('article_no_abstract');
     }
     
-    // Magazine articles often have fewer formal citations
+    // Articles often have fewer formal citations
     const citationCount = (fullText.match(/\[\d+\]/g) || []).length;
     if (citationCount < 10) {
       score += 0.1;
-      signals.push('magazine_few_citations');
+      signals.push('article_few_citations');
     }
     
-    // Require at least one strong magazine signal
+    // Require at least one strong article signal
     const hasStrongSignal = signals.some(s => 
-      s.includes('ieee_magazine') || 
+      s.includes('ieee_software') || 
       s.includes('cacm') || 
       s.includes('acm_queue') ||
       s.includes('editor_format') ||
-      s.includes('ieee_published')
+      s.includes('ieee_cs_published')
     );
     
-    const isMagazine = hasStrongSignal && score >= 0.4;
+    const isArticle = hasStrongSignal && score >= 0.4;
     const confidence = Math.min(1.0, score);
     
-    return { isMagazine, confidence, signals };
+    return { isArticle, confidence, signals };
   }
   
   /**

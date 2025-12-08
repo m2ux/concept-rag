@@ -98,7 +98,7 @@ export interface IntegrationCatalogData {
   publisher: string;
   isbn: string;
   // Research paper metadata fields
-  document_type: string;    // 'book' | 'paper' | 'magazine' | 'article' | 'unknown'
+  document_type: string;    // 'book' | 'paper' | 'article' | 'unknown'
   doi: string;              // Digital Object Identifier
   arxiv_id: string;         // ArXiv identifier
   venue: string;            // Journal/conference name

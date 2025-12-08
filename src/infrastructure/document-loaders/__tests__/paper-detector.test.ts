@@ -260,12 +260,12 @@ describe('PaperDetector', () => {
       expect(result.confidence).toBeGreaterThanOrEqual(0.6);
     });
     
-    it('should classify IEEE journal paper correctly', () => {
+    it('should classify IEEE Software article correctly', () => {
+      // IEEE Software is a trade magazine, so articles from it are 'article' not 'paper'
       const docs = createMockDocs([
         'IEEE SOFTWARE\n\nLove Unrequited: Architecture Decision Records\n\nMichael Keeling, George Fairbanks\n\nDOI: 10.1109/MS.2022.3166266',
-        'Abstract: Software architecture has long sought...',
-        'I. INTRODUCTION\n\nArchitecture decisions [1]...',
-        'II. RELATED WORK\n\nPrevious studies [2, 3]...',
+        'Software architecture has long sought...',  // No formal abstract
+        'Architecture decisions...',
         'REFERENCES\n[1] Author...'
       ]);
       const pdfMetadata = {
@@ -273,10 +273,30 @@ describe('PaperDetector', () => {
           Subject: 'IEEE Software;2022;39;4;10.1109/MS.2022.3166266'
         }
       };
-      const result = detector.detect(docs, 'ieee-paper.pdf', pdfMetadata);
+      const result = detector.detect(docs, 'ieee-software-article.pdf', pdfMetadata);
       
-      expect(result.documentType).toBe('paper');
+      // IEEE Software articles are 'article' type, not 'paper'
+      expect(result.documentType).toBe('article');
       expect(result.doi).toBe('10.1109/MS.2022.3166266');
+    });
+    
+    it('should classify IEEE Transactions paper correctly', () => {
+      // IEEE Transactions papers have formal academic structure
+      const docs = createMockDocs([
+        'IEEE TRANSACTIONS ON SOFTWARE ENGINEERING\n\nFormal Methods for Security\n\nJohn Doe, Jane Smith\n\nDOI: 10.1109/TSE.2022.1234567',
+        'Abstract: This paper presents a formal approach...',
+        'I. INTRODUCTION\n\nSecurity verification [1]...',
+        'II. RELATED WORK\n\nPrevious studies [2, 3, 4, 5]...',
+        'III. METHODOLOGY\n\nWe propose...',
+        'IV. EVALUATION\n\nResults show...',
+        'V. CONCLUSION\n\nThis paper presented...',
+        'REFERENCES\n[1] Author One...\n[2] Author Two...\n[3] Author Three...'
+      ]);
+      const result = detector.detect(docs, 'ieee-tse-paper.pdf');
+      
+      // IEEE Transactions papers are research papers
+      expect(result.documentType).toBe('paper');
+      expect(result.doi).toBe('10.1109/TSE.2022.1234567');
     });
   });
   

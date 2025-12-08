@@ -87,18 +87,18 @@ describe('Paper Detection - Integration with Sample Papers', () => {
     }, 30000);
   });
   
-  describe('IEEE Magazine Article Detection', () => {
-    it('should detect Love_Unrequited article as a magazine article', async () => {
+  describe('IEEE Article Detection', () => {
+    it('should detect Love_Unrequited as a professional article', async () => {
       if (!hasSamplePapers()) return;
       
       const docs = await loadPdf(SAMPLE_PAPERS.ieee_adr);
       const result = detector.detect(docs, SAMPLE_PAPERS.ieee_adr);
       
-      // This is an IEEE Software magazine article, not a research paper
-      expect(result.documentType).toBe('magazine');
+      // This is an IEEE Software article, not a research paper
+      expect(result.documentType).toBe('article');
       expect(result.confidence).toBeGreaterThanOrEqual(0.5);
       
-      // Magazine articles still have DOIs
+      // Articles still have DOIs
       // DOI may be in content or PDF metadata
     }, 30000);
   });
