@@ -745,7 +745,7 @@ export class ConceptExtractor {
      */
     private async performAPICall(prompt: string, maxTokens: number): Promise<string> {
             const requestBody = {
-                model: 'openai/gpt-5-mini',  // 400k context, excellent instruction-following, $0.25/M in, $2/M out
+                model: 'anthropic/claude-sonnet-4',  // Claude Sonnet 4 - reliable for concept extraction
                 messages: [
                     {
                         role: 'user',
