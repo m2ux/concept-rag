@@ -69,7 +69,34 @@ Additional signals:
 
 **Threshold**: Requires at least one strong signal AND total score ≥ 0.4
 
-### 3. Improved Author Detection
+### 3. Book Detection Heuristics
+
+Proactively detect books using structural and publisher signals:
+
+| Signal | Weight | Examples |
+|--------|--------|----------|
+| `book_isbn` | 0.6 | ISBN-10/13 in content |
+| `book_isbn_metadata` | 0.4 | ISBN in PDF metadata |
+| `book_publisher` | 0.5 | O'Reilly, Springer, Packt, Manning, Apress, etc. |
+| `book_many_chapters` | 0.5 | 5+ unique "Chapter N" occurrences |
+| `book_chapters` | 0.3 | 3-4 unique chapters |
+| `book_toc` | 0.4 | "Table of Contents" |
+| `book_front_matter` | 0.4 | 2+ of: Preface, Foreword, Acknowledgments, Dedication |
+| `book_has_preface` | 0.2 | Single front matter element |
+| `book_back_matter` | 0.2 | Index, Appendix, Glossary |
+| `book_copyright` | 0.2 | Copyright notice, "All rights reserved" |
+| `book_very_long` | 0.5 | 300+ pages |
+| `book_long` | 0.4 | 150-299 pages |
+| `book_medium_length` | 0.2 | 80-149 pages |
+| `book_parts` | 0.3 | Part I, Part II structure |
+
+**Publisher Detection**: Checks first/last 10% of document for publisher names.
+
+**Threshold**: Requires at least one structural signal (ISBN, publisher, chapters, TOC, front matter) AND total score ≥ 0.5, OR total score ≥ 1.0.
+
+**Note**: Books with DOI or ArXiv ID are classified as papers (likely thesis or technical report).
+
+### 4. Improved Author Detection
 
 The metadata extractor now handles multiple author formats:
 
@@ -91,14 +118,21 @@ Tanusree Sharma, Zhixuan Zhou, Andrew Miller, Yang Wang
 - Multiple comma-separated capitalized names
 - "Name and Name" patterns
 
-### 4. Detection Priority
+### 5. Detection Priority
 
 Document type is determined in this order:
 
-1. **Article** - If article detection signals are strong (checked first to avoid DOI override)
-2. **Paper** - If ArXiv ID or DOI present, or paper confidence ≥ 0.65
-3. **Book** - If paper confidence ≤ 0.35
-4. **Unknown** - Otherwise (borderline cases)
+1. **Article** - If article detection signals are strong (checked first)
+2. **Book** - If book detection signals are strong AND no DOI/ArXiv ID
+3. **Paper** - If ArXiv ID or DOI present, or paper confidence ≥ 0.65
+4. **Book** (fallback) - If paper confidence ≤ 0.35 or book signals present
+5. **Unknown** - Otherwise (borderline cases)
+
+This priority ensures:
+- Trade magazine articles aren't misclassified as papers
+- Books with ISBN/chapters are correctly identified
+- DOI/ArXiv always indicates academic work (paper, not book)
+- Borderline cases default to unknown rather than incorrect classification
 
 ## Consequences
 
@@ -127,7 +161,7 @@ Document type is determined in this order:
 
 | File | Change |
 |------|--------|
-| `paper-detector.ts` | Added `detectArticle()` method, simplified type union |
+| `paper-detector.ts` | Added `detectArticle()` and `detectBook()` methods |
 | `paper-metadata-extractor.ts` | Added `looksLikeAuthorLine()`, improved `parseAuthorNames()` |
 | `search-result.ts` | Updated `documentType` type union |
 | `hybrid_fast_seed.ts` | Updated type annotations |
@@ -136,6 +170,7 @@ Document type is determined in this order:
 ### Test Coverage
 
 - Unit tests for article detection patterns
+- Unit tests for book detection (ISBN, publisher, chapters, parts)
 - Integration tests with sample IEEE Software article
 - Metadata extraction tests for various author formats
 

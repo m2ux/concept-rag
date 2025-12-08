@@ -236,7 +236,7 @@ export class PaperDetector {
     }
     
     // Calculate final score
-    return this.calculateResult(signals, arxivId, doi, allText, pageCount);
+    return this.calculateResult(signals, arxivId, doi, allText, pageCount, pdfMetadata);
   }
   
   /**
@@ -247,7 +247,8 @@ export class PaperDetector {
     arxivId: string | undefined,
     doi: string | undefined,
     allText: string,
-    pageCount: number
+    pageCount: number,
+    pdfMetadata?: any
   ): DocumentTypeInfo {
     // Sum up paper-positive and paper-negative weights
     let paperScore = 0;
@@ -272,6 +273,9 @@ export class PaperDetector {
     // Check for professional article characteristics (magazines, trade publications)
     const isArticle = this.detectArticle(allText, pageCount);
     
+    // Check for book characteristics
+    const isBook = this.detectBook(allText, pageCount, pdfMetadata);
+    
     // Determine document type
     let documentType: 'book' | 'paper' | 'article' | 'unknown';
     let confidence: number;
@@ -281,6 +285,11 @@ export class PaperDetector {
       documentType = 'article';
       confidence = isArticle.confidence;
       matchedSignals.push(...isArticle.signals);
+    } else if (isBook.isBook && !arxivId && !doi) {
+      // Book detected (only if no strong paper signals like DOI/ArXiv)
+      documentType = 'book';
+      confidence = isBook.confidence;
+      matchedSignals.push(...isBook.signals);
     } else if (arxivId || doi) {
       // Strong signal: definitely a paper
       documentType = 'paper';
@@ -288,9 +297,13 @@ export class PaperDetector {
     } else if (paperConfidence >= 0.65) {
       documentType = 'paper';
       confidence = paperConfidence;
-    } else if (paperConfidence <= 0.35) {
+    } else if (paperConfidence <= 0.35 || isBook.confidence > 0.3) {
+      // Weak paper signals or some book signals - likely a book
       documentType = 'book';
-      confidence = 1 - paperConfidence;
+      confidence = Math.max(1 - paperConfidence, isBook.confidence);
+      if (isBook.signals.length > 0) {
+        matchedSignals.push(...isBook.signals);
+      }
     } else {
       // Borderline - can't determine with confidence
       documentType = 'unknown';
@@ -380,6 +393,170 @@ export class PaperDetector {
     const confidence = Math.min(1.0, score);
     
     return { isArticle, confidence, signals };
+  }
+  
+  /**
+   * Detect if document is a book.
+   * 
+   * Books have distinct characteristics:
+   * - Long (typically 100+ pages)
+   * - Chapter structure (Chapter 1, Chapter 2, etc.)
+   * - Table of Contents, Preface, Index
+   * - ISBN in content or metadata
+   * - Publisher information
+   * - Copyright notices
+   */
+  private detectBook(
+    fullText: string, 
+    pageCount: number,
+    pdfMetadata?: any
+  ): { isBook: boolean; confidence: number; signals: string[] } {
+    const signals: string[] = [];
+    let score = 0;
+    
+    // ISBN patterns (ISBN-10 and ISBN-13)
+    const isbnPattern = /ISBN[:\s-]*(?:13[:\s-]*)?(?:978|979)?[\d\s-]{10,17}/i;
+    if (isbnPattern.test(fullText)) {
+      score += 0.6;
+      signals.push('book_isbn');
+    }
+    
+    // Check PDF metadata for ISBN
+    if (pdfMetadata?.info) {
+      const metaStr = JSON.stringify(pdfMetadata.info).toLowerCase();
+      if (metaStr.includes('isbn')) {
+        score += 0.4;
+        signals.push('book_isbn_metadata');
+      }
+    }
+    
+    // Publisher patterns (check first and last 10% of document)
+    const firstPart = fullText.substring(0, Math.min(5000, fullText.length * 0.1));
+    const lastPart = fullText.substring(Math.max(0, fullText.length * 0.9));
+    const publisherArea = firstPart + '\n' + lastPart;
+    
+    const publisherPatterns = [
+      /O'Reilly\s+Media/i,
+      /Packt\s+Publishing/i,
+      /Manning\s+Publications/i,
+      /Apress/i,
+      /Springer(?:\s+(?:Nature|Verlag))?/i,
+      /Addison[- ]Wesley/i,
+      /Pearson/i,
+      /Wiley(?:\s+&\s+Sons)?/i,
+      /McGraw[- ]Hill/i,
+      /Cambridge\s+University\s+Press/i,
+      /Oxford\s+University\s+Press/i,
+      /MIT\s+Press/i,
+      /No\s+Starch\s+Press/i,
+      /Pragmatic\s+Bookshelf/i,
+      /Pragmatic\s+Programmers/i,
+    ];
+    
+    for (const pattern of publisherPatterns) {
+      if (pattern.test(publisherArea)) {
+        score += 0.5;
+        signals.push('book_publisher');
+        break; // Only count publisher once
+      }
+    }
+    
+    // Chapter counting - multiple chapters is a strong book signal
+    const chapterMatches = fullText.match(/\bchapter\s+\d+/gi) || [];
+    const uniqueChapters = new Set(chapterMatches.map(m => m.toLowerCase())).size;
+    
+    if (uniqueChapters >= 5) {
+      score += 0.5;
+      signals.push('book_many_chapters');
+    } else if (uniqueChapters >= 3) {
+      score += 0.3;
+      signals.push('book_chapters');
+    }
+    
+    // Table of Contents
+    if (/\btable\s+of\s+contents\b/i.test(fullText)) {
+      score += 0.4;
+      signals.push('book_toc');
+    }
+    
+    // Preface, Foreword, Acknowledgments
+    const frontMatterPatterns = [
+      /\bpreface\b/i,
+      /\bforeword\b/i,
+      /\backnowledg(?:e)?ments?\b/i,
+      /\bdedication\b/i,
+      /\babout\s+the\s+author/i,
+    ];
+    
+    let frontMatterCount = 0;
+    for (const pattern of frontMatterPatterns) {
+      if (pattern.test(fullText)) {
+        frontMatterCount++;
+      }
+    }
+    
+    if (frontMatterCount >= 2) {
+      score += 0.4;
+      signals.push('book_front_matter');
+    } else if (frontMatterCount >= 1) {
+      score += 0.2;
+      signals.push('book_has_preface');
+    }
+    
+    // Back matter (Index, Appendix, Bibliography as section not references)
+    const backMatterPatterns = [
+      /\bindex\b(?!\s+of\s+)/i,  // "Index" but not "index of"
+      /\bappendix\s+[a-z]/i,
+      /\bglossary\b/i,
+    ];
+    
+    for (const pattern of backMatterPatterns) {
+      if (pattern.test(fullText)) {
+        score += 0.2;
+        signals.push('book_back_matter');
+        break;
+      }
+    }
+    
+    // Copyright notice
+    if (/(?:©|copyright)\s*\d{4}|all\s+rights\s+reserved/i.test(fullText)) {
+      score += 0.2;
+      signals.push('book_copyright');
+    }
+    
+    // Page count - books are typically long
+    if (pageCount >= 300) {
+      score += 0.5;
+      signals.push('book_very_long');
+    } else if (pageCount >= 150) {
+      score += 0.4;
+      signals.push('book_long');
+    } else if (pageCount >= 80) {
+      score += 0.2;
+      signals.push('book_medium_length');
+    }
+    
+    // Part structure (Part I, Part II, etc.)
+    const partMatches = fullText.match(/\bpart\s+(?:one|two|three|four|five|[ivx]+|\d+)\b/gi) || [];
+    if (partMatches.length >= 2) {
+      score += 0.3;
+      signals.push('book_parts');
+    }
+    
+    // Require meaningful book signals (not just length)
+    const hasStructuralSignal = signals.some(s => 
+      s.includes('isbn') || 
+      s.includes('publisher') || 
+      s.includes('chapters') || 
+      s.includes('toc') ||
+      s.includes('front_matter')
+    );
+    
+    // Book needs structural signals + decent score, or very strong score
+    const isBook = (hasStructuralSignal && score >= 0.5) || score >= 1.0;
+    const confidence = Math.min(1.0, score);
+    
+    return { isBook, confidence, signals };
   }
   
   /**

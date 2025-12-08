@@ -300,6 +300,130 @@ describe('PaperDetector', () => {
     });
   });
   
+  describe('book detection', () => {
+    it('should detect book with ISBN and chapters', () => {
+      const pages = [
+        'Clean Architecture\n\nRobert C. Martin\n\nISBN: 978-0-13-449416-6',
+        'Table of Contents\n\nPart I: Introduction\nChapter 1: What Is Design and Architecture?\nChapter 2: A Tale of Two Values',
+        'Preface\n\nThe goal of software architecture is to minimize the human resources required...',
+        'Acknowledgments\n\nI would like to thank...',
+        'Chapter 1\n\nWhat Is Design and Architecture?\n\nThere has been a lot of confusion...',
+        'Chapter 2\n\nA Tale of Two Values\n\nEvery software system provides two different values...',
+        'Chapter 3\n\nParadigm Overview\n\nThis chapter introduces the three programming paradigms...',
+        'Chapter 4\n\nStructured Programming\n\nThe first paradigm to be adopted...',
+        'Chapter 5\n\nObject-Oriented Programming\n\nThe second paradigm...',
+        // ... more chapters (simulating a longer book)
+      ];
+      // Simulate a 300+ page book
+      for (let i = 6; i <= 30; i++) {
+        pages.push(`Chapter ${i}\n\nMore content about architecture...`);
+      }
+      
+      const docs = createMockDocs(pages);
+      const result = detector.detect(docs, 'clean-architecture.pdf');
+      
+      expect(result.documentType).toBe('book');
+      expect(result.confidence).toBeGreaterThanOrEqual(0.5);
+      expect(result.signals).toContain('book_isbn');
+      expect(result.signals).toContain('book_toc');
+    });
+    
+    it('should detect book with publisher information', () => {
+      const pages = [
+        'Learning Python\n\n5th Edition\n\nMark Lutz\n\nO\'Reilly Media',
+        '© 2013 O\'Reilly Media, Inc. All rights reserved.',
+        'Table of Contents',
+        'Preface',
+        'Part I: Getting Started\nChapter 1: A Python Q&A Session\nChapter 2: How Python Runs Programs',
+        'Chapter 1\n\nA Python Q&A Session',
+        'Chapter 2\n\nHow Python Runs Programs',
+        'Chapter 3\n\nHow You Run Programs',
+        'Chapter 4\n\nIntroducing Python Object Types',
+        'Chapter 5\n\nNumeric Types',
+      ];
+      // Add more pages to simulate length
+      for (let i = 0; i < 150; i++) {
+        pages.push('Content page ' + i);
+      }
+      
+      const docs = createMockDocs(pages);
+      const result = detector.detect(docs, 'learning-python.pdf');
+      
+      expect(result.documentType).toBe('book');
+      expect(result.signals).toContain('book_publisher');
+    });
+    
+    it('should detect book with multiple parts and chapters', () => {
+      const pages = [
+        'Domain-Driven Design\n\nEric Evans',
+        'Part I: Putting the Domain Model to Work',
+        'Chapter 1: Crunching Knowledge',
+        'Chapter 2: Communication and the Use of Language',
+        'Chapter 3: Binding Model and Implementation',
+        'Part II: The Building Blocks of a Model-Driven Design',
+        'Chapter 4: Isolating the Domain',
+        'Chapter 5: A Model Expressed in Software',
+        'Chapter 6: The Life Cycle of a Domain Object',
+        'Part III: Refactoring Toward Deeper Insight',
+        'Chapter 7: Using the Language',
+        'Chapter 8: Breakthrough',
+        'Glossary',
+        'Index',
+      ];
+      // Add pages to simulate length
+      for (let i = 0; i < 100; i++) {
+        pages.push('Content...');
+      }
+      
+      const docs = createMockDocs(pages);
+      const result = detector.detect(docs, 'domain-driven-design.pdf');
+      
+      expect(result.documentType).toBe('book');
+      expect(result.signals).toContain('book_many_chapters');
+      expect(result.signals).toContain('book_parts');
+    });
+    
+    it('should not classify short paper as book even with chapter-like headings', () => {
+      const docs = createMockDocs([
+        'A Survey on Machine Learning\n\nJohn Doe\n\nDOI: 10.1000/survey.2024',
+        'Abstract: This paper surveys...',
+        '1. Introduction\n\nMachine learning has...',
+        '2. Background\n\nChapter 1 of the textbook shows [1]...',  // Mention of chapter in citation
+        '3. Methods\n\nWe analyze...',
+        'References\n[1] Author, "Chapter 1: Basics"...'
+      ]);
+      const result = detector.detect(docs, 'survey.pdf');
+      
+      // Should be paper due to DOI and short length
+      expect(result.documentType).toBe('paper');
+    });
+    
+    it('should classify book from Pragmatic Bookshelf', () => {
+      const pages = [
+        'The Pragmatic Programmer\n\nDavid Thomas, Andrew Hunt',
+        'Pragmatic Bookshelf\n\nISBN-13: 978-0-13-595705-9',
+        'Table of Contents',
+        'Foreword',
+        'Preface to the Second Edition',
+        'Chapter 1: A Pragmatic Philosophy',
+        'Chapter 2: A Pragmatic Approach',
+        'Chapter 3: The Basic Tools',
+        'Chapter 4: Pragmatic Paranoia',
+        'Chapter 5: Bend, or Break',
+      ];
+      for (let i = 0; i < 200; i++) {
+        pages.push('More pragmatic content...');
+      }
+      
+      const docs = createMockDocs(pages);
+      const result = detector.detect(docs, 'pragmatic-programmer.pdf');
+      
+      expect(result.documentType).toBe('book');
+      expect(result.signals).toContain('book_publisher');
+      expect(result.signals).toContain('book_isbn');
+    });
+  });
+  
   describe('convenience function', () => {
     it('should work with detectDocumentType', () => {
       const docs = createMockDocs(['Abstract\n\nThis paper...']);
