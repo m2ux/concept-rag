@@ -430,31 +430,31 @@ export class PaperDetector {
       }
     }
     
-    // Publisher patterns (check first and last 10% of document)
+    // Publisher patterns - ONLY check first 10% (title/copyright page)
+    // NOT the last 10% because references sections cite publishers
     const firstPart = fullText.substring(0, Math.min(5000, fullText.length * 0.1));
-    const lastPart = fullText.substring(Math.max(0, fullText.length * 0.9));
-    const publisherArea = firstPart + '\n' + lastPart;
     
+    // Publisher patterns with context - need "published by", "©", or standalone publisher name
     const publisherPatterns = [
-      /O'Reilly\s+Media/i,
-      /Packt\s+Publishing/i,
-      /Manning\s+Publications/i,
-      /Apress/i,
-      /Springer(?:\s+(?:Nature|Verlag))?/i,
-      /Addison[- ]Wesley/i,
-      /Pearson/i,
-      /Wiley(?:\s+&\s+Sons)?/i,
-      /McGraw[- ]Hill/i,
-      /Cambridge\s+University\s+Press/i,
-      /Oxford\s+University\s+Press/i,
-      /MIT\s+Press/i,
-      /No\s+Starch\s+Press/i,
-      /Pragmatic\s+Bookshelf/i,
-      /Pragmatic\s+Programmers/i,
+      /(?:published\s+by\s+)?O'Reilly\s+Media/i,
+      /(?:published\s+by\s+)?Packt\s+Publishing/i,
+      /(?:published\s+by\s+)?Manning\s+Publications/i,
+      /(?:published\s+by\s+)?Apress/i,
+      /(?:©|published\s+by)\s*Springer/i,  // Require context for Springer (commonly cited)
+      /(?:published\s+by\s+)?Addison[- ]Wesley/i,
+      /(?:©|published\s+by)\s*Pearson/i,
+      /(?:©|published\s+by)\s*(?:John\s+)?Wiley/i,
+      /(?:published\s+by\s+)?McGraw[- ]Hill/i,
+      /(?:published\s+by\s+)?Cambridge\s+University\s+Press/i,
+      /(?:published\s+by\s+)?Oxford\s+University\s+Press/i,
+      /(?:published\s+by\s+)?MIT\s+Press/i,
+      /(?:published\s+by\s+)?No\s+Starch\s+Press/i,
+      /(?:published\s+by\s+)?Pragmatic\s+Bookshelf/i,
+      /(?:published\s+by\s+)?Pragmatic\s+Programmers/i,
     ];
     
     for (const pattern of publisherPatterns) {
-      if (pattern.test(publisherArea)) {
+      if (pattern.test(firstPart)) {
         score += 0.5;
         signals.push('book_publisher');
         break; // Only count publisher once
@@ -479,18 +479,20 @@ export class PaperDetector {
       signals.push('book_toc');
     }
     
-    // Preface, Foreword, Acknowledgments
+    // Preface, Foreword - check only first 20% (front matter location)
+    // Must be at start of line (section header style)
+    const frontPortion = fullText.substring(0, Math.min(10000, fullText.length * 0.2));
+    
     const frontMatterPatterns = [
-      /\bpreface\b/i,
-      /\bforeword\b/i,
-      /\backnowledg(?:e)?ments?\b/i,
-      /\bdedication\b/i,
-      /\babout\s+the\s+author/i,
+      /^preface\b/im,           // "Preface" at start of line
+      /^foreword\b/im,          // "Foreword" at start of line
+      /^dedication\b/im,        // "Dedication" at start of line
+      /^about\s+the\s+author/im,
     ];
     
     let frontMatterCount = 0;
     for (const pattern of frontMatterPatterns) {
-      if (pattern.test(fullText)) {
+      if (pattern.test(frontPortion)) {
         frontMatterCount++;
       }
     }
@@ -503,11 +505,11 @@ export class PaperDetector {
       signals.push('book_has_preface');
     }
     
-    // Back matter (Index, Appendix, Bibliography as section not references)
+    // Back matter - Index and Glossary (but not Appendix - common in papers)
+    // Must be at start of line
     const backMatterPatterns = [
-      /\bindex\b(?!\s+of\s+)/i,  // "Index" but not "index of"
-      /\bappendix\s+[a-z]/i,
-      /\bglossary\b/i,
+      /^index\b(?!\s+of\s+)/im,  // "Index" at start of line, not "index of"
+      /^glossary\b/im,
     ];
     
     for (const pattern of backMatterPatterns) {
