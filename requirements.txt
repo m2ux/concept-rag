@@ -1,0 +1,4 @@
+# Python dependencies for WordNet integration
+# Used by CI and development environments
+nltk>=3.8
+
