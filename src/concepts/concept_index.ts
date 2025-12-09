@@ -1,8 +1,11 @@
 import * as lancedb from "@lancedb/lancedb";
 import { Document } from "@langchain/core/documents";
 import { ConceptRecord, ConceptMetadata, ExtractedConcept } from "./types.js";
-import { createSimpleEmbedding } from "../lancedb/hybrid_search_client.js";
+import { SimpleEmbeddingService } from "../infrastructure/embeddings/simple-embedding-service.js";
 import { hashToId } from "../infrastructure/utils/hash.js";
+
+// Use singleton embedding service for concept index building
+const embeddingService = new SimpleEmbeddingService();
 
 /**
  * Builds the concept index from document metadata.
@@ -129,7 +132,7 @@ export class ConceptIndexBuilder {
                 related_concepts: [],
                 adjacent_ids: [],
                 related_ids: [],
-                embeddings: createSimpleEmbedding(conceptName),
+                embeddings: embeddingService.generateEmbedding(conceptName),
                 weight: 0
             });
         }

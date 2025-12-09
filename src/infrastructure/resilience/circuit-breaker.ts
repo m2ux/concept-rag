@@ -1,4 +1,5 @@
 import { CircuitBreakerOpenError } from './errors.js';
+import { ResilienceLogger, ConsoleLogger } from './logger.js';
 
 /**
  * Circuit breaker states following the standard state machine pattern.
@@ -139,18 +140,22 @@ export class CircuitBreaker {
   private totalFailures: number = 0;
   
   private readonly config: CircuitBreakerConfig;
+  private readonly logger: ResilienceLogger;
   
   /**
    * Creates a new circuit breaker instance.
    * 
    * @param name - Identifier for this circuit breaker (for logging/metrics)
    * @param config - Circuit breaker configuration
+   * @param logger - Optional logger (defaults to console)
    */
   constructor(
     private readonly name: string,
-    config: Partial<CircuitBreakerConfig> = {}
+    config: Partial<CircuitBreakerConfig> = {},
+    logger: ResilienceLogger = ConsoleLogger
   ) {
     this.config = { ...DEFAULT_CIRCUIT_BREAKER_CONFIG, ...config };
+    this.logger = logger;
   }
   
   /**
@@ -260,8 +265,12 @@ export class CircuitBreaker {
       this.successCount = 0;
     }
     
-    // Log state transition (using console for now, can be replaced with logger)
-    console.log(`Circuit breaker '${this.name}': ${oldState} → ${newState}`);
+    // Log state transition
+    this.logger.info(`Circuit breaker '${this.name}': ${oldState} → ${newState}`, {
+      circuitBreaker: this.name,
+      from: oldState,
+      to: newState,
+    });
   }
   
   /**
@@ -335,7 +344,10 @@ export class CircuitBreaker {
     this.successCount = 0;
     this.lastFailureTime = undefined;
     this.lastStateChange = Date.now();
-    console.log(`Circuit breaker '${this.name}' manually reset to CLOSED`);
+    this.logger.info(`Circuit breaker '${this.name}' manually reset to CLOSED`, {
+      circuitBreaker: this.name,
+      action: 'manual_reset',
+    });
   }
   
   /**

@@ -21,7 +21,7 @@ import type { Category } from '../../domain/models/category.js';
 import type { ICategoryIdCache, CategoryRepositoryForCache } from '../../domain/interfaces/caches/category-id-cache.js';
 
 export class CategoryIdCache implements ICategoryIdCache {
-  private static instance: CategoryIdCache;
+  private static instance: CategoryIdCache | undefined;
   
   // Core mappings
   private idToName: Map<number, string> = new Map();
@@ -36,16 +36,39 @@ export class CategoryIdCache implements ICategoryIdCache {
   
   private initialized = false;
   
-  private constructor() {}
+  /**
+   * Create a new CategoryIdCache instance.
+   * 
+   * For dependency injection, create instances directly:
+   * ```typescript
+   * const cache = new CategoryIdCache();
+   * await cache.initialize(categoryRepo);
+   * ```
+   * 
+   * For legacy singleton usage, use getInstance().
+   */
+  constructor() {}
   
   /**
-   * Get singleton instance
+   * Get singleton instance (legacy pattern).
+   * 
+   * @deprecated Prefer creating instances directly for better testability.
    */
   public static getInstance(): CategoryIdCache {
     if (!CategoryIdCache.instance) {
       CategoryIdCache.instance = new CategoryIdCache();
     }
     return CategoryIdCache.instance;
+  }
+  
+  /**
+   * Reset singleton instance (for testing).
+   */
+  public static resetInstance(): void {
+    if (CategoryIdCache.instance) {
+      CategoryIdCache.instance.clear();
+    }
+    CategoryIdCache.instance = undefined;
   }
   
   /**

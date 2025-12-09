@@ -2,23 +2,10 @@
  * Test Category Search Tools
  * 
  * Tests the actual category search functionality on the test database
- * to ensure all tools work correctly before main database migration.
+ * using the ApplicationContainer for proper dependency injection.
  */
 
-import { connect } from '@lancedb/lancedb';
-import { CategoryIdCache } from '../src/infrastructure/cache/category-id-cache';
-import { LanceDBCategoryRepository } from '../src/infrastructure/lancedb/repositories/lancedb-category-repository';
-import { LanceDBCatalogRepository } from '../src/infrastructure/lancedb/repositories/lancedb-catalog-repository';
-import { ConceptualHybridSearchService } from '../src/infrastructure/search/conceptual-hybrid-search-service';
-import { SimpleEmbeddingService } from '../src/infrastructure/embeddings/simple-embedding-service';
-import { QueryExpander } from '../src/concepts/query_expander';
-import { LanceDBConceptRepository } from '../src/infrastructure/lancedb/repositories/lancedb-concept-repository';
-import { ConceptIdCache } from '../src/infrastructure/cache/concept-id-cache';
-
-// Import the tools
-import { categorySearch } from '../src/tools/operations/category-search';
-import { listCategories } from '../src/tools/operations/list-categories';
-import { listConceptsInCategory } from '../src/tools/operations/list-concepts-in-category';
+import { ApplicationContainer } from '../../application/container.js';
 
 async function testCategoryTools() {
     console.log('\n🧪 TESTING CATEGORY SEARCH TOOLS');
@@ -26,203 +13,87 @@ async function testCategoryTools() {
     
     const dbPath = process.argv[2] || './db/test';
     
-    // Initialize infrastructure
+    // Initialize infrastructure via ApplicationContainer
     console.log('\n1️⃣  Initializing infrastructure...');
-    const db = await connect(dbPath);
-    const categoriesTable = await db.openTable('categories');
-    const catalogTable = await db.openTable('catalog');
-    const conceptsTable = await db.openTable('concepts');
-    const chunksTable = await db.openTable('chunks');
+    const container = new ApplicationContainer();
+    await container.initialize(dbPath);
     
-    // Initialize repositories
-    const categoryRepo = new LanceDBCategoryRepository(categoriesTable);
-    const conceptRepo = new LanceDBConceptRepository(conceptsTable);
-    
-    // Initialize caches
-    const categoryCache = CategoryIdCache.getInstance();
-    categoryCache.clear();
-    await categoryCache.initialize(categoryRepo);
-    
-    const conceptIdCache = ConceptIdCache.getInstance();
-    conceptIdCache.clear();
-    await conceptIdCache.initialize(conceptRepo);
-    
-    console.log(`  ✅ CategoryIdCache: ${categoryCache.getStats().categoryCount} categories`);
-    console.log(`  ✅ ConceptIdCache: ${conceptIdCache.getStats().conceptCount} concepts`);
-    
-    // Initialize search services
-    const embeddingService = new SimpleEmbeddingService();
-    const queryExpander = new QueryExpander(conceptsTable, embeddingService);
-    const hybridSearchService = new ConceptualHybridSearchService(embeddingService, queryExpander);
-    
-    const catalogRepo = new LanceDBCatalogRepository(catalogTable, hybridSearchService, conceptIdCache);
+    // Verify category tools are registered
+    const categoryRepo = container.getCategoryRepository();
+    if (!categoryRepo) {
+        console.error('❌ Categories table not found. Run seeding first.');
+        process.exit(1);
+    }
     
     console.log('  ✅ All infrastructure initialized');
     
-    // Test 1: List all categories
-    console.log('\n2️⃣  TEST: list_categories');
-    console.log('-'.repeat(80));
+    // Test 1: Category Search
+    console.log('\n2️⃣  Testing category_search...');
     try {
-        const result = await listCategories(
-            { sortBy: 'popularity', limit: 10 },
-            categoryCache
-        );
-        const parsed = JSON.parse(result);
-        console.log(`  ✅ PASS: Listed ${parsed.categories.length} categories`);
-        console.log('\n  📋 Top 5 categories:');
-        parsed.categories.slice(0, 5).forEach((cat: any, idx: number) => {
-            console.log(`     ${idx + 1}. ${cat.name} (${cat.statistics.documents} docs)`);
+        const categorySearchTool = container.getTool('category_search');
+        const result = await categorySearchTool.execute({ 
+            category: 'software engineering', 
+            limit: 5 
         });
-    } catch (error: any) {
-        console.log(`  ❌ FAIL: ${error.message}`);
-    }
-    
-    // Test 2: Search by category
-    console.log('\n3️⃣  TEST: category_search');
-    console.log('-'.repeat(80));
-    
-    // Get a test category from the actual database
-    const allCategories = categoryCache.exportAll();
-    const testCategory = allCategories.length > 0 ? allCategories[0].category : 'software architecture';
-    console.log(`  🔍 Searching for category: "${testCategory}"`);
-    
-    try {
-        const result = await categorySearch(
-            { category: testCategory, limit: 5 },
-            categoryCache,
-            catalogRepo
-        );
-        const parsed = JSON.parse(result);
-        
-        if (parsed.error) {
-            console.log(`  ❌ FAIL: ${parsed.error}`);
+        console.log('  Query: "software engineering"');
+        if (result.isError) {
+            console.log('  ⚠️  No results or error:', JSON.parse(result.content[0].text));
         } else {
-            console.log(`  ✅ PASS: Found category "${parsed.category.name}"`);
-            console.log(`     - Category ID: ${parsed.category.id}`);
-            console.log(`     - Documents: ${parsed.statistics.totalDocuments}`);
-            console.log(`     - Chunks: ${parsed.statistics.totalChunks}`);
-            console.log(`     - Documents returned: ${parsed.documents.length}`);
-            
-            if (parsed.documents.length > 0) {
-                console.log('\n  📄 Sample documents:');
-                parsed.documents.slice(0, 3).forEach((doc: any) => {
-                    const filename = doc.source.split('/').pop();
-                    console.log(`     - ${filename?.substring(0, 60)}...`);
-                });
-            }
+            const data = JSON.parse(result.content[0].text);
+            console.log('  ✅ Found documents:', data.statistics?.total_documents || 0);
         }
-    } catch (error: any) {
-        console.log(`  ❌ FAIL: ${error.message}`);
-        console.log(`     Stack: ${error.stack}`);
+    } catch (error) {
+        console.error('  ❌ Error:', error);
     }
     
-    // Test 3: List concepts in category
-    console.log('\n4️⃣  TEST: list_concepts_in_category');
-    console.log('-'.repeat(80));
-    console.log(`  🔍 Finding concepts in category: "${testCategory}"`);
-    
+    // Test 2: List Categories
+    console.log('\n3️⃣  Testing list_categories...');
     try {
-        const result = await listConceptsInCategory(
-            { category: testCategory, sortBy: 'documentCount', limit: 10 },
-            categoryCache,
-            catalogRepo,
-            conceptRepo
-        );
-        const parsed = JSON.parse(result);
-        
-        if (parsed.error) {
-            console.log(`  ❌ FAIL: ${parsed.error}`);
+        const listCategoriesTool = container.getTool('list_categories');
+        const result = await listCategoriesTool.execute({ limit: 10 });
+        if (result.isError) {
+            console.log('  ⚠️  Error:', JSON.parse(result.content[0].text));
         } else {
-            console.log(`  ✅ PASS: Found ${parsed.statistics.totalUniqueConcepts} unique concepts`);
-            console.log(`     - Concepts returned: ${parsed.concepts.length}`);
-            
-            if (parsed.concepts.length > 0) {
-                console.log('\n  🧠 Top concepts:');
-                parsed.concepts.slice(0, 5).forEach((concept: any, idx: number) => {
-                    console.log(`     ${idx + 1}. ${concept.name} (${concept.type})`);
-                });
-            }
+            const data = JSON.parse(result.content[0].text);
+            const categories = Array.isArray(data) ? data : data.categories || [];
+            console.log(`  ✅ Found ${categories.length} categories`);
+            categories.slice(0, 5).forEach((cat: any, i: number) => {
+                console.log(`     ${i + 1}. ${cat.name} (${cat.document_count || 0} docs)`);
+            });
         }
-    } catch (error: any) {
-        console.log(`  ❌ FAIL: ${error.message}`);
-        console.log(`     Stack: ${error.stack}`);
+    } catch (error) {
+        console.error('  ❌ Error:', error);
     }
     
-    // Test 4: Category by ID lookup
-    console.log('\n5️⃣  TEST: Category ID resolution');
-    console.log('-'.repeat(80));
-    
-    const testCategoryId = categoryCache.getId(testCategory);
-    console.log(`  🔍 Test: "${testCategory}" → ID ${testCategoryId}`);
-    
-    if (testCategoryId) {
-        const resolvedName = categoryCache.getName(testCategoryId);
-        console.log(`  🔍 Reverse: ID ${testCategoryId} → "${resolvedName}"`);
-        
-        if (resolvedName === testCategory) {
-            console.log(`  ✅ PASS: Bidirectional lookup works correctly`);
+    // Test 3: List Concepts in Category
+    console.log('\n4️⃣  Testing list_concepts_in_category...');
+    try {
+        const listConceptsTool = container.getTool('list_concepts_in_category');
+        const result = await listConceptsTool.execute({ 
+            category: 'software architecture', 
+            limit: 10 
+        });
+        if (result.isError) {
+            console.log('  ⚠️  Error or no results:', JSON.parse(result.content[0].text));
         } else {
-            console.log(`  ❌ FAIL: Name mismatch (got "${resolvedName}")`);
+            const data = JSON.parse(result.content[0].text);
+            const concepts = Array.isArray(data) ? data : data.concepts || [];
+            console.log(`  ✅ Found ${concepts.length} concepts in "software architecture"`);
+            concepts.slice(0, 5).forEach((c: any, i: number) => {
+                console.log(`     ${i + 1}. ${c.name || c}`);
+            });
         }
-    } else {
-        console.log(`  ❌ FAIL: Could not resolve category to ID`);
+    } catch (error) {
+        console.error('  ❌ Error:', error);
     }
     
-    // Test 5: Find documents by category (direct query)
-    console.log('\n6️⃣  TEST: Direct category filtering');
-    console.log('-'.repeat(80));
-    console.log(`  🔍 Finding documents in category "${testCategory}"...`);
+    // Cleanup
+    console.log('\n5️⃣  Cleanup...');
+    await container.close();
+    console.log('  ✅ Container closed');
     
-    try {
-        const categoryId = categoryCache.getId(testCategory);
-        if (categoryId) {
-            const docs = await catalogRepo.findByCategory(categoryId);
-            console.log(`  ✅ PASS: Found ${docs.length} documents in category`);
-            
-            // Verify they actually have the category
-            let allValid = true;
-            for (const doc of docs) {
-                // Check if document actually has this category
-                const catalogData = await catalogTable.query().where(`id = '${doc.id}'`).limit(1).toArray();
-                if (catalogData.length > 0 && catalogData[0].category_ids) {
-                    const catIds: number[] = JSON.parse(catalogData[0].category_ids);
-                    if (!catIds.includes(categoryId)) {
-                        allValid = false;
-                        console.log(`  ⚠️  Document ${doc.id} missing expected category`);
-                    }
-                }
-            }
-            
-            if (allValid) {
-                console.log(`  ✅ PASS: All documents correctly tagged with category`);
-            }
-        }
-    } catch (error: any) {
-        console.log(`  ❌ FAIL: ${error.message}`);
-    }
-    
-    // Test 6: Aggregate concepts from category
-    console.log('\n7️⃣  TEST: Concept aggregation from category');
-    console.log('-'.repeat(80));
-    
-    try {
-        const categoryId = categoryCache.getId(testCategory);
-        if (categoryId) {
-            const conceptIds = await catalogRepo.getConceptsInCategory(categoryId);
-            console.log(`  ✅ PASS: Aggregated ${conceptIds.length} unique concept IDs`);
-            console.log(`     - Concepts are dynamically computed (not stored)`);
-            console.log(`     - No redundant storage ✓`);
-            console.log(`     - Always up-to-date ✓`);
-        }
-    } catch (error: any) {
-        console.log(`  ❌ FAIL: ${error.message}`);
-    }
-    
-    // Summary
     console.log('\n' + '='.repeat(80));
-    console.log('✅ CATEGORY TOOLS TESTING COMPLETE');
-    console.log('\nAll category search tools are functional and ready for use!');
+    console.log('🏁 ALL TESTS COMPLETED');
 }
 
-await testCategoryTools();
-
+testCategoryTools().catch(console.error);

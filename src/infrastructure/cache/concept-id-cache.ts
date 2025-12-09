@@ -38,10 +38,11 @@ import type { IConceptIdCache, ConceptRepositoryForCache } from '../../domain/in
 
 /**
  * In-memory cache for bidirectional concept ID ↔ name mapping.
- * Singleton pattern ensures single source of truth.
+ * 
+ * Supports both instance-based (for DI) and singleton (legacy) usage patterns.
  */
 export class ConceptIdCache implements IConceptIdCache {
-  private static instance: ConceptIdCache;
+  private static instance: ConceptIdCache | undefined;
   
   private idToName = new Map<string, string>();
   private nameToId = new Map<string, string>();
@@ -50,18 +51,38 @@ export class ConceptIdCache implements IConceptIdCache {
   private lastUpdated?: Date;
 
   /**
-   * Private constructor - use getInstance() instead
+   * Create a new ConceptIdCache instance.
+   * 
+   * For dependency injection, create instances directly:
+   * ```typescript
+   * const cache = new ConceptIdCache();
+   * await cache.initialize(conceptRepo);
+   * ```
+   * 
+   * For legacy singleton usage, use getInstance().
    */
-  private constructor() {}
+  constructor() {}
 
   /**
-   * Get singleton instance
+   * Get singleton instance (legacy pattern).
+   * 
+   * @deprecated Prefer creating instances directly for better testability.
    */
   public static getInstance(): ConceptIdCache {
     if (!ConceptIdCache.instance) {
       ConceptIdCache.instance = new ConceptIdCache();
     }
     return ConceptIdCache.instance;
+  }
+  
+  /**
+   * Reset singleton instance (for testing).
+   */
+  public static resetInstance(): void {
+    if (ConceptIdCache.instance) {
+      ConceptIdCache.instance.clear();
+    }
+    ConceptIdCache.instance = undefined;
   }
 
   /**

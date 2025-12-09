@@ -398,20 +398,23 @@ describe('CircuitBreaker', () => {
         ).rejects.toThrow();
       }
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("test-service': closed → open")
+        expect.stringContaining("test-service': closed → open"),
+        expect.objectContaining({ circuitBreaker: 'test-service', from: 'closed', to: 'open' })
       );
       
       // OPEN → HALF-OPEN
       await vi.advanceTimersByTimeAsync(1001);
       await breaker.execute(() => Promise.resolve('success'));
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("test-service': open → half-open")
+        expect.stringContaining("test-service': open → half-open"),
+        expect.objectContaining({ circuitBreaker: 'test-service', from: 'open', to: 'half-open' })
       );
       
       // HALF-OPEN → CLOSED
       await breaker.execute(() => Promise.resolve('success'));
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("test-service': half-open → closed")
+        expect.stringContaining("test-service': half-open → closed"),
+        expect.objectContaining({ circuitBreaker: 'test-service', from: 'half-open', to: 'closed' })
       );
     });
     
@@ -519,7 +522,8 @@ describe('CircuitBreaker', () => {
       breaker.reset();
       
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("'test-service' manually reset to CLOSED")
+        expect.stringContaining("'test-service' manually reset to CLOSED"),
+        expect.objectContaining({ circuitBreaker: 'test-service', action: 'manual_reset' })
       );
     });
   });
