@@ -36,20 +36,34 @@ import { CatalogRepository } from '../../domain/interfaces/repositories/catalog-
 
 /**
  * In-memory cache for catalog ID → source path mapping.
- * Singleton pattern ensures single source of truth.
+ * 
+ * Supports both instance-based (for DI) and singleton (legacy) usage patterns.
  */
 export class CatalogSourceCache {
-  private static instance: CatalogSourceCache;
+  private static instance: CatalogSourceCache | undefined;
   
   private idToSource = new Map<number, string>();
   private initialized = false;
   private catalogCount = 0;
   private lastUpdated?: Date;
 
-  private constructor() {}
+  /**
+   * Create a new CatalogSourceCache instance.
+   * 
+   * For dependency injection, create instances directly:
+   * ```typescript
+   * const cache = new CatalogSourceCache();
+   * await cache.initialize(catalogRepo);
+   * ```
+   * 
+   * For legacy singleton usage, use getInstance().
+   */
+  constructor() {}
 
   /**
-   * Get singleton instance
+   * Get singleton instance (legacy pattern).
+   * 
+   * @deprecated Prefer creating instances directly for better testability.
    */
   public static getInstance(): CatalogSourceCache {
     if (!CatalogSourceCache.instance) {
