@@ -1,4 +1,5 @@
 import type { CircuitBreaker } from './circuit-breaker.js';
+import { ResilienceLogger, ConsoleLogger } from './logger.js';
 
 /**
  * Strategy for graceful degradation with fallback.
@@ -136,14 +137,20 @@ export class GracefulDegradation {
   private degradedModeActivations: number = 0;
   
   private readonly config: GracefulDegradationConfig;
+  private readonly logger: ResilienceLogger;
   
   /**
    * Creates a new graceful degradation instance.
    * 
    * @param config - Degradation configuration
+   * @param logger - Optional logger (defaults to console)
    */
-  constructor(config: Partial<GracefulDegradationConfig> = {}) {
+  constructor(
+    config: Partial<GracefulDegradationConfig> = {},
+    logger: ResilienceLogger = ConsoleLogger
+  ) {
     this.config = { ...DEFAULT_GRACEFUL_DEGRADATION_CONFIG, ...config };
+    this.logger = logger;
   }
   
   /**
@@ -171,7 +178,7 @@ export class GracefulDegradation {
       
       const reason = 'Proactive degradation (shouldDegrade returned true)';
       this.config.onDegradation?.(reason);
-      console.log(`Graceful degradation: ${reason}`);
+      this.logger.info(`Graceful degradation: ${reason}`, { mode: 'proactive' });
       
       return strategy.fallback();
     }
@@ -189,10 +196,10 @@ export class GracefulDegradation {
         this.fallbackUsed++;
         
         this.config.onFallback?.(error as Error);
-        console.log(
-          `Graceful degradation: Primary operation failed, using fallback`,
-          error
-        );
+        this.logger.info(`Graceful degradation: Primary operation failed, using fallback`, {
+          mode: 'reactive',
+          error: error instanceof Error ? error.message : String(error),
+        });
         
         return strategy.fallback();
       }
@@ -380,11 +387,16 @@ export class CommonFallbacks {
    * 
    * @param staleData - The stale data to return
    * @param warningMessage - Optional warning message
+   * @param logger - Optional logger (defaults to console)
    * @returns The stale data
    */
-  static staleData<T>(staleData: T, warningMessage?: string): Promise<T> {
+  static staleData<T>(
+    staleData: T,
+    warningMessage?: string,
+    logger: ResilienceLogger = ConsoleLogger
+  ): Promise<T> {
     if (warningMessage) {
-      console.warn(`Using stale data: ${warningMessage}`);
+      logger.warn(`Using stale data: ${warningMessage}`, { stale: true });
     }
     return Promise.resolve(staleData);
   }

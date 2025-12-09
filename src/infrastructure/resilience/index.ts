@@ -31,3 +31,7 @@ export {
   BulkheadRejectionError,
   DegradedModeError,
 } from './errors.js';
+
+// Logging
+export { ConsoleLogger, NoopLogger } from './logger.js';
+export type { ResilienceLogger } from './logger.js';

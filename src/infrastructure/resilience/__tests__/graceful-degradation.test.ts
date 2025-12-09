@@ -76,7 +76,7 @@ describe('GracefulDegradation', () => {
       
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('Primary operation failed, using fallback'),
-        expect.any(Error)
+        expect.objectContaining({ mode: 'reactive' })
       );
     });
     
@@ -141,7 +141,8 @@ describe('GracefulDegradation', () => {
       });
       
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Proactive degradation')
+        expect.stringContaining('Proactive degradation'),
+        expect.objectContaining({ mode: 'proactive' })
       );
     });
     
@@ -506,7 +507,8 @@ describe('GracefulDegradation', () => {
         await CommonFallbacks.staleData('data', 'This is stale');
         
         expect(warnSpy).toHaveBeenCalledWith(
-          expect.stringContaining('This is stale')
+          expect.stringContaining('This is stale'),
+          expect.objectContaining({ stale: true })
         );
         
         warnSpy.mockRestore();
