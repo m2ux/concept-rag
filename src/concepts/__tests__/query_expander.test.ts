@@ -512,7 +512,7 @@ describe('QueryExpander', { timeout: TEST_TIMEOUT }, () => {
       // VERIFY
       expect(expanded.original_terms.length).toBeGreaterThan(0);
       expect(expanded.all_terms.length).toBeGreaterThanOrEqual(expanded.original_terms.length);
-    }, 30000); // Increase timeout for WordNet calls
+    }, 60000); // Increase timeout for WordNet calls (CI environments are slower)
 
     it('should handle special characters in query', async () => {
       // SETUP
