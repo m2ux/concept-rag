@@ -8,79 +8,89 @@ Proposed
 
 When seeding the database, the system performs expensive LLM operations (concept extraction, summary generation) for each document. Currently, these results are held only in memory until the final database write stage.
 
-This creates a significant risk: if any downstream stage fails (e.g., LanceDB schema error, disk full, connection timeout), all LLM processing work is lost. In a real incident, 212 documents were processed over 2h 22m with 492 API requests, but a schema bug in `category_ids` caused the LanceDB write to fail, losing all LLM work.
+### Technical Forces
 
-The existing `SeedingCheckpoint` class only tracks which files have been processed (a boolean flag), not the actual LLM results. This means "resume" still requires re-running all LLM calls.
+- LLM extraction takes 2-10 seconds per document
+- Memory usage grows linearly with batch size
+- LanceDB writes are atomic but can fail on schema issues
+- The existing `SeedingCheckpoint` class only tracks which files have been processed (a boolean flag), not the actual LLM results
+
+### Business Forces
+
+- A real incident: 212 documents processed over 2h 22m with 492 API requests, but a schema bug in `category_ids` caused the LanceDB write to fail, losing all LLM work
+- Re-processing after failure doubles API costs and delays
+- Production seeding represents significant time investment
+
+### Operational Forces
+
+- Production seeding runs are scheduled overnight
+- Failures require manual intervention to resume
+- Current "resume" still requires re-running all LLM calls
+
+## Decision Drivers
+
+1. **Zero data loss** - LLM results must survive any downstream failure
+2. **Fast resume** - Re-running should skip already-processed documents
+3. **Minimal complexity** - Solution should be simple to implement and maintain
+4. **No external dependencies** - Avoid adding new infrastructure requirements (Redis, databases)
+
+## Considered Options
+
+### Option 1: File-Based Stage Cache (Selected)
+
+Persist LLM results to individual JSON files on disk immediately after extraction.
+
+**Pros:**
+- Simple implementation using Node.js filesystem APIs
+- No external dependencies
+- Files survive process crashes and can be inspected manually
+- Natural file-per-document mapping matches processing model
+
+**Cons:**
+- Disk I/O overhead (minimal for JSON writes)
+- Requires disk space (~1MB per document average)
+- Manual cleanup needed for stale cache files
+
+### Option 2: SQLite Cache
+
+Use an embedded SQLite database to store LLM results.
+
+**Pros:**
+- ACID guarantees
+- Efficient queries for cache stats
+- Single file for all cache data
+
+**Cons:**
+- Additional dependency (better-sqlite3)
+- More complex schema management
+- Overkill for simple key-value storage pattern
+
+### Option 3: In-Memory Cache with Periodic Snapshots
+
+Keep results in memory but periodically write snapshots to disk.
+
+**Pros:**
+- Faster access during processing
+- Reduced disk I/O
+
+**Cons:**
+- Data loss between snapshots if process crashes
+- More complex recovery logic
+- Doesn't solve the core problem of downstream failures
 
 ## Decision
 
-Implement a **Stage Cache** system that persists LLM results to disk immediately after extraction, before any database operations.
+Implement **Option 1: File-Based Stage Cache** because it provides zero data loss with minimal complexity and no external dependencies.
 
-### Design Principles
+The stage cache persists LLM results to disk immediately after extraction, before any database operations.
+
+### Key Design Choices
 
 1. **Immediate persistence**: Write LLM results to disk right after successful extraction
 2. **File-per-document pattern**: Store each document's results in `{cacheDir}/{hash}.json`
 3. **Atomic writes**: Use temp file + rename pattern to prevent corruption
 4. **TTL support**: Allow stale cache cleanup (default: 7 days)
 5. **Cache-as-checkpoint**: Cache presence indicates "was processed" - no separate tracking needed
-
-### Interface
-
-```typescript
-interface StageCacheOptions {
-    cacheDir: string;
-    ttlMs?: number;
-}
-
-interface CachedDocumentData {
-    hash: string;
-    source: string;
-    processedAt: string;
-    concepts?: {
-        primary_concepts: ExtractedConcept[];
-        technical_terms: string[];
-        related_concepts: string[];
-        categories: string[];
-    };
-    summary?: string;
-    metadata?: {
-        title: string;
-        author: string;
-        year: number;
-        publisher: string;
-        isbn: string;
-    };
-}
-
-class StageCache {
-    constructor(options: StageCacheOptions);
-    async get(hash: string): Promise<CachedDocumentData | null>;
-    async set(hash: string, data: CachedDocumentData): Promise<void>;
-    async has(hash: string): Promise<boolean>;
-    async delete(hash: string): Promise<void>;
-    async clear(): Promise<void>;
-    async getStats(): Promise<{ count: number; totalSize: number }>;
-    async cleanExpired(): Promise<number>;
-}
-```
-
-### Processing Flow
-
-```
-1. Load documents from filesystem
-2. For each document:
-   ├─ Check cache for existing results
-   │  (if found, use cached data - no LLM calls)
-   │
-   └─ If not cached:
-      - Extract concepts (LLM)
-      - Generate summary (LLM)
-      - Write to stage cache IMMEDIATELY
-3. Load all results (cached + newly processed)
-4. Write to LanceDB (if fails, cache preserved)
-5. Create downstream tables (if fails, cache preserved)
-6. On SUCCESS: optionally clear cache
-```
 
 ### CLI Flags
 
@@ -109,6 +119,23 @@ class StageCache {
 - Deprecates existing `SeedingCheckpoint` class (can be removed after validation)
 - Cache directory added to `.gitignore`
 
+## Confirmation
+
+The decision will be validated through:
+
+1. **Unit tests**: Verify `StageCache` CRUD operations, atomic writes, and TTL expiration
+2. **Integration tests**: Simulate failure scenarios and verify resume behavior
+3. **Manual validation**: Process sample documents, kill process mid-run, verify resume
+
+**Success criteria:**
+
+| Metric | Target |
+|--------|--------|
+| Resume time (200 docs cached) | < 30 seconds |
+| Cache overhead per document | < 100ms |
+| Data loss on any failure | 0% |
+| Test coverage (new code) | 100% |
+
 ## Implementation
 
 ### Files to Create
@@ -124,5 +151,4 @@ class StageCache {
 
 ## References
 
-- Planning documents: `.ai/planning/2025-11-29-stage-caching/`
-- Existing checkpoint: `src/infrastructure/checkpoint/seeding-checkpoint.ts`
+- Existing checkpoint implementation: `src/infrastructure/checkpoint/seeding-checkpoint.ts`
