@@ -9,27 +9,51 @@ The Stage Cache stores the results of expensive LLM operations (concept extracti
 ## Directory Location
 
 ```
-<database-dir>/.stage-cache/
+<database-dir>/.stage-cache/<collection-hash>/
 ```
 
 **Examples:**
-- Default: `~/.concept_rag/.stage-cache/`
-- Custom: `/path/to/db/.stage-cache/`
+- Default: `~/.concept_rag/.stage-cache/a1b2c3d4e5f67890/`
+- Custom: `/path/to/db/.stage-cache/a1b2c3d4e5f67890/`
 
 The cache directory is created automatically when the first document is cached.
+
+## Collection-Based Organization
+
+Caches are organized by **collection hash**, which is computed from the content hashes of all files at the source path. This provides:
+
+- **Source path independence**: Renaming a folder doesn't invalidate the cache
+- **Automatic cleanup**: When all documents in a collection are seeded, the cache is removed
+- **Isolation**: Different source paths maintain independent caches
+
+### Collection Hash Computation
+
+1. Scan source directory for all document files (recursive)
+2. Compute SHA-256 hash of each file's content
+3. Sort all hashes alphabetically
+4. Compute SHA-256 of the joined hashes
+5. Use first 16 characters as collection folder name
+
+**Example:**
+```
+Files: doc1.pdf (hash: abc...), doc2.pdf (hash: xyz...)
+Sorted: [abc..., xyz...]
+Collection hash: a1b2c3d4e5f67890
+```
 
 ## File Structure
 
 ```
 <database-dir>/
-├── catalog.lance/          # LanceDB catalog table
-├── chunks.lance/           # LanceDB chunks table
-├── concepts.lance/         # LanceDB concepts table
-├── .seeding-checkpoint.json  # Checkpoint for resumable seeding
-└── .stage-cache/           # Stage cache directory
-    ├── <hash1>.json        # Cached LLM results for document 1
-    ├── <hash2>.json        # Cached LLM results for document 2
-    └── ...
+├── catalog.lance/              # LanceDB catalog table
+├── chunks.lance/               # LanceDB chunks table
+├── concepts.lance/             # LanceDB concepts table
+├── .seeding-checkpoint.json    # Checkpoint for resumable seeding
+└── .stage-cache/               # Stage cache base directory
+    └── a1b2c3d4e5f67890/       # Collection-specific cache folder
+        ├── <file-hash-1>.json  # Cached LLM results for document 1
+        ├── <file-hash-2>.json  # Cached LLM results for document 2
+        └── ...
 ```
 
 ### File Naming
@@ -166,6 +190,24 @@ Cache entries expire based on Time-To-Live (TTL):
 - Expiration checked via file modification time
 - Expired entries are not used and can be cleaned
 
+### Automatic Cleanup
+
+At the end of a successful seeding run, the cache is automatically cleaned up when:
+
+1. All documents from the source path are present in the catalog table
+2. The seeding completed without fatal errors
+
+**Cleanup behavior:**
+```
+🗑️  All documents seeded - cleaning up collection cache (a1b2c3d4e5f67890)...
+   ✅ Removed collection cache
+```
+
+This ensures:
+- No stale caches accumulate over time
+- Disk space is reclaimed after successful seeding
+- Interrupted runs preserve cache for resume
+
 ## CLI Options
 
 | Flag | Description |
@@ -197,3 +239,4 @@ This ensures cache files are never partially written, even if the process is kil
 
 - [ADR-0048: Stage Caching](architecture/adr0048-stage-caching.md) - Architecture decision record
 - [Database Schema](database-schema.md) - LanceDB table structures
+

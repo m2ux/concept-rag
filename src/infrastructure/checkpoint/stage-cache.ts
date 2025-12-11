@@ -25,6 +25,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 
 /**
  * Extracted concept from LLM.
@@ -82,11 +83,14 @@ export interface CachedDocumentData {
  * Options for StageCache initialization.
  */
 export interface StageCacheOptions {
-    /** Directory to store cache files */
+    /** Base directory to store cache files */
     cacheDir: string;
 
     /** Optional TTL in milliseconds for cache entries (default: 7 days) */
     ttlMs?: number;
+
+    /** Optional collection hash for source-path organization */
+    collectionHash?: string;
 }
 
 /**
@@ -111,9 +115,12 @@ export interface StageCacheStats {
  * - Atomic writes (write to temp file, then rename) to prevent corruption
  * - TTL support for automatic cleanup of stale entries
  * - Lazy initialization (creates directory on first write)
+ * - Collection-based organization: caches are organized by source collection hash
  */
 export class StageCache {
-    private cacheDir: string;
+    private baseCacheDir: string;
+    private collectionHash: string | null;
+    private effectiveCacheDir: string;
     private ttlMs: number;
     private initialized: boolean = false;
 
@@ -124,8 +131,14 @@ export class StageCache {
     static readonly DEFAULT_DIRNAME = '.stage-cache';
 
     constructor(options: StageCacheOptions) {
-        this.cacheDir = options.cacheDir;
+        this.baseCacheDir = options.cacheDir;
+        this.collectionHash = options.collectionHash ?? null;
         this.ttlMs = options.ttlMs ?? StageCache.DEFAULT_TTL_MS;
+        
+        // Effective cache dir includes collection hash subdirectory if provided
+        this.effectiveCacheDir = this.collectionHash 
+            ? path.join(this.baseCacheDir, this.collectionHash)
+            : this.baseCacheDir;
     }
 
     /**
@@ -137,7 +150,7 @@ export class StageCache {
         }
 
         try {
-            await fs.promises.mkdir(this.cacheDir, { recursive: true });
+            await fs.promises.mkdir(this.effectiveCacheDir, { recursive: true });
             this.initialized = true;
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
@@ -149,7 +162,7 @@ export class StageCache {
      * Gets the file path for a given hash.
      */
     private getFilePath(hash: string): string {
-        return path.join(this.cacheDir, `${hash}.json`);
+        return path.join(this.effectiveCacheDir, `${hash}.json`);
     }
 
     /**
@@ -251,7 +264,7 @@ export class StageCache {
     }
 
     /**
-     * Clears all cache entries.
+     * Clears all cache entries in the current collection.
      *
      * @returns Number of entries deleted
      */
@@ -259,12 +272,12 @@ export class StageCache {
         let deleted = 0;
 
         try {
-            const files = await fs.promises.readdir(this.cacheDir);
+            const files = await fs.promises.readdir(this.effectiveCacheDir);
             const jsonFiles = files.filter(f => f.endsWith('.json'));
 
             for (const file of jsonFiles) {
                 try {
-                    await fs.promises.unlink(path.join(this.cacheDir, file));
+                    await fs.promises.unlink(path.join(this.effectiveCacheDir, file));
                     deleted++;
                 } catch {
                     // Ignore individual file errors
@@ -281,7 +294,7 @@ export class StageCache {
     }
 
     /**
-     * Gets cache statistics.
+     * Gets cache statistics for the current collection.
      */
     async getStats(): Promise<StageCacheStats> {
         let count = 0;
@@ -289,12 +302,12 @@ export class StageCache {
         let expiredCount = 0;
 
         try {
-            const files = await fs.promises.readdir(this.cacheDir);
+            const files = await fs.promises.readdir(this.effectiveCacheDir);
             const jsonFiles = files.filter(f => f.endsWith('.json'));
 
             for (const file of jsonFiles) {
                 try {
-                    const filePath = path.join(this.cacheDir, file);
+                    const filePath = path.join(this.effectiveCacheDir, file);
                     const stat = await fs.promises.stat(filePath);
                     const age = Date.now() - stat.mtimeMs;
 
@@ -319,7 +332,7 @@ export class StageCache {
     }
 
     /**
-     * Removes expired cache entries.
+     * Removes expired cache entries from the current collection.
      *
      * @returns Number of expired entries deleted
      */
@@ -327,12 +340,12 @@ export class StageCache {
         let deleted = 0;
 
         try {
-            const files = await fs.promises.readdir(this.cacheDir);
+            const files = await fs.promises.readdir(this.effectiveCacheDir);
             const jsonFiles = files.filter(f => f.endsWith('.json'));
 
             for (const file of jsonFiles) {
                 try {
-                    const filePath = path.join(this.cacheDir, file);
+                    const filePath = path.join(this.effectiveCacheDir, file);
                     const stat = await fs.promises.stat(filePath);
                     const age = Date.now() - stat.mtimeMs;
 
@@ -355,7 +368,7 @@ export class StageCache {
     }
 
     /**
-     * Lists all cached document hashes (non-expired only).
+     * Lists all cached document hashes (non-expired only) in the current collection.
      *
      * @returns Array of document hashes
      */
@@ -363,12 +376,12 @@ export class StageCache {
         const hashes: string[] = [];
 
         try {
-            const files = await fs.promises.readdir(this.cacheDir);
+            const files = await fs.promises.readdir(this.effectiveCacheDir);
             const jsonFiles = files.filter(f => f.endsWith('.json'));
 
             for (const file of jsonFiles) {
                 try {
-                    const filePath = path.join(this.cacheDir, file);
+                    const filePath = path.join(this.effectiveCacheDir, file);
                     const stat = await fs.promises.stat(filePath);
                     const age = Date.now() - stat.mtimeMs;
 
@@ -391,10 +404,50 @@ export class StageCache {
     }
 
     /**
-     * Gets the cache directory path.
+     * Gets the effective cache directory path (includes collection subdirectory if set).
      */
     getCacheDir(): string {
-        return this.cacheDir;
+        return this.effectiveCacheDir;
+    }
+
+    /**
+     * Gets the base cache directory path (without collection subdirectory).
+     */
+    getBaseCacheDir(): string {
+        return this.baseCacheDir;
+    }
+
+    /**
+     * Gets the collection hash, if set.
+     */
+    getCollectionHash(): string | null {
+        return this.collectionHash;
+    }
+
+    /**
+     * Removes the entire collection cache directory.
+     * Only call this when all documents in the collection are fully seeded.
+     *
+     * @returns true if directory was removed, false if it didn't exist
+     */
+    async removeCollectionCache(): Promise<boolean> {
+        if (!this.collectionHash) {
+            // No collection hash - don't remove base cache
+            return false;
+        }
+
+        try {
+            // First clear all files
+            await this.clear();
+            // Then remove the directory itself
+            await fs.promises.rmdir(this.effectiveCacheDir);
+            return true;
+        } catch (error: unknown) {
+            if (error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+                return false;
+            }
+            throw error;
+        }
     }
 
     /**
@@ -412,6 +465,23 @@ export class StageCache {
     }
 
     /**
+     * Computes a collection hash from an array of file hashes.
+     * The hash is deterministic: same file hashes (regardless of order) produce same result.
+     *
+     * @param fileHashes Array of SHA-256 file content hashes
+     * @returns First 16 characters of SHA-256 hash of sorted joined hashes
+     */
+    static computeCollectionHash(fileHashes: string[]): string {
+        // Sort for deterministic ordering
+        const sorted = [...fileHashes].sort();
+        // Join and hash
+        const combined = sorted.join('');
+        const hash = crypto.createHash('sha256').update(combined).digest('hex');
+        // Return first 16 chars for reasonable folder name
+        return hash.slice(0, 16);
+    }
+
+    /**
      * Factory method to create and initialize a cache.
      */
     static async create(options: StageCacheOptions): Promise<StageCache> {
@@ -420,3 +490,4 @@ export class StageCache {
         return cache;
     }
 }
+

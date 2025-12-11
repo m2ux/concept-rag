@@ -384,12 +384,46 @@ function detectAndExtractPaperMetadata(
     };
 }
 
+/**
+ * Discovers all document files and computes their content hashes.
+ * Used to compute collection hash for source-path-organized caching.
+ *
+ * @param filesDir Source directory to scan
+ * @returns Object with documentFiles array and fileHashes map
+ */
+async function discoverDocumentsWithHashes(filesDir: string): Promise<{
+    documentFiles: string[];
+    fileHashes: Map<string, string>;
+}> {
+    const loaderFactory = new DocumentLoaderFactory();
+    loaderFactory.registerLoader(new PDFDocumentLoader());
+    loaderFactory.registerLoader(new EPUBDocumentLoader());
+    
+    const supportedExtensions = loaderFactory.getSupportedExtensions();
+    const documentFiles = await findDocumentFilesRecursively(filesDir, supportedExtensions);
+    
+    const fileHashes = new Map<string, string>();
+    
+    for (const docFile of documentFiles) {
+        try {
+            const fileContent = await fs.promises.readFile(docFile);
+            const hash = crypto.createHash('sha256').update(fileContent).digest('hex');
+            fileHashes.set(docFile, hash);
+        } catch {
+            // If we can't read the file, skip it (will be handled during loading)
+        }
+    }
+    
+    return { documentFiles, fileHashes };
+}
+
 async function loadDocumentsWithErrorHandling(
     filesDir: string, 
     catalogTable: lancedb.Table | null, 
     chunksTable: lancedb.Table | null,
     skipExistsCheck: boolean,
-    checkpoint?: SeedingCheckpoint
+    checkpoint?: SeedingCheckpoint,
+    precomputedHashes?: Map<string, string>
 ) {
     const documents: Document[] = [];
     const failedFiles: string[] = [];
@@ -429,13 +463,15 @@ async function loadDocumentsWithErrorHandling(
         documentLoop: for (const docFile of documentFiles) {
             const relativePath = path.relative(filesDir, docFile);
             
-            // Calculate hash first (available for all cases)
-            let hash = 'unknown';
-            try {
-                const fileContent = await fs.promises.readFile(docFile);
-                hash = crypto.createHash('sha256').update(fileContent).digest('hex');
-            } catch (hashError) {
-                // If we can't read the file for hashing, we'll use 'unknown'
+            // Get hash from precomputed map or calculate it
+            let hash = precomputedHashes?.get(docFile) ?? 'unknown';
+            if (hash === 'unknown') {
+                try {
+                    const fileContent = await fs.promises.readFile(docFile);
+                    hash = crypto.createHash('sha256').update(fileContent).digest('hex');
+                } catch (hashError) {
+                    // If we can't read the file for hashing, we'll use 'unknown'
+                }
             }
             
             try {
@@ -1719,6 +1755,13 @@ async function hybridFastSeed() {
     // Preflight check: verify API key before any database operations
     await verifyApiKey();
 
+    // Discover all documents and compute hashes for collection-based caching
+    // This must happen before StageCache initialization so we can organize by collection
+    console.log(`🔍 Discovering documents at ${filesDir}...`);
+    const { documentFiles: discoveredFiles, fileHashes: precomputedHashes } = await discoverDocumentsWithHashes(filesDir);
+    const allFileHashes = Array.from(precomputedHashes.values());
+    const collectionHash = allFileHashes.length > 0 ? StageCache.computeCollectionHash(allFileHashes) : null;
+
     // Initialize checkpoint for resumable seeding
     const checkpointPath = SeedingCheckpoint.getDefaultPath(databaseDir);
     const seedingCheckpoint = new SeedingCheckpoint({
@@ -1728,10 +1771,12 @@ async function hybridFastSeed() {
     });
     
     // Initialize stage cache for LLM result persistence
+    // Cache is organized by collection hash (based on source file contents)
     const stageCacheDir = customCacheDir || StageCache.getDefaultPath(databaseDir);
     const stageCache = useCache ? new StageCache({
         cacheDir: stageCacheDir,
-        ttlMs: 7 * 24 * 60 * 60 * 1000  // 7 days TTL
+        ttlMs: 7 * 24 * 60 * 60 * 1000,  // 7 days TTL
+        collectionHash: collectionHash ?? undefined
     }) : null;
     
     if (stageCache) {
@@ -1749,6 +1794,9 @@ async function hybridFastSeed() {
         if (cacheStats.count > 0) {
             const sizeMB = (cacheStats.totalSize / 1024 / 1024).toFixed(1);
             console.log(`📦 Stage cache: ${cacheStats.count} cached documents (${sizeMB} MB)`);
+            if (collectionHash) {
+                console.log(`   └─ Collection: ${collectionHash}`);
+            }
             if (cacheStats.expiredCount > 0) {
                 console.log(`   └─ ${cacheStats.expiredCount} expired entries (will be cleaned)`);
             }
@@ -1902,11 +1950,12 @@ async function hybridFastSeed() {
 
     // Load files (pass checkpoint for resumable skip detection)
     const { documents: rawDocs, documentsNeedingChunks, failedFiles: loadingFailedFiles } = await loadDocumentsWithErrorHandling(
-        filesDir, 
-        catalogTable, 
-        chunksTable, 
+        filesDir,
+        catalogTable,
+        chunksTable,
         overwrite || !catalogTableExists,
-        seedingCheckpoint
+        seedingCheckpoint,
+        precomputedHashes
     );
     
     // Save checkpoint after loading phase to persist any newly discovered complete documents
@@ -2452,6 +2501,28 @@ async function hybridFastSeed() {
             console.log(`   ❌ ${truncated}`);
         }
         console.log('');
+    }
+    
+    // Check if all documents are seeded and clean up collection cache
+    if (stageCache && collectionHash && allFileHashes.length > 0 && catalogTable) {
+        try {
+            // Query catalog to check if all file hashes exist
+            const allCatalogRecords = await catalogTable.query().limit(100000).toArray();
+            const catalogHashes = new Set(allCatalogRecords.map((r: any) => r.hash).filter(Boolean));
+            
+            const allSeeded = allFileHashes.every(hash => catalogHashes.has(hash));
+            
+            if (allSeeded) {
+                console.log(`🗑️  All documents seeded - cleaning up collection cache (${collectionHash})...`);
+                const removed = await stageCache.removeCollectionCache();
+                if (removed) {
+                    console.log(`   ✅ Removed collection cache`);
+                }
+            }
+        } catch (error: any) {
+            // Non-fatal: log warning but don't fail
+            console.warn(`   ⚠️  Could not clean up collection cache: ${error.message}`);
+        }
     }
     
     console.log("🎉 Seeding completed successfully!");

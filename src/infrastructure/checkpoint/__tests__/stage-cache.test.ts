@@ -475,4 +475,139 @@ describe('StageCache', () => {
             expect(results.every(r => r?.hash === data.hash)).toBe(true);
         });
     });
+
+    describe('collection hash support', () => {
+        it('should compute deterministic collection hash from file hashes', () => {
+            const hashes1 = ['abc123', 'def456', 'ghi789'];
+            const hashes2 = ['ghi789', 'abc123', 'def456']; // Same hashes, different order
+
+            const result1 = StageCache.computeCollectionHash(hashes1);
+            const result2 = StageCache.computeCollectionHash(hashes2);
+
+            // Should be deterministic regardless of input order
+            expect(result1).toBe(result2);
+            expect(result1.length).toBe(16);
+        });
+
+        it('should produce different hashes for different file collections', () => {
+            const hashes1 = ['abc123', 'def456'];
+            const hashes2 = ['abc123', 'xyz789'];
+
+            const result1 = StageCache.computeCollectionHash(hashes1);
+            const result2 = StageCache.computeCollectionHash(hashes2);
+
+            expect(result1).not.toBe(result2);
+        });
+
+        it('should create cache in collection subdirectory when collectionHash provided', async () => {
+            const collectionHash = 'test1234abcd5678';
+            const cache = new StageCache({
+                ...defaultOptions,
+                collectionHash
+            });
+            await cache.initialize();
+
+            const expectedDir = path.join(cacheDir, collectionHash);
+            expect(cache.getCacheDir()).toBe(expectedDir);
+            
+            // Verify directory was created
+            const stats = await fs.promises.stat(expectedDir);
+            expect(stats.isDirectory()).toBe(true);
+        });
+
+        it('should store files in collection subdirectory', async () => {
+            const collectionHash = 'collection123';
+            const cache = new StageCache({
+                ...defaultOptions,
+                collectionHash
+            });
+            await cache.initialize();
+
+            const data = createSampleData('doc1');
+            await cache.set(data.hash, data);
+
+            // File should be in collection subdirectory
+            const expectedPath = path.join(cacheDir, collectionHash, `${data.hash}.json`);
+            const exists = await fs.promises.stat(expectedPath).then(() => true).catch(() => false);
+            expect(exists).toBe(true);
+        });
+
+        it('should isolate different collections', async () => {
+            const cache1 = new StageCache({
+                ...defaultOptions,
+                collectionHash: 'collection1'
+            });
+            const cache2 = new StageCache({
+                ...defaultOptions,
+                collectionHash: 'collection2'
+            });
+
+            await cache1.initialize();
+            await cache2.initialize();
+
+            // Add data to collection 1
+            await cache1.set('hash1', createSampleData('hash1'));
+
+            // Collection 2 should not see it
+            const result = await cache2.get('hash1');
+            expect(result).toBeNull();
+
+            // Collection 1 should see it
+            const result1 = await cache1.get('hash1');
+            expect(result1?.hash).toBe('hash1');
+        });
+
+        it('should remove collection cache directory', async () => {
+            const collectionHash = 'removable123';
+            const cache = new StageCache({
+                ...defaultOptions,
+                collectionHash
+            });
+            await cache.initialize();
+
+            // Add some data
+            await cache.set('doc1', createSampleData('doc1'));
+            await cache.set('doc2', createSampleData('doc2'));
+
+            // Verify directory exists
+            const collectionDir = path.join(cacheDir, collectionHash);
+            let exists = await fs.promises.stat(collectionDir).then(() => true).catch(() => false);
+            expect(exists).toBe(true);
+
+            // Remove collection
+            const removed = await cache.removeCollectionCache();
+            expect(removed).toBe(true);
+
+            // Verify directory is gone
+            exists = await fs.promises.stat(collectionDir).then(() => true).catch(() => false);
+            expect(exists).toBe(false);
+        });
+
+        it('should not remove base cache when no collection hash', async () => {
+            const cache = new StageCache(defaultOptions);
+            await cache.initialize();
+            await cache.set('doc1', createSampleData('doc1'));
+
+            // Should return false (no collection to remove)
+            const removed = await cache.removeCollectionCache();
+            expect(removed).toBe(false);
+
+            // Data should still exist
+            const result = await cache.get('doc1');
+            expect(result?.hash).toBe('doc1');
+        });
+
+        it('should return correct base and effective cache directories', async () => {
+            const collectionHash = 'testcoll';
+            const cache = new StageCache({
+                ...defaultOptions,
+                collectionHash
+            });
+
+            expect(cache.getBaseCacheDir()).toBe(cacheDir);
+            expect(cache.getCacheDir()).toBe(path.join(cacheDir, collectionHash));
+            expect(cache.getCollectionHash()).toBe(collectionHash);
+        });
+    });
 });
+
