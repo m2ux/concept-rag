@@ -33,6 +33,7 @@ import {
 import { generateCategorySummaries } from './src/concepts/summary_generator.js';
 import { parseFilenameMetadata } from './src/infrastructure/utils/filename-metadata-parser.js';
 import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
+import { StageCache, type CachedDocumentData } from './src/infrastructure/checkpoint/stage-cache.js';
 import { ConceptEnricher } from './src/concepts/concept_enricher.js';
 import { ParallelConceptExtractor, DocumentSet } from './src/concepts/parallel-concept-extractor.js';
 import { ProgressBarDisplay, createProgressBarDisplay } from './src/infrastructure/cli/progress-bar-display.js';
@@ -956,7 +957,7 @@ async function createLanceTableWithSimpleEmbeddings(
     }
 }
 
-async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpoint, workers: number = 1) {
+async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpoint, workers: number = 1, stageCache?: StageCache) {
     const docsBySource = rawDocs.reduce((acc: Record<string, Document[]>, doc: Document) => {
         const source = doc.metadata.source;
         if (!acc[source]) {
@@ -968,7 +969,7 @@ async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpo
 
     // Use parallel processing if workers > 1
     if (workers > 1) {
-        return processDocumentsParallel(docsBySource, checkpoint, workers);
+        return processDocumentsParallel(docsBySource, checkpoint, workers, stageCache);
     }
 
     // Sequential processing (original behavior)
@@ -979,6 +980,10 @@ async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpo
     
     // Track documents for checkpoint updates
     const processedInThisRun: Array<{hash: string, source: string}> = [];
+    
+    // Track cache statistics
+    let cacheHits = 0;
+    let cacheMisses = 0;
 
     for (const [source, docs] of Object.entries(docsBySource)) {
         // Use existing hash from document metadata if available (for consistency)
@@ -991,29 +996,67 @@ async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpo
 
         const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
         const sourceBasename = path.basename(source);
+        const paperMetadata = docs[0]?.metadata?.paperMetadata;
         
-        if (isOcrProcessed) {
-            console.log(`🤖 Extracting concepts for: ${sourceBasename} (OCR processed)`);
+        let contentOverview: string;
+        let concepts: any;
+        
+        // Check stage cache for existing LLM results
+        const cached = stageCache ? await stageCache.get(hash) : null;
+        
+        if (cached?.concepts && cached?.contentOverview) {
+            // Cache hit - use cached data
+            cacheHits++;
+            console.log(`📦 Using cached results for: ${sourceBasename}`);
+            contentOverview = cached.contentOverview;
+            concepts = cached.concepts;
         } else {
-            console.log(`🤖 Extracting concepts for: ${sourceBasename}`);
-        }
-        
-        const contentOverview = await generateContentOverview(docs);
-        
-        // ENHANCED: Extract concepts using LLM
-        let concepts;
-        try {
-            concepts = await conceptExtractor.extractConcepts(docs);
-            console.log(`✅ Found: ${concepts.primary_concepts.length} concepts`);
-        } catch (error) {
-            console.error(`❌ Concept extraction failed for ${sourceBasename}:`, error.message);
-            // Use empty concepts if extraction fails
-            concepts = {
-                primary_concepts: [],
-                categories: ['General'],
-                related_concepts: []
-            };
-            console.log(`⚠️  Continuing with empty concepts for this document`);
+            // Cache miss - perform LLM operations
+            cacheMisses++;
+            if (isOcrProcessed) {
+                console.log(`🤖 Extracting concepts for: ${sourceBasename} (OCR processed)`);
+            } else {
+                console.log(`🤖 Extracting concepts for: ${sourceBasename}`);
+            }
+            
+            contentOverview = await generateContentOverview(docs);
+            
+            // Extract concepts using LLM
+            try {
+                concepts = await conceptExtractor.extractConcepts(docs);
+                console.log(`✅ Found: ${concepts.primary_concepts.length} concepts`);
+                
+                // Cache immediately after successful LLM extraction
+                if (stageCache) {
+                    const cacheData: CachedDocumentData = {
+                        hash,
+                        source,
+                        processedAt: new Date().toISOString(),
+                        concepts: {
+                            primary_concepts: concepts.primary_concepts,
+                            categories: concepts.categories,
+                            technical_terms: concepts.technical_terms,
+                            related_concepts: concepts.related_concepts
+                        },
+                        contentOverview,
+                        metadata: paperMetadata ? {
+                            title: paperMetadata.title,
+                            author: paperMetadata.authors?.join(', '),
+                            year: paperMetadata.year
+                        } : undefined
+                    };
+                    await stageCache.set(hash, cacheData);
+                }
+            } catch (error: any) {
+                console.error(`❌ Concept extraction failed for ${sourceBasename}:`, error.message);
+                // Use empty concepts if extraction fails
+                concepts = {
+                    primary_concepts: [],
+                    categories: ['General'],
+                    related_concepts: []
+                };
+                console.log(`⚠️  Continuing with empty concepts for this document`);
+            }
         }
         
         // Extract concept names for display (handle both string[] and ExtractedConcept[] formats)
@@ -1028,9 +1071,6 @@ ${contentOverview}
 Key Concepts: ${conceptNames.join(', ')}
 Categories: ${concepts.categories.join(', ')}
 `.trim();
-        
-        // Get paper metadata from first page (shared across all pages)
-        const paperMetadata = docs[0]?.metadata?.paperMetadata;
         
         const catalogRecord = new Document({ 
             pageContent: enrichedContent, 
@@ -1053,6 +1093,13 @@ Categories: ${concepts.categories.join(', ')}
             console.log(`📝 Creating catalog record for OCR'd document: hash=${hash.slice(0, 8)}..., source=${sourceBasename}`);
         }
     }
+    
+    // Log cache statistics
+    if (cacheHits > 0 || cacheMisses > 0) {
+        const total = cacheHits + cacheMisses;
+        const hitRate = total > 0 ? Math.round((cacheHits / total) * 100) : 0;
+        console.log(`📊 Cache stats: ${cacheHits} hits, ${cacheMisses} misses (${hitRate}% hit rate)`);
+    }
 
     return { catalogRecords, processedInThisRun };
 }
@@ -1064,11 +1111,13 @@ Categories: ${concepts.categories.join(', ')}
 async function processDocumentsParallel(
     docsBySource: Record<string, Document[]>,
     checkpoint: SeedingCheckpoint | undefined,
-    workers: number
+    workers: number,
+    stageCache?: StageCache
 ): Promise<{ catalogRecords: Document[], processedInThisRun: Array<{hash: string, source: string}> }> {
     
-    // Prepare document sets with hashes
+    // Prepare document sets with hashes and check cache
     const documentSets = new Map<string, DocumentSet>();
+    const cachedResults = new Map<string, CachedDocumentData>();
     
     for (const [source, docs] of Object.entries(docsBySource)) {
         let hash = docs[0]?.metadata?.hash;
@@ -1076,10 +1125,66 @@ async function processDocumentsParallel(
             const fileContent = await fs.promises.readFile(source);
             hash = crypto.createHash('sha256').update(fileContent).digest('hex');
         }
-        documentSets.set(source, { docs, hash });
+        
+        // Check cache before adding to processing queue
+        const cached = stageCache ? await stageCache.get(hash) : null;
+        if (cached?.concepts && cached?.contentOverview) {
+            cachedResults.set(source, cached);
+        } else {
+            documentSets.set(source, { docs, hash });
+        }
+    }
+    
+    // Report cache status
+    if (cachedResults.size > 0) {
+        console.log(`📦 Found ${cachedResults.size} cached documents (skipping LLM extraction)`);
     }
     
     const totalDocs = documentSets.size;
+    
+    // If all documents are cached, skip parallel extraction entirely
+    if (totalDocs === 0) {
+        console.log(`✅ All ${cachedResults.size} documents loaded from cache - no LLM calls needed\n`);
+        
+        // Convert cached results to catalog records
+        const catalogRecords: Document[] = [];
+        const processedInThisRun: Array<{hash: string, source: string}> = [];
+        
+        for (const [source, cached] of cachedResults) {
+            const docs = docsBySource[source];
+            const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
+            const paperMetadata = docs[0]?.metadata?.paperMetadata;
+            
+            const conceptNames = cached.concepts!.primary_concepts.map((c: any) => 
+                typeof c === 'string' ? c : (c.name || '')
+            ).filter((n: string) => n);
+            
+            const enrichedContent = `
+${cached.contentOverview}
+
+Key Concepts: ${conceptNames.join(', ')}
+Categories: ${cached.concepts!.categories.join(', ')}
+`.trim();
+            
+            const catalogRecord = new Document({
+                pageContent: enrichedContent,
+                metadata: {
+                    source,
+                    hash: cached.hash,
+                    ocr_processed: isOcrProcessed,
+                    concepts: cached.concepts,
+                    paperMetadata: paperMetadata
+                }
+            });
+            
+            catalogRecords.push(catalogRecord);
+            processedInThisRun.push({ hash: cached.hash, source });
+        }
+        
+        console.log(`📊 Cache stats: ${cachedResults.size} hits, 0 processed`);
+        return { catalogRecords, processedInThisRun };
+    }
+    
     const actualWorkers = Math.min(totalDocs, workers);
     console.log(`📊 Processing ${totalDocs} document(s) with ${actualWorkers} parallel workers\n`);
     
@@ -1178,12 +1283,68 @@ async function processDocumentsParallel(
     const catalogRecords: Document[] = [];
     const processedInThisRun: Array<{hash: string, source: string}> = [];
     
-    // Process successful documents
+    // First, add cached results to catalog records
+    for (const [source, cached] of cachedResults) {
+        const docs = docsBySource[source];
+        const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
+        const paperMetadata = docs[0]?.metadata?.paperMetadata;
+        
+        // Extract concept names
+        const conceptNames = cached.concepts!.primary_concepts.map((c: any) => 
+            typeof c === 'string' ? c : (c.name || '')
+        ).filter((n: string) => n);
+        
+        const enrichedContent = `
+${cached.contentOverview}
+
+Key Concepts: ${conceptNames.join(', ')}
+Categories: ${cached.concepts!.categories.join(', ')}
+`.trim();
+        
+        const catalogRecord = new Document({
+            pageContent: enrichedContent,
+            metadata: {
+                source,
+                hash: cached.hash,
+                ocr_processed: isOcrProcessed,
+                concepts: cached.concepts,
+                paperMetadata: paperMetadata
+            }
+        });
+        
+        catalogRecords.push(catalogRecord);
+        processedInThisRun.push({ hash: cached.hash, source });
+    }
+    
+    // Process successful documents from parallel extraction
     for (const result of successful) {
         const docs = docsBySource[result.source];
         const contentOverview = await generateContentOverview(docs);
         const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
         const paperMetadata = docs[0]?.metadata?.paperMetadata;
+        
+        // Cache the newly extracted results
+        if (stageCache) {
+            const conceptData = result.concepts as any;
+            const cacheData: CachedDocumentData = {
+                hash: result.hash,
+                source: result.source,
+                processedAt: new Date().toISOString(),
+                concepts: {
+                    primary_concepts: conceptData.primary_concepts,
+                    categories: conceptData.categories,
+                    technical_terms: conceptData.technical_terms,
+                    related_concepts: conceptData.related_concepts
+                },
+                contentOverview,
+                metadata: paperMetadata ? {
+                    title: paperMetadata.title,
+                    author: paperMetadata.authors?.join(', '),
+                    year: paperMetadata.year
+                } : undefined
+            };
+            await stageCache.set(result.hash, cacheData);
+        }
         
         // Extract concept names
         const conceptNames = result.concepts!.primary_concepts.map((c: any) => 
@@ -1258,6 +1419,9 @@ Categories: General
     if (checkpoint && failed.length > 0) {
         await checkpoint.save();
     }
+    
+    // Log final cache statistics
+    console.log(`📊 Cache stats: ${cachedResults.size} hits, ${successful.length + failed.length} processed`);
     
     return { catalogRecords, processedInThisRun };
 }
@@ -1530,6 +1694,24 @@ async function hybridFastSeed() {
         filesDir: filesDir
     });
     
+    // Initialize stage cache for LLM result persistence
+    const stageCacheDir = StageCache.getDefaultPath(databaseDir);
+    const stageCache = new StageCache({
+        cacheDir: stageCacheDir,
+        ttlMs: 7 * 24 * 60 * 60 * 1000  // 7 days TTL
+    });
+    await stageCache.initialize();
+    
+    // Display cache stats
+    const cacheStats = await stageCache.getStats();
+    if (cacheStats.count > 0) {
+        const sizeMB = (cacheStats.totalSize / 1024 / 1024).toFixed(1);
+        console.log(`📦 Stage cache: ${cacheStats.count} cached documents (${sizeMB} MB)`);
+        if (cacheStats.expiredCount > 0) {
+            console.log(`   └─ ${cacheStats.expiredCount} expired entries (will be cleaned)`);
+        }
+    }
+    
     // Handle --clean-checkpoint flag
     if (cleanCheckpoint) {
         console.log(`🗑️ Clearing checkpoint file...`);
@@ -1745,7 +1927,7 @@ async function hybridFastSeed() {
     }
 
     console.log("🚀 Creating catalog with LLM summaries...");
-    const { catalogRecords, processedInThisRun } = await processDocuments(rawDocs, seedingCheckpoint, parallelWorkers);
+    const { catalogRecords, processedInThisRun } = await processDocuments(rawDocs, seedingCheckpoint, parallelWorkers, stageCache);
     
     if (catalogRecords.length > 0) {
         console.log("📊 Creating catalog table with fast local embeddings...");
