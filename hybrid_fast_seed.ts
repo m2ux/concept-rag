@@ -33,6 +33,7 @@ import {
 import { generateCategorySummaries } from './src/concepts/summary_generator.js';
 import { parseFilenameMetadata } from './src/infrastructure/utils/filename-metadata-parser.js';
 import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
+import { StageCache, type CachedDocumentData } from './src/infrastructure/checkpoint/stage-cache.js';
 import { ConceptEnricher } from './src/concepts/concept_enricher.js';
 import { ParallelConceptExtractor, DocumentSet } from './src/concepts/parallel-concept-extractor.js';
 import { ProgressBarDisplay, createProgressBarDisplay } from './src/infrastructure/cli/progress-bar-display.js';
@@ -163,11 +164,11 @@ console.log = (...args: any[]) => {
 };
 
 const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {
-    boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume", "with-wordnet"],
-    string: ["dbpath", "filesdir", "max-docs", "parallel"]
+    boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume", "with-wordnet", "clear-cache", "cache-only", "no-cache"],
+    string: ["dbpath", "filesdir", "max-docs", "parallel", "cache-dir"]
 });
 
-const databaseDir = argv["dbpath"] || process.env.CONCEPT_RAG_DB_PATH || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag");
+const databaseDir = path.resolve(argv["dbpath"] || process.env.CONCEPT_RAG_DB_PATH || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag"));
 const filesDir = argv["filesdir"];
 const overwrite = argv["overwrite"];
 const rebuildConcepts = argv["rebuild-concepts"];
@@ -178,27 +179,44 @@ const maxDocs = argv["max-docs"] ? parseInt(argv["max-docs"], 10) : undefined;
 const parallelWorkers = argv["parallel"] ? parseInt(argv["parallel"], 10) : 10;
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
 
-function validateArgs() {
-    if (!filesDir) {
-        console.error("Please provide a directory with files (--filesdir) to process");
-        console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [options]");
-        console.error("");
-        console.error("Required:");
-        console.error("  --filesdir: Directory containing PDF/EPUB files to process");
-        console.error("");
-        console.error("Options:");
-        console.error("  --dbpath: Database path (default: ~/.concept_rag)");
-        console.error("  --overwrite: Drop and recreate all database tables");
-        console.error("  --rebuild-concepts: Rebuild concept index even if no new documents");
-        console.error("  --auto-reseed: Re-process documents with incomplete metadata");
-        console.error("  --resume: Resume from checkpoint (skip already processed documents)");
-        console.error("  --clean-checkpoint: Clear checkpoint and start fresh");
-        console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
-        console.error("  --max-docs N: Process at most N NEW documents (skips already processed, enables batching)");
-        console.error("  --parallel N: Process N documents concurrently for concept extraction (default: 10, max: 25)");
-        process.exit(1);
-    }
-    
+// Stage cache flags
+const clearCache = argv["clear-cache"];
+const cacheOnly = argv["cache-only"];
+const useCache = !argv["no-cache"];  // Default: true (use cache), --no-cache disables
+const customCacheDir = argv["cache-dir"];
+
+function showUsageAndExit() {
+    console.error("Please provide a directory with files (--filesdir) to process");
+    console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [options]");
+    console.error("");
+    console.error("Required:");
+    console.error("  --filesdir: Directory containing PDF/EPUB files to process");
+    console.error("              (or omit to resume from existing caches)");
+    console.error("");
+    console.error("Options:");
+    console.error("  --dbpath: Database path (default: ~/.concept_rag)");
+    console.error("  --overwrite: Drop and recreate all database tables");
+    console.error("  --rebuild-concepts: Rebuild concept index even if no new documents");
+    console.error("  --auto-reseed: Re-process documents with incomplete metadata");
+    console.error("  --resume: Resume from checkpoint (skip already processed documents)");
+    console.error("  --clean-checkpoint: Clear checkpoint and start fresh");
+    console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
+    console.error("  --max-docs N: Process at most N NEW documents (skips already processed, enables batching)");
+    console.error("  --parallel N: Process N documents concurrently for concept extraction (default: 10, max: 25)");
+    console.error("");
+    console.error("Cache options:");
+    console.error("  --no-cache: Disable stage cache (don't use cached LLM results)");
+    console.error("  --clear-cache: Clear stage cache before processing");
+    console.error("  --cache-only: Only use cached results, fail if document not in cache");
+    console.error("  --cache-dir PATH: Custom cache directory location");
+    process.exit(1);
+}
+
+/**
+ * Validates arguments. Returns array of source directories to process.
+ * If filesDir is not provided, checks for existing caches and returns their source directories.
+ */
+async function validateArgs(): Promise<string[]> {
     if (!openrouterApiKey) {
         console.error("Please set OPENROUTER_API_KEY environment variable");
         process.exit(1);
@@ -210,17 +228,61 @@ function validateArgs() {
         process.exit(1);
     }
     
+    // If filesDir provided, use it
+    if (filesDir) {
+        console.log(`📂 Database: ${databaseDir}`);
+        console.log(`🔄 Overwrite mode: ${overwrite}`);
+        if (resumeMode) {
+            console.log(`🔄 Resume mode: enabled`);
+        }
+        if (maxDocs) {
+            console.log(`📊 Max documents: ${maxDocs}`);
+        }
+        if (parallelWorkers > 1) {
+            console.log(`🚀 Parallel mode: ${parallelWorkers} workers`);
+        }
+        return [filesDir];
+    }
+    
+    // No filesDir - check for existing caches
+    const baseCacheDir = customCacheDir || StageCache.getDefaultPath(databaseDir);
+    const cachedCollections = await listCachedCollections(baseCacheDir);
+    
+    if (cachedCollections.length === 0) {
+        // No caches found - show original error
+        showUsageAndExit();
+    }
+    
+    // Found cached collections - derive source directories
     console.log(`📂 Database: ${databaseDir}`);
-    console.log(`🔄 Overwrite mode: ${overwrite}`);
+    console.log(`📦 Found ${cachedCollections.length} cached collection(s) to resume:`);
+    
+    const sourceDirs: string[] = [];
+    for (const collection of cachedCollections) {
+        const sourceDir = await getSourceDirFromCache(collection.cacheDir);
+        if (sourceDir) {
+            const age = Math.round((Date.now() - collection.createdAt.getTime()) / (1000 * 60));
+            console.log(`   └─ ${collection.collectionHash}: ${collection.fileCount} files, ${age}min ago → ${sourceDir}`);
+            sourceDirs.push(sourceDir);
+        } else {
+            console.log(`   └─ ${collection.collectionHash}: ${collection.fileCount} files (source unknown, skipping)`);
+        }
+    }
+    
+    if (sourceDirs.length === 0) {
+        console.error("❌ Could not determine source directories from caches");
+        process.exit(1);
+    }
+    
+    console.log(`🔄 Will process ${sourceDirs.length} cached collection(s) in chronological order`);
     if (resumeMode) {
         console.log(`🔄 Resume mode: enabled`);
-    }
-    if (maxDocs) {
-        console.log(`📊 Max documents: ${maxDocs}`);
     }
     if (parallelWorkers > 1) {
         console.log(`🚀 Parallel mode: ${parallelWorkers} workers`);
     }
+    
+    return sourceDirs;
 }
 
 /**
@@ -371,12 +433,159 @@ function detectAndExtractPaperMetadata(
     };
 }
 
+/**
+ * Discovers all document files and computes their content hashes.
+ * Used to compute collection hash for source-path-organized caching.
+ *
+ * @param filesDir Source directory to scan
+ * @returns Object with documentFiles array and fileHashes map
+ */
+async function discoverDocumentsWithHashes(filesDir: string): Promise<{
+    documentFiles: string[];
+    fileHashes: Map<string, string>;
+}> {
+    const loaderFactory = new DocumentLoaderFactory();
+    loaderFactory.registerLoader(new PDFDocumentLoader());
+    loaderFactory.registerLoader(new EPUBDocumentLoader());
+    
+    const supportedExtensions = loaderFactory.getSupportedExtensions();
+    const documentFiles = await findDocumentFilesRecursively(filesDir, supportedExtensions);
+    
+    const fileHashes = new Map<string, string>();
+    
+    for (const docFile of documentFiles) {
+        try {
+            const fileContent = await fs.promises.readFile(docFile);
+            const hash = crypto.createHash('sha256').update(fileContent).digest('hex');
+            fileHashes.set(docFile, hash);
+        } catch {
+            // If we can't read the file, skip it (will be handled during loading)
+        }
+    }
+    
+    return { documentFiles, fileHashes };
+}
+
+/**
+ * Lists existing collection cache directories with their metadata.
+ * Used when no --filesdir is specified to resume from cached collections.
+ *
+ * @param baseCacheDir Base cache directory (e.g., ~/.concept_rag/.stage-cache)
+ * @returns Array of collection info sorted by oldest first
+ */
+async function listCachedCollections(baseCacheDir: string): Promise<Array<{
+    collectionHash: string;
+    cacheDir: string;
+    createdAt: Date;
+    fileCount: number;
+}>> {
+    const collections: Array<{
+        collectionHash: string;
+        cacheDir: string;
+        createdAt: Date;
+        fileCount: number;
+    }> = [];
+
+    try {
+        const entries = await fs.promises.readdir(baseCacheDir, { withFileTypes: true });
+        
+        for (const entry of entries) {
+            if (!entry.isDirectory()) continue;
+            
+            // Collection hash directories are 16 characters
+            if (entry.name.length !== 16) continue;
+            
+            const collectionDir = path.join(baseCacheDir, entry.name);
+            
+            try {
+                const stat = await fs.promises.stat(collectionDir);
+                const files = await fs.promises.readdir(collectionDir);
+                const jsonFiles = files.filter(f => f.endsWith('.json'));
+                
+                if (jsonFiles.length > 0) {
+                    collections.push({
+                        collectionHash: entry.name,
+                        cacheDir: collectionDir,
+                        createdAt: stat.birthtime,
+                        fileCount: jsonFiles.length
+                    });
+                }
+            } catch {
+                // Skip directories we can't read
+            }
+        }
+    } catch (error: unknown) {
+        // Cache directory doesn't exist
+        if (error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code !== 'ENOENT') {
+            throw error;
+        }
+    }
+
+    // Sort by oldest first (chronological order)
+    return collections.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+}
+
+/**
+ * Extracts source directory from cached files in a collection.
+ * Reads a sample cache file to find the common source directory.
+ *
+ * @param collectionDir Path to collection cache directory
+ * @returns The derived source directory, or null if cannot be determined
+ */
+async function getSourceDirFromCache(collectionDir: string): Promise<string | null> {
+    try {
+        const files = await fs.promises.readdir(collectionDir);
+        const jsonFiles = files.filter(f => f.endsWith('.json'));
+        
+        if (jsonFiles.length === 0) return null;
+        
+        // Read first cache file to get source path
+        const firstFile = path.join(collectionDir, jsonFiles[0]);
+        const content = await fs.promises.readFile(firstFile, 'utf-8');
+        const data = JSON.parse(content);
+        
+        if (!data.source) return null;
+        
+        // Find common parent directory from all sources
+        const sourcePaths: string[] = [];
+        for (const file of jsonFiles.slice(0, 10)) { // Sample first 10 files
+            try {
+                const filePath = path.join(collectionDir, file);
+                const fileContent = await fs.promises.readFile(filePath, 'utf-8');
+                const fileData = JSON.parse(fileContent);
+                if (fileData.source) {
+                    sourcePaths.push(fileData.source);
+                }
+            } catch {
+                // Skip unreadable files
+            }
+        }
+        
+        if (sourcePaths.length === 0) return null;
+        
+        // Find common directory prefix
+        const firstSource = sourcePaths[0];
+        let commonDir = path.dirname(firstSource);
+        
+        for (const source of sourcePaths) {
+            while (commonDir && !source.startsWith(commonDir + path.sep) && source !== commonDir) {
+                commonDir = path.dirname(commonDir);
+            }
+        }
+        
+        return commonDir || null;
+    } catch {
+        return null;
+    }
+}
+
 async function loadDocumentsWithErrorHandling(
     filesDir: string, 
     catalogTable: lancedb.Table | null, 
     chunksTable: lancedb.Table | null,
     skipExistsCheck: boolean,
-    checkpoint?: SeedingCheckpoint
+    checkpoint?: SeedingCheckpoint,
+    precomputedHashes?: Map<string, string>
 ) {
     const documents: Document[] = [];
     const failedFiles: string[] = [];
@@ -416,19 +625,21 @@ async function loadDocumentsWithErrorHandling(
         documentLoop: for (const docFile of documentFiles) {
             const relativePath = path.relative(filesDir, docFile);
             
-            // Calculate hash first (available for all cases)
-            let hash = 'unknown';
-            try {
-                const fileContent = await fs.promises.readFile(docFile);
-                hash = crypto.createHash('sha256').update(fileContent).digest('hex');
-            } catch (hashError) {
-                // If we can't read the file for hashing, we'll use 'unknown'
+            // Get hash from precomputed map or calculate it
+            let hash = precomputedHashes?.get(docFile) ?? 'unknown';
+            if (hash === 'unknown') {
+                try {
+                    const fileContent = await fs.promises.readFile(docFile);
+                    hash = crypto.createHash('sha256').update(fileContent).digest('hex');
+                } catch (hashError) {
+                    // If we can't read the file for hashing, we'll use 'unknown'
+                }
             }
             
             try {
                 // Check checkpoint first for fast skip (O(1) hash lookup)
                 if (checkpoint && checkpoint.isProcessed(hash)) {
-                    console.log(`⏭️ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (checkpoint)`);
+                    console.log(`⏭️ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)}`);
                     skippedFiles.push(relativePath);
                     continue;
                 }
@@ -956,7 +1167,7 @@ async function createLanceTableWithSimpleEmbeddings(
     }
 }
 
-async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpoint, workers: number = 1) {
+async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpoint, workers: number = 1, stageCache?: StageCache | null, cacheOnlyMode: boolean = false) {
     const docsBySource = rawDocs.reduce((acc: Record<string, Document[]>, doc: Document) => {
         const source = doc.metadata.source;
         if (!acc[source]) {
@@ -968,7 +1179,7 @@ async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpo
 
     // Use parallel processing if workers > 1
     if (workers > 1) {
-        return processDocumentsParallel(docsBySource, checkpoint, workers);
+        return processDocumentsParallel(docsBySource, checkpoint, workers, stageCache, cacheOnlyMode);
     }
 
     // Sequential processing (original behavior)
@@ -979,6 +1190,10 @@ async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpo
     
     // Track documents for checkpoint updates
     const processedInThisRun: Array<{hash: string, source: string}> = [];
+    
+    // Track cache statistics
+    let cacheHits = 0;
+    let cacheMisses = 0;
 
     for (const [source, docs] of Object.entries(docsBySource)) {
         // Use existing hash from document metadata if available (for consistency)
@@ -991,29 +1206,76 @@ async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpo
 
         const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
         const sourceBasename = path.basename(source);
+        const paperMetadata = docs[0]?.metadata?.paperMetadata;
         
-        if (isOcrProcessed) {
-            console.log(`🤖 Extracting concepts for: ${sourceBasename} (OCR processed)`);
+        let contentOverview: string;
+        let concepts: any;
+        
+        // Check stage cache for existing LLM results
+        const cached = stageCache ? await stageCache.get(hash) : null;
+        
+        if (cached?.concepts && cached?.contentOverview) {
+            // Cache hit - use cached data
+            cacheHits++;
+            console.log(`📦 Using cached results for: ${sourceBasename}`);
+            contentOverview = cached.contentOverview;
+            concepts = cached.concepts;
         } else {
-            console.log(`🤖 Extracting concepts for: ${sourceBasename}`);
-        }
-        
-        const contentOverview = await generateContentOverview(docs);
-        
-        // ENHANCED: Extract concepts using LLM
-        let concepts;
-        try {
-            concepts = await conceptExtractor.extractConcepts(docs);
-            console.log(`✅ Found: ${concepts.primary_concepts.length} concepts`);
-        } catch (error) {
-            console.error(`❌ Concept extraction failed for ${sourceBasename}:`, error.message);
-            // Use empty concepts if extraction fails
-            concepts = {
-                primary_concepts: [],
-                categories: ['General'],
-                related_concepts: []
-            };
-            console.log(`⚠️  Continuing with empty concepts for this document`);
+            // Cache miss
+            cacheMisses++;
+            
+            // In cache-only mode, fail if document not cached
+            if (cacheOnlyMode) {
+                console.error(`❌ Cache-only mode: ${sourceBasename} not in cache`);
+                throw new Error(`Cache-only mode: document ${sourceBasename} not found in cache. Run without --cache-only to process.`);
+            }
+            
+            // Perform LLM operations
+            if (isOcrProcessed) {
+                console.log(`🤖 Extracting concepts for: ${sourceBasename} (OCR processed)`);
+            } else {
+                console.log(`🤖 Extracting concepts for: ${sourceBasename}`);
+            }
+            
+            contentOverview = await generateContentOverview(docs);
+            
+            // Extract concepts using LLM
+            process.stdout.write(`   🔄 Extracting concepts (this takes 1-2 min)...`);
+            try {
+                concepts = await conceptExtractor.extractConcepts(docs);
+                process.stdout.write(`\r   ✅ Found: ${concepts.primary_concepts.length} concepts${' '.repeat(20)}\n`);
+                
+                // Cache immediately after successful LLM extraction
+                if (stageCache) {
+                    const cacheData: CachedDocumentData = {
+                        hash,
+                        source,
+                        processedAt: new Date().toISOString(),
+                        concepts: {
+                            primary_concepts: concepts.primary_concepts,
+                            categories: concepts.categories,
+                            technical_terms: concepts.technical_terms,
+                            related_concepts: concepts.related_concepts
+                        },
+                        contentOverview,
+                        metadata: paperMetadata ? {
+                            title: paperMetadata.title,
+                            author: paperMetadata.authors?.join(', '),
+                            year: paperMetadata.year
+                        } : undefined
+                    };
+                    await stageCache.set(hash, cacheData);
+                }
+            } catch (error: any) {
+                console.error(`❌ Concept extraction failed for ${sourceBasename}:`, error.message);
+                // Use empty concepts if extraction fails
+                concepts = {
+                    primary_concepts: [],
+                    categories: ['General'],
+                    related_concepts: []
+                };
+                console.log(`⚠️  Continuing with empty concepts for this document`);
+            }
         }
         
         // Extract concept names for display (handle both string[] and ExtractedConcept[] formats)
@@ -1028,9 +1290,6 @@ ${contentOverview}
 Key Concepts: ${conceptNames.join(', ')}
 Categories: ${concepts.categories.join(', ')}
 `.trim();
-        
-        // Get paper metadata from first page (shared across all pages)
-        const paperMetadata = docs[0]?.metadata?.paperMetadata;
         
         const catalogRecord = new Document({ 
             pageContent: enrichedContent, 
@@ -1053,6 +1312,13 @@ Categories: ${concepts.categories.join(', ')}
             console.log(`📝 Creating catalog record for OCR'd document: hash=${hash.slice(0, 8)}..., source=${sourceBasename}`);
         }
     }
+    
+    // Log cache statistics
+    if (cacheHits > 0 || cacheMisses > 0) {
+        const total = cacheHits + cacheMisses;
+        const hitRate = total > 0 ? Math.round((cacheHits / total) * 100) : 0;
+        console.log(`📊 Cache stats: ${cacheHits} hits, ${cacheMisses} misses (${hitRate}% hit rate)`);
+    }
 
     return { catalogRecords, processedInThisRun };
 }
@@ -1064,11 +1330,14 @@ Categories: ${concepts.categories.join(', ')}
 async function processDocumentsParallel(
     docsBySource: Record<string, Document[]>,
     checkpoint: SeedingCheckpoint | undefined,
-    workers: number
+    workers: number,
+    stageCache?: StageCache | null,
+    cacheOnlyMode: boolean = false
 ): Promise<{ catalogRecords: Document[], processedInThisRun: Array<{hash: string, source: string}> }> {
     
-    // Prepare document sets with hashes
+    // Prepare document sets with hashes and check cache
     const documentSets = new Map<string, DocumentSet>();
+    const cachedResults = new Map<string, CachedDocumentData>();
     
     for (const [source, docs] of Object.entries(docsBySource)) {
         let hash = docs[0]?.metadata?.hash;
@@ -1076,10 +1345,77 @@ async function processDocumentsParallel(
             const fileContent = await fs.promises.readFile(source);
             hash = crypto.createHash('sha256').update(fileContent).digest('hex');
         }
-        documentSets.set(source, { docs, hash });
+        
+        // Check cache before adding to processing queue
+        const cached = stageCache ? await stageCache.get(hash) : null;
+        if (cached?.concepts && cached?.contentOverview) {
+            cachedResults.set(source, cached);
+        } else {
+            documentSets.set(source, { docs, hash });
+        }
+    }
+    
+    // Report cache status
+    if (cachedResults.size > 0) {
+        console.log(`📦 Found ${cachedResults.size} cached documents (skipping LLM extraction)`);
     }
     
     const totalDocs = documentSets.size;
+    
+    // In cache-only mode, fail if any documents are not cached
+    if (cacheOnlyMode && totalDocs > 0) {
+        const uncachedSources = Array.from(documentSets.keys()).map(s => path.basename(s));
+        console.error(`❌ Cache-only mode: ${totalDocs} document(s) not in cache:`);
+        uncachedSources.slice(0, 5).forEach(s => console.error(`   - ${s}`));
+        if (uncachedSources.length > 5) {
+            console.error(`   ... and ${uncachedSources.length - 5} more`);
+        }
+        throw new Error(`Cache-only mode: ${totalDocs} document(s) not found in cache. Run without --cache-only to process.`);
+    }
+    
+    // If all documents are cached, skip parallel extraction entirely
+    if (totalDocs === 0) {
+        console.log(`✅ All ${cachedResults.size} documents loaded from cache - no LLM calls needed\n`);
+        
+        // Convert cached results to catalog records
+        const catalogRecords: Document[] = [];
+        const processedInThisRun: Array<{hash: string, source: string}> = [];
+        
+        for (const [source, cached] of cachedResults) {
+            const docs = docsBySource[source];
+            const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
+            const paperMetadata = docs[0]?.metadata?.paperMetadata;
+            
+            const conceptNames = cached.concepts!.primary_concepts.map((c: any) => 
+                typeof c === 'string' ? c : (c.name || '')
+            ).filter((n: string) => n);
+            
+            const enrichedContent = `
+${cached.contentOverview}
+
+Key Concepts: ${conceptNames.join(', ')}
+Categories: ${cached.concepts!.categories.join(', ')}
+`.trim();
+            
+            const catalogRecord = new Document({
+                pageContent: enrichedContent,
+                metadata: {
+                    source,
+                    hash: cached.hash,
+                    ocr_processed: isOcrProcessed,
+                    concepts: cached.concepts,
+                    paperMetadata: paperMetadata
+                }
+            });
+            
+            catalogRecords.push(catalogRecord);
+            processedInThisRun.push({ hash: cached.hash, source });
+        }
+        
+        console.log(`📊 Cache stats: ${cachedResults.size} hits, 0 processed`);
+        return { catalogRecords, processedInThisRun };
+    }
+    
     const actualWorkers = Math.min(totalDocs, workers);
     console.log(`📊 Processing ${totalDocs} document(s) with ${actualWorkers} parallel workers\n`);
     
@@ -1178,12 +1514,68 @@ async function processDocumentsParallel(
     const catalogRecords: Document[] = [];
     const processedInThisRun: Array<{hash: string, source: string}> = [];
     
-    // Process successful documents
+    // First, add cached results to catalog records
+    for (const [source, cached] of cachedResults) {
+        const docs = docsBySource[source];
+        const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
+        const paperMetadata = docs[0]?.metadata?.paperMetadata;
+        
+        // Extract concept names
+        const conceptNames = cached.concepts!.primary_concepts.map((c: any) => 
+            typeof c === 'string' ? c : (c.name || '')
+        ).filter((n: string) => n);
+        
+        const enrichedContent = `
+${cached.contentOverview}
+
+Key Concepts: ${conceptNames.join(', ')}
+Categories: ${cached.concepts!.categories.join(', ')}
+`.trim();
+        
+        const catalogRecord = new Document({
+            pageContent: enrichedContent,
+            metadata: {
+                source,
+                hash: cached.hash,
+                ocr_processed: isOcrProcessed,
+                concepts: cached.concepts,
+                paperMetadata: paperMetadata
+            }
+        });
+        
+        catalogRecords.push(catalogRecord);
+        processedInThisRun.push({ hash: cached.hash, source });
+    }
+    
+    // Process successful documents from parallel extraction
     for (const result of successful) {
         const docs = docsBySource[result.source];
         const contentOverview = await generateContentOverview(docs);
         const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
         const paperMetadata = docs[0]?.metadata?.paperMetadata;
+        
+        // Cache the newly extracted results
+        if (stageCache) {
+            const conceptData = result.concepts as any;
+            const cacheData: CachedDocumentData = {
+                hash: result.hash,
+                source: result.source,
+                processedAt: new Date().toISOString(),
+                concepts: {
+                    primary_concepts: conceptData.primary_concepts,
+                    categories: conceptData.categories,
+                    technical_terms: conceptData.technical_terms,
+                    related_concepts: conceptData.related_concepts
+                },
+                contentOverview,
+                metadata: paperMetadata ? {
+                    title: paperMetadata.title,
+                    author: paperMetadata.authors?.join(', '),
+                    year: paperMetadata.year
+                } : undefined
+            };
+            await stageCache.set(result.hash, cacheData);
+        }
         
         // Extract concept names
         const conceptNames = result.concepts!.primary_concepts.map((c: any) => 
@@ -1258,6 +1650,9 @@ Categories: General
     if (checkpoint && failed.length > 0) {
         await checkpoint.save();
     }
+    
+    // Log final cache statistics
+    console.log(`📊 Cache stats: ${cachedResults.size} hits, ${successful.length + failed.length} processed`);
     
     return { catalogRecords, processedInThisRun };
 }
@@ -1517,18 +1912,88 @@ async function rebuildConceptIndexFromExistingData(
 }
 
 async function hybridFastSeed() {
-    validateArgs();
+    const sourceDirs = await validateArgs();
     
     // Preflight check: verify API key before any database operations
     await verifyApiKey();
+    
+    // Process each source directory in order (oldest cache first when resuming)
+    for (let i = 0; i < sourceDirs.length; i++) {
+        const currentFilesDir = sourceDirs[i];
+        if (sourceDirs.length > 1) {
+            console.log(`\n${'='.repeat(60)}`);
+            console.log(`📁 Processing collection ${i + 1}/${sourceDirs.length}: ${currentFilesDir}`);
+            console.log(`${'='.repeat(60)}`);
+        }
+        await processSourceDirectory(currentFilesDir);
+    }
+}
+
+async function processSourceDirectory(currentFilesDir: string) {
+    // Discover all documents and compute hashes for collection-based caching
+    // This must happen before StageCache initialization so we can organize by collection
+    console.log(`🔍 Discovering documents at ${currentFilesDir}...`);
+    const { documentFiles: discoveredFiles, fileHashes: precomputedHashes } = await discoverDocumentsWithHashes(currentFilesDir);
+    const allFileHashes = Array.from(precomputedHashes.values());
+    const collectionHash = allFileHashes.length > 0 ? StageCache.computeCollectionHash(allFileHashes) : null;
 
     // Initialize checkpoint for resumable seeding
     const checkpointPath = SeedingCheckpoint.getDefaultPath(databaseDir);
     const seedingCheckpoint = new SeedingCheckpoint({
         checkpointPath,
         databasePath: databaseDir,
-        filesDir: filesDir
+        filesDir: currentFilesDir
     });
+    
+    // Initialize stage cache for LLM result persistence
+    // Cache is organized by collection hash (based on source file contents)
+    const stageCacheDir = customCacheDir || StageCache.getDefaultPath(databaseDir);
+    const stageCache = useCache ? new StageCache({
+        cacheDir: stageCacheDir,
+        ttlMs: 7 * 24 * 60 * 60 * 1000,  // 7 days TTL
+        collectionHash: collectionHash ?? undefined
+    }) : null;
+    
+    if (stageCache) {
+        await stageCache.initialize();
+        
+        // Handle --clear-cache flag
+        if (clearCache) {
+            console.log(`🗑️ Clearing stage cache...`);
+            const cleared = await stageCache.clear();
+            console.log(`✅ Cleared ${cleared} cached entries`);
+        }
+        
+        // Display cache stats
+        const cacheStats = await stageCache.getStats();
+        if (cacheStats.count > 0) {
+            const sizeMB = (cacheStats.totalSize / 1024 / 1024).toFixed(1);
+            console.log(`📦 Stage cache: ${cacheStats.count} cached documents (${sizeMB} MB)`);
+            if (collectionHash) {
+                console.log(`   └─ Collection: ${collectionHash}`);
+            }
+            if (cacheStats.expiredCount > 0) {
+                console.log(`   └─ ${cacheStats.expiredCount} expired entries (will be cleaned)`);
+            }
+        }
+        
+        // Clean expired entries in background
+        if (cacheStats.expiredCount > 0) {
+            stageCache.cleanExpired().then(cleaned => {
+                if (cleaned > 0) {
+                    console.log(`🧹 Cleaned ${cleaned} expired cache entries`);
+                }
+            });
+        }
+    } else {
+        console.log(`📦 Stage cache: disabled (--no-cache)`);
+    }
+    
+    // Validate --cache-only mode
+    if (cacheOnly && !stageCache) {
+        console.error(`❌ --cache-only requires cache to be enabled (remove --no-cache)`);
+        process.exit(1);
+    }
     
     // Handle --clean-checkpoint flag
     if (cleanCheckpoint) {
@@ -1660,11 +2125,12 @@ async function hybridFastSeed() {
 
     // Load files (pass checkpoint for resumable skip detection)
     const { documents: rawDocs, documentsNeedingChunks, failedFiles: loadingFailedFiles } = await loadDocumentsWithErrorHandling(
-        filesDir, 
-        catalogTable, 
-        chunksTable, 
+        currentFilesDir,
+        catalogTable,
+        chunksTable,
         overwrite || !catalogTableExists,
-        seedingCheckpoint
+        seedingCheckpoint,
+        precomputedHashes
     );
     
     // Save checkpoint after loading phase to persist any newly discovered complete documents
@@ -1745,7 +2211,7 @@ async function hybridFastSeed() {
     }
 
     console.log("🚀 Creating catalog with LLM summaries...");
-    const { catalogRecords, processedInThisRun } = await processDocuments(rawDocs, seedingCheckpoint, parallelWorkers);
+    const { catalogRecords, processedInThisRun } = await processDocuments(rawDocs, seedingCheckpoint, parallelWorkers, stageCache, cacheOnly);
     
     if (catalogRecords.length > 0) {
         console.log("📊 Creating catalog table with fast local embeddings...");
@@ -2210,6 +2676,28 @@ async function hybridFastSeed() {
             console.log(`   ❌ ${truncated}`);
         }
         console.log('');
+    }
+    
+    // Check if all documents are seeded and clean up collection cache
+    if (stageCache && collectionHash && allFileHashes.length > 0 && catalogTable) {
+        try {
+            // Query catalog to check if all file hashes exist
+            const allCatalogRecords = await catalogTable.query().limit(100000).toArray();
+            const catalogHashes = new Set(allCatalogRecords.map((r: any) => r.hash).filter(Boolean));
+            
+            const allSeeded = allFileHashes.every(hash => catalogHashes.has(hash));
+            
+            if (allSeeded) {
+                console.log(`🗑️  All documents seeded - cleaning up collection cache (${collectionHash})...`);
+                const removed = await stageCache.removeCollectionCache();
+                if (removed) {
+                    console.log(`   ✅ Removed collection cache`);
+                }
+            }
+        } catch (error: any) {
+            // Non-fatal: log warning but don't fail
+            console.warn(`   ⚠️  Could not clean up collection cache: ${error.message}`);
+        }
     }
     
     console.log("🎉 Seeding completed successfully!");
