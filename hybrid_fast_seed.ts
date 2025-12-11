@@ -164,8 +164,8 @@ console.log = (...args: any[]) => {
 };
 
 const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {
-    boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume", "with-wordnet"],
-    string: ["dbpath", "filesdir", "max-docs", "parallel"]
+    boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume", "with-wordnet", "clear-cache", "cache-only", "no-cache"],
+    string: ["dbpath", "filesdir", "max-docs", "parallel", "cache-dir"]
 });
 
 const databaseDir = argv["dbpath"] || process.env.CONCEPT_RAG_DB_PATH || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag");
@@ -178,6 +178,12 @@ const resumeMode = argv["resume"];
 const maxDocs = argv["max-docs"] ? parseInt(argv["max-docs"], 10) : undefined;
 const parallelWorkers = argv["parallel"] ? parseInt(argv["parallel"], 10) : 10;
 const openrouterApiKey = process.env.OPENROUTER_API_KEY;
+
+// Stage cache flags
+const clearCache = argv["clear-cache"];
+const cacheOnly = argv["cache-only"];
+const useCache = !argv["no-cache"];  // Default: true (use cache), --no-cache disables
+const customCacheDir = argv["cache-dir"];
 
 function validateArgs() {
     if (!filesDir) {
@@ -197,6 +203,12 @@ function validateArgs() {
         console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
         console.error("  --max-docs N: Process at most N NEW documents (skips already processed, enables batching)");
         console.error("  --parallel N: Process N documents concurrently for concept extraction (default: 10, max: 25)");
+        console.error("");
+        console.error("Cache options:");
+        console.error("  --no-cache: Disable stage cache (don't use cached LLM results)");
+        console.error("  --clear-cache: Clear stage cache before processing");
+        console.error("  --cache-only: Only use cached results, fail if document not in cache");
+        console.error("  --cache-dir PATH: Custom cache directory location");
         process.exit(1);
     }
     
@@ -957,7 +969,7 @@ async function createLanceTableWithSimpleEmbeddings(
     }
 }
 
-async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpoint, workers: number = 1, stageCache?: StageCache) {
+async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpoint, workers: number = 1, stageCache?: StageCache | null, cacheOnlyMode: boolean = false) {
     const docsBySource = rawDocs.reduce((acc: Record<string, Document[]>, doc: Document) => {
         const source = doc.metadata.source;
         if (!acc[source]) {
@@ -969,7 +981,7 @@ async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpo
 
     // Use parallel processing if workers > 1
     if (workers > 1) {
-        return processDocumentsParallel(docsBySource, checkpoint, workers, stageCache);
+        return processDocumentsParallel(docsBySource, checkpoint, workers, stageCache, cacheOnlyMode);
     }
 
     // Sequential processing (original behavior)
@@ -1011,8 +1023,16 @@ async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpo
             contentOverview = cached.contentOverview;
             concepts = cached.concepts;
         } else {
-            // Cache miss - perform LLM operations
+            // Cache miss
             cacheMisses++;
+            
+            // In cache-only mode, fail if document not cached
+            if (cacheOnlyMode) {
+                console.error(`❌ Cache-only mode: ${sourceBasename} not in cache`);
+                throw new Error(`Cache-only mode: document ${sourceBasename} not found in cache. Run without --cache-only to process.`);
+            }
+            
+            // Perform LLM operations
             if (isOcrProcessed) {
                 console.log(`🤖 Extracting concepts for: ${sourceBasename} (OCR processed)`);
             } else {
@@ -1112,7 +1132,8 @@ async function processDocumentsParallel(
     docsBySource: Record<string, Document[]>,
     checkpoint: SeedingCheckpoint | undefined,
     workers: number,
-    stageCache?: StageCache
+    stageCache?: StageCache | null,
+    cacheOnlyMode: boolean = false
 ): Promise<{ catalogRecords: Document[], processedInThisRun: Array<{hash: string, source: string}> }> {
     
     // Prepare document sets with hashes and check cache
@@ -1141,6 +1162,17 @@ async function processDocumentsParallel(
     }
     
     const totalDocs = documentSets.size;
+    
+    // In cache-only mode, fail if any documents are not cached
+    if (cacheOnlyMode && totalDocs > 0) {
+        const uncachedSources = Array.from(documentSets.keys()).map(s => path.basename(s));
+        console.error(`❌ Cache-only mode: ${totalDocs} document(s) not in cache:`);
+        uncachedSources.slice(0, 5).forEach(s => console.error(`   - ${s}`));
+        if (uncachedSources.length > 5) {
+            console.error(`   ... and ${uncachedSources.length - 5} more`);
+        }
+        throw new Error(`Cache-only mode: ${totalDocs} document(s) not found in cache. Run without --cache-only to process.`);
+    }
     
     // If all documents are cached, skip parallel extraction entirely
     if (totalDocs === 0) {
@@ -1695,21 +1727,48 @@ async function hybridFastSeed() {
     });
     
     // Initialize stage cache for LLM result persistence
-    const stageCacheDir = StageCache.getDefaultPath(databaseDir);
-    const stageCache = new StageCache({
+    const stageCacheDir = customCacheDir || StageCache.getDefaultPath(databaseDir);
+    const stageCache = useCache ? new StageCache({
         cacheDir: stageCacheDir,
         ttlMs: 7 * 24 * 60 * 60 * 1000  // 7 days TTL
-    });
-    await stageCache.initialize();
+    }) : null;
     
-    // Display cache stats
-    const cacheStats = await stageCache.getStats();
-    if (cacheStats.count > 0) {
-        const sizeMB = (cacheStats.totalSize / 1024 / 1024).toFixed(1);
-        console.log(`📦 Stage cache: ${cacheStats.count} cached documents (${sizeMB} MB)`);
-        if (cacheStats.expiredCount > 0) {
-            console.log(`   └─ ${cacheStats.expiredCount} expired entries (will be cleaned)`);
+    if (stageCache) {
+        await stageCache.initialize();
+        
+        // Handle --clear-cache flag
+        if (clearCache) {
+            console.log(`🗑️ Clearing stage cache...`);
+            const cleared = await stageCache.clear();
+            console.log(`✅ Cleared ${cleared} cached entries`);
         }
+        
+        // Display cache stats
+        const cacheStats = await stageCache.getStats();
+        if (cacheStats.count > 0) {
+            const sizeMB = (cacheStats.totalSize / 1024 / 1024).toFixed(1);
+            console.log(`📦 Stage cache: ${cacheStats.count} cached documents (${sizeMB} MB)`);
+            if (cacheStats.expiredCount > 0) {
+                console.log(`   └─ ${cacheStats.expiredCount} expired entries (will be cleaned)`);
+            }
+        }
+        
+        // Clean expired entries in background
+        if (cacheStats.expiredCount > 0) {
+            stageCache.cleanExpired().then(cleaned => {
+                if (cleaned > 0) {
+                    console.log(`🧹 Cleaned ${cleaned} expired cache entries`);
+                }
+            });
+        }
+    } else {
+        console.log(`📦 Stage cache: disabled (--no-cache)`);
+    }
+    
+    // Validate --cache-only mode
+    if (cacheOnly && !stageCache) {
+        console.error(`❌ --cache-only requires cache to be enabled (remove --no-cache)`);
+        process.exit(1);
     }
     
     // Handle --clean-checkpoint flag
@@ -1927,7 +1986,7 @@ async function hybridFastSeed() {
     }
 
     console.log("🚀 Creating catalog with LLM summaries...");
-    const { catalogRecords, processedInThisRun } = await processDocuments(rawDocs, seedingCheckpoint, parallelWorkers, stageCache);
+    const { catalogRecords, processedInThisRun } = await processDocuments(rawDocs, seedingCheckpoint, parallelWorkers, stageCache, cacheOnly);
     
     if (catalogRecords.length > 0) {
         console.log("📊 Creating catalog table with fast local embeddings...");
