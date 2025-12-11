@@ -441,7 +441,7 @@ async function loadDocumentsWithErrorHandling(
             try {
                 // Check checkpoint first for fast skip (O(1) hash lookup)
                 if (checkpoint && checkpoint.isProcessed(hash)) {
-                    console.log(`⏭️ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)} (checkpoint)`);
+                    console.log(`⏭️ [${hash.slice(0, 4)}..${hash.slice(-4)}] ${truncateFilePath(relativePath)}`);
                     skippedFiles.push(relativePath);
                     continue;
                 }
@@ -1042,9 +1042,10 @@ async function processDocuments(rawDocs: Document[], checkpoint?: SeedingCheckpo
             contentOverview = await generateContentOverview(docs);
             
             // Extract concepts using LLM
+            process.stdout.write(`   🔄 Extracting concepts (this takes 1-2 min)...`);
             try {
                 concepts = await conceptExtractor.extractConcepts(docs);
-                console.log(`✅ Found: ${concepts.primary_concepts.length} concepts`);
+                process.stdout.write(`\r   ✅ Found: ${concepts.primary_concepts.length} concepts${' '.repeat(20)}\n`);
                 
                 // Cache immediately after successful LLM extraction
                 if (stageCache) {
