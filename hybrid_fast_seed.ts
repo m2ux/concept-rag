@@ -185,33 +185,38 @@ const cacheOnly = argv["cache-only"];
 const useCache = !argv["no-cache"];  // Default: true (use cache), --no-cache disables
 const customCacheDir = argv["cache-dir"];
 
-function validateArgs() {
-    if (!filesDir) {
-        console.error("Please provide a directory with files (--filesdir) to process");
-        console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [options]");
-        console.error("");
-        console.error("Required:");
-        console.error("  --filesdir: Directory containing PDF/EPUB files to process");
-        console.error("");
-        console.error("Options:");
-        console.error("  --dbpath: Database path (default: ~/.concept_rag)");
-        console.error("  --overwrite: Drop and recreate all database tables");
-        console.error("  --rebuild-concepts: Rebuild concept index even if no new documents");
-        console.error("  --auto-reseed: Re-process documents with incomplete metadata");
-        console.error("  --resume: Resume from checkpoint (skip already processed documents)");
-        console.error("  --clean-checkpoint: Clear checkpoint and start fresh");
-        console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
-        console.error("  --max-docs N: Process at most N NEW documents (skips already processed, enables batching)");
-        console.error("  --parallel N: Process N documents concurrently for concept extraction (default: 10, max: 25)");
-        console.error("");
-        console.error("Cache options:");
-        console.error("  --no-cache: Disable stage cache (don't use cached LLM results)");
-        console.error("  --clear-cache: Clear stage cache before processing");
-        console.error("  --cache-only: Only use cached results, fail if document not in cache");
-        console.error("  --cache-dir PATH: Custom cache directory location");
-        process.exit(1);
-    }
-    
+function showUsageAndExit() {
+    console.error("Please provide a directory with files (--filesdir) to process");
+    console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [options]");
+    console.error("");
+    console.error("Required:");
+    console.error("  --filesdir: Directory containing PDF/EPUB files to process");
+    console.error("              (or omit to resume from existing caches)");
+    console.error("");
+    console.error("Options:");
+    console.error("  --dbpath: Database path (default: ~/.concept_rag)");
+    console.error("  --overwrite: Drop and recreate all database tables");
+    console.error("  --rebuild-concepts: Rebuild concept index even if no new documents");
+    console.error("  --auto-reseed: Re-process documents with incomplete metadata");
+    console.error("  --resume: Resume from checkpoint (skip already processed documents)");
+    console.error("  --clean-checkpoint: Clear checkpoint and start fresh");
+    console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
+    console.error("  --max-docs N: Process at most N NEW documents (skips already processed, enables batching)");
+    console.error("  --parallel N: Process N documents concurrently for concept extraction (default: 10, max: 25)");
+    console.error("");
+    console.error("Cache options:");
+    console.error("  --no-cache: Disable stage cache (don't use cached LLM results)");
+    console.error("  --clear-cache: Clear stage cache before processing");
+    console.error("  --cache-only: Only use cached results, fail if document not in cache");
+    console.error("  --cache-dir PATH: Custom cache directory location");
+    process.exit(1);
+}
+
+/**
+ * Validates arguments. Returns array of source directories to process.
+ * If filesDir is not provided, checks for existing caches and returns their source directories.
+ */
+async function validateArgs(): Promise<string[]> {
     if (!openrouterApiKey) {
         console.error("Please set OPENROUTER_API_KEY environment variable");
         process.exit(1);
@@ -223,17 +228,61 @@ function validateArgs() {
         process.exit(1);
     }
     
+    // If filesDir provided, use it
+    if (filesDir) {
+        console.log(`📂 Database: ${databaseDir}`);
+        console.log(`🔄 Overwrite mode: ${overwrite}`);
+        if (resumeMode) {
+            console.log(`🔄 Resume mode: enabled`);
+        }
+        if (maxDocs) {
+            console.log(`📊 Max documents: ${maxDocs}`);
+        }
+        if (parallelWorkers > 1) {
+            console.log(`🚀 Parallel mode: ${parallelWorkers} workers`);
+        }
+        return [filesDir];
+    }
+    
+    // No filesDir - check for existing caches
+    const baseCacheDir = customCacheDir || StageCache.getDefaultPath(databaseDir);
+    const cachedCollections = await listCachedCollections(baseCacheDir);
+    
+    if (cachedCollections.length === 0) {
+        // No caches found - show original error
+        showUsageAndExit();
+    }
+    
+    // Found cached collections - derive source directories
     console.log(`📂 Database: ${databaseDir}`);
-    console.log(`🔄 Overwrite mode: ${overwrite}`);
+    console.log(`📦 Found ${cachedCollections.length} cached collection(s) to resume:`);
+    
+    const sourceDirs: string[] = [];
+    for (const collection of cachedCollections) {
+        const sourceDir = await getSourceDirFromCache(collection.cacheDir);
+        if (sourceDir) {
+            const age = Math.round((Date.now() - collection.createdAt.getTime()) / (1000 * 60));
+            console.log(`   └─ ${collection.collectionHash}: ${collection.fileCount} files, ${age}min ago → ${sourceDir}`);
+            sourceDirs.push(sourceDir);
+        } else {
+            console.log(`   └─ ${collection.collectionHash}: ${collection.fileCount} files (source unknown, skipping)`);
+        }
+    }
+    
+    if (sourceDirs.length === 0) {
+        console.error("❌ Could not determine source directories from caches");
+        process.exit(1);
+    }
+    
+    console.log(`🔄 Will process ${sourceDirs.length} cached collection(s) in chronological order`);
     if (resumeMode) {
         console.log(`🔄 Resume mode: enabled`);
-    }
-    if (maxDocs) {
-        console.log(`📊 Max documents: ${maxDocs}`);
     }
     if (parallelWorkers > 1) {
         console.log(`🚀 Parallel mode: ${parallelWorkers} workers`);
     }
+    
+    return sourceDirs;
 }
 
 /**
@@ -415,6 +464,119 @@ async function discoverDocumentsWithHashes(filesDir: string): Promise<{
     }
     
     return { documentFiles, fileHashes };
+}
+
+/**
+ * Lists existing collection cache directories with their metadata.
+ * Used when no --filesdir is specified to resume from cached collections.
+ *
+ * @param baseCacheDir Base cache directory (e.g., ~/.concept_rag/.stage-cache)
+ * @returns Array of collection info sorted by oldest first
+ */
+async function listCachedCollections(baseCacheDir: string): Promise<Array<{
+    collectionHash: string;
+    cacheDir: string;
+    createdAt: Date;
+    fileCount: number;
+}>> {
+    const collections: Array<{
+        collectionHash: string;
+        cacheDir: string;
+        createdAt: Date;
+        fileCount: number;
+    }> = [];
+
+    try {
+        const entries = await fs.promises.readdir(baseCacheDir, { withFileTypes: true });
+        
+        for (const entry of entries) {
+            if (!entry.isDirectory()) continue;
+            
+            // Collection hash directories are 16 characters
+            if (entry.name.length !== 16) continue;
+            
+            const collectionDir = path.join(baseCacheDir, entry.name);
+            
+            try {
+                const stat = await fs.promises.stat(collectionDir);
+                const files = await fs.promises.readdir(collectionDir);
+                const jsonFiles = files.filter(f => f.endsWith('.json'));
+                
+                if (jsonFiles.length > 0) {
+                    collections.push({
+                        collectionHash: entry.name,
+                        cacheDir: collectionDir,
+                        createdAt: stat.birthtime,
+                        fileCount: jsonFiles.length
+                    });
+                }
+            } catch {
+                // Skip directories we can't read
+            }
+        }
+    } catch (error: unknown) {
+        // Cache directory doesn't exist
+        if (error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code !== 'ENOENT') {
+            throw error;
+        }
+    }
+
+    // Sort by oldest first (chronological order)
+    return collections.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+}
+
+/**
+ * Extracts source directory from cached files in a collection.
+ * Reads a sample cache file to find the common source directory.
+ *
+ * @param collectionDir Path to collection cache directory
+ * @returns The derived source directory, or null if cannot be determined
+ */
+async function getSourceDirFromCache(collectionDir: string): Promise<string | null> {
+    try {
+        const files = await fs.promises.readdir(collectionDir);
+        const jsonFiles = files.filter(f => f.endsWith('.json'));
+        
+        if (jsonFiles.length === 0) return null;
+        
+        // Read first cache file to get source path
+        const firstFile = path.join(collectionDir, jsonFiles[0]);
+        const content = await fs.promises.readFile(firstFile, 'utf-8');
+        const data = JSON.parse(content);
+        
+        if (!data.source) return null;
+        
+        // Find common parent directory from all sources
+        const sourcePaths: string[] = [];
+        for (const file of jsonFiles.slice(0, 10)) { // Sample first 10 files
+            try {
+                const filePath = path.join(collectionDir, file);
+                const fileContent = await fs.promises.readFile(filePath, 'utf-8');
+                const fileData = JSON.parse(fileContent);
+                if (fileData.source) {
+                    sourcePaths.push(fileData.source);
+                }
+            } catch {
+                // Skip unreadable files
+            }
+        }
+        
+        if (sourcePaths.length === 0) return null;
+        
+        // Find common directory prefix
+        const firstSource = sourcePaths[0];
+        let commonDir = path.dirname(firstSource);
+        
+        for (const source of sourcePaths) {
+            while (commonDir && !source.startsWith(commonDir + path.sep) && source !== commonDir) {
+                commonDir = path.dirname(commonDir);
+            }
+        }
+        
+        return commonDir || null;
+    } catch {
+        return null;
+    }
 }
 
 async function loadDocumentsWithErrorHandling(
@@ -1750,15 +1912,28 @@ async function rebuildConceptIndexFromExistingData(
 }
 
 async function hybridFastSeed() {
-    validateArgs();
+    const sourceDirs = await validateArgs();
     
     // Preflight check: verify API key before any database operations
     await verifyApiKey();
+    
+    // Process each source directory in order (oldest cache first when resuming)
+    for (let i = 0; i < sourceDirs.length; i++) {
+        const currentFilesDir = sourceDirs[i];
+        if (sourceDirs.length > 1) {
+            console.log(`\n${'='.repeat(60)}`);
+            console.log(`📁 Processing collection ${i + 1}/${sourceDirs.length}: ${currentFilesDir}`);
+            console.log(`${'='.repeat(60)}`);
+        }
+        await processSourceDirectory(currentFilesDir);
+    }
+}
 
+async function processSourceDirectory(currentFilesDir: string) {
     // Discover all documents and compute hashes for collection-based caching
     // This must happen before StageCache initialization so we can organize by collection
-    console.log(`🔍 Discovering documents at ${filesDir}...`);
-    const { documentFiles: discoveredFiles, fileHashes: precomputedHashes } = await discoverDocumentsWithHashes(filesDir);
+    console.log(`🔍 Discovering documents at ${currentFilesDir}...`);
+    const { documentFiles: discoveredFiles, fileHashes: precomputedHashes } = await discoverDocumentsWithHashes(currentFilesDir);
     const allFileHashes = Array.from(precomputedHashes.values());
     const collectionHash = allFileHashes.length > 0 ? StageCache.computeCollectionHash(allFileHashes) : null;
 
@@ -1767,7 +1942,7 @@ async function hybridFastSeed() {
     const seedingCheckpoint = new SeedingCheckpoint({
         checkpointPath,
         databasePath: databaseDir,
-        filesDir: filesDir
+        filesDir: currentFilesDir
     });
     
     // Initialize stage cache for LLM result persistence
@@ -1950,7 +2125,7 @@ async function hybridFastSeed() {
 
     // Load files (pass checkpoint for resumable skip detection)
     const { documents: rawDocs, documentsNeedingChunks, failedFiles: loadingFailedFiles } = await loadDocumentsWithErrorHandling(
-        filesDir,
+        currentFilesDir,
         catalogTable,
         chunksTable,
         overwrite || !catalogTableExists,

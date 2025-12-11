@@ -216,6 +216,31 @@ This ensures:
 | `--clear-cache` | Clear cache before processing |
 | `--cache-only` | Only use cached results, fail if not cached |
 | `--cache-dir PATH` | Use custom cache directory |
+| (no `--filesdir`) | Resume from cached collections in chronological order |
+
+### Resume from Cached Collections
+
+If you run the seeding script without `--filesdir` and cached collections exist, they will be processed automatically in chronological order (oldest first):
+
+```bash
+# First run - interrupted
+npx tsx hybrid_fast_seed.ts --filesdir /path/to/docs1
+# ^C (interrupted)
+
+# Second run - different path, interrupted
+npx tsx hybrid_fast_seed.ts --filesdir /path/to/docs2
+# ^C (interrupted)
+
+# Third run - no path, resumes both in order
+npx tsx hybrid_fast_seed.ts
+# Output:
+# 📦 Found 2 cached collection(s) to resume:
+#    └─ a1b2c3d4e5f67890: 5 files, 45min ago → /path/to/docs1
+#    └─ f8e7d6c5b4a39281: 3 files, 15min ago → /path/to/docs2
+# 🔄 Will process 2 cached collection(s) in chronological order
+```
+
+If no caches exist, the original error is shown requiring `--filesdir`.
 
 ## Disk Space
 
