@@ -132,3 +132,4 @@ The optimization will be validated by:
 
 - `src/concepts/summary_generator.ts` - Summary generation implementation
 - ADR-0030: Auto-Extracted Categories - Category extraction design
+
