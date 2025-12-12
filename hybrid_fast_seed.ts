@@ -1666,6 +1666,24 @@ async function createCategoriesTable(
 ): Promise<void> {
     console.log("📊 Creating categories table...");
     
+    // Cache existing category summaries BEFORE any modifications
+    // This allows us to reuse existing LLM-generated summaries for unchanged categories
+    const cachedSummaries = new Map<string, string>();
+    try {
+        const existingTable = await db.openTable('categories');
+        const existingRecords = await existingTable.query().limit(10000).toArray();
+        for (const record of existingRecords) {
+            if (record.category && record.summary) {
+                // Store by lowercase for case-insensitive matching
+                cachedSummaries.set(record.category.toLowerCase(), record.summary);
+            }
+        }
+        console.log(`  📦 Cached ${cachedSummaries.size} existing category summaries`);
+    } catch (e) {
+        // Table doesn't exist yet (first run), proceed with empty cache
+        console.log("  📦 No existing categories table found (first run)");
+    }
+    
     // Extract unique categories from all documents
     const categorySet = new Set<string>();
     const categoryStats = new Map<string, {
@@ -1711,10 +1729,28 @@ async function createCategoriesTable(
     const existingIds = new Set<number>();
     const categoryRecords: any[] = [];
     
-    console.log("  🔄 Generating category records with embeddings...");
+    // Identify NEW categories that need LLM summary generation
+    const newCategories = sortedCategories.filter(
+        cat => !cachedSummaries.has(cat.toLowerCase())
+    );
+    const existingCount = sortedCategories.length - newCategories.length;
     
-    // Generate summaries for categories using LLM
-    const categorySummaries = await generateCategorySummaries(sortedCategories);
+    console.log(`  🔄 Generating category records with embeddings...`);
+    console.log(`  📊 Categories: ${existingCount} cached, ${newCategories.length} new`);
+    
+    // Generate summaries ONLY for new categories (not in cache)
+    let newSummaries = new Map<string, string>();
+    if (newCategories.length > 0) {
+        newSummaries = await generateCategorySummaries(newCategories);
+    } else {
+        console.log("  ✅ All categories have cached summaries, skipping LLM generation");
+    }
+    
+    // Merge cached summaries with newly generated ones
+    const categorySummaries = new Map<string, string>(cachedSummaries);
+    for (const [key, value] of newSummaries) {
+        categorySummaries.set(key, value);
+    }
     
     for (const category of sortedCategories) {
         // Generate stable hash-based ID
