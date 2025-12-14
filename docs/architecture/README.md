@@ -152,7 +152,7 @@ This directory contains all architectural decisions made during the development 
 
 | # | Title | Date | Status |
 |---|-------|------|--------|
-| [adr0050](adr0050-mkdocs-material-documentation-site.md) | MkDocs Material Documentation Site | 2025-12-14 | Proposed |
+| [adr0050](adr0050-mkdocs-material-documentation-site.md) | MkDocs Material Documentation Site | 2025-12-14 | Accepted |
 
 **Features:** MkDocs Material static site, GitHub Pages deployment, automated CI/CD
 
