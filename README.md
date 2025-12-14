@@ -39,9 +39,9 @@ The server provides **10 specialized MCP tools** organized into four categories:
 | `concept_sources` | Get per-concept source lists (separate arrays) | `["TDD", "BDD"]` → sources for each |
 | `list_concepts_in_category` | Find concepts in a category | `"distributed systems"` |
 
-**📖 Full API documentation:** See [docs/api-reference.md](docs/api-reference.md) for complete parameter specs and hybrid scoring weights.
+**📖 Full API documentation:** See [docs/api-reference.md](docs/api-reference.md) for complete JSON I/O schemas.
 
-**For AI agents:** See [tool-selection-guide.md](docs/tool-selection-guide.md) for the decision tree.
+**For AI agents:** See [docs/tool-selection-guide.md](docs/tool-selection-guide.md) for the decision tree and selection guidance.
 
 ## 🚀 Quick Start
 
@@ -228,9 +228,9 @@ All major technical decisions are documented in **[Architecture Decision Records
 
 ### Documentation
 
-- **[API Reference](docs/api-reference.md)** - Complete MCP tool documentation with parameters and scoring weights
+- **[API Reference](docs/api-reference.md)** - Complete MCP tool documentation with JSON I/O schemas
+- **[Tool Selection Guide](docs/tool-selection-guide.md)** - Decision tree and usage guidance for AI agents
 - **[Database Schema](docs/database-schema.md)** - Four-table normalized schema with derived fields
-- **[Tool Selection Guide](docs/tool-selection-guide.md)** - Decision tree for AI agents
 - **[Test Suite](src/__tests__/README.md)** - Comprehensive test documentation with links to all E2E, integration, unit, and property tests
 
 ## 💬 Support & Community
