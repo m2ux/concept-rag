@@ -1,4 +1,8 @@
-# Python dependencies for WordNet integration
+# Python dependencies for WordNet integration and documentation
 # Used by CI and development environments
+
+# WordNet semantic enrichment
 nltk>=3.8
 
+# MkDocs Material documentation site
+mkdocs-material>=9.0
