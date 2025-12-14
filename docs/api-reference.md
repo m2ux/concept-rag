@@ -25,11 +25,9 @@ Search document summaries and metadata to discover relevant documents.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `text` | string | ✅ | — | Search query |
-| `debug` | boolean | ❌ | `false` | Enable debug logging (output schema unchanged) |
+| `debug` | boolean | ❌ | `false` | Enable debug logging |
 
 #### Output Schema
-
-> **Note:** Output schema is identical whether `debug` is `true` or `false`. Scores and expanded terms are always included.
 
 ```json
 [
@@ -83,11 +81,9 @@ Search across all document chunks using hybrid search.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `text` | string | ✅ | — | Search query |
-| `debug` | boolean | ❌ | `false` | Enable debug logging (output schema unchanged) |
+| `debug` | boolean | ❌ | `false` | Enable debug logging |
 
 #### Output Schema
-
-> **Note:** Output schema is identical whether `debug` is `true` or `false`. Scores and expanded terms are always included.
 
 ```json
 [
@@ -139,11 +135,9 @@ Search within a single known document.
 |-----------|------|----------|---------|-------------|
 | `text` | string | ✅ | — | Search query |
 | `source` | string | ✅ | — | Full file path of document |
-| `debug` | boolean | ❌ | `false` | Enable debug logging (output schema unchanged) |
+| `debug` | boolean | ❌ | `false` | Enable debug logging |
 
 #### Output Schema
-
-> **Note:** Output schema is identical whether `debug` is `true` or `false`.
 
 ```json
 [
@@ -194,8 +188,6 @@ Find chunks associated with a concept, organized hierarchically.
 | `debug` | boolean | ❌ | `false` | Include `page_previews` in sources |
 
 #### Output Schema
-
-##### Standard Output (`debug: false`)
 
 ```json
 {
@@ -258,27 +250,13 @@ Find chunks associated with a concept, organized hierarchically.
 | `stats` | object | Search statistics |
 | `scores` | object | Hybrid search scores |
 
-##### Debug Output (`debug: true`)
+#### Additional Fields with `debug: true`
 
-When `debug: true`, each source includes an additional `page_previews` field:
-
-```json
-{
-  "sources": [
-    {
-      "title": "string",
-      "pages": [0],
-      "match_type": "primary|related",
-      "via_concept": "string|null",
-      "page_previews": ["Preview text from page..."]
-    }
-  ]
-}
-```
+When `debug: true`, each source includes `page_previews`:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `sources[].page_previews` | string[] | Text previews from each page (debug only) |
+| `sources[].page_previews` | string[] | Text previews from each page |
 
 ---
 
