@@ -146,6 +146,18 @@ This directory contains all architectural decisions made during the development 
 
 ---
 
+### Phase 10: Documentation Infrastructure (December 2025)
+
+**Enhancement:** Documentation site with automated deployment
+
+| # | Title | Date | Status |
+|---|-------|------|--------|
+| [adr0050](adr0050-mkdocs-material-documentation-site.md) | MkDocs Material Documentation Site | 2025-12-14 | Proposed |
+
+**Features:** MkDocs Material static site, GitHub Pages deployment, automated CI/CD
+
+---
+
 ## Using This Documentation
 
 ### For Adding New ADRs
