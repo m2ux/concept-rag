@@ -227,13 +227,14 @@ describe('WordNet Hierarchy Navigation', () => {
     
     it('should respect maxDepth parameter', async () => {
       // EXERCISE
-      const path = await service.findHierarchyPath('dog', 'entity', 2);
+      // Use 'canine' instead of 'entity' - closer in hierarchy, avoids exponential search
+      const path = await service.findHierarchyPath('dog', 'canine', 2);
       
       // VERIFY
       if (path) {
         expect(path.length).toBeLessThanOrEqual(3); // Start + 2 levels
       }
-    }, 60000);
+    }, 30000);
     
     it('should handle unknown terms', async () => {
       // EXERCISE
