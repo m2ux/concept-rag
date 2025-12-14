@@ -212,31 +212,30 @@ async function applyUpdates(
   let updatedCount = 0;
 
   for (const result of results) {
-    // Build update object
-    const updateData: Record<string, string | number> = {};
-    for (const update of result.updates) {
-      updateData[update.field] = update.newValue;
-    }
-
     try {
-      // LanceDB update: fetch record, modify, and update
-      // Note: LanceDB doesn't have direct update by ID, so we use merge
-      const records = await catalog
-        .query()
-        .where(`id = ${result.documentId}`)
-        .limit(1)
-        .toArray();
-
-      if (records.length === 0) {
-        console.warn(`  ⚠️  Record not found: ${result.documentId}`);
-        continue;
+      // Build SQL SET clause for updates
+      const setClauses: string[] = [];
+      for (const update of result.updates) {
+        if (update.field === "year") {
+          setClauses.push(`${update.field} = ${update.newValue}`);
+        } else {
+          // Escape single quotes in string values
+          const escapedValue = String(update.newValue).replace(/'/g, "''");
+          setClauses.push(`${update.field} = '${escapedValue}'`);
+        }
       }
 
-      const record = records[0];
-      const updatedRecord = { ...record, ...updateData };
+      if (setClauses.length === 0) continue;
 
-      // Use LanceDB's merge upsert to update the record
-      await catalog.mergeInsert("id").whenMatchedUpdateAll().execute([updatedRecord]);
+      // Use LanceDB's update with WHERE clause
+      await catalog.update({
+        where: `id = ${result.documentId}`,
+        values: result.updates.reduce((acc, u) => {
+          acc[u.field] = u.newValue;
+          return acc;
+        }, {} as Record<string, string | number>),
+      });
+      
       updatedCount++;
     } catch (e: any) {
       console.error(`  ❌ Failed to update ${result.documentId}: ${e.message}`);
@@ -319,4 +318,6 @@ async function main(): Promise<void> {
 }
 
 main();
+
+
 
