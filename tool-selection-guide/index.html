@@ -1,0 +1,4076 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Conceptual RAG with LanceDB, WordNet, and multi-signal hybrid search for MCP">
+      
+      
+        <meta name="author" content="Alex Komyagin">
+      
+      
+        <link rel="canonical" href="https://m2ux.github.io/concept-rag/tool-selection-guide/">
+      
+      
+        <link rel="prev" href="../stage-cache-structure/">
+      
+      
+        <link rel="next" href="../architecture/adr0001-typescript-nodejs-runtime/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Tool Selection Guide - Concept-RAG Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tool-selection-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Concept-RAG Documentation" class="md-header__button md-logo" aria-label="Concept-RAG Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Concept-RAG Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Tool Selection Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/m2ux/concept-rag" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    m2ux/concept-rag
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api-reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/adr0001-typescript-nodejs-runtime/" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Concept-RAG Documentation" class="md-nav__button md-logo" aria-label="Concept-RAG Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Concept-RAG Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/m2ux/concept-rag" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    m2ux/concept-rag
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../database-schema/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stage-cache-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool Selection Guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool Selection Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-decision-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Decision Tree
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tool-comparison-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool Comparison Matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-tool-selection-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed Tool Selection Criteria
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detailed Tool Selection Criteria">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-concept_search-semantic-concept-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. concept_search - Semantic Concept Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-broad_chunks_search-comprehensive-hybrid-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. broad_chunks_search - Comprehensive Hybrid Search
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-catalog_search-document-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. catalog_search - Document Discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-chunks_search-single-document-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. chunks_search - Single Document Search
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-extract_concepts-concept-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. extract_concepts - Concept Export
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-source_concepts-source-attribution-union" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. source_concepts - Source Attribution (Union) 🆕
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-concept_sources-per-concept-source-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. concept_sources - Per-Concept Source Arrays 🆕
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-category_search-browse-documents-by-category" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. category_search - Browse Documents by Category
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-list_categories-browse-all-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. list_categories - Browse All Categories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-list_concepts_in_category-domain-concept-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. list_concepts_in_category - Domain Concept Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-logic-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Logic Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision Logic Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-user-asks-find-information-about-innovation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 1: User asks "Find information about innovation"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-user-asks-what-do-my-documents-say-about-innovation-and-organizational-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 2: User asks "What do my documents say about innovation and organizational change?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3-user-asks-what-documents-do-i-have-about-military-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 3: User asks "What documents do I have about military strategy?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-4-user-asks-find-where-sun-tzu-discusses-deception" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 4: User asks "Find where Sun Tzu discusses deception"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-5-user-asks-extract-concepts-from-the-art-of-war" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 5: User asks "Extract concepts from the Art of War"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-6-user-asks-what-categories-do-i-have" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 6: User asks "What categories do I have?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-7-user-asks-show-me-documents-about-software-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 7: User asks "Show me documents about software engineering"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-8-user-asks-what-concepts-are-discussed-in-distributed-systems-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 8: User asks "What concepts are discussed in distributed systems documents?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-patterns-and-anti-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Patterns and Anti-Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Patterns and Anti-Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#good-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Good Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anti-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Anti-Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scoring-system-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scoring System Comparison
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scoring System Comparison">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concept_search-scoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        concept_search Scoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#broad_chunks_search-scoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        broad_chunks_search Scoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#catalog_search-scoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        catalog_search Scoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunks_search-scoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        chunks_search Scoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-technical-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Technical Differences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Technical Differences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#index-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Index Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary-the-3-questions-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary: The "3 Questions" Method
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Summary: The &#34;3 Questions&#34; Method">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#question-1-is-this-about-documents-or-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Question 1: "Is this about DOCUMENTS or CONTENT?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#question-2-is-this-a-concept-name-or-a-phrasequestion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Question 2: "Is this a CONCEPT NAME or a PHRASE/QUESTION?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#question-3-do-i-know-the-specific-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Question 3: "Do I know the SPECIFIC DOCUMENT?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#special-case-does-the-user-want-to-extractlist-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Special Case: "Does the user want to EXTRACT/LIST concepts?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-your-decision-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Your Decision Logic
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision History
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0001-typescript-nodejs-runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0001: TypeScript Runtime
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0002-lancedb-vector-storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0002: LanceDB Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0003-mcp-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0003: MCP Protocol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0004-rag-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0004: RAG Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0005-pdf-document-processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0005: PDF Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0006-hybrid-search-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006: Hybrid Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0007-concept-extraction-llm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0007: Concept Extraction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0008-wordnet-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0008: WordNet Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0009-three-table-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0009: Three-Table Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0010-query-expansion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0010: Query Expansion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0011-multi-model-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0011: Multi-Model Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0012-ocr-fallback-tesseract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0012: OCR Fallback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0013-incremental-seeding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0013: Incremental Seeding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0014-multi-pass-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0014: Multi-Pass Extraction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0015-formal-concept-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0015: Formal Concept Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0016-layered-architecture-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0016: Layered Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0017-repository-pattern/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0017: Repository Pattern
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0018-dependency-injection-container/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0018: Dependency Injection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0019-vitest-testing-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0019: Vitest Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0020-typescript-strict-mode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0020: TypeScript Strict Mode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0021-performance-optimization-vector-search/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0021: Performance Optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0022-hybrid-search-service-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0022: HybridSearchService
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0023-sql-injection-prevention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0023: SQL Injection Prevention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0024-multi-provider-embeddings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0024: Multi-Provider Embeddings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0025-document-loader-factory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0025: Document Loader Factory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0026-epub-format-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0026: EPUB Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0027-hash-based-integer-ids/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0027: Hash-Based IDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0028-category-storage-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0028: Category Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0029-category-search-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0029: Category Search Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0030-auto-extracted-categories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0030: Auto-Extracted Categories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0031-eight-specialized-tools-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0031: Eight Tools Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0032-tool-selection-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0032: Tool Selection Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0033-basetool-abstraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0033: BaseTool Abstraction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0034-comprehensive-error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0034: Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0035-test-suite-expansion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0035: Test Suite Expansion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0036-configuration-centralization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0036: Configuration Centralization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0037-functional-validation-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0037: Functional Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0038-dependency-rules-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0038: Dependency Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0039-observability-infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0039: Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0040-result-option-types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0040: Result/Option Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0041-advanced-caching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0041: Advanced Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0042-system-resilience-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0042: System Resilience
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0043-schema-normalization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0043: Schema Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0044-seeding-script-modularization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0044: Seeding Modularization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0045-api-key-preflight-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0045: API Key Preflight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0046-document-type-classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0046: Document Classification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0047-architecture-review-dec-2025/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0047: Architecture Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0048-stage-caching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0048: Stage Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0049-incremental-category-summaries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0049: Incremental Summaries
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0050-mkdocs-material-documentation-site/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0050: MkDocs Site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#quick-decision-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Decision Tree
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tool-comparison-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool Comparison Matrix
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#detailed-tool-selection-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detailed Tool Selection Criteria
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Detailed Tool Selection Criteria">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-concept_search-semantic-concept-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. concept_search - Semantic Concept Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-broad_chunks_search-comprehensive-hybrid-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. broad_chunks_search - Comprehensive Hybrid Search
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-catalog_search-document-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. catalog_search - Document Discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-chunks_search-single-document-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. chunks_search - Single Document Search
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-extract_concepts-concept-export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. extract_concepts - Concept Export
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-source_concepts-source-attribution-union" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. source_concepts - Source Attribution (Union) 🆕
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-concept_sources-per-concept-source-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. concept_sources - Per-Concept Source Arrays 🆕
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-category_search-browse-documents-by-category" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. category_search - Browse Documents by Category
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-list_categories-browse-all-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. list_categories - Browse All Categories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-list_concepts_in_category-domain-concept-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. list_concepts_in_category - Domain Concept Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision-logic-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision Logic Examples
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision Logic Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-user-asks-find-information-about-innovation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 1: User asks "Find information about innovation"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-user-asks-what-do-my-documents-say-about-innovation-and-organizational-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 2: User asks "What do my documents say about innovation and organizational change?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3-user-asks-what-documents-do-i-have-about-military-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 3: User asks "What documents do I have about military strategy?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-4-user-asks-find-where-sun-tzu-discusses-deception" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 4: User asks "Find where Sun Tzu discusses deception"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-5-user-asks-extract-concepts-from-the-art-of-war" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 5: User asks "Extract concepts from the Art of War"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-6-user-asks-what-categories-do-i-have" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 6: User asks "What categories do I have?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-7-user-asks-show-me-documents-about-software-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 7: User asks "Show me documents about software engineering"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-8-user-asks-what-concepts-are-discussed-in-distributed-systems-documents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 8: User asks "What concepts are discussed in distributed systems documents?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-patterns-and-anti-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Patterns and Anti-Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Patterns and Anti-Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#good-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Good Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anti-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❌ Anti-Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scoring-system-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scoring System Comparison
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scoring System Comparison">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concept_search-scoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        concept_search Scoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#broad_chunks_search-scoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        broad_chunks_search Scoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#catalog_search-scoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        catalog_search Scoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunks_search-scoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        chunks_search Scoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#key-technical-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Technical Differences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Technical Differences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#index-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Index Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary-the-3-questions-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary: The "3 Questions" Method
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Summary: The &#34;3 Questions&#34; Method">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#question-1-is-this-about-documents-or-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Question 1: "Is this about DOCUMENTS or CONTENT?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#question-2-is-this-a-concept-name-or-a-phrasequestion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Question 2: "Is this a CONCEPT NAME or a PHRASE/QUESTION?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#question-3-do-i-know-the-specific-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Question 3: "Do I know the SPECIFIC DOCUMENT?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#special-case-does-the-user-want-to-extractlist-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Special Case: "Does the user want to EXTRACT/LIST concepts?"
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#testing-your-decision-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing Your Decision Logic
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revision History
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="tool-selection-guide">Tool Selection Guide<a class="headerlink" href="#tool-selection-guide" title="Permanent link">&para;</a></h1>
+<p>This guide assists with selecting which search tool to use based on the user's query intent and requirements.</p>
+<h2 id="quick-decision-tree">Quick Decision Tree<a class="headerlink" href="#quick-decision-tree" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>START: User asks a question
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├─ Are they asking &quot;what documents do I have?&quot; or looking for documents by title/author?
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│  └─ YES → Use `catalog_search`
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├─ Are they asking to browse BY CATEGORY or filter by domain?
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  ├─ &quot;What categories?&quot; → Use `list_categories`
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│  ├─ &quot;Documents in [category]&quot; → Use `category_search`
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│  └─ &quot;Concepts in [category]&quot; → Use `list_concepts_in_category`
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├─ Are they explicitly asking to &quot;extract&quot;, &quot;list&quot;, &quot;show&quot;, or &quot;export&quot; ALL concepts from a document?
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│  └─ YES → Use `extract_concepts`
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├─ Are they asking which SOURCES/DOCUMENTS contain a concept?
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│  ├─ Need merged list with overlap info → Use `source_concepts`
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│  └─ Need separate lists per concept → Use `concept_sources`
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>├─ Are they searching for a CONCEPTUAL TOPIC (single concept name like &quot;innovation&quot;, &quot;leadership&quot;)?
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│  └─ YES → Use `concept_search` (highest precision for concepts)
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>├─ Do they already know the SPECIFIC DOCUMENT they want to search within?
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│  ├─ YES → Use `chunks_search` (requires source path)
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│  └─ NO → Continue...
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>├─ Are they searching for SPECIFIC PHRASES, KEYWORDS, or asking NATURAL LANGUAGE QUESTIONS?
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│  └─ YES → Use `broad_chunks_search` (comprehensive cross-document)
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>└─ DEFAULT → Use `catalog_search` for exploration, then follow up with more specific tools
+</code></pre></div>
+<h2 id="tool-comparison-matrix">Tool Comparison Matrix<a class="headerlink" href="#tool-comparison-matrix" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Search Scope</th>
+<th>Index Type</th>
+<th>Precision</th>
+<th>Use Case</th>
+<th>Query Type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>concept_search</strong></td>
+<td>All chunks</td>
+<td>Concept-enriched</td>
+<td>⭐⭐⭐⭐⭐ High</td>
+<td>Conceptual research</td>
+<td>Single concept terms</td>
+</tr>
+<tr>
+<td><strong>broad_chunks_search</strong></td>
+<td>All chunks</td>
+<td>Hybrid (vector+BM25)</td>
+<td>⭐⭐⭐ Medium</td>
+<td>Comprehensive search</td>
+<td>Phrases, keywords, questions</td>
+</tr>
+<tr>
+<td><strong>catalog_search</strong></td>
+<td>Document summaries</td>
+<td>Hybrid + titles</td>
+<td>⭐⭐⭐⭐ High</td>
+<td>Document discovery</td>
+<td>Titles, topics, authors</td>
+</tr>
+<tr>
+<td><strong>chunks_search</strong></td>
+<td>Single document</td>
+<td>Hybrid + filter</td>
+<td>⭐⭐⭐⭐ High</td>
+<td>Focused document search</td>
+<td>Any, within known doc</td>
+</tr>
+<tr>
+<td><strong>extract_concepts</strong></td>
+<td>Document metadata</td>
+<td>Concept catalog</td>
+<td>N/A</td>
+<td>Concept export</td>
+<td>Document identifier</td>
+</tr>
+<tr>
+<td><strong>source_concepts</strong> 🆕</td>
+<td>Concept → sources</td>
+<td>Concept index</td>
+<td>⭐⭐⭐⭐⭐ High</td>
+<td>Source attribution (union)</td>
+<td>Concept name(s)</td>
+</tr>
+<tr>
+<td><strong>concept_sources</strong> 🆕</td>
+<td>Concept → sources</td>
+<td>Concept index</td>
+<td>⭐⭐⭐⭐⭐ High</td>
+<td>Per-concept bibliographies</td>
+<td>Concept name(s)</td>
+</tr>
+<tr>
+<td><strong>category_search</strong></td>
+<td>Documents in category</td>
+<td>Category filter</td>
+<td>⭐⭐⭐⭐⭐ High</td>
+<td>Domain-specific browsing</td>
+<td>Category name/ID</td>
+</tr>
+<tr>
+<td><strong>list_categories</strong></td>
+<td>All categories</td>
+<td>Category table</td>
+<td>N/A</td>
+<td>Category discovery</td>
+<td>Optional search filter</td>
+</tr>
+<tr>
+<td><strong>list_concepts_in_category</strong></td>
+<td>Category's concepts</td>
+<td>Dynamic aggregation</td>
+<td>⭐⭐⭐⭐ High</td>
+<td>Domain concept analysis</td>
+<td>Category name/ID</td>
+</tr>
+</tbody>
+</table>
+<h2 id="detailed-tool-selection-criteria">Detailed Tool Selection Criteria<a class="headerlink" href="#detailed-tool-selection-criteria" title="Permanent link">&para;</a></h2>
+<h3 id="1-concept_search-semantic-concept-tracking">1. <code>concept_search</code> - Semantic Concept Tracking<a class="headerlink" href="#1-concept_search-semantic-concept-tracking" title="Permanent link">&para;</a></h3>
+<p><strong>When to Use:</strong>
+- ✅ User asks about a CONCEPT (e.g., "innovation", "leadership", "strategic thinking")
+- ✅ Query is a single conceptual term or short conceptual phrase (1-3 words)
+- ✅ Need semantically validated, high-precision results
+- ✅ Researching how/where a concept is discussed across the library
+- ✅ Questions like: "Find information about [concept]", "What is discussed about [concept]?"</p>
+<p><strong>When NOT to Use:</strong>
+- ❌ Query contains multiple phrases or full sentences
+- ❌ Looking for exact keyword matches (not semantic concepts)
+- ❌ User wants documents, not chunks
+- ❌ Searching for specific technical phrases or terminology</p>
+<p><strong>Query Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>✅ &quot;innovation&quot;
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>✅ &quot;military strategy&quot;  
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>✅ &quot;leadership principles&quot;
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>✅ &quot;organizational learning&quot;
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>❌ &quot;how do organizations innovate&quot; (use broad_chunks_search)
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>❌ &quot;leadership in the context of military strategy&quot; (use broad_chunks_search)
+</code></pre></div></p>
+<p><strong>What It Returns:</strong>
+- Chunks tagged with the specified concept during extraction
+- Concept density scores (1.000 = highly relevant)
+- Related concepts and semantic categories
+- Typically 10-776 results depending on concept prevalence</p>
+<p><strong>Technical Details:</strong>
+- Searches concept-enriched index where concepts were semantically validated by Claude Sonnet 4.5
+- Loads all chunks and filters in-memory (concepts stored as JSON)
+- Returns only chunks explicitly tagged with the concept
+- Zero false positives for concept-level queries</p>
+<hr />
+<h3 id="2-broad_chunks_search-comprehensive-hybrid-search">2. <code>broad_chunks_search</code> - Comprehensive Hybrid Search<a class="headerlink" href="#2-broad_chunks_search-comprehensive-hybrid-search" title="Permanent link">&para;</a></h3>
+<p><strong>When to Use:</strong>
+- ✅ Searching for PHRASES, KEYWORDS, or TECHNICAL TERMS across all documents
+- ✅ Natural language questions spanning multiple concepts
+- ✅ Cross-document research requiring comprehensive coverage
+- ✅ Looking for content that may not be tagged as a formal concept
+- ✅ Need to find ANY mention of specific terminology</p>
+<p><strong>When NOT to Use:</strong>
+- ❌ Looking for document titles or document-level results (use catalog_search)
+- ❌ Searching within a single known document (use chunks_search)<br />
+- ❌ Need guaranteed concept-level semantic precision (use concept_search)
+- ❌ User asks "what documents do I have?" (use catalog_search)</p>
+<p><strong>Query Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>✅ &quot;how do organizations implement innovation processes&quot;
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>✅ &quot;strategic deception tactics&quot;
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>✅ &quot;leadership in complex systems&quot;
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>✅ &quot;user authentication methods&quot;
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>❌ &quot;innovation&quot; (use concept_search for higher precision)
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>❌ &quot;documents about leadership&quot; (use catalog_search)
+</code></pre></div></p>
+<p><strong>What It Returns:</strong>
+- Top 10 chunks ranked by hybrid score
+- Scoring breakdown: vector, BM25, title, WordNet
+- Matched concepts and expanded query terms
+- May include false positives from keyword matching</p>
+<p><strong>Technical Details:</strong>
+- Hybrid search: vector similarity + BM25 keyword matching
+- Title scoring for source path relevance
+- WordNet expansion for synonyms
+- Searches entire chunks table across all documents</p>
+<hr />
+<h3 id="3-catalog_search-document-discovery">3. <code>catalog_search</code> - Document Discovery<a class="headerlink" href="#3-catalog_search-document-discovery" title="Permanent link">&para;</a></h3>
+<p><strong>When to Use:</strong>
+- ✅ "What documents do I have?"
+- ✅ Finding documents by TITLE, AUTHOR, or SUBJECT
+- ✅ Document-level results (not chunk-level)
+- ✅ Starting exploratory research to identify sources
+- ✅ General topic/domain searches for document discovery</p>
+<p><strong>When NOT to Use:</strong>
+- ❌ Need specific information from within documents (use chunks_search or broad_chunks_search)
+- ❌ Tracking where a specific concept is used (use concept_search)
+- ❌ Deep content analysis (use broad_chunks_search)</p>
+<p><strong>Query Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>✅ &quot;What documents do I have?&quot;
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>✅ &quot;Sun Tzu Art of War&quot;
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>✅ &quot;documents about healthcare&quot;
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>✅ &quot;books by Christopher Alexander&quot;
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>❌ &quot;how does Sun Tzu describe deception?&quot; (use chunks_search after finding document)
+</code></pre></div></p>
+<p><strong>What It Returns:</strong>
+- Top 5 documents
+- 200-character text preview from summary
+- Hybrid scores with strong title matching bonus (10.0x weight)
+- Matched concepts and expanded terms</p>
+<p><strong>Technical Details:</strong>
+- Searches document summaries, not full content
+- Title matches receive 10.0 scoring multiplier
+- Fast document-level discovery
+- Use this first, then drill down with chunks_search</p>
+<hr />
+<h3 id="4-chunks_search-single-document-search">4. <code>chunks_search</code> - Single Document Search<a class="headerlink" href="#4-chunks_search-single-document-search" title="Permanent link">&para;</a></h3>
+<p><strong>When to Use:</strong>
+- ✅ You KNOW the specific document containing the information
+- ✅ Following up from catalog_search results with a specific source
+- ✅ Focused analysis within one document
+- ✅ Have the exact source path from a previous search</p>
+<p><strong>When NOT to Use:</strong>
+- ❌ Don't know which document to search (use catalog_search first)
+- ❌ Need to search across multiple documents (use broad_chunks_search)
+- ❌ Tracking concepts across entire library (use concept_search)
+- ❌ Don't have the exact source path</p>
+<p><strong>Query Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>✅ chunks_search(&quot;deception tactics&quot;, source=&quot;/path/to/sun_tzu.pdf&quot;)
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>✅ chunks_search(&quot;innovation framework&quot;, source=&quot;/path/to/triz_book.pdf&quot;)
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>❌ chunks_search(&quot;innovation&quot;) without knowing which document (use concept_search or broad_chunks_search)
+</code></pre></div></p>
+<p><strong>What It Returns:</strong>
+- Top 5 chunks from the specified document only
+- Hybrid scores with concept and WordNet expansion
+- Matched concepts</p>
+<p><strong>Technical Details:</strong>
+- Requires exact source path match
+- Hybrid search filtered to one document
+- Best used in two-step workflow: catalog_search → chunks_search</p>
+<p><strong>Recommended Workflow:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Step 1: catalog_search(&quot;Sun Tzu&quot;) → get source path
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>Step 2: chunks_search(&quot;deception&quot;, source=&quot;&lt;path from step 1&gt;&quot;)
+</code></pre></div></p>
+<hr />
+<h3 id="5-extract_concepts-concept-export">5. <code>extract_concepts</code> - Concept Export<a class="headerlink" href="#5-extract_concepts-concept-export" title="Permanent link">&para;</a></h3>
+<p><strong>When to Use:</strong>
+- ✅ User explicitly asks to "extract", "list", "show", or "export" concepts
+- ✅ Creating concept maps or taxonomies
+- ✅ Reviewing concept extraction quality
+- ✅ Exporting for external analysis
+- ✅ Generating documentation of a document's conceptual content</p>
+<p><strong>When NOT to Use:</strong>
+- ❌ Searching for information (use search tools)
+- ❌ Finding where a concept is discussed (use concept_search)
+- ❌ General document discovery (use catalog_search)</p>
+<p><strong>Query Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>✅ &quot;Extract all concepts from Sun Tzu&#39;s Art of War&quot;
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>✅ &quot;List concepts in the healthcare document&quot;
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>✅ &quot;Show me all concepts from the TRIZ book&quot;
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>✅ &quot;Export concepts as markdown&quot;
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>❌ &quot;Find information about innovation&quot; (use concept_search or broad_chunks_search)
+</code></pre></div></p>
+<p><strong>What It Returns:</strong>
+- Complete concept inventory (80-150+ concepts per document)
+- Organized by type: primary_concepts, technical_terms, related_concepts
+- Document categories and summary (if requested)
+- Available in JSON or markdown format</p>
+<p><strong>Technical Details:</strong>
+- Returns metadata, not search results
+- One document at a time
+- Fast retrieval from catalog table
+- No ranking or scoring involved</p>
+<hr />
+<h3 id="6-source_concepts-source-attribution-union">6. <code>source_concepts</code> - Source Attribution (Union) 🆕<a class="headerlink" href="#6-source_concepts-source-attribution-union" title="Permanent link">&para;</a></h3>
+<p><strong>When to Use:</strong>
+- ✅ "Which books mention [concept]?" or "Where is [concept] discussed?"
+- ✅ Finding source attribution for research or citation
+- ✅ Understanding concept coverage across your library
+- ✅ Finding documents that cover MULTIPLE concepts (pass an array)
+- ✅ Need a merged/union list showing which sources cover which concepts</p>
+<p><strong>When NOT to Use:</strong>
+- ❌ Need separate per-concept lists (use concept_sources)
+- ❌ Finding specific text passages (use concept_search)
+- ❌ Finding documents by title (use catalog_search)</p>
+<p><strong>Query Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>✅ source_concepts(concept=&quot;test-driven development&quot;)
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>✅ source_concepts(concept=[&quot;tdd&quot;, &quot;dependency injection&quot;, &quot;ci&quot;])
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>✅ &quot;Which books discuss dependency injection?&quot;
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>✅ &quot;Find sources that mention both TDD and refactoring&quot;
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>❌ &quot;Find passages about TDD&quot; (use concept_search for content)
+</code></pre></div></p>
+<p><strong>What It Returns:</strong>
+- Union of all sources containing ANY of the input concepts
+- Each source includes <code>concept_indices</code> array (e.g., <code>[0, 1]</code> means matches concepts at index 0 and 1)
+- Sources sorted by number of matching concepts (most comprehensive first)
+- Title, author, year extracted from filenames
+- Optional: summary, primary_concepts, categories from catalog</p>
+<p><strong>Example Output:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">&quot;concepts_searched&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;tdd&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;di&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ci&quot;</span><span class="p">],</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">&quot;concepts_found&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;tdd&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;di&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ci&quot;</span><span class="p">],</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">&quot;source_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">34</span><span class="p">,</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="nt">&quot;sources&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Code That Fits in Your Head&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;concept_indices&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Clean Architecture&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;concept_indices&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>Technical Details:</strong>
+- Queries concept index for sources field on each concept
+- Aggregates and deduplicates across multiple concepts
+- Index-based attribution for brevity (maps to concepts_searched array)
+- Graceful degradation if catalog metadata unavailable</p>
+<hr />
+<h3 id="7-concept_sources-per-concept-source-arrays">7. <code>concept_sources</code> - Per-Concept Source Arrays 🆕<a class="headerlink" href="#7-concept_sources-per-concept-source-arrays" title="Permanent link">&para;</a></h3>
+<p><strong>When to Use:</strong>
+- ✅ Need separate source lists for each concept (not merged)
+- ✅ Building per-concept bibliographies or citations
+- ✅ Comparing which sources cover which specific concepts
+- ✅ Need to know exactly which sources discuss each individual concept</p>
+<p><strong>When NOT to Use:</strong>
+- ❌ Need merged/union list with overlap info (use source_concepts)
+- ❌ Finding specific text passages (use concept_search)
+- ❌ Finding documents by title (use catalog_search)</p>
+<p><strong>Query Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>✅ concept_sources(concept=&quot;test-driven development&quot;)
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>✅ concept_sources(concept=[&quot;tdd&quot;, &quot;di&quot;, &quot;ci&quot;])
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>✅ &quot;List sources for each: TDD, DI, and CI separately&quot;
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>✅ &quot;What are the sources for dependency injection specifically?&quot;
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>❌ &quot;Which books cover the most of these topics?&quot; (use source_concepts)
+</code></pre></div></p>
+<p><strong>What It Returns:</strong>
+- Array where <code>results[i]</code> contains sources for <code>concepts_searched[i]</code>
+- Position in results array corresponds to position in input array
+- Each concept may have 0 or more sources
+- Title, author, year extracted from filenames</p>
+<p><strong>Example Output:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">&quot;concepts_searched&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;tdd&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;di&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;ci&quot;</span><span class="p">],</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nt">&quot;results&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="p">[{</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;TDD by Example&quot;</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Clean Code&quot;</span><span class="w"> </span><span class="p">}],</span><span class="w">  </span><span class="c1">// sources for tdd</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="p">[{</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Clean Architecture&quot;</span><span class="w"> </span><span class="p">}],</span><span class="w">                          </span><span class="c1">// sources for di</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span><span class="p">[{</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Continuous Delivery&quot;</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;DevOps Handbook&quot;</span><span class="w"> </span><span class="p">}]</span><span class="w">  </span><span class="c1">// sources for ci</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">  </span><span class="p">]</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="p">}</span>
+</code></pre></div></p>
+<p><strong>Technical Details:</strong>
+- Queries concept index for each concept independently
+- Returns empty array <code>[]</code> for concepts not found (preserves position)
+- No deduplication - same source may appear in multiple arrays
+- Useful for comparing coverage across concepts</p>
+<p><strong>Comparison: source_concepts vs concept_sources:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>source_concepts</th>
+<th>concept_sources</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Output</td>
+<td>Union with indices</td>
+<td>Separate arrays</td>
+</tr>
+<tr>
+<td>Duplicates</td>
+<td>Deduplicated</td>
+<td>May repeat across arrays</td>
+</tr>
+<tr>
+<td>Use case</td>
+<td>"What covers these?"</td>
+<td>"Sources per concept"</td>
+</tr>
+<tr>
+<td>Sorting</td>
+<td>By match count</td>
+<td>By input position</td>
+</tr>
+<tr>
+<td>Best for</td>
+<td>Overlap analysis</td>
+<td>Per-concept citations</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="9-category_search-browse-documents-by-category">9. <code>category_search</code> - Browse Documents by Category<a class="headerlink" href="#9-category_search-browse-documents-by-category" title="Permanent link">&para;</a></h3>
+<p><strong>When to Use:</strong>
+- ✅ Browse documents in a specific domain or subject area
+- ✅ Filter documents by semantic category
+- ✅ Explore what documents exist in a category
+- ✅ Category-based discovery and navigation</p>
+<p><strong>When NOT to Use:</strong>
+- ❌ Don't know what categories exist (use list_categories first)
+- ❌ Need content search, not document listing (use broad_chunks_search)
+- ❌ Looking for a concept, not a category (use concept_search)</p>
+<p><strong>Query Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>✅ &quot;Show me documents in software engineering&quot;
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>✅ &quot;What do I have about distributed systems?&quot;
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>✅ &quot;Browse documents in the healthcare category&quot;
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>❌ &quot;Find information about API design&quot; (use concept_search - this is a concept, not category)
+</code></pre></div></p>
+<p><strong>What It Returns:</strong>
+- Documents tagged with the specified category
+- Document previews (200 characters)
+- Primary concepts for each document
+- Category metadata (description, hierarchy, statistics)
+- Related categories</p>
+<p><strong>Technical Details:</strong>
+- Direct query on <code>catalog.category_ids</code> field (hash-based integers)
+- Fast filtering (integer comparison, not string matching)
+- Categories stored on documents (no derivation needed)
+- Can optionally include child categories in hierarchy</p>
+<p><strong>Parameters:</strong>
+- <code>category</code>: Category name, ID, or alias
+- <code>includeChildren</code>: Include child categories (default: false)
+- <code>limit</code>: Max documents to return (default: 10)</p>
+<hr />
+<h3 id="10-list_categories-browse-all-categories">10. <code>list_categories</code> - Browse All Categories<a class="headerlink" href="#10-list_categories-browse-all-categories" title="Permanent link">&para;</a></h3>
+<p><strong>When to Use:</strong>
+- ✅ "What categories do I have?"
+- ✅ Explore available subject areas in your library
+- ✅ Get category statistics and metadata
+- ✅ Category discovery before using category_search</p>
+<p><strong>When NOT to Use:</strong>
+- ❌ Looking for specific documents (use catalog_search or category_search)
+- ❌ Searching content (use search tools)
+- ❌ Already know the category (use category_search directly)</p>
+<p><strong>Query Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>✅ &quot;What categories are in my library?&quot;
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>✅ &quot;List all subject areas&quot;
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>✅ &quot;Show categories related to software&quot;
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>✅ &quot;What domains are covered?&quot;
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>❌ &quot;Find documents about software&quot; (use catalog_search or category_search)
+</code></pre></div></p>
+<p><strong>What It Returns:</strong>
+- All categories with metadata
+- Document/chunk/concept counts per category
+- Category descriptions and aliases
+- Hierarchy information (parent/children)
+- Related categories
+- Sorted by popularity or name</p>
+<p><strong>Technical Details:</strong>
+- Queries categories table (small, &lt;200 entries typically)
+- CategoryIdCache provides O(1) metadata access
+- Statistics precomputed during ingestion
+- Very fast (&lt; 1ms cached, &lt; 10ms uncached)</p>
+<p><strong>Parameters:</strong>
+- <code>sortBy</code>: 'name', 'popularity', or 'documentCount' (default: 'popularity')
+- <code>limit</code>: Max categories to return (default: 50)
+- <code>search</code>: Optional filter by category name/description</p>
+<hr />
+<h3 id="11-list_concepts_in_category-domain-concept-analysis">11. <code>list_concepts_in_category</code> - Domain Concept Analysis<a class="headerlink" href="#11-list_concepts_in_category-domain-concept-analysis" title="Permanent link">&para;</a></h3>
+<p><strong>When to Use:</strong>
+- ✅ "What concepts appear in [category] documents?"
+- ✅ Analyze conceptual landscape of a domain
+- ✅ Find key concepts for a subject area
+- ✅ Cross-domain concept discovery</p>
+<p><strong>When NOT to Use:</strong>
+- ❌ Need to search for content (use concept_search or broad_chunks_search)
+- ❌ Want documents in a category (use category_search)
+- ❌ Looking for a specific concept (use concept_search)</p>
+<p><strong>Query Examples:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>✅ &quot;What concepts appear in software engineering documents?&quot;
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>✅ &quot;List key concepts for distributed systems&quot;
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>✅ &quot;Show me concepts in the healthcare category&quot;
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>❌ &quot;Find information about API design&quot; (use concept_search - searching, not listing)
+</code></pre></div></p>
+<p><strong>What It Returns:</strong>
+- Unique concepts appearing in category's documents
+- Concept types (thematic vs terminology)
+- Document counts per concept
+- Sorted by frequency or alphabetically
+- Note: Concepts are category-agnostic (cross-domain)</p>
+<p><strong>Technical Details:</strong>
+- Query-time computation through catalog (no redundant storage)
+- Aggregates concept_ids from documents in category
+- Performance: ~30-130ms for typical libraries
+- Dynamic and always up-to-date
+- Shows which concepts happen to appear in a category's documents</p>
+<p><strong>Design Note:</strong>
+Concepts are category-agnostic (cross-domain entities). This tool shows which concepts appear in a category's documents, not which concepts "belong" to the category. A concept like "optimization" may appear in software, healthcare, and business documents.</p>
+<p><strong>Parameters:</strong>
+- <code>category</code>: Category name, ID, or alias
+- <code>sortBy</code>: 'name' or 'documentCount' (default: 'documentCount')
+- <code>limit</code>: Max concepts to return (default: 50)</p>
+<hr />
+<h2 id="decision-logic-examples">Decision Logic Examples<a class="headerlink" href="#decision-logic-examples" title="Permanent link">&para;</a></h2>
+<h3 id="example-1-user-asks-find-information-about-innovation">Example 1: User asks "Find information about innovation"<a class="headerlink" href="#example-1-user-asks-find-information-about-innovation" title="Permanent link">&para;</a></h3>
+<p><strong>Analysis:</strong>
+- Single concept term: "innovation"
+- Asking ABOUT a concept, not for documents
+- Need high-precision semantic results</p>
+<p><strong>Decision:</strong> Use <code>concept_search</code>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>concept_search(concept=&quot;innovation&quot;, limit=10)
+</code></pre></div></p>
+<p><strong>Result:</strong> 10 concept-tagged chunks with 100% relevance</p>
+<hr />
+<h3 id="example-2-user-asks-what-do-my-documents-say-about-innovation-and-organizational-change">Example 2: User asks "What do my documents say about innovation and organizational change?"<a class="headerlink" href="#example-2-user-asks-what-do-my-documents-say-about-innovation-and-organizational-change" title="Permanent link">&para;</a></h3>
+<p><strong>Analysis:</strong>
+- Multi-concept query with natural language phrasing
+- "What do documents say" = need content, not document list
+- Comprehensive cross-document search needed</p>
+<p><strong>Decision:</strong> Use <code>broad_chunks_search</code>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>broad_chunks_search(text=&quot;innovation and organizational change&quot;)
+</code></pre></div></p>
+<p><strong>Result:</strong> Top 10 chunks discussing both topics, ranked by hybrid score</p>
+<hr />
+<h3 id="example-3-user-asks-what-documents-do-i-have-about-military-strategy">Example 3: User asks "What documents do I have about military strategy?"<a class="headerlink" href="#example-3-user-asks-what-documents-do-i-have-about-military-strategy" title="Permanent link">&para;</a></h3>
+<p><strong>Analysis:</strong>
+- Explicit question about "documents"
+- Topic-based document discovery
+- Document-level results needed, not chunks</p>
+<p><strong>Decision:</strong> Use <code>catalog_search</code>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>catalog_search(text=&quot;military strategy&quot;)
+</code></pre></div></p>
+<p><strong>Result:</strong> Top 5 documents about military strategy with summaries</p>
+<hr />
+<h3 id="example-4-user-asks-find-where-sun-tzu-discusses-deception">Example 4: User asks "Find where Sun Tzu discusses deception"<a class="headerlink" href="#example-4-user-asks-find-where-sun-tzu-discusses-deception" title="Permanent link">&para;</a></h3>
+<p><strong>Analysis:</strong>
+- Specific document mentioned: "Sun Tzu"
+- Looking for specific topic within that document
+- Two-step workflow needed</p>
+<p><strong>Decision:</strong> Use <code>catalog_search</code> → <code>chunks_search</code>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>Step 1: catalog_search(text=&quot;Sun Tzu&quot;) → get source path
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>Step 2: chunks_search(text=&quot;deception&quot;, source=&quot;&lt;path&gt;&quot;)
+</code></pre></div></p>
+<p><strong>Result:</strong> Deception-related passages from Sun Tzu's work</p>
+<hr />
+<h3 id="example-5-user-asks-extract-concepts-from-the-art-of-war">Example 5: User asks "Extract concepts from the Art of War"<a class="headerlink" href="#example-5-user-asks-extract-concepts-from-the-art-of-war" title="Permanent link">&para;</a></h3>
+<p><strong>Analysis:</strong>
+- Explicit "extract concepts" request
+- Wants concept inventory, not search results
+- Single document focus</p>
+<p><strong>Decision:</strong> Use <code>extract_concepts</code>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>extract_concepts(document_query=&quot;Art of War&quot;, format=&quot;markdown&quot;)
+</code></pre></div></p>
+<p><strong>Result:</strong> Complete list of 100+ concepts organized by type</p>
+<hr />
+<h3 id="example-6-user-asks-what-categories-do-i-have">Example 6: User asks "What categories do I have?"<a class="headerlink" href="#example-6-user-asks-what-categories-do-i-have" title="Permanent link">&para;</a></h3>
+<p><strong>Analysis:</strong>
+- Asking about categories, not documents or content
+- Discovery/browsing query
+- Wants to know what domains are covered</p>
+<p><strong>Decision:</strong> Use <code>list_categories</code>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>list_categories(sortBy=&quot;popularity&quot;, limit=20)
+</code></pre></div></p>
+<p><strong>Result:</strong> Top 20 categories with statistics (document counts, chunk counts)</p>
+<hr />
+<h3 id="example-7-user-asks-show-me-documents-about-software-engineering">Example 7: User asks "Show me documents about software engineering"<a class="headerlink" href="#example-7-user-asks-show-me-documents-about-software-engineering" title="Permanent link">&para;</a></h3>
+<p><strong>Analysis:</strong>
+- Looking for documents (not content chunks)
+- "software engineering" is likely a category
+- Domain-based filtering</p>
+<p><strong>Decision:</strong> Use <code>category_search</code> (if it's a category) or <code>catalog_search</code> (general fallback)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>category_search(category=&quot;software engineering&quot;, limit=10)
+</code></pre></div></p>
+<p><strong>Result:</strong> All documents tagged with "software engineering" category</p>
+<hr />
+<h3 id="example-8-user-asks-what-concepts-are-discussed-in-distributed-systems-documents">Example 8: User asks "What concepts are discussed in distributed systems documents?"<a class="headerlink" href="#example-8-user-asks-what-concepts-are-discussed-in-distributed-systems-documents" title="Permanent link">&para;</a></h3>
+<p><strong>Analysis:</strong>
+- Asking for concepts, not content
+- Scoped to a category ("distributed systems")
+- Domain concept analysis</p>
+<p><strong>Decision:</strong> Use <code>list_concepts_in_category</code>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>list_concepts_in_category(category=&quot;distributed systems&quot;, sortBy=&quot;documentCount&quot;, limit=20)
+</code></pre></div></p>
+<p><strong>Result:</strong> Top 20 concepts appearing in distributed systems documents (e.g., "consistency", "partitioning", "replication")</p>
+<hr />
+<h2 id="common-patterns-and-anti-patterns">Common Patterns and Anti-Patterns<a class="headerlink" href="#common-patterns-and-anti-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="good-patterns">✅ Good Patterns<a class="headerlink" href="#good-patterns" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Exploratory workflow:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>catalog_search(&quot;topic&quot;) → identify relevant documents
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>→ concept_search(&quot;specific concept&quot;) → deep dive
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>→ extract_concepts(&quot;document&quot;) → get full concept map
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Precise concept research:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>concept_search(&quot;innovation&quot;) → high-precision concept-tagged results
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Comprehensive content search:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>broad_chunks_search(&quot;how do organizations innovate?&quot;) → hybrid search
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Document-focused workflow:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>catalog_search(&quot;Sun Tzu&quot;) → get source path
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>→ chunks_search(&quot;deception&quot;, source=path) → focused search
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="anti-patterns">❌ Anti-Patterns<a class="headerlink" href="#anti-patterns" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Using broad_chunks_search for single concepts:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>❌ broad_chunks_search(&quot;innovation&quot;)
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>✅ concept_search(&quot;innovation&quot;)
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>Reason: Concept search has 100% precision for concepts
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Using concept_search for multi-word queries:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>❌ concept_search(&quot;how innovation happens in organizations&quot;)
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>✅ broad_chunks_search(&quot;how innovation happens in organizations&quot;)
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>Reason: Concept search expects concept terms, not questions
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Using chunks_search without knowing document:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>❌ chunks_search(&quot;leadership&quot;, source=&quot;unknown&quot;)
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>✅ catalog_search(&quot;leadership&quot;) first to identify documents
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>Reason: chunks_search requires exact source path
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Using extract_concepts for search:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>❌ extract_concepts(&quot;documents about innovation&quot;)
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>✅ concept_search(&quot;innovation&quot;) OR catalog_search(&quot;innovation&quot;)
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>Reason: extract_concepts is for export, not search
+</code></pre></div></p>
+</li>
+</ol>
+<hr />
+<h2 id="scoring-system-comparison">Scoring System Comparison<a class="headerlink" href="#scoring-system-comparison" title="Permanent link">&para;</a></h2>
+<h3 id="concept_search-scoring">concept_search Scoring<a class="headerlink" href="#concept_search-scoring" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>concept_density</strong>: 0.000 to 1.000</li>
+<li>1.000 = chunk heavily discusses this concept</li>
+<li>Based on semantic tagging during extraction</li>
+<li>All results guaranteed to contain the concept</li>
+</ul>
+<h3 id="broad_chunks_search-scoring">broad_chunks_search Scoring<a class="headerlink" href="#broad_chunks_search-scoring" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>hybrid</strong>: Combined score from multiple signals</li>
+<li><strong>vector</strong>: Semantic similarity (0-1)</li>
+<li><strong>bm25</strong>: Keyword frequency/relevance (0-1)</li>
+<li><strong>title</strong>: Title/source path match (0-1)</li>
+<li><strong>wordnet</strong>: Synonym expansion score (0-1)</li>
+<li>May include false positives</li>
+</ul>
+<h3 id="catalog_search-scoring">catalog_search Scoring<a class="headerlink" href="#catalog_search-scoring" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>hybrid</strong>: Combined score with title boost</li>
+<li><strong>vector</strong>: Semantic similarity (0-1)</li>
+<li><strong>bm25</strong>: Keyword in summary (0-1)</li>
+<li><strong>title</strong>: Title match (0-1, significant boost for matches)</li>
+<li><strong>wordnet</strong>: Synonym expansion (0-1)</li>
+</ul>
+<h3 id="chunks_search-scoring">chunks_search Scoring<a class="headerlink" href="#chunks_search-scoring" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Same as broad_chunks_search but filtered to one source</li>
+<li>Returns top 5 from specified document only</li>
+</ul>
+<hr />
+<h2 id="performance-characteristics">Performance Characteristics<a class="headerlink" href="#performance-characteristics" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Typical Results</th>
+<th>Speed</th>
+<th>Precision</th>
+<th>Recall</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>concept_search</strong></td>
+<td>10-776 chunks</td>
+<td>Medium†</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>broad_chunks_search</strong></td>
+<td>10 chunks</td>
+<td>Fast</td>
+<td>⭐⭐⭐</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>catalog_search</strong></td>
+<td>5 documents</td>
+<td>Fast</td>
+<td>⭐⭐⭐⭐</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>chunks_search</strong></td>
+<td>5 chunks</td>
+<td>Fast</td>
+<td>⭐⭐⭐⭐</td>
+<td>⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>extract_concepts</strong></td>
+<td>80-150 concepts</td>
+<td>Instant</td>
+<td>N/A</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><strong>source_concepts</strong> 🆕</td>
+<td>1-50 sources</td>
+<td>Fast</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>concept_sources</strong> 🆕</td>
+<td>1-50 sources/concept</td>
+<td>Fast</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>category_search</strong></td>
+<td>1-50 documents</td>
+<td>Very Fast</td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>⭐⭐⭐⭐⭐</td>
+</tr>
+<tr>
+<td><strong>list_categories</strong></td>
+<td>10-50 categories</td>
+<td>Instant</td>
+<td>N/A</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><strong>list_concepts_in_category</strong></td>
+<td>10-200 concepts</td>
+<td>Fast</td>
+<td>⭐⭐⭐⭐</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+</tbody>
+</table>
+<p>† concept_search loads all chunks into memory for filtering - may be slower on large corpora</p>
+<hr />
+<h2 id="key-technical-differences">Key Technical Differences<a class="headerlink" href="#key-technical-differences" title="Permanent link">&para;</a></h2>
+<h3 id="index-architecture">Index Architecture<a class="headerlink" href="#index-architecture" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>concept_search</strong>: Queries concept-enriched index</li>
+<li>Chunks tagged with concepts during Claude Sonnet 4.5 extraction</li>
+<li>Concepts stored as JSON arrays in chunk metadata</li>
+<li>
+<p>Filters by concept tag presence</p>
+</li>
+<li>
+<p><strong>broad_chunks_search</strong>: Queries base hybrid index</p>
+</li>
+<li>Vector embeddings (384-dim, local model)</li>
+<li>BM25 inverted index</li>
+<li>
+<p>Concept scores often 0.000 (not from concept-enriched index)</p>
+</li>
+<li>
+<p><strong>catalog_search</strong>: Queries document summary index</p>
+</li>
+<li>Document-level metadata and summaries</li>
+<li>Title matching with 10x boost</li>
+<li>
+<p>Fast document discovery</p>
+</li>
+<li>
+<p><strong>chunks_search</strong>: Same as broad_chunks_search + source filter</p>
+</li>
+<li>Post-filter by exact source path</li>
+<li>
+<p>Best for known-document searches</p>
+</li>
+<li>
+<p><strong>extract_concepts</strong>: Direct catalog table lookup</p>
+</li>
+<li>Retrieves pre-extracted concept metadata</li>
+<li>No search involved, pure retrieval</li>
+</ol>
+<hr />
+<h2 id="summary-the-3-questions-method">Summary: The "3 Questions" Method<a class="headerlink" href="#summary-the-3-questions-method" title="Permanent link">&para;</a></h2>
+<p>When an AI agent encounters a user query, ask these 3 questions in order:</p>
+<h3 id="question-1-is-this-about-documents-or-content">Question 1: "Is this about DOCUMENTS or CONTENT?"<a class="headerlink" href="#question-1-is-this-about-documents-or-content" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Documents</strong> → <code>catalog_search</code></li>
+<li><strong>Content</strong> → Continue to Q2</li>
+</ul>
+<h3 id="question-2-is-this-a-concept-name-or-a-phrasequestion">Question 2: "Is this a CONCEPT NAME or a PHRASE/QUESTION?"<a class="headerlink" href="#question-2-is-this-a-concept-name-or-a-phrasequestion" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Concept name</strong> (1-3 words, conceptual) → <code>concept_search</code></li>
+<li><strong>Phrase/question</strong> → Continue to Q3</li>
+</ul>
+<h3 id="question-3-do-i-know-the-specific-document">Question 3: "Do I know the SPECIFIC DOCUMENT?"<a class="headerlink" href="#question-3-do-i-know-the-specific-document" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Yes, have source path</strong> → <code>chunks_search</code></li>
+<li><strong>No</strong> → <code>broad_chunks_search</code></li>
+</ul>
+<h3 id="special-case-does-the-user-want-to-extractlist-concepts">Special Case: "Does the user want to EXTRACT/LIST concepts?"<a class="headerlink" href="#special-case-does-the-user-want-to-extractlist-concepts" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Yes</strong> → <code>extract_concepts</code></li>
+</ul>
+<p>This simple decision tree will route 95% of queries correctly.</p>
+<hr />
+<h2 id="testing-your-decision-logic">Testing Your Decision Logic<a class="headerlink" href="#testing-your-decision-logic" title="Permanent link">&para;</a></h2>
+<p>Use these test cases to validate tool selection:</p>
+<table>
+<thead>
+<tr>
+<th>User Query</th>
+<th>Correct Tool</th>
+<th>Reasoning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"What documents do I have?"</td>
+<td>catalog_search</td>
+<td>Asking for documents</td>
+</tr>
+<tr>
+<td>"What categories do I have?"</td>
+<td>list_categories</td>
+<td>Asking for categories</td>
+</tr>
+<tr>
+<td>"innovation"</td>
+<td>concept_search</td>
+<td>Single concept term</td>
+</tr>
+<tr>
+<td>"Find all mentions of leadership"</td>
+<td>concept_search</td>
+<td>Concept tracking</td>
+</tr>
+<tr>
+<td>"Show me software engineering documents"</td>
+<td>category_search</td>
+<td>Category-based filtering</td>
+</tr>
+<tr>
+<td>"What concepts are in distributed systems?"</td>
+<td>list_concepts_in_category</td>
+<td>Concepts within category</td>
+</tr>
+<tr>
+<td>"How do teams collaborate?"</td>
+<td>broad_chunks_search</td>
+<td>Natural language question</td>
+</tr>
+<tr>
+<td>"strategic planning frameworks"</td>
+<td>broad_chunks_search</td>
+<td>Multi-word phrase</td>
+</tr>
+<tr>
+<td>"Search Sun Tzu for deception"</td>
+<td>chunks_search</td>
+<td>Known document</td>
+</tr>
+<tr>
+<td>"Extract concepts from Art of War"</td>
+<td>extract_concepts</td>
+<td>Explicit extraction request</td>
+</tr>
+<tr>
+<td>"documents about healthcare"</td>
+<td>catalog_search</td>
+<td>Document discovery</td>
+</tr>
+<tr>
+<td>"organizational learning"</td>
+<td>concept_search</td>
+<td>Conceptual term</td>
+</tr>
+<tr>
+<td>"What is the process for user authentication?"</td>
+<td>broad_chunks_search</td>
+<td>Specific technical question</td>
+</tr>
+<tr>
+<td>"Browse real-time systems category"</td>
+<td>category_search</td>
+<td>Explicit category browsing</td>
+</tr>
+<tr>
+<td>"Which books discuss TDD?"</td>
+<td>source_concepts</td>
+<td>Source attribution for concept</td>
+</tr>
+<tr>
+<td>"Find sources for TDD, DI, and CI"</td>
+<td>source_concepts</td>
+<td>Multi-concept source lookup</td>
+</tr>
+<tr>
+<td>"List sources for each concept separately"</td>
+<td>concept_sources</td>
+<td>Per-concept bibliographies</td>
+</tr>
+<tr>
+<td>"What books cover the most of these topics?"</td>
+<td>source_concepts</td>
+<td>Overlap analysis (sorted by match count)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="revision-history">Revision History<a class="headerlink" href="#revision-history" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>2025-11-13</strong>: Initial version based on empirical comparison analysis</li>
+<li><strong>Motivation</strong>: Resolved 0% overlap between concept_search and broad_chunks_search results for "innovation" query</li>
+<li><strong>2025-11-20</strong>: Added category search tools (category_search, list_categories, list_concepts_in_category)</li>
+<li><strong>Purpose</strong>: Enable domain-based browsing and category-scoped concept discovery</li>
+<li><strong>2025-11-26</strong>: Added concept source attribution tools (source_concepts, concept_sources)</li>
+<li><strong>Purpose</strong>: Enable "which books mention X?" queries with two complementary output formats</li>
+</ul>
+<hr />
+<p><em>This guide is based on empirical analysis showing concept_search achieved 100% relevance vs. broad_chunks_search at 0% relevance for conceptual queries, validating the need for clear tool selection guidance.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>

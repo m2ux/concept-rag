@@ -1,0 +1,3973 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Conceptual RAG with LanceDB, WordNet, and multi-signal hybrid search for MCP">
+      
+      
+        <meta name="author" content="Alex Komyagin">
+      
+      
+        <link rel="canonical" href="https://m2ux.github.io/concept-rag/database-schema/">
+      
+      
+        <link rel="prev" href="../architecture/">
+      
+      
+        <link rel="next" href="../stage-cache-structure/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+    
+    
+      
+        <title>Database Schema - Concept-RAG Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#concept-rag-database-schema" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Concept-RAG Documentation" class="md-header__button md-logo" aria-label="Concept-RAG Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Concept-RAG Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Database Schema
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/m2ux/concept-rag" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    m2ux/concept-rag
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api-reference/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../architecture/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../architecture/adr0001-typescript-nodejs-runtime/" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Concept-RAG Documentation" class="md-nav__button md-logo" aria-label="Concept-RAG Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Concept-RAG Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/m2ux/concept-rag" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    m2ux/concept-rag
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Schema
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database Schema
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Principles
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-catalog-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Catalog Table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Catalog Table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filename-metadata-parsing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filename Metadata Parsing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#research-paper-metadata-extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Research Paper Metadata Extraction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-record-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Record (Book)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-record-research-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Record (Research Paper)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-chunks-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Chunks Table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Chunks Table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-record" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Record
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-concepts-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Concepts Table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Concepts Table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concept-summaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concept Summaries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concept-linking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concept Linking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-record_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Record
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-categories-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Categories Table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Categories Table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-record_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Record
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#derived-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Derived Fields
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Derived Fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#design-philosophy-ids-for-truth-names-for-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Philosophy: IDs for Truth, Names for Queries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#derived-field-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Derived Field Summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regenerating-derived-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regenerating Derived Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationships
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Relationships">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concept-retrieval-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concept Retrieval Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#querying-relationships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Querying Relationships
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#id-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ID Generation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vector-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vector Index
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-statistics-november-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Statistics (November 2025)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Evolution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema-changes-v7-november-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Changes (v7 - November 2025)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Schema Changes (v7 - November 2025)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#philosophy-derived-text-fields-replace-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Philosophy: Derived Text Fields Replace Caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunks-table-changes-v7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chunks Table Changes (v7)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#research-paper-fields-v8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Research Paper Fields (v8)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed-id-mapping-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed: ID Mapping Caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-caches-still-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Caches (Still Used)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related Documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../stage-cache-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Stage Cache
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tool-selection-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool Selection Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0001-typescript-nodejs-runtime/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0001: TypeScript Runtime
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0002-lancedb-vector-storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0002: LanceDB Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0003-mcp-protocol/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0003: MCP Protocol
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0004-rag-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0004: RAG Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0005-pdf-document-processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0005: PDF Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0006-hybrid-search-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0006: Hybrid Search
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0007-concept-extraction-llm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0007: Concept Extraction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0008-wordnet-integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0008: WordNet Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0009-three-table-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0009: Three-Table Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0010-query-expansion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0010: Query Expansion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0011-multi-model-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0011: Multi-Model Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0012-ocr-fallback-tesseract/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0012: OCR Fallback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0013-incremental-seeding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0013: Incremental Seeding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0014-multi-pass-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0014: Multi-Pass Extraction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0015-formal-concept-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0015: Formal Concept Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0016-layered-architecture-refactoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0016: Layered Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0017-repository-pattern/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0017: Repository Pattern
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0018-dependency-injection-container/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0018: Dependency Injection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0019-vitest-testing-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0019: Vitest Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0020-typescript-strict-mode/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0020: TypeScript Strict Mode
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0021-performance-optimization-vector-search/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0021: Performance Optimization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0022-hybrid-search-service-extraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0022: HybridSearchService
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0023-sql-injection-prevention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0023: SQL Injection Prevention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0024-multi-provider-embeddings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0024: Multi-Provider Embeddings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0025-document-loader-factory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0025: Document Loader Factory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0026-epub-format-support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0026: EPUB Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0027-hash-based-integer-ids/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0027: Hash-Based IDs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0028-category-storage-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0028: Category Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0029-category-search-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0029: Category Search Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0030-auto-extracted-categories/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0030: Auto-Extracted Categories
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0031-eight-specialized-tools-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0031: Eight Tools Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0032-tool-selection-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0032: Tool Selection Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0033-basetool-abstraction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0033: BaseTool Abstraction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0034-comprehensive-error-handling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0034: Error Handling
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0035-test-suite-expansion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0035: Test Suite Expansion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0036-configuration-centralization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0036: Configuration Centralization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0037-functional-validation-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0037: Functional Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0038-dependency-rules-enforcement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0038: Dependency Rules
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0039-observability-infrastructure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0039: Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0040-result-option-types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0040: Result/Option Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0041-advanced-caching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0041: Advanced Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0042-system-resilience-patterns/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0042: System Resilience
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0043-schema-normalization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0043: Schema Normalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0044-seeding-script-modularization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0044: Seeding Modularization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0045-api-key-preflight-check/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0045: API Key Preflight
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0046-document-type-classification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0046: Document Classification
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0047-architecture-review-dec-2025/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0047: Architecture Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0048-stage-caching/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0048: Stage Caching
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0049-incremental-category-summaries/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0049: Incremental Summaries
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/adr0050-mkdocs-material-documentation-site/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0050: MkDocs Site
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Principles
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-catalog-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Catalog Table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Catalog Table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filename-metadata-parsing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filename Metadata Parsing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#research-paper-metadata-extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Research Paper Metadata Extraction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-record-book" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Record (Book)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-record-research-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Record (Research Paper)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-chunks-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Chunks Table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Chunks Table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-record" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Record
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-concepts-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Concepts Table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Concepts Table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concept-summaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concept Summaries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concept-linking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concept Linking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-record_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Record
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-categories-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Categories Table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Categories Table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-record_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Record
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#derived-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Derived Fields
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Derived Fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#design-philosophy-ids-for-truth-names-for-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Philosophy: IDs for Truth, Names for Queries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#derived-field-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Derived Field Summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regenerating-derived-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regenerating Derived Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#relationships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationships
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Relationships">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concept-retrieval-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concept Retrieval Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#querying-relationships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Querying Relationships
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#id-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ID Generation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vector-index" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vector Index
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#production-statistics-november-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Production Statistics (November 2025)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema-evolution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Evolution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema-changes-v7-november-2025" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Changes (v7 - November 2025)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Schema Changes (v7 - November 2025)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#philosophy-derived-text-fields-replace-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Philosophy: Derived Text Fields Replace Caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chunks-table-changes-v7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chunks Table Changes (v7)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#research-paper-fields-v8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Research Paper Fields (v8)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#removed-id-mapping-caches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Removed: ID Mapping Caches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-caches-still-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Caches (Still Used)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related Documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="concept-rag-database-schema">Concept-RAG Database Schema<a class="headerlink" href="#concept-rag-database-schema" title="Permanent link">&para;</a></h1>
+<p><strong>Last Updated:</strong> 2025-11-29<br />
+<strong>Database:</strong> LanceDB (embedded vector database)<br />
+<strong>Embedding Model:</strong> all-MiniLM-L6-v2 (384 dimensions)<br />
+<strong>Schema Version:</strong> Normalized v7 (derived text fields, no ID caches needed)</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>Concept-RAG uses a four-table normalized architecture optimized for concept-heavy workloads:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────┐       ┌─────────────┐       ┌─────────────┐       ┌──────────────┐
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│   catalog   │──────&lt;│   chunks    │       │  concepts   │       │  categories  │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│ (documents) │       │  (segments) │       │   (index)   │       │  (taxonomy)  │
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>└─────────────┘       └─────────────┘       └─────────────┘       └──────────────┘
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>      │                     │                     │                      │
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>      │                     │                     │                      │
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>      └─────────────────────┴─────────────────────┴──────────────────────┘
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                        Many-to-many via native array columns
+</code></pre></div>
+<h3 id="design-principles">Design Principles<a class="headerlink" href="#design-principles" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Normalization</strong>: No redundant data - single source of truth for each piece of information</li>
+<li><strong>Hash-based IDs</strong>: FNV-1a hashing for stable integer IDs across database rebuilds</li>
+<li><strong>Native arrays</strong>: Many-to-many relationships stored as LanceDB native arrays (not JSON strings)</li>
+<li><strong>ID-based references</strong>: All relationships use integer IDs (no string paths in relationships)</li>
+<li><strong>Derived text fields</strong>: Human-readable names stored alongside IDs for direct text queries</li>
+<li><strong>No runtime caches</strong>: Derived fields eliminate need for ID-to-name cache lookups</li>
+<li><strong>Vector storage</strong>: 384-dimensional embeddings on all tables for semantic search</li>
+<li><strong>LLM as source</strong>: Concepts table is populated by LLM extraction, serving as canonical source</li>
+</ul>
+<hr />
+<h2 id="tables">Tables<a class="headerlink" href="#tables" title="Permanent link">&para;</a></h2>
+<h3 id="1-catalog-table">1. Catalog Table<a class="headerlink" href="#1-catalog-table" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Document-level metadata and summaries for document discovery.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>number</code></td>
+<td>Hash-based integer ID (FNV-1a of source path)</td>
+</tr>
+<tr>
+<td><code>source</code></td>
+<td><code>string</code></td>
+<td>Document file path (unique identifier)</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td><code>string</code></td>
+<td>Document title (parsed from filename or content)</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td><code>string</code></td>
+<td>LLM-generated document summary</td>
+</tr>
+<tr>
+<td><code>hash</code></td>
+<td><code>string</code></td>
+<td>SHA-256 content hash for deduplication</td>
+</tr>
+<tr>
+<td><code>vector</code></td>
+<td><code>Float32Array</code></td>
+<td>384-dimensional embedding of summary</td>
+</tr>
+<tr>
+<td><code>concept_ids</code></td>
+<td><code>number[]</code></td>
+<td>Native array of concept IDs (foreign keys to concepts table)</td>
+</tr>
+<tr>
+<td><code>concept_names</code></td>
+<td><code>string[]</code></td>
+<td><strong>DERIVED:</strong> Concept names for display and text search</td>
+</tr>
+<tr>
+<td><code>category_ids</code></td>
+<td><code>number[]</code></td>
+<td>Native array of category integer IDs</td>
+</tr>
+<tr>
+<td><code>category_names</code></td>
+<td><code>string[]</code></td>
+<td><strong>DERIVED:</strong> Category names for display and text search</td>
+</tr>
+<tr>
+<td><code>origin_hash</code></td>
+<td><code>string</code></td>
+<td><em>Reserved:</em> Hash of original file before processing</td>
+</tr>
+<tr>
+<td><code>author</code></td>
+<td><code>string</code></td>
+<td>Document author(s) (parsed from filename)</td>
+</tr>
+<tr>
+<td><code>year</code></td>
+<td><code>number</code></td>
+<td>Publication year (parsed from filename)</td>
+</tr>
+<tr>
+<td><code>publisher</code></td>
+<td><code>string</code></td>
+<td>Publisher name (parsed from filename)</td>
+</tr>
+<tr>
+<td><code>isbn</code></td>
+<td><code>string</code></td>
+<td>ISBN (parsed from filename, preserved with hyphens)</td>
+</tr>
+<tr>
+<td><code>document_type</code></td>
+<td><code>string</code></td>
+<td>Document classification: 'book', 'paper', 'article', 'unknown'</td>
+</tr>
+<tr>
+<td><code>doi</code></td>
+<td><code>string</code></td>
+<td>Digital Object Identifier (e.g., "10.1109/MS.2022.3166266")</td>
+</tr>
+<tr>
+<td><code>arxiv_id</code></td>
+<td><code>string</code></td>
+<td>ArXiv identifier (e.g., "2204.11193v1")</td>
+</tr>
+<tr>
+<td><code>venue</code></td>
+<td><code>string</code></td>
+<td>Publication venue (journal/conference name)</td>
+</tr>
+<tr>
+<td><code>keywords</code></td>
+<td><code>string[]</code></td>
+<td>Keywords from paper metadata or extraction</td>
+</tr>
+<tr>
+<td><code>abstract</code></td>
+<td><code>string</code></td>
+<td>Paper abstract (distinct from LLM summary)</td>
+</tr>
+<tr>
+<td><code>authors</code></td>
+<td><code>string[]</code></td>
+<td>Array of author names (for multi-author papers)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="filename-metadata-parsing">Filename Metadata Parsing<a class="headerlink" href="#filename-metadata-parsing" title="Permanent link">&para;</a></h4>
+<p>Bibliographic fields are automatically extracted from filenames using the <code>--</code> delimiter format:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Title -- Author -- Date -- Publisher -- ISBN -- Hash.ext
+</code></pre></div>
+<p><strong>Example filename:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Effective software testing -- Elfriede Dustin -- December 18, 2002 -- Addison-Wesley -- 9780201794298 -- 5297d243.pdf
+</code></pre></div></p>
+<p><strong>Normalization rules:</strong>
+- Underscores (<code>_</code>) are converted to spaces
+- URL-encoded spaces (<code>%20</code>, <code>_20</code>) are converted to spaces<br />
+- Multiple consecutive spaces are collapsed to single space
+- Fields that cannot be parsed are left empty (string) or zero (number)
+- If no <code>--</code> delimiters exist, entire filename (without extension) becomes the title</p>
+<h4 id="research-paper-metadata-extraction">Research Paper Metadata Extraction<a class="headerlink" href="#research-paper-metadata-extraction" title="Permanent link">&para;</a></h4>
+<p>For research papers (especially LaTeX-generated PDFs like arXiv preprints), metadata is extracted from multiple sources:</p>
+<p><strong>1. Filename Patterns:</strong>
+- ArXiv IDs: <code>2204.11193v1.pdf</code> → <code>arxiv_id: "2204.11193v1"</code>
+- DOI-based: <code>10.1109-MS.2022.3166266.pdf</code> → <code>doi: "10.1109/MS.2022.3166266"</code></p>
+<p><strong>2. PDF Metadata Dictionary:</strong>
+- Title, Author, Subject, Keywords (when available)
+- Often empty for LaTeX-generated PDFs</p>
+<p><strong>3. Content-Based Extraction:</strong>
+- Title: First prominent text on page 1
+- Authors: Names following title, before abstract
+- Abstract: Text following "Abstract" heading
+- Keywords: Extracted from "Keywords:" section if present</p>
+<p><strong>Document Type Detection:</strong>
+Papers are distinguished from books using heuristics:
+- Page count (papers typically &lt;50 pages)
+- Presence of "Abstract" section
+- Citation patterns (<code>[1], [2]</code> style references)
+- Filename patterns (arXiv ID, DOI)</p>
+<p><strong>Priority Order:</strong>
+1. Content-based extraction (most reliable for LaTeX PDFs)
+2. PDF metadata dictionary (for publisher PDFs)
+3. Filename parsing (fallback)</p>
+<h4 id="example-record-book">Example Record (Book)<a class="headerlink" href="#example-record-book" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="kt">3847293847</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nx">source</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/home/user/ebooks/Clean Architecture -- Robert Martin -- 2017 -- Pearson -- 9780134494166 -- abc123.pdf&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Clean Architecture&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Comprehensive guide to Clean Architecture principles...&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nx">hash</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nx">vector</span><span class="o">:</span><span class="w"> </span><span class="kt">Float32Array</span><span class="p">(</span><span class="mf">384</span><span class="p">),</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span><span class="nx">concept_ids</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">2938475683</span><span class="p">,</span><span class="w"> </span><span class="mf">1029384756</span><span class="p">,</span><span class="w"> </span><span class="mf">3847293900</span><span class="p">],</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span><span class="nx">concept_names</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;clean architecture&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dependency injection&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;solid principles&quot;</span><span class="p">],</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">  </span><span class="nx">category_ids</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">1847362847</span><span class="p">,</span><span class="w"> </span><span class="mf">2938476523</span><span class="p">],</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">  </span><span class="nx">category_names</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;software architecture&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;design patterns&quot;</span><span class="p">],</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">  </span><span class="c1">// Bibliographic fields (parsed from filename)</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">  </span><span class="nx">origin_hash</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">  </span><span class="nx">author</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Robert Martin&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">  </span><span class="nx">year</span><span class="o">:</span><span class="w"> </span><span class="kt">2017</span><span class="p">,</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">  </span><span class="nx">publisher</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Pearson&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">  </span><span class="nx">isbn</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;9780134494166&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">  </span><span class="c1">// Research paper fields (empty for books)</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">  </span><span class="nx">document_type</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;book&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">  </span><span class="nx">doi</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">  </span><span class="nx">arxiv_id</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">  </span><span class="nx">venue</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">  </span><span class="nx">keywords</span><span class="o">:</span><span class="w"> </span><span class="p">[],</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">  </span><span class="k">abstract</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">  </span><span class="nx">authors</span><span class="o">:</span><span class="w"> </span><span class="p">[]</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="p">}</span>
+</code></pre></div>
+<h4 id="example-record-research-paper">Example Record (Research Paper)<a class="headerlink" href="#example-record-research-paper" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="kt">1029384756</span><span class="p">,</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nx">source</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/home/user/papers/2204.11193v1.pdf&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nx">title</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Exploring Security Practices of Smart Contract Developers&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Study examining how developers approach security in smart contract development...&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nx">hash</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;a1b2c3d4e5f6...&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="nx">vector</span><span class="o">:</span><span class="w"> </span><span class="kt">Float32Array</span><span class="p">(</span><span class="mf">384</span><span class="p">),</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="nx">concept_ids</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">1111111111</span><span class="p">,</span><span class="w"> </span><span class="mf">2222222222</span><span class="p">],</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="nx">concept_names</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;smart contracts&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;blockchain security&quot;</span><span class="p">],</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="nx">category_ids</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">3333333333</span><span class="p">],</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span><span class="nx">category_names</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;blockchain&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;security&quot;</span><span class="p">],</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">  </span><span class="c1">// Bibliographic fields</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">  </span><span class="nx">origin_hash</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">  </span><span class="nx">author</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Tanusree Sharma et al.&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">  </span><span class="nx">year</span><span class="o">:</span><span class="w"> </span><span class="kt">2022</span><span class="p">,</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">  </span><span class="nx">publisher</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">  </span><span class="nx">isbn</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">  </span><span class="c1">// Research paper fields (extracted from content/metadata)</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">  </span><span class="nx">document_type</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;paper&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">  </span><span class="nx">doi</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">  </span><span class="nx">arxiv_id</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;2204.11193v1&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">  </span><span class="nx">venue</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;arXiv preprint&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">  </span><span class="nx">keywords</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;smart contract&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;security&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;blockchain&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;developer&quot;</span><span class="p">],</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">  </span><span class="k">abstract</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Smart contracts are self-executing programs that run on blockchains...&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">  </span><span class="nx">authors</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Tanusree Sharma&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Zhixuan Zhou&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Andrew Miller&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Yang Wang&quot;</span><span class="p">]</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="2-chunks-table">2. Chunks Table<a class="headerlink" href="#2-chunks-table" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Text segments for fine-grained retrieval and semantic search.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>number</code></td>
+<td>Hash-based integer ID (FNV-1a of source-hash-index)</td>
+</tr>
+<tr>
+<td><code>catalog_id</code></td>
+<td><code>number</code></td>
+<td><strong>Required.</strong> Hash-based catalog entry ID (foreign key to catalog)</td>
+</tr>
+<tr>
+<td><code>catalog_title</code></td>
+<td><code>string</code></td>
+<td><strong>DERIVED:</strong> Document title from catalog (for display)</td>
+</tr>
+<tr>
+<td><code>text</code></td>
+<td><code>string</code></td>
+<td>Chunk text content (typically 100-500 words)</td>
+</tr>
+<tr>
+<td><code>hash</code></td>
+<td><code>string</code></td>
+<td>Content hash for deduplication</td>
+</tr>
+<tr>
+<td><code>vector</code></td>
+<td><code>Float32Array</code></td>
+<td>384-dimensional embedding</td>
+</tr>
+<tr>
+<td><code>concept_ids</code></td>
+<td><code>number[]</code></td>
+<td>Native array of concept integer IDs (for concept-chunk linkage)</td>
+</tr>
+<tr>
+<td><code>concept_names</code></td>
+<td><code>string[]</code></td>
+<td><strong>DERIVED:</strong> Concept names for display and text search</td>
+</tr>
+<tr>
+<td><code>concept_density</code></td>
+<td><code>number</code></td>
+<td>Concept richness score: <code>concept_ids.length / (word_count / 10)</code></td>
+</tr>
+<tr>
+<td><code>page_number</code></td>
+<td><code>number</code></td>
+<td>Page number in source document (from PDF loader)</td>
+</tr>
+<tr>
+<td><code>is_reference</code></td>
+<td><code>boolean</code></td>
+<td>True if chunk is from bibliography/references section</td>
+</tr>
+<tr>
+<td><code>has_math</code></td>
+<td><code>boolean</code></td>
+<td>True if chunk contains mathematical content (symbols, equations)</td>
+</tr>
+<tr>
+<td><code>has_extraction_issues</code></td>
+<td><code>boolean</code></td>
+<td>True if chunk has extraction quality issues (e.g., garbled math)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> The <code>source</code> field was removed in v7. Chunks store <code>catalog_title</code> for display and <code>catalog_id</code> for joins. Tools should use <code>catalog_title</code> directly.</p>
+<p><strong>Note:</strong> The <code>category_ids</code> field was removed - use <code>catalog_id</code> → <code>catalog.category_ids</code> for category lookup.</p>
+<p><strong>Note:</strong> No ID-to-name caches are needed at runtime. Use <code>concept_names</code> and <code>catalog_title</code> directly.</p>
+</blockquote>
+<h4 id="example-record">Example Record<a class="headerlink" href="#example-record" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="kt">2938475612</span><span class="p">,</span><span class="w">  </span><span class="c1">// hash-based integer</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nx">catalog_id</span><span class="o">:</span><span class="w"> </span><span class="kt">3847293847</span><span class="p">,</span><span class="w">  </span><span class="c1">// foreign key to catalog</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nx">catalog_title</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Clean Architecture&quot;</span><span class="p">,</span><span class="w">  </span><span class="c1">// DERIVED: for display</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Clean architecture emphasizes separation of concerns...&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="nx">hash</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;def456&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">  </span><span class="nx">vector</span><span class="o">:</span><span class="w"> </span><span class="kt">Float32Array</span><span class="p">(</span><span class="mf">384</span><span class="p">),</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">  </span><span class="nx">concept_ids</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">3847293847</span><span class="p">,</span><span class="w"> </span><span class="mf">1928374652</span><span class="p">,</span><span class="w"> </span><span class="mf">2837465928</span><span class="p">],</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">  </span><span class="nx">concept_names</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;clean architecture&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;separation of concerns&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;dependency rule&quot;</span><span class="p">],</span><span class="w">  </span><span class="c1">// DERIVED</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">  </span><span class="nx">page_number</span><span class="o">:</span><span class="w"> </span><span class="kt">15</span><span class="p">,</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">  </span><span class="nx">is_reference</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span><span class="w">  </span><span class="c1">// Not from bibliography section</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">  </span><span class="nx">has_math</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="p">,</span><span class="w">  </span><span class="c1">// No mathematical content</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">  </span><span class="nx">has_extraction_issues</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w">  </span><span class="c1">// Clean extraction</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="3-concepts-table">3. Concepts Table<a class="headerlink" href="#3-concepts-table" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Deduplicated concept index with semantic enrichment. <strong>Canonical source</strong> - populated by LLM extraction.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>number</code></td>
+<td>Hash-based integer ID (FNV-1a of concept name)</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Concept name (unique, lowercase, e.g., "dependency injection")</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td><code>string</code></td>
+<td>LLM-generated contextual summary of the concept</td>
+</tr>
+<tr>
+<td><code>catalog_ids</code></td>
+<td><code>number[]</code></td>
+<td>Native array of catalog entry integer IDs</td>
+</tr>
+<tr>
+<td><code>catalog_titles</code></td>
+<td><code>string[]</code></td>
+<td><strong>DERIVED:</strong> Document titles for display</td>
+</tr>
+<tr>
+<td><code>chunk_ids</code></td>
+<td><code>number[]</code></td>
+<td>Native array of chunk IDs where concept appears</td>
+</tr>
+<tr>
+<td><code>adjacent_ids</code></td>
+<td><code>number[]</code></td>
+<td>Co-occurrence links (concepts appearing together in documents)</td>
+</tr>
+<tr>
+<td><code>related_ids</code></td>
+<td><code>number[]</code></td>
+<td>Lexical links (concepts sharing significant words)</td>
+</tr>
+<tr>
+<td><code>synonyms</code></td>
+<td><code>string[]</code></td>
+<td>Native array of synonyms (from WordNet)</td>
+</tr>
+<tr>
+<td><code>broader_terms</code></td>
+<td><code>string[]</code></td>
+<td>Native array of hypernyms (from WordNet)</td>
+</tr>
+<tr>
+<td><code>narrower_terms</code></td>
+<td><code>string[]</code></td>
+<td>Native array of hyponyms (from WordNet)</td>
+</tr>
+<tr>
+<td><code>weight</code></td>
+<td><code>number</code></td>
+<td>Importance weight (0-1, based on frequency/centrality)</td>
+</tr>
+<tr>
+<td><code>vector</code></td>
+<td><code>Float32Array</code></td>
+<td>384-dimensional concept embedding</td>
+</tr>
+</tbody>
+</table>
+<h4 id="concept-summaries">Concept Summaries<a class="headerlink" href="#concept-summaries" title="Permanent link">&para;</a></h4>
+<p>Concept summaries are generated during extraction (same LLM call) to ensure alignment with the source text:
+- 15-30 words describing the concept in the document's context
+- Domain-specific terminology from the source document
+- Enables fuzzy text search on concept meanings</p>
+<h4 id="concept-linking">Concept Linking<a class="headerlink" href="#concept-linking" title="Permanent link">&para;</a></h4>
+<p>Two types of concept relationships:</p>
+<ol>
+<li><strong>Adjacent (co-occurrence)</strong>: Concepts that appear together in the same document</li>
+<li>
+<p>E.g., "clean architecture" and "dependency injection" both in same book</p>
+</li>
+<li>
+<p><strong>Related (lexical)</strong>: Concepts sharing significant words (≥5 chars)</p>
+</li>
+<li>E.g., "military strategy" ↔ "strategy pattern" (share "strategy")</li>
+</ol>
+<h4 id="example-record_1">Example Record<a class="headerlink" href="#example-record_1" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="kt">3847293847</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;clean architecture&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;A software design approach that separates business logic from infrastructure through dependency inversion and clear boundaries.&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nx">catalog_ids</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">1029384756</span><span class="p">,</span><span class="w"> </span><span class="mf">2938475612</span><span class="p">],</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nx">catalog_titles</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Clean Architecture&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Domain-Driven Design&quot;</span><span class="p">],</span><span class="w">  </span><span class="c1">// DERIVED</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nx">chunk_ids</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">123456</span><span class="p">,</span><span class="w"> </span><span class="mf">234567</span><span class="p">,</span><span class="w"> </span><span class="mf">345678</span><span class="p">],</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="nx">adjacent_ids</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">2938475683</span><span class="p">,</span><span class="w"> </span><span class="mf">1029384756</span><span class="p">],</span><span class="w">  </span><span class="c1">// co-occurrence</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">  </span><span class="nx">related_ids</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">1847362999</span><span class="p">,</span><span class="w"> </span><span class="mf">2938476000</span><span class="p">],</span><span class="w">   </span><span class="c1">// lexical links</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">  </span><span class="nx">synonyms</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;uncle bob architecture&quot;</span><span class="p">],</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">  </span><span class="nx">broader_terms</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;software architecture&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;system design&quot;</span><span class="p">],</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">  </span><span class="nx">narrower_terms</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;dependency rule&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;boundary layer&quot;</span><span class="p">],</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">  </span><span class="nx">weight</span><span class="o">:</span><span class="w"> </span><span class="kt">0.85</span><span class="p">,</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">  </span><span class="nx">vector</span><span class="o">:</span><span class="w"> </span><span class="kt">Float32Array</span><span class="p">(</span><span class="mf">384</span><span class="p">)</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h3 id="4-categories-table">4. Categories Table<a class="headerlink" href="#4-categories-table" title="Permanent link">&para;</a></h3>
+<p><strong>Purpose:</strong> Taxonomy of semantic categories with hierarchy for domain browsing.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>number</code></td>
+<td>Hash-based integer ID (FNV-1a of category name)</td>
+</tr>
+<tr>
+<td><code>category</code></td>
+<td><code>string</code></td>
+<td>Normalized category name (e.g., "software architecture")</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>string</code></td>
+<td>Human-readable category description</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td><code>string</code></td>
+<td>LLM-generated one-sentence summary of the category</td>
+</tr>
+<tr>
+<td><code>parent_category_id</code></td>
+<td><code>number \| null</code></td>
+<td>Parent category ID (null for root categories)</td>
+</tr>
+<tr>
+<td><code>aliases</code></td>
+<td><code>string[]</code></td>
+<td>Native array of alternative names</td>
+</tr>
+<tr>
+<td><code>related_categories</code></td>
+<td><code>number[]</code></td>
+<td>Native array of co-occurring category IDs</td>
+</tr>
+<tr>
+<td><code>document_count</code></td>
+<td><code>number</code></td>
+<td>Number of documents in this category</td>
+</tr>
+<tr>
+<td><code>chunk_count</code></td>
+<td><code>number</code></td>
+<td>Number of chunks tagged with this category</td>
+</tr>
+<tr>
+<td><code>concept_count</code></td>
+<td><code>number</code></td>
+<td>Number of unique concepts in this category</td>
+</tr>
+<tr>
+<td><code>vector</code></td>
+<td><code>Float32Array</code></td>
+<td>384-dimensional category embedding</td>
+</tr>
+</tbody>
+</table>
+<h4 id="example-record_2">Example Record<a class="headerlink" href="#example-record_2" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="kt">1847362847</span><span class="p">,</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nx">category</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;software architecture&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Patterns and practices for designing software systems&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;The high-level structure and organization of software systems...&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="nx">parent_category_id</span><span class="o">:</span><span class="w"> </span><span class="kt">null</span><span class="p">,</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span><span class="nx">aliases</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;software design&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;system architecture&quot;</span><span class="p">],</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">  </span><span class="nx">related_categories</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="mf">2938476523</span><span class="p">,</span><span class="w"> </span><span class="mf">1029384756</span><span class="p">],</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span><span class="nx">document_count</span><span class="o">:</span><span class="w"> </span><span class="kt">25</span><span class="p">,</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span><span class="nx">chunk_count</span><span class="o">:</span><span class="w"> </span><span class="kt">1250</span><span class="p">,</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">  </span><span class="nx">concept_count</span><span class="o">:</span><span class="w"> </span><span class="kt">340</span><span class="p">,</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">  </span><span class="nx">vector</span><span class="o">:</span><span class="w"> </span><span class="kt">Float32Array</span><span class="p">(</span><span class="mf">384</span><span class="p">)</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="derived-fields">Derived Fields<a class="headerlink" href="#derived-fields" title="Permanent link">&para;</a></h2>
+<p><strong>DERIVED</strong> fields are denormalized for query performance and display. They can be regenerated from canonical sources at any time.</p>
+<h3 id="design-philosophy-ids-for-truth-names-for-queries">Design Philosophy: IDs for Truth, Names for Queries<a class="headerlink" href="#design-philosophy-ids-for-truth-names-for-queries" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>IDs (concept_ids, catalog_ids, etc.)    →  SOURCE OF TRUTH (foreign keys)
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>Names (concept_names, catalog_title)    →  PRIMARY FOR QUERIES (human-readable)
+</code></pre></div>
+<p><strong>Runtime queries use TEXT fields directly</strong> (fast, human-readable, no cache lookups):
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1">// Query on derived text fields - no cache needed</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nx">chunks</span><span class="p">.</span><span class="nx">query</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="sb">`array_contains(concept_names, &#39;dependency injection&#39;)`</span><span class="p">)</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="nx">concepts</span><span class="p">.</span><span class="nx">query</span><span class="p">().</span><span class="nx">where</span><span class="p">(</span><span class="sb">`array_contains(catalog_titles, &#39;Clean Architecture&#39;)`</span><span class="p">)</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1">// Display uses derived fields directly</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="kd">const</span><span class="w"> </span><span class="nx">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">chunk</span><span class="p">.</span><span class="nx">catalog_title</span><span class="p">;</span><span class="w">  </span><span class="c1">// Not: cache.getTitle(chunk.catalog_id)</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="kd">const</span><span class="w"> </span><span class="nx">concepts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">chunk</span><span class="p">.</span><span class="nx">concept_names</span><span class="p">;</span><span class="w">  </span><span class="c1">// Not: cache.getNames(chunk.concept_ids)</span>
+</code></pre></div></p>
+<h3 id="derived-field-summary">Derived Field Summary<a class="headerlink" href="#derived-field-summary" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Field</th>
+<th>Type</th>
+<th>Regeneration Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chunks</code></td>
+<td><code>catalog_title</code></td>
+<td><code>string</code></td>
+<td><code>catalog_id</code> → <code>catalog.title</code></td>
+</tr>
+<tr>
+<td><code>chunks</code></td>
+<td><code>concept_names</code></td>
+<td><code>string[]</code></td>
+<td><code>concept_ids</code> → <code>concepts.name</code></td>
+</tr>
+<tr>
+<td><code>catalog</code></td>
+<td><code>concept_names</code></td>
+<td><code>string[]</code></td>
+<td><code>concept_ids</code> → <code>concepts.name</code></td>
+</tr>
+<tr>
+<td><code>catalog</code></td>
+<td><code>category_names</code></td>
+<td><code>string[]</code></td>
+<td><code>category_ids</code> → <code>categories.category</code></td>
+</tr>
+<tr>
+<td><code>concepts</code></td>
+<td><code>catalog_titles</code></td>
+<td><code>string[]</code></td>
+<td><code>catalog_ids</code> → <code>catalog.title</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="regenerating-derived-fields">Regenerating Derived Fields<a class="headerlink" href="#regenerating-derived-fields" title="Permanent link">&para;</a></h3>
+<p>Use the regeneration script to rebuild all derived name fields:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Full regeneration</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/rebuild_derived_names.ts<span class="w"> </span>--dbpath<span class="w"> </span>~/.concept_rag
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Target specific table</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/rebuild_derived_names.ts<span class="w"> </span>--table<span class="w"> </span>chunks
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># Dry run to see what would change</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/rebuild_derived_names.ts<span class="w"> </span>--dry-run
+</code></pre></div>
+<hr />
+<h2 id="relationships">Relationships<a class="headerlink" href="#relationships" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>Catalog (1) ──────&lt; (N) Chunks       // One document has many chunks (via catalog_id)
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>Catalog (N) &gt;─────&lt; (N) Categories   // Documents belong to categories (via category_ids)
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>Catalog (N) &gt;─────&lt; (N) Concepts     // Documents tagged with concepts (via concept_ids)
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>Chunks (N) &gt;──────&lt; (N) Concepts     // Chunks tagged with concepts (via concept_ids)
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>Concepts (N) &gt;────&lt; (N) Catalog      // Concepts appear in documents (via catalog_ids)
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>Concepts (N) &gt;────&lt; (N) Concepts     // Adjacent concepts (via adjacent_ids)
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>Concepts (N) &gt;────&lt; (N) Concepts     // Related concepts (via related_ids)
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>Categories (N) ───&lt; (1) Categories   // Hierarchical parent-child (via parent_category_id)
+</code></pre></div>
+<h3 id="concept-retrieval-flow">Concept Retrieval Flow<a class="headerlink" href="#concept-retrieval-flow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>concept_search(&quot;strategy pattern&quot;)
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>       │
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>       ▼
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>┌─────────────────┐
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>│ concepts table  │  Find concept by name → get catalog_ids, catalog_titles
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>└────────┬────────┘
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>         │
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>         ▼
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>┌─────────────────┐
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>│ catalog table   │  Documents listed in catalog_titles (no extra lookup)
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>└────────┬────────┘
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>         │
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>         ▼
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>┌─────────────────┐
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>│ chunks table    │  Find chunks with concept_name, display catalog_title
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>└─────────────────┘
+</code></pre></div>
+<h3 id="querying-relationships">Querying Relationships<a class="headerlink" href="#querying-relationships" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1">// Find chunks by concept name (uses derived field)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="kd">const</span><span class="w"> </span><span class="nx">chunks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">chunksTable</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span><span class="p">.</span><span class="nx">query</span><span class="p">()</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="sb">`array_contains(concept_names, &#39;dependency injection&#39;)`</span><span class="p">)</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span><span class="p">.</span><span class="nx">toArray</span><span class="p">();</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="c1">// Display chunk results (uses derived fields directly)</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">const</span><span class="w"> </span><span class="nx">chunk</span><span class="w"> </span><span class="k">of</span><span class="w"> </span><span class="nx">chunks</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Title: </span><span class="si">${</span><span class="nx">chunk</span><span class="p">.</span><span class="nx">catalog_title</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">  </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="sb">`Concepts: </span><span class="si">${</span><span class="nx">chunk</span><span class="p">.</span><span class="nx">concept_names</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="p">)</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="p">}</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="c1">// Find documents with a concept</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="kd">const</span><span class="w"> </span><span class="nx">docs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">catalogTable</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="w">  </span><span class="p">.</span><span class="nx">query</span><span class="p">()</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="w">  </span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="sb">`array_contains(concept_names, &#39;clean architecture&#39;)`</span><span class="p">)</span>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="w">  </span><span class="p">.</span><span class="nx">toArray</span><span class="p">();</span>
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>
+<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="c1">// Find documents in a category</span>
+<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="kd">const</span><span class="w"> </span><span class="nx">docs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">catalogTable</span>
+<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a><span class="w">  </span><span class="p">.</span><span class="nx">query</span><span class="p">()</span>
+<a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a><span class="w">  </span><span class="p">.</span><span class="nx">where</span><span class="p">(</span><span class="sb">`array_contains(category_names, &#39;software architecture&#39;)`</span><span class="p">)</span>
+<a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a><span class="w">  </span><span class="p">.</span><span class="nx">toArray</span><span class="p">();</span>
+</code></pre></div>
+<hr />
+<h2 id="id-generation">ID Generation<a class="headerlink" href="#id-generation" title="Permanent link">&para;</a></h2>
+<p>All integer IDs use <strong>FNV-1a hashing</strong> for deterministic, stable IDs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">FNV_OFFSET_BASIS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">2166136261</span><span class="p">;</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kd">const</span><span class="w"> </span><span class="nx">FNV_PRIME</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">16777619</span><span class="p">;</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="kd">function</span><span class="w"> </span><span class="nx">hashToId</span><span class="p">(</span><span class="nx">str</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">FNV_OFFSET_BASIS</span><span class="p">;</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kd">let</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="nx">str</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">    </span><span class="nx">hash</span><span class="w"> </span><span class="o">^=</span><span class="w"> </span><span class="nx">str</span><span class="p">.</span><span class="nx">charCodeAt</span><span class="p">(</span><span class="nx">i</span><span class="p">);</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">    </span><span class="nx">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">imul</span><span class="p">(</span><span class="nx">hash</span><span class="p">,</span><span class="w"> </span><span class="nx">FNV_PRIME</span><span class="p">);</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="nx">hash</span><span class="w"> </span><span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span><span class="w"> </span><span class="c1">// Unsigned 32-bit integer</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="p">}</span>
+</code></pre></div>
+<p><strong>Benefits:</strong>
+- Same input → same ID (deterministic)
+- No external mapping files needed
+- IDs stable across database rebuilds
+- Efficient integer comparisons</p>
+<hr />
+<h2 id="vector-index">Vector Index<a class="headerlink" href="#vector-index" title="Permanent link">&para;</a></h2>
+<p>The chunks table uses an IVF-PQ vector index for fast similarity search:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">await</span><span class="w"> </span><span class="nx">chunksTable</span><span class="p">.</span><span class="nx">createIndex</span><span class="p">(</span><span class="s2">&quot;vector&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nx">config</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;ivf_pq&#39;</span><span class="p">,</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span><span class="nx">numPartitions</span><span class="o">:</span><span class="w"> </span><span class="kt">Math.max</span><span class="p">(</span><span class="mf">2</span><span class="p">,</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nx">rowCount</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">100</span><span class="p">)),</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span><span class="nx">numSubVectors</span><span class="o">:</span><span class="w"> </span><span class="kt">16</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="p">});</span>
+</code></pre></div>
+<p><strong>Index Configuration:</strong>
+- <strong>Type:</strong> IVF-PQ (Inverted File with Product Quantization)
+- <strong>Partitions:</strong> Dynamic based on table size
+- <strong>Sub-vectors:</strong> 16 (for 384-dim embeddings)
+- <strong>Minimum rows:</strong> 256 (required for IVF-PQ)</p>
+<hr />
+<h2 id="production-statistics-november-2025">Production Statistics (November 2025)<a class="headerlink" href="#production-statistics-november-2025" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Total Size</strong></td>
+<td>~180 MB (40 docs) to 1.1 GB (259 docs)</td>
+</tr>
+<tr>
+<td><strong>Documents (catalog)</strong></td>
+<td>40-259 (varies by deployment)</td>
+</tr>
+<tr>
+<td><strong>Chunks</strong></td>
+<td>~82,000 (40 docs) to 471,000+ (259 docs)</td>
+</tr>
+<tr>
+<td><strong>Concepts</strong></td>
+<td>~5,000 (40 docs) to 60,000+ (259 docs)</td>
+</tr>
+<tr>
+<td><strong>Categories</strong></td>
+<td>76-687 (varies by content)</td>
+</tr>
+<tr>
+<td><strong>Avg concepts per chunk</strong></td>
+<td>~3-5</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> Statistics vary by deployment. The preprod database with 40 documents is approximately 183 MB with 82,663 chunks and 4,787 concepts.</p>
+</blockquote>
+<hr />
+<h2 id="schema-evolution">Schema Evolution<a class="headerlink" href="#schema-evolution" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Change</th>
+<th>ADR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2024-11</td>
+<td>Initial two-table (catalog, chunks)</td>
+<td>ADR-0002</td>
+</tr>
+<tr>
+<td>2025-10-13</td>
+<td>Added concepts table (three-table architecture)</td>
+<td>ADR-0009</td>
+</tr>
+<tr>
+<td>2025-11-19</td>
+<td>Hash-based integer IDs</td>
+<td>ADR-0027</td>
+</tr>
+<tr>
+<td>2025-11-19</td>
+<td>Added categories table (four-table architecture)</td>
+<td>ADR-0028</td>
+</tr>
+<tr>
+<td>2025-11-26</td>
+<td>Schema normalization (redundant field removal)</td>
+<td>ADR-0043</td>
+</tr>
+<tr>
+<td>2025-11-28</td>
+<td>Added derived name fields: <code>concept_names</code>, <code>category_names</code>, <code>catalog_titles</code></td>
+<td>-</td>
+</tr>
+<tr>
+<td>2025-11-28</td>
+<td>Replaced <code>source</code> with <code>catalog_title</code> in chunks (v7)</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2025-11-28</td>
+<td>Removed ID mapping caches (ConceptIdCache, CatalogSourceCache, CategoryIdCache)</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2025-11-28</td>
+<td>Added <code>summary</code> field to concepts (extracted with concept)</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2025-11-29</td>
+<td>Parallel concept extraction support (SharedRateLimiter, ParallelConceptExtractor)</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2025-12-07</td>
+<td>Added research paper metadata fields: <code>document_type</code>, <code>doi</code>, <code>arxiv_id</code>, <code>venue</code>, <code>keywords</code>, <code>abstract</code>, <code>authors</code></td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="schema-changes-v7-november-2025">Schema Changes (v7 - November 2025)<a class="headerlink" href="#schema-changes-v7-november-2025" title="Permanent link">&para;</a></h2>
+<h3 id="philosophy-derived-text-fields-replace-caches">Philosophy: Derived Text Fields Replace Caches<a class="headerlink" href="#philosophy-derived-text-fields-replace-caches" title="Permanent link">&para;</a></h3>
+<p>The v7 schema eliminates the need for runtime ID-to-name caches by storing derived text fields directly:</p>
+<table>
+<thead>
+<tr>
+<th>Before (v6)</th>
+<th>After (v7)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>chunk.catalog_id</code> → <code>CatalogSourceCache.getSource()</code></td>
+<td><code>chunk.catalog_title</code> (direct)</td>
+</tr>
+<tr>
+<td><code>chunk.concept_ids</code> → <code>ConceptIdCache.getNames()</code></td>
+<td><code>chunk.concept_names</code> (direct)</td>
+</tr>
+<tr>
+<td><code>concept.catalog_ids</code> → cache lookup</td>
+<td><code>concept.catalog_titles</code> (direct)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="chunks-table-changes-v7">Chunks Table Changes (v7)<a class="headerlink" href="#chunks-table-changes-v7" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source</code></td>
+<td><strong>Removed</strong> - Use <code>catalog_title</code> for display</td>
+</tr>
+<tr>
+<td><code>catalog_title</code></td>
+<td><strong>Added</strong> - Document title from catalog (derived)</td>
+</tr>
+<tr>
+<td><code>concept_names</code></td>
+<td><strong>Added</strong> - Concept names for display (derived)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="research-paper-fields-v8">Research Paper Fields (v8)<a class="headerlink" href="#research-paper-fields-v8" title="Permanent link">&para;</a></h3>
+<p>New fields added for research paper support:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>is_reference</code></td>
+<td><code>boolean</code></td>
+<td>True if chunk is from references/bibliography section</td>
+</tr>
+<tr>
+<td><code>has_math</code></td>
+<td><code>boolean</code></td>
+<td>True if chunk contains mathematical content</td>
+</tr>
+<tr>
+<td><code>has_extraction_issues</code></td>
+<td><code>boolean</code></td>
+<td>True if extraction quality issues detected</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Mathematical Content Detection:</strong>
+- Greek letters (α, β, γ, etc.)
+- Mathematical symbols (∑, ∫, ∂, etc.)
+- Subscripts/superscripts (x₁, x²)
+- LaTeX commands that leaked through
+- <strong>Garbled math:</strong> Detects broken PDF extraction where Mathematical Alphanumeric Symbols (U+1D400-U+1D7FF) appear as Hangul syllables (U+D400-U+D7FF)</p>
+<p><strong>Use Cases:</strong>
+- <code>is_reference=true</code>: Exclude from semantic search (citations not meaningful for content search)
+- <code>has_math=true</code>: Route to specialized math-aware processing
+- <code>has_extraction_issues=true</code>: Flag for OCR fallback or manual review</p>
+<h3 id="removed-id-mapping-caches">Removed: ID Mapping Caches<a class="headerlink" href="#removed-id-mapping-caches" title="Permanent link">&para;</a></h3>
+<p>The following caches are no longer needed and have been removed:</p>
+<ul>
+<li><strong>ConceptIdCache</strong> - Replaced by <code>concept_names</code> derived field</li>
+<li><strong>CatalogSourceCache</strong> - Replaced by <code>catalog_title</code> derived field  </li>
+<li><strong>CategoryIdCache</strong> - Replaced by <code>category_names</code> derived field</li>
+</ul>
+<h3 id="performance-caches-still-used">Performance Caches (Still Used)<a class="headerlink" href="#performance-caches-still-used" title="Permanent link">&para;</a></h3>
+<p>These performance caches remain for CPU/DB optimization:</p>
+<ul>
+<li><strong>EmbeddingCache</strong> - Avoids recomputing embeddings</li>
+<li><strong>SearchResultCache</strong> - Caches repeated search queries</li>
+</ul>
+<hr />
+<h2 id="related-documentation">Related Documentation<a class="headerlink" href="#related-documentation" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../architecture/adr0002-lancedb-vector-storage/">ADR-0002: LanceDB Vector Storage</a></li>
+<li><a href="../architecture/adr0009-three-table-architecture/">ADR-0009: Three-Table Architecture</a></li>
+<li><a href="../architecture/adr0027-hash-based-integer-ids/">ADR-0027: Hash-Based Integer IDs</a></li>
+<li><a href="../architecture/adr0043-schema-normalization/">ADR-0043: Schema Normalization</a></li>
+<li>Domain Models: <code>src/domain/models/</code></li>
+<li>Schema Validators: <code>src/infrastructure/lancedb/utils/schema-validators.ts</code></li>
+<li>Migration Script: <code>scripts/migrate_to_normalized_schema.ts</code></li>
+<li>Lexical Linking: <code>scripts/link_related_concepts.ts</code></li>
+<li>Derived Fields Regeneration: <code>scripts/rebuild_derived_names.ts</code></li>
+<li>Seeding Script: <code>hybrid_fast_seed.ts</code> (supports <code>--parallel N</code> for parallel concept extraction)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      
+    
+  </body>
+</html>
