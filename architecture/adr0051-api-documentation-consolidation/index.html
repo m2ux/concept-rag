@@ -12,13 +12,9 @@
         <meta name="author" content="Alex Komyagin">
       
       
-        <link rel="canonical" href="https://m2ux.github.io/concept-rag/architecture/adr0048-stage-caching/">
+        <link rel="canonical" href="https://m2ux.github.io/concept-rag/architecture/adr0051-api-documentation-consolidation/">
       
       
-        <link rel="prev" href="../adr0047-architecture-review-dec-2025/">
-      
-      
-        <link rel="next" href="../adr0049-incremental-category-summaries/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>ADR-0048: Stage Caching - Concept-RAG Documentation</title>
+        <title>ADR-0051: API Documentation Separation of Concerns - Concept-RAG Documentation</title>
       
     
     
@@ -80,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#adr-0048-stage-caching-for-llm-results" class="md-skip">
+        <a href="#adr-0051-api-documentation-separation-of-concerns" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-0048: Stage Caching
+              ADR-0051: API Documentation Separation of Concerns
             
           </span>
         </div>
@@ -283,12 +279,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../adr0001-typescript-nodejs-runtime/" class="md-tabs__link">
           
   
@@ -577,31 +571,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
   
   
@@ -619,7 +610,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1950,37 +1941,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-0048: Stage Caching
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../adr0048-stage-caching/" class="md-nav__link">
         
   
   
@@ -1996,320 +1960,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#status" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#context" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Context
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Context">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#technical-forces" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Technical Forces
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#business-forces" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Business Forces
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#operational-forces" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Operational Forces
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#decision-drivers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision Drivers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#considered-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Considered Options
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Considered Options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-1-file-based-stage-cache-selected" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 1: File-Based Stage Cache (Selected)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-2-sqlite-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 2: SQLite Cache
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-3-in-memory-cache-with-periodic-snapshots" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 3: In-Memory Cache with Periodic Snapshots
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#decision" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Decision">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#key-design-choices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Key Design Choices
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cli-flags" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CLI Flags
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#consequences" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Consequences
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Consequences">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#positive" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Positive
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#negative" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Negative
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#neutral" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Neutral
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#confirmation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Confirmation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Implementation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#files-created" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Files Created
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#files-modified" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Files Modified
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cache-directory-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cache Directory Structure
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#validation-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Validation Results
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        References
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2416,6 +2066,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#date" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Date
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#context" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2423,106 +2084,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Context">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#technical-forces" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Technical Forces
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#business-forces" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Business Forces
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#operational-forces" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Operational Forces
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#decision-drivers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision Drivers
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#considered-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Considered Options
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Considered Options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-1-file-based-stage-cache-selected" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 1: File-Based Stage Cache (Selected)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-2-sqlite-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 2: SQLite Cache
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-3-in-memory-cache-with-periodic-snapshots" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 3: In-Memory Cache with Periodic Snapshots
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -2539,10 +2100,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#key-design-choices" class="md-nav__link">
+  <a href="#api-referencemd-pure-schema-documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Key Design Choices
+        api-reference.md (Pure Schema Documentation)
       
     </span>
   </a>
@@ -2550,10 +2111,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#cli-flags" class="md-nav__link">
+  <a href="#tool-selection-guidemd-pure-usage-guidance" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CLI Flags
+        tool-selection-guide.md (Pure Usage Guidance)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rationale" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rationale
       
     </span>
   </a>
@@ -2600,10 +2172,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#neutral" class="md-nav__link">
+  <a href="#mitigation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Neutral
+        Mitigation
       
     </span>
   </a>
@@ -2616,33 +2188,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#confirmation" class="md-nav__link">
+  <a href="#implementation-notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Confirmation
+        Implementation Notes
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Implementation">
+    <nav class="md-nav" aria-label="Implementation Notes">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#files-created" class="md-nav__link">
+  <a href="#api-referencemd-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Files Created
+        api-reference.md Structure
       
     </span>
   </a>
@@ -2650,32 +2211,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#files-modified" class="md-nav__link">
+  <a href="#tool-selection-guidemd-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Files Modified
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cache-directory-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cache Directory Structure
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#validation-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Validation Results
+        tool-selection-guide.md Structure
       
     </span>
   </a>
@@ -2684,6 +2223,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related Decisions
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2718,202 +2268,100 @@
   
 
 
-<h1 id="adr-0048-stage-caching-for-llm-results">ADR-0048: Stage Caching for LLM Results<a class="headerlink" href="#adr-0048-stage-caching-for-llm-results" title="Permanent link">&para;</a></h1>
+<h1 id="adr-0051-api-documentation-separation-of-concerns">ADR-0051: API Documentation Separation of Concerns<a class="headerlink" href="#adr-0051-api-documentation-separation-of-concerns" title="Permanent link">&para;</a></h1>
 <h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">&para;</a></h2>
-<p>Accepted (December 2025)</p>
+<p>Accepted</p>
+<h2 id="date">Date<a class="headerlink" href="#date" title="Permanent link">&para;</a></h2>
+<p>2025-12-14</p>
 <h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
-<p>When seeding the database, the system performs expensive LLM operations (concept extraction, summary generation) for each document. Currently, these results are held only in memory until the final database write stage.</p>
-<h3 id="technical-forces">Technical Forces<a class="headerlink" href="#technical-forces" title="Permanent link">&para;</a></h3>
-<ul>
-<li>LLM extraction takes 2-10 seconds per document</li>
-<li>Memory usage grows linearly with batch size</li>
-<li>LanceDB writes are atomic but can fail on schema issues</li>
-<li>The existing <code>SeedingCheckpoint</code> class only tracks which files have been processed (a boolean flag), not the actual LLM results</li>
-</ul>
-<h3 id="business-forces">Business Forces<a class="headerlink" href="#business-forces" title="Permanent link">&para;</a></h3>
-<ul>
-<li>A real incident: 212 documents processed over 2h 22m with 492 API requests, but a schema bug in <code>category_ids</code> caused the LanceDB write to fail, losing all LLM work</li>
-<li>Re-processing after failure doubles API costs and delays</li>
-<li>Production seeding represents significant time investment</li>
-</ul>
-<h3 id="operational-forces">Operational Forces<a class="headerlink" href="#operational-forces" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Production seeding runs are scheduled overnight</li>
-<li>Failures require manual intervention to resume</li>
-<li>Current "resume" still requires re-running all LLM calls</li>
-</ul>
-<h2 id="decision-drivers">Decision Drivers<a class="headerlink" href="#decision-drivers" title="Permanent link">&para;</a></h2>
+<p>The project maintains two documentation files for MCP tools:</p>
 <ol>
-<li><strong>Zero data loss</strong> - LLM results must survive any downstream failure</li>
-<li><strong>Fast resume</strong> - Re-running should skip already-processed documents</li>
-<li><strong>Minimal complexity</strong> - Solution should be simple to implement and maintain</li>
-<li><strong>No external dependencies</strong> - Avoid adding new infrastructure requirements (Redis, databases)</li>
+<li><strong><code>docs/api-reference.md</code></strong> - API specifications</li>
+<li><strong><code>docs/tool-selection-guide.md</code></strong> - Usage guidance and selection criteria</li>
 </ol>
-<h2 id="considered-options">Considered Options<a class="headerlink" href="#considered-options" title="Permanent link">&para;</a></h2>
-<h3 id="option-1-file-based-stage-cache-selected">Option 1: File-Based Stage Cache (Selected)<a class="headerlink" href="#option-1-file-based-stage-cache-selected" title="Permanent link">&para;</a></h3>
-<p>Persist LLM results to individual JSON files on disk immediately after extraction.</p>
-<p><strong>Pros:</strong>
-- Simple implementation using Node.js filesystem APIs
-- No external dependencies
-- Files survive process crashes and can be inspected manually
-- Natural file-per-document mapping matches processing model</p>
-<p><strong>Cons:</strong>
-- Disk I/O overhead (minimal for JSON writes)
-- Requires disk space (~1MB per document average)
-- Manual cleanup needed for stale cache files</p>
-<h3 id="option-2-sqlite-cache">Option 2: SQLite Cache<a class="headerlink" href="#option-2-sqlite-cache" title="Permanent link">&para;</a></h3>
-<p>Use an embedded SQLite database to store LLM results.</p>
-<p><strong>Pros:</strong>
-- ACID guarantees
-- Efficient queries for cache stats
-- Single file for all cache data</p>
-<p><strong>Cons:</strong>
-- Additional dependency (better-sqlite3)
-- More complex schema management
-- Overkill for simple key-value storage pattern</p>
-<h3 id="option-3-in-memory-cache-with-periodic-snapshots">Option 3: In-Memory Cache with Periodic Snapshots<a class="headerlink" href="#option-3-in-memory-cache-with-periodic-snapshots" title="Permanent link">&para;</a></h3>
-<p>Keep results in memory but periodically write snapshots to disk.</p>
-<p><strong>Pros:</strong>
-- Faster access during processing
-- Reduced disk I/O</p>
-<p><strong>Cons:</strong>
-- Data loss between snapshots if process crashes
-- More complex recovery logic
-- Doesn't solve the core problem of downstream failures</p>
+<p>Previously, these files had overlapping content (both contained some usage guidance and some schema information). Additionally, neither file included complete JSON response schemas.</p>
 <h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
-<p>Implement <strong>Option 1: File-Based Stage Cache</strong> because it provides zero data loss with minimal complexity and no external dependencies.</p>
-<p>The stage cache persists LLM results to disk immediately after extraction, before any database operations.</p>
-<h3 id="key-design-choices">Key Design Choices<a class="headerlink" href="#key-design-choices" title="Permanent link">&para;</a></h3>
+<p>Establish a clear separation of concerns between the two documentation files:</p>
+<h3 id="api-referencemd-pure-schema-documentation">api-reference.md (Pure Schema Documentation)<a class="headerlink" href="#api-referencemd-pure-schema-documentation" title="Permanent link">&para;</a></h3>
+<p>Contains ONLY:
+- JSON input schemas with parameter tables
+- JSON output schemas with field descriptions
+- Error schema
+- Scoring weights
+- Performance metrics</p>
+<p>Does NOT contain:
+- Usage recommendations
+- Decision trees
+- Examples of when to use/not use
+- Patterns or anti-patterns</p>
+<h3 id="tool-selection-guidemd-pure-usage-guidance">tool-selection-guide.md (Pure Usage Guidance)<a class="headerlink" href="#tool-selection-guidemd-pure-usage-guidance" title="Permanent link">&para;</a></h3>
+<p>Contains ONLY:
+- Tool comparison matrix
+- Decision trees
+- "When to Use" / "When NOT to Use" criteria
+- Query examples (✅/❌)
+- Decision logic examples
+- Patterns and anti-patterns
+- Common workflows
+- Test cases for validation</p>
+<p>Does NOT contain:
+- JSON schemas
+- Parameter tables
+- Response field descriptions</p>
+<h3 id="rationale">Rationale<a class="headerlink" href="#rationale" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong>Immediate persistence</strong>: Write LLM results to disk right after successful extraction</li>
-<li><strong>Collection-based organization</strong>: Store cache in <code>{cacheDir}/{collectionHash}/{fileHash}.json</code></li>
-<li>Collection hash computed from all file content hashes at source path</li>
-<li>Renamed source folders maintain same cache (content-based, not path-based)</li>
-<li>Different source paths have independent caches</li>
-<li><strong>Atomic writes</strong>: Use temp file + rename pattern to prevent corruption</li>
-<li><strong>TTL support</strong>: Allow stale cache cleanup (default: 7 days)</li>
-<li><strong>Automatic cleanup</strong>: Remove collection cache when all documents are seeded</li>
-<li><strong>Multi-collection resume</strong>: Run without <code>--filesdir</code> to resume all interrupted runs in chronological order</li>
+<li><strong>Clear responsibility</strong>: Each document has a single purpose</li>
+<li><strong>Easier maintenance</strong>: Changes to schemas don't require touching usage docs and vice versa</li>
+<li><strong>Better discoverability</strong>: Developers seeking API specs go to one file; those seeking usage guidance go to another</li>
+<li><strong>Complete coverage</strong>: api-reference.md now includes full response schemas (previously missing)</li>
 </ol>
-<h3 id="cli-flags">CLI Flags<a class="headerlink" href="#cli-flags" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>--no-cache</code>: Disable stage cache entirely</li>
-<li><code>--clear-cache</code>: Remove all cached data before starting</li>
-<li><code>--cache-only</code>: Fail if document not in cache (no LLM calls)</li>
-<li><code>--cache-dir</code>: Custom cache directory location</li>
-<li>(no <code>--filesdir</code>): Resume from cached collections in chronological order</li>
-</ul>
 <h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
 <h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Zero data loss</strong>: LLM results survive any downstream failure</li>
-<li><strong>Fast resume</strong>: Resume from 200-doc cache in &lt;30 seconds vs 2+ hours</li>
-<li><strong>Unified system</strong>: Cache presence replaces separate checkpoint tracking</li>
-<li><strong>Cost savings</strong>: No repeated LLM API calls on failure</li>
+<li><strong>Single responsibility</strong>: Each document has one purpose</li>
+<li><strong>Complete schemas</strong>: api-reference.md now has full JSON I/O specifications</li>
+<li><strong>Clear guidance</strong>: tool-selection-guide.md is focused purely on selection criteria</li>
+<li><strong>Cross-referencing</strong>: Each document links to the other</li>
 </ul>
 <h3 id="negative">Negative<a class="headerlink" href="#negative" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Disk space</strong>: Cache requires storage (~1MB per document average)</li>
-<li><strong>Complexity</strong>: Additional cache management code</li>
-<li><strong>Stale data risk</strong>: Must handle cache invalidation for document changes</li>
+<li><strong>Two files to maintain</strong>: Must keep both files when adding new tools</li>
+<li><strong>Potential drift</strong>: Usage guidance and schemas could become inconsistent</li>
 </ul>
-<h3 id="neutral">Neutral<a class="headerlink" href="#neutral" title="Permanent link">&para;</a></h3>
+<h3 id="mitigation">Mitigation<a class="headerlink" href="#mitigation" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Deprecates existing <code>SeedingCheckpoint</code> class (can be removed after validation)</li>
-<li>Cache directory added to <code>.gitignore</code></li>
+<li>Each document includes a prominent link to the other</li>
+<li>ADR-0032 remains accepted and applicable</li>
 </ul>
-<h2 id="confirmation">Confirmation<a class="headerlink" href="#confirmation" title="Permanent link">&para;</a></h2>
-<p>The decision will be validated through:</p>
-<ol>
-<li><strong>Unit tests</strong>: Verify <code>StageCache</code> CRUD operations, atomic writes, and TTL expiration</li>
-<li><strong>Integration tests</strong>: Simulate failure scenarios and verify resume behavior</li>
-<li><strong>Manual validation</strong>: Process sample documents, kill process mid-run, verify resume</li>
-</ol>
-<p><strong>Success criteria:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Metric</th>
-<th>Target</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Resume time (200 docs cached)</td>
-<td>&lt; 30 seconds</td>
-</tr>
-<tr>
-<td>Cache overhead per document</td>
-<td>&lt; 100ms</td>
-</tr>
-<tr>
-<td>Data loss on any failure</td>
-<td>0%</td>
-</tr>
-<tr>
-<td>Test coverage (new code)</td>
-<td>100%</td>
-</tr>
-</tbody>
-</table>
-<h2 id="implementation">Implementation<a class="headerlink" href="#implementation" title="Permanent link">&para;</a></h2>
-<h3 id="files-created">Files Created<a class="headerlink" href="#files-created" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>src/infrastructure/checkpoint/stage-cache.ts</code> - StageCache class with CRUD, TTL, collection hash support</li>
-<li><code>src/infrastructure/checkpoint/__tests__/stage-cache.test.ts</code> - 44 unit tests</li>
-<li><code>src/__tests__/integration/stage-cache-resume.integration.test.ts</code> - Resume scenario tests</li>
-<li><code>src/__tests__/integration/multi-collection-cache.integration.test.ts</code> - 17 multi-collection tests</li>
-<li><code>docs/stage-cache-structure.md</code> - Cache structure documentation</li>
-</ul>
-<h3 id="files-modified">Files Modified<a class="headerlink" href="#files-modified" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>hybrid_fast_seed.ts</code> - Integrated cache with collection-based organization, auto-cleanup, multi-collection resume</li>
-<li><code>src/infrastructure/checkpoint/index.ts</code> - Export StageCache and types</li>
-</ul>
-<h3 id="cache-directory-structure">Cache Directory Structure<a class="headerlink" href="#cache-directory-structure" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>{databaseDir}/.stage-cache/
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── {collectionHash1}/           # Source path 1 collection
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── {fileHash1}.json
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   └── {fileHash2}.json
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>└── {collectionHash2}/           # Source path 2 collection
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    └── {fileHash3}.json
+<h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
+<h3 id="api-referencemd-structure">api-reference.md Structure<a class="headerlink" href="#api-referencemd-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>- Document Discovery (catalog_search)
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>- Content Search (broad_chunks_search, chunks_search)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>- Concept Analysis (concept_search, extract_concepts, source_concepts, concept_sources)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>- Category Browsing (category_search, list_categories, list_concepts_in_category)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>- Error Schema
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>- Scoring Weights
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>- Performance
 </code></pre></div>
-<h3 id="validation-results">Validation Results<a class="headerlink" href="#validation-results" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Metric</th>
-<th>Target</th>
-<th>Actual</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Resume time (cached docs)</td>
-<td>&lt; 30 seconds</td>
-<td>~1-2s per cached doc</td>
-</tr>
-<tr>
-<td>Cache overhead per document</td>
-<td>&lt; 100ms</td>
-<td>~50ms</td>
-</tr>
-<tr>
-<td>Data loss on any failure</td>
-<td>0%</td>
-<td>0%</td>
-</tr>
-<tr>
-<td>Test coverage (new code)</td>
-<td>100%</td>
-<td>61 tests</td>
-</tr>
-</tbody>
-</table>
+<h3 id="tool-selection-guidemd-structure">tool-selection-guide.md Structure<a class="headerlink" href="#tool-selection-guidemd-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>- Overview
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>- Tool Comparison Matrix
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>- Quick Decision Tree
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>- &quot;3 Questions&quot; Method
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>- Detailed Tool Selection Criteria (per tool)
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>- Decision Logic Examples
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>- Common Patterns and Anti-Patterns
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>- Common Workflows
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>- Test Cases
+</code></pre></div>
+<h2 id="related-decisions">Related Decisions<a class="headerlink" href="#related-decisions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../adr0031-eight-specialized-tools-strategy/">ADR-0031: Eight Specialized Tools Strategy</a> - Tool architecture</li>
+<li><a href="../adr0032-tool-selection-guide/">ADR-0032: Tool Selection Guide</a> - Original guidance decision (remains valid)</li>
+</ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Cache structure documentation: <code>docs/stage-cache-structure.md</code></li>
-<li>Existing checkpoint implementation: <code>src/infrastructure/checkpoint/seeding-checkpoint.ts</code></li>
+<li>Planning: <code>.ai/planning/2025-12-14-api-documentation-consolidation/</code></li>
 </ul>
 
 

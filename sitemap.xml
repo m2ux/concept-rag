@@ -2,226 +2,230 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://m2ux.github.io/concept-rag/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/api-reference/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/database-schema/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/stage-cache-structure/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/tool-selection-guide/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0001-typescript-nodejs-runtime/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0002-lancedb-vector-storage/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0003-mcp-protocol/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0004-rag-architecture/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0005-pdf-document-processing/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0006-hybrid-search-strategy/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0007-concept-extraction-llm/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0008-wordnet-integration/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0009-three-table-architecture/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0010-query-expansion/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0011-multi-model-strategy/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0012-ocr-fallback-tesseract/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0013-incremental-seeding/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0014-multi-pass-extraction/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0015-formal-concept-model/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0016-layered-architecture-refactoring/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0017-repository-pattern/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0018-dependency-injection-container/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0019-vitest-testing-framework/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0020-typescript-strict-mode/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0021-performance-optimization-vector-search/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0022-hybrid-search-service-extraction/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0023-sql-injection-prevention/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0024-multi-provider-embeddings/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0025-document-loader-factory/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0026-epub-format-support/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0027-hash-based-integer-ids/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0028-category-storage-strategy/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0029-category-search-tools/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0030-auto-extracted-categories/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0031-eight-specialized-tools-strategy/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0032-tool-selection-guide/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0033-basetool-abstraction/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0034-comprehensive-error-handling/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0035-test-suite-expansion/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0036-configuration-centralization/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0037-functional-validation-layer/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0038-dependency-rules-enforcement/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0039-observability-infrastructure/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0040-result-option-types/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0041-advanced-caching/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0042-system-resilience-patterns/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0043-schema-normalization/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0044-seeding-script-modularization/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0045-api-key-preflight-check/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0046-document-type-classification/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0047-architecture-review-dec-2025/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0048-stage-caching/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0049-incremental-category-summaries/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
     </url>
     <url>
          <loc>https://m2ux.github.io/concept-rag/architecture/adr0050-mkdocs-material-documentation-site/</loc>
-         <lastmod>2025-12-14</lastmod>
+         <lastmod>2025-12-18</lastmod>
+    </url>
+    <url>
+         <loc>https://m2ux.github.io/concept-rag/architecture/adr0051-api-documentation-consolidation/</loc>
+         <lastmod>2025-12-18</lastmod>
     </url>
 </urlset>
