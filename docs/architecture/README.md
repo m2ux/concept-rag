@@ -112,7 +112,7 @@ This directory contains all architectural decisions made during the development 
 | [adr0032](adr0032-tool-selection-guide.md) | Tool Selection Guide for AI Agents | 2025-11-13 | Accepted |
 | [adr0033](adr0033-basetool-abstraction.md) | BaseTool Abstraction Pattern | ~2024-2025 | Accepted (Inherited & Enhanced) |
 
-**Tool Ecosystem:** 2 tools → 5 tools → 8 tools; 5,800-word selection guide; 0% overlap validation
+**Tool Ecosystem:** 2 tools → 5 tools → 8 tools → 10 tools; selection guide + API reference with full JSON I/O schemas
 
 ---
 
@@ -148,13 +148,14 @@ This directory contains all architectural decisions made during the development 
 
 ### Phase 10: Documentation Infrastructure (December 2025)
 
-**Enhancement:** Documentation site with automated deployment
+**Enhancement:** Documentation site with automated deployment, API documentation separation of concerns
 
 | # | Title | Date | Status |
 |---|-------|------|--------|
 | [adr0050](adr0050-mkdocs-material-documentation-site.md) | MkDocs Material Documentation Site | 2025-12-14 | Accepted |
+| [adr0051](adr0051-api-documentation-consolidation.md) | API Documentation Separation of Concerns | 2025-12-14 | Accepted |
 
-**Features:** MkDocs Material static site, GitHub Pages deployment, automated CI/CD
+**Features:** MkDocs Material static site, GitHub Pages deployment, pure API schema reference + pure usage guidance separation
 
 ---
 

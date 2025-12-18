@@ -25,19 +25,19 @@ Concept-RAG combines **corpus-driven concept extraction**, **WordNet semantic en
 
 - :material-api: **[API Reference](api-reference.md)**
   
-    Complete MCP tool documentation with parameters and scoring weights
+    Complete MCP tool documentation with JSON I/O schemas
+
+- :material-compass: **[Tool Selection Guide](tool-selection-guide.md)**
+  
+    Decision tree and usage guidance for AI agents
 
 - :material-file-tree: **[Database Schema](database-schema.md)**
   
     Four-table normalized schema with derived fields
 
-- :material-compass: **[Tool Selection Guide](tool-selection-guide.md)**
-  
-    Decision tree for AI agents selecting the right tool
-
 - :material-book-open-variant: **[Architecture Decisions](architecture/README.md)**
   
-    49 ADRs documenting all major technical decisions
+    50 ADRs documenting all major technical decisions
 
 </div>
 
