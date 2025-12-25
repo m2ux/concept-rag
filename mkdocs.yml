@@ -69,11 +69,9 @@ nav:
 
   - Getting Started:
     - Quick Start: getting-started.md
-
-  - Usage Guide:
-    - Tool Selection Guide: tool-selection-guide.md
-    - FAQ: faq.md
     - Troubleshooting: troubleshooting.md
+
+  - Tool Selection: tool-selection-guide.md
 
   - API Reference: api-reference.md
 
@@ -138,6 +136,8 @@ nav:
     - "ADR-0050: MkDocs Site": architecture/adr0050-mkdocs-material-documentation-site.md
     - "ADR-0051: API Documentation": architecture/adr0051-api-documentation-consolidation.md
     - "ADR-0052: Docs Restructure": architecture/adr0052-documentation-site-restructure.md
+
+  - FAQ: faq.md
 
 # Plugins
 plugins:
