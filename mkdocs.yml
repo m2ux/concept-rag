@@ -80,6 +80,7 @@ nav:
   - Architecture:
     - Overview: architecture/README.md
     - Seeding Architecture: architecture/seeding-architecture.md
+    - BM25 Keywords: architecture/bm25-keywords.md
     - WordNet Enrichment: architecture/wordnet-enrichment.md
     - Database Schema: database-schema.md
     - Stage Cache: stage-cache-structure.md
