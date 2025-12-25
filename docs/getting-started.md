@@ -237,9 +237,9 @@ flowchart TB
         MoreDocs{More pending<br/>documents?}
     end
 
-    subgraph Interrupt["⚠️ Interruption Handling"]
-        Interrupt([Process Interrupted])
-        Resume([Resume with --resume])
+    subgraph Recovery["⚠️ Interruption Handling"]
+        Interrupted([Process Interrupted])
+        ResumeCmd([Resume with --resume])
         SkipCompleted[Skip completed docs<br/>in checkpoint]
     end
 
@@ -265,10 +265,9 @@ flowchart TB
     MoreDocs -->|Yes| ProcessDoc
     MoreDocs -->|No| AllDone
     
-    ProcessDoc -.->|Ctrl+C| Interrupt
-    Interrupt --> Resume
-    Resume --> LoadCP
-    LoadCP --> SkipCompleted
+    ProcessDoc -.->|Ctrl+C| Interrupted
+    Interrupted --> ResumeCmd
+    ResumeCmd --> SkipCompleted
     SkipCompleted --> GetPending
     
     AllDone --> ClearCP
