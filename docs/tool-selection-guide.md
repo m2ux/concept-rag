@@ -79,14 +79,10 @@ This simple decision tree routes 95% of queries correctly.
 
 ### catalog_search
 
-**When to Use:**
-
 ✅ Finding documents about a specific topic or subject area  
 ✅ Looking for documents by title, author, or keywords  
 ✅ Need document-level results rather than specific chunks  
 ✅ Starting exploratory research to identify relevant sources
-
-**When NOT to Use:**
 
 ❌ Listing all documents in your library (use `list_categories` then `category_search`)  
 ❌ Finding specific information within documents (use `broad_chunks_search` or `chunks_search`)  
@@ -105,15 +101,11 @@ This simple decision tree routes 95% of queries correctly.
 
 ### broad_chunks_search
 
-**When to Use:**
-
 ✅ Searching for specific phrases, keywords, or technical terms across all documents  
 ✅ Need comprehensive cross-document research on a topic  
 ✅ Looking for textual content that may or may not be tagged as a concept  
 ✅ Query contains multiple terms or is phrased as a natural language question  
 ✅ Want to find content regardless of whether it was identified as a formal concept
-
-**When NOT to Use:**
 
 ❌ Finding documents by title or getting document overviews (use `catalog_search`)  
 ❌ Searching within a single known document (use `chunks_search`)  
@@ -133,14 +125,10 @@ This simple decision tree routes 95% of queries correctly.
 
 ### chunks_search
 
-**When to Use:**
-
 ✅ You know which document contains the information  
 ✅ Following up from `catalog_search` results with a specific source  
 ✅ Focused analysis of one document's content  
 ✅ Have the exact source path from a previous search
-
-**When NOT to Use:**
 
 ❌ Don't know which document to search (use `catalog_search` first)  
 ❌ Need to search across multiple documents (use `broad_chunks_search`)  
@@ -157,14 +145,10 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 
 ### concept_search
 
-**When to Use:**
-
 ✅ User asks about a CONCEPT (e.g., "innovation", "leadership", "strategic thinking")  
 ✅ Query is a single conceptual term or short phrase (1-3 words)  
 ✅ Need semantically validated, high-precision results  
 ✅ Researching how/where a concept is discussed across the library
-
-**When NOT to Use:**
 
 ❌ Query contains multiple phrases or full sentences  
 ❌ Looking for exact keyword matches (not semantic concepts)  
@@ -187,14 +171,10 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 
 ### extract_concepts
 
-**When to Use:**
-
 ✅ User explicitly asks to "extract", "list", "show", or "export" concepts  
 ✅ Creating concept maps or taxonomies  
 ✅ Reviewing concept extraction quality  
 ✅ Exporting for external analysis
-
-**When NOT to Use:**
 
 ❌ Searching for information (use search tools)  
 ❌ Finding where a concept is discussed (use `concept_search`)  
@@ -212,15 +192,11 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 
 ### source_concepts
 
-**When to Use:**
-
 ✅ "Which books mention [concept]?" or "Where is [concept] discussed?"  
 ✅ Finding source attribution for research or citation  
 ✅ Understanding concept coverage across your library  
 ✅ Finding documents that cover MULTIPLE concepts (pass an array)  
 ✅ Need overlap analysis (which sources cover the most concepts)
-
-**When NOT to Use:**
 
 ❌ Need separate per-concept lists (use `concept_sources`)  
 ❌ Finding specific text passages (use `concept_search`)  
@@ -237,14 +213,10 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 
 ### concept_sources
 
-**When to Use:**
-
 ✅ Need separate source lists for each concept (not merged)  
 ✅ Comparing which sources cover which specific concepts  
 ✅ Building per-concept bibliographies or citations  
 ✅ Need to know exactly which sources discuss each individual concept
-
-**When NOT to Use:**
 
 ❌ Need merged/union list with overlap info (use `source_concepts`)  
 ❌ Finding specific text passages (use `concept_search`)  
@@ -263,13 +235,9 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 
 ### category_search
 
-**When to Use:**
-
 ✅ Browse documents in a specific domain or subject area  
 ✅ Filter library by category  
 ✅ List all documents in a category
-
-**When NOT to Use:**
 
 ❌ Don't know what categories exist (use `list_categories` first)  
 ❌ Need content search, not document listing (use `broad_chunks_search`)  
@@ -279,14 +247,10 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 
 ### list_categories
 
-**When to Use:**
-
 ✅ "What categories do I have?"  
 ✅ Explore available subject areas in your library  
 ✅ Get category statistics and metadata  
 ✅ Category discovery before using `category_search`
-
-**When NOT to Use:**
 
 ❌ Looking for specific documents (use `catalog_search` or `category_search`)  
 ❌ Searching content (use search tools)  
@@ -296,14 +260,10 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 
 ### list_concepts_in_category
 
-**When to Use:**
-
 ✅ "What concepts appear in [category] documents?"  
 ✅ Analyze conceptual landscape of a domain  
 ✅ Find key concepts for a subject area  
 ✅ Cross-domain concept discovery
-
-**When NOT to Use:**
 
 ❌ Need to search for content (use `concept_search` or `broad_chunks_search`)  
 ❌ Want documents in a category (use `category_search`)  
