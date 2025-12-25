@@ -141,24 +141,6 @@ Concept-RAG provides **10 specialized MCP tools** organized by purpose:
 
 ---
 
-## Repository Structure
-
-| Directory | Contents |
-|-----------|----------|
-| `src/` | TypeScript source code |
-| `src/application/` | Composition root, dependency injection |
-| `src/domain/` | Domain models, services, interfaces |
-| `src/infrastructure/` | Database adapters, search, embeddings, resilience |
-| `src/concepts/` | Concept extraction, indexing, query expansion |
-| `src/tools/` | MCP tool implementations (10 tools) |
-| `src/wordnet/` | WordNet integration and strategies |
-| `docs/` | MkDocs documentation site |
-| `docs/architecture/` | 52 Architecture Decision Records |
-| `scripts/` | Maintenance and diagnostic utilities |
-| `prompts/` | LLM prompt templates |
-
----
-
 ## Quick Links
 
 <div class="grid cards" markdown>

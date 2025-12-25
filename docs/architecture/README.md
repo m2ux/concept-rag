@@ -1,10 +1,28 @@
-# Architectural Decision Records (ADRs)
+# Architecture
 
-## Overview
+## Repository Structure
+
+| Directory | Contents |
+|-----------|----------|
+| `src/` | TypeScript source code |
+| `src/application/` | Composition root, dependency injection |
+| `src/domain/` | Domain models, services, interfaces |
+| `src/infrastructure/` | Database adapters, search, embeddings, resilience |
+| `src/concepts/` | Concept extraction, indexing, query expansion |
+| `src/tools/` | MCP tool implementations (10 tools) |
+| `src/wordnet/` | WordNet integration and strategies |
+| `docs/` | MkDocs documentation site |
+| `docs/architecture/` | 52 Architecture Decision Records |
+| `scripts/` | Maintenance and diagnostic utilities |
+| `prompts/` | LLM prompt templates |
+
+---
+
+## Architectural Decision Records (ADRs)
 
 This directory contains all architectural decisions made during the development of concept-rag, from its fork from lance-mcp (2024) through December 2025. Each ADR documents the context, alternatives considered, decision made, and consequences.
 
-## ADR Index
+### ADR Index
 
 | # | Title | Date | Status |
 |---|-------|------|--------|
@@ -63,9 +81,9 @@ This directory contains all architectural decisions made during the development 
 
 ---
 
-## Using This Documentation
+### Using This Documentation
 
-### For Adding New ADRs
+#### For Adding New ADRs
 
 1. **Use the template:** Copy an existing ADR as a starting point
 2. **Determine number:** Next sequential number (adr0053, adr0054, etc.)
@@ -73,7 +91,7 @@ This directory contains all architectural decisions made during the development 
 4. **Add to this index:** Update README.md with new ADR
 5. **Cross-reference:** Link to related ADRs
 
-### For Updating ADRs
+#### For Updating ADRs
 
 **ADRs are immutable** once accepted. To change a decision:
 
@@ -81,7 +99,7 @@ This directory contains all architectural decisions made during the development 
 2. Update old ADR status to "Superseded by ADR-XXXX"
 3. Link between old and new ADRs
 
-### For Deprecating ADRs
+#### For Deprecating ADRs
 
 If decision is reversed without replacement:
 
