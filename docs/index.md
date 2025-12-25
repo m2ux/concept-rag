@@ -1,127 +1,204 @@
-# Concept-RAG Documentation
+# Concept-RAG
 
-Welcome to the **Concept-RAG** documentation. This site provides comprehensive documentation for the Conceptual-Search RAG Server - a RAG MCP server that enables LLMs to interact with local PDF/EPUB documents through conceptual search.
+**Search your documents by meaning, not just keywords.**
 
----
-
-## What is Concept-RAG?
-
-Concept-RAG combines **corpus-driven concept extraction**, **WordNet semantic enrichment**, and **multi-signal hybrid ranking** powered by LanceDB for superior retrieval accuracy.
-
-### Key Features
-
-- 🧠 **Conceptual Search** - Search by meaning, not just keywords
-- 🔍 **Hybrid Ranking** - 4-signal scoring (Vector + BM25 + Concepts + WordNet)
-- 📚 **Multi-Format Support** - PDF and EPUB documents
-- 🏷️ **Auto-Categorization** - 46 auto-extracted categories
-- ⚡ **High Performance** - 80x-240x faster searches with optimized indexing
-- 🛡️ **Resilient Architecture** - Circuit breaker, bulkhead, and timeout patterns
-
----
-
-## Quick Navigation
+Concept-RAG is an MCP server that enables AI assistants to interact with your PDF and EPUB documents through conceptual search. It combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking for superior retrieval accuracy.
 
 <div class="grid cards" markdown>
 
-- :material-api: **[API Reference](api-reference.md)**
-  
-    Complete MCP tool documentation with JSON I/O schemas
+-   :material-brain:{ .lg .middle } **Conceptual Search**
 
-- :material-compass: **[Tool Selection Guide](tool-selection-guide.md)**
-  
-    Decision tree and usage guidance for AI agents
+    ---
 
-- :material-file-tree: **[Database Schema](database-schema.md)**
-  
-    Four-table normalized schema with derived fields
+    Search by meaning with 80-150+ extracted concepts per document
 
-- :material-book-open-variant: **[Architecture Decisions](architecture/README.md)**
-  
-    50 ADRs documenting all major technical decisions
+    [:octicons-arrow-right-24: How it works](#how-it-works)
+
+-   :material-magnify:{ .lg .middle } **Hybrid Ranking**
+
+    ---
+
+    4-signal scoring: Vector + BM25 + Concepts + WordNet
+
+    [:octicons-arrow-right-24: Architecture](architecture/README.md)
+
+-   :material-book-multiple:{ .lg .middle } **Multi-Format**
+
+    ---
+
+    PDF and EPUB with OCR fallback for scanned documents
+
+    [:octicons-arrow-right-24: Getting Started](getting-started.md)
+
+-   :material-lightning-bolt:{ .lg .middle } **High Performance**
+
+    ---
+
+    80x-240x faster searches with optimized indexing
+
+    [:octicons-arrow-right-24: API Reference](api-reference.md)
 
 </div>
 
 ---
 
+## How It Works
+
+```mermaid
+flowchart TB
+    subgraph Input["📄 Documents"]
+        PDF[PDF Files]
+        EPUB[EPUB Files]
+    end
+
+    subgraph Processing["⚙️ Processing Pipeline"]
+        Parse[Parse & Extract Text]
+        OCR[OCR Fallback]
+        Chunk[Chunk Text]
+        Extract[Extract Concepts<br/>Claude Sonnet]
+        Embed[Generate Embeddings]
+        Summarize[Generate Summary<br/>Grok-4-fast]
+    end
+
+    subgraph Storage["💾 LanceDB Storage"]
+        Catalog[(Catalog<br/>Documents)]
+        Chunks[(Chunks<br/>Text Segments)]
+        Concepts[(Concepts<br/>Index)]
+        Categories[(Categories<br/>Taxonomy)]
+    end
+
+    subgraph Search["🔍 Hybrid Search"]
+        Vector[Vector Similarity]
+        BM25[BM25 Keywords]
+        ConceptMatch[Concept Matching]
+        WordNet[WordNet Expansion]
+        Rank[Weighted Ranking]
+    end
+
+    subgraph Output["🤖 MCP Tools"]
+        Tools[10 Specialized Tools]
+        AI[AI Assistants]
+    end
+
+    PDF --> Parse
+    EPUB --> Parse
+    Parse --> OCR
+    OCR --> Chunk
+    Chunk --> Extract
+    Chunk --> Embed
+    Extract --> Summarize
+
+    Embed --> Chunks
+    Extract --> Concepts
+    Summarize --> Catalog
+    Extract --> Categories
+
+    Catalog --> Vector
+    Chunks --> Vector
+    Concepts --> ConceptMatch
+    
+    Vector --> Rank
+    BM25 --> Rank
+    ConceptMatch --> Rank
+    WordNet --> Rank
+    
+    Rank --> Tools
+    Tools --> AI
+```
+
+---
+
 ## Available Tools
 
-The server provides **10 specialized MCP tools** organized into four categories:
+Concept-RAG provides **10 specialized MCP tools** organized by purpose:
 
 ### Document Discovery
 
-| Tool | Description |
-|------|-------------|
-| `catalog_search` | Semantic search documents by topic, title, or author |
-| `category_search` | Browse documents by category/domain |
-| `list_categories` | List all categories in your library |
+| Tool | Description | When to Use |
+|------|-------------|-------------|
+| `catalog_search` | Semantic search by topic, title, author | Finding documents about a subject |
+| `category_search` | Browse by category/domain | Exploring a knowledge area |
+| `list_categories` | List all categories | Discovering available topics |
 
 ### Content Search
 
-| Tool | Description |
-|------|-------------|
-| `broad_chunks_search` | Cross-document search (phrases, keywords, topics) |
-| `chunks_search` | Search within a specific known document |
+| Tool | Description | When to Use |
+|------|-------------|-------------|
+| `broad_chunks_search` | Cross-document phrase search | Deep research across all documents |
+| `chunks_search` | Search within a known document | Finding specific content in a source |
 
 ### Concept Analysis
 
-| Tool | Description |
-|------|-------------|
-| `concept_search` | Find chunks by concept with fuzzy matching |
-| `extract_concepts` | Export all concepts from a document |
-| `source_concepts` | Find documents where concept(s) appear |
-| `concept_sources` | Get per-concept source lists |
-| `list_concepts_in_category` | Find concepts in a category |
+| Tool | Description | When to Use |
+|------|-------------|-------------|
+| `concept_search` | Find chunks by concept | Tracking concept usage |
+| `extract_concepts` | Export all concepts from a document | Concept mapping |
+| `source_concepts` | Find documents by concept(s) | Building bibliographies |
+| `concept_sources` | Per-concept source lists | Comparing coverage |
+| `list_concepts_in_category` | Concepts in a category | Analyzing a domain |
+
+[:octicons-arrow-right-24: Tool Selection Guide](tool-selection-guide.md) · [:octicons-arrow-right-24: API Reference](api-reference.md)
 
 ---
 
-## Architecture Overview
+## Repository Structure
 
-```
-     PDF/EPUB Documents
-            ↓
-   Processing + OCR fallback
-            ↓
-  ┌─────────┼─────────┐
-  ↓         ↓         ↓
-Catalog   Chunks   Concepts   Categories
-(docs)    (text)   (index)    (taxonomy)
-  └─────────┴─────────┴─────────┘
-            ↓
-    Hybrid Search Engine
-   (Vector + BM25 + Concepts + WordNet)
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- Python 3.9+ with NLTK
-- OpenRouter API key
-- MCP Client (Cursor or Claude Desktop)
-
-### Installation
-
-```bash
-# Clone and build
-git clone https://github.com/m2ux/concept-rag.git
-cd concept-rag
-npm install
-npm run build
-
-# Install WordNet
-pip3 install nltk
-python3 -c "import nltk; nltk.download('wordnet'); nltk.download('omw-1.4')"
-```
-
-For complete setup instructions, see the [GitHub README](https://github.com/m2ux/concept-rag#readme).
+| Directory | Contents |
+|-----------|----------|
+| `src/` | TypeScript source code |
+| `src/application/` | Composition root, dependency injection |
+| `src/domain/` | Domain models, services, interfaces |
+| `src/infrastructure/` | Database adapters, search, embeddings, resilience |
+| `src/concepts/` | Concept extraction, indexing, query expansion |
+| `src/tools/` | MCP tool implementations (10 tools) |
+| `src/wordnet/` | WordNet integration and strategies |
+| `docs/` | MkDocs documentation site |
+| `docs/architecture/` | 52 Architecture Decision Records |
+| `scripts/` | Maintenance and diagnostic utilities |
+| `prompts/` | LLM prompt templates |
 
 ---
 
-## Project Links
+## Key Metrics
 
-- **GitHub Repository**: [m2ux/concept-rag](https://github.com/m2ux/concept-rag)
-- **Issues**: [Report a bug](https://github.com/m2ux/concept-rag/issues)
-- **Contributing**: [Contribution guidelines](https://github.com/m2ux/concept-rag/blob/main/CONTRIBUTING.md)
+| Metric | Value |
+|--------|-------|
+| **Documents processed** | PDF, EPUB with OCR fallback |
+| **Concepts per document** | 80-150+ extracted |
+| **Search signals** | 4 (Vector + BM25 + Concepts + WordNet) |
+| **Performance improvement** | 80x-240x faster searches |
+| **Categories** | 46 auto-extracted |
+| **ADRs documented** | 52 architectural decisions |
+| **Test coverage** | 534+ tests |
+
+---
+
+## Quick Links
+
+<div class="grid cards" markdown>
+
+-   [:material-rocket-launch: **Getting Started**](getting-started.md)
+
+    Install and configure in under 10 minutes
+
+-   [:material-compass: **Tool Selection Guide**](tool-selection-guide.md)
+
+    Choose the right tool for your query
+
+-   [:material-api: **API Reference**](api-reference.md)
+
+    Complete MCP tool documentation
+
+-   [:material-help-circle: **FAQ**](faq.md)
+
+    Common questions answered
+
+-   [:material-wrench: **Troubleshooting**](troubleshooting.md)
+
+    Fix common issues
+
+-   [:material-github: **GitHub**](https://github.com/m2ux/concept-rag)
+
+    Source code and contributions
+
+</div>
