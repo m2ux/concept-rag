@@ -81,9 +81,6 @@ nav:
     - Overview: architecture/README.md
     - Database Schema: database-schema.md
     - Stage Cache: stage-cache-structure.md
-
-  - ADRs:
-    - Overview: architecture/README.md
     - "ADR-0001: TypeScript Runtime": architecture/adr0001-typescript-nodejs-runtime.md
     - "ADR-0002: LanceDB Storage": architecture/adr0002-lancedb-vector-storage.md
     - "ADR-0003: MCP Protocol": architecture/adr0003-mcp-protocol.md
