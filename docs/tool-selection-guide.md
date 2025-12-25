@@ -17,23 +17,6 @@ Concept-RAG provides **10 MCP tools** organized into four categories:
 
 ---
 
-## Tool Comparison Matrix
-
-| Tool | Search Scope | Precision | Best For | Query Type |
-|------|--------------|-----------|----------|------------|
-| `concept_search` | All chunks | ⭐⭐⭐⭐⭐ | Conceptual research | Single concept terms |
-| `broad_chunks_search` | All chunks | ⭐⭐⭐ | Comprehensive search | Phrases, keywords, questions |
-| `catalog_search` | Document summaries | ⭐⭐⭐⭐ | Document discovery | Titles, topics, authors |
-| `chunks_search` | Single document | ⭐⭐⭐⭐ | Focused search | Any, within known doc |
-| `extract_concepts` | Document metadata | N/A | Concept export | Document identifier |
-| `source_concepts` | Concept → sources | ⭐⭐⭐⭐⭐ | Source attribution (union) | Concept name(s) |
-| `concept_sources` | Concept → sources | ⭐⭐⭐⭐⭐ | Per-concept bibliographies | Concept name(s) |
-| `category_search` | Documents in category | ⭐⭐⭐⭐⭐ | Domain-specific browsing | Category name/ID |
-| `list_categories` | All categories | N/A | Category discovery | Optional search filter |
-| `list_concepts_in_category` | Category's concepts | ⭐⭐⭐⭐ | Domain concept analysis | Category name/ID |
-
----
-
 ## Quick Decision Tree
 
 ```
@@ -482,16 +465,6 @@ list_concepts_in_category → understand domain vocabulary
 | `broad_chunks_search` | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | May include false positives |
 | `catalog_search` | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Strong title matching |
 | `chunks_search` | ⭐⭐⭐⭐ | ⭐⭐⭐ | Limited to single document |
-
----
-
-## Revision History
-
-| Date | Changes |
-|------|---------|
-| 2025-12-14 | Separated from api-reference.md; pure usage guidance |
-| 2025-11-20 | Added category search tools guidance |
-| 2025-11-13 | Initial version based on 0% overlap investigation |
 
 ---
 

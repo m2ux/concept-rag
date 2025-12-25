@@ -159,20 +159,6 @@ Concept-RAG provides **10 specialized MCP tools** organized by purpose:
 
 ---
 
-## Key Metrics
-
-| Metric | Value |
-|--------|-------|
-| **Documents processed** | PDF, EPUB with OCR fallback |
-| **Concepts per document** | 80-150+ extracted |
-| **Search signals** | 4 (Vector + BM25 + Concepts + WordNet) |
-| **Performance improvement** | 80x-240x faster searches |
-| **Categories** | 46 auto-extracted |
-| **ADRs documented** | 52 architectural decisions |
-| **Test coverage** | 534+ tests |
-
----
-
 ## Quick Links
 
 <div class="grid cards" markdown>

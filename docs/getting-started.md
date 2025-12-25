@@ -212,6 +212,85 @@ sequenceDiagram
 
 ---
 
+## Checkpoint & Recovery System
+
+Seeding uses a checkpoint system to handle interruptions and detect file changes:
+
+```mermaid
+flowchart TB
+    subgraph Init["🚀 Startup"]
+        Start([Start Seeding])
+        LoadCP[Load checkpoint.json]
+        HashFiles[Hash file set<br/>FNV-1a of sorted paths]
+    end
+
+    subgraph Compare["🔍 File Set Detection"]
+        CompareHash{File set hash<br/>matches checkpoint?}
+        NewFiles[Detect new/removed files]
+        CleanStart[Clean start:<br/>new file set detected]
+    end
+
+    subgraph Process["⚙️ Processing"]
+        GetPending[Get pending documents<br/>from checkpoint]
+        ProcessDoc[Process document]
+        SaveCP[Save checkpoint<br/>after each doc]
+        MoreDocs{More pending<br/>documents?}
+    end
+
+    subgraph Interrupt["⚠️ Interruption Handling"]
+        Interrupt([Process Interrupted])
+        Resume([Resume with --resume])
+        SkipCompleted[Skip completed docs<br/>in checkpoint]
+    end
+
+    subgraph Complete["✅ Completion"]
+        AllDone[All documents processed]
+        ClearCP[Clear checkpoint]
+        Done([Done])
+    end
+
+    Start --> LoadCP
+    LoadCP --> HashFiles
+    HashFiles --> CompareHash
+    
+    CompareHash -->|Yes| GetPending
+    CompareHash -->|No| CleanStart
+    CleanStart --> NewFiles
+    NewFiles --> GetPending
+    
+    GetPending --> ProcessDoc
+    ProcessDoc --> SaveCP
+    SaveCP --> MoreDocs
+    
+    MoreDocs -->|Yes| ProcessDoc
+    MoreDocs -->|No| AllDone
+    
+    ProcessDoc -.->|Ctrl+C| Interrupt
+    Interrupt --> Resume
+    Resume --> LoadCP
+    LoadCP --> SkipCompleted
+    SkipCompleted --> GetPending
+    
+    AllDone --> ClearCP
+    ClearCP --> Done
+```
+
+**How it works:**
+
+1. **File set hashing**: On startup, the seeder computes a hash of all file paths in the source directory
+2. **Checkpoint persistence**: After each document is processed, progress is saved to `checkpoint.json`
+3. **Interruption recovery**: If interrupted (Ctrl+C), use `--resume` to continue from where you left off
+4. **File set changes**: If files are added/removed, a new seeding run detects the change and processes accordingly
+
+!!! info "Checkpoint Location"
+    The checkpoint file is stored at `<dbpath>/checkpoint.json` and contains:
+    
+    - File set hash (FNV-1a)
+    - List of completed document paths
+    - Timestamp of last update
+
+---
+
 ## Verify Installation
 
 Run the health check to verify your database:
