@@ -163,7 +163,7 @@ This directory contains all architectural decisions made during the development 
 
 ### For Adding New ADRs
 
-1. **Use the template:** [template.md](../../.ai/architecture/template.md)
+1. **Use the template:** Copy an existing ADR as a starting point
 2. **Determine number:** Next sequential number (adr0034, adr0035, etc.)
 3. **Include citations:** Every fact needs source reference
 4. **Add to this index:** Update README.md with new ADR
