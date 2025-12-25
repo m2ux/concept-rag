@@ -12,31 +12,31 @@
         <meta name="author" content="Alex Komyagin">
       
       
-        <link rel="canonical" href="https://m2ux.github.io/concept-rag/architecture/adr0015-formal-concept-model/">
+        <link rel="canonical" href="https://m2ux.github.io/concept-rag/faq/">
       
       
-        <link rel="prev" href="../adr0014-multi-pass-extraction/">
+        <link rel="prev" href="../tool-selection-guide/">
       
       
-        <link rel="next" href="../adr0016-layered-architecture-refactoring/">
+        <link rel="next" href="../troubleshooting/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
-        <title>ADR-0015: Formal Concept Model - Concept-RAG Documentation</title>
+        <title>FAQ - Concept-RAG Documentation</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,7 +55,7 @@
       
     
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#15-formal-concept-model-definition" class="md-skip">
+        <a href="#frequently-asked-questions" class="md-skip">
           Skip to content
         </a>
       
@@ -94,7 +94,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Concept-RAG Documentation" class="md-header__button md-logo" aria-label="Concept-RAG Documentation" data-md-component="logo">
+    <a href=".." title="Concept-RAG Documentation" class="md-header__button md-logo" aria-label="Concept-RAG Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-0015: Formal Concept Model
+              FAQ
             
           </span>
         </div>
@@ -227,7 +227,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href=".." class="md-tabs__link">
         
   
   
@@ -248,7 +248,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../getting-started/" class="md-tabs__link">
+        <a href="../getting-started/" class="md-tabs__link">
           
   
   
@@ -266,11 +266,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../tool-selection-guide/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../tool-selection-guide/" class="md-tabs__link">
           
   
   
@@ -290,7 +292,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../api-reference/" class="md-tabs__link">
+      <a href="../api-reference/" class="md-tabs__link">
         
   
   
@@ -311,7 +313,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../" class="md-tabs__link">
+        <a href="../architecture/" class="md-tabs__link">
           
   
   
@@ -329,13 +331,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../adr0001-typescript-nodejs-runtime/" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../architecture/adr0001-typescript-nodejs-runtime/" class="md-tabs__link">
           
   
   
@@ -373,7 +373,7 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Concept-RAG Documentation" class="md-nav__button md-logo" aria-label="Concept-RAG Documentation" data-md-component="logo">
+    <a href=".." title="Concept-RAG Documentation" class="md-nav__button md-logo" aria-label="Concept-RAG Documentation" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -403,7 +403,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -488,7 +488,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/" class="md-nav__link">
+      <a href="../getting-started/" class="md-nav__link">
         
   
   
@@ -520,8 +520,10 @@
       
   
   
+    
   
   
+  
     
     
       
@@ -535,21 +537,22 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -567,7 +570,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -585,7 +588,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../tool-selection-guide/" class="md-nav__link">
+      <a href="../tool-selection-guide/" class="md-nav__link">
         
   
   
@@ -610,10 +613,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../faq/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -629,6 +659,287 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#general" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        General
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="General">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-concept-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is Concept-RAG?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-does-conceptual-search-mean" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What does "conceptual search" mean?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#who-is-this-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Who is this for?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#setup-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setup &amp; Installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup &amp; Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-are-the-system-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What are the system requirements?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-much-does-openrouter-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How much does OpenRouter cost?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#do-i-need-a-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Do I need a GPU?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can-i-use-local-llms-instead-of-openrouter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I use local LLMs instead of OpenRouter?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage &amp; Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage &amp; Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#which-search-tool-should-i-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which search tool should I use?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-document-formats-are-supported" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What document formats are supported?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-accurate-is-concept-extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How accurate is concept extraction?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can-i-customize-concept-extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I customize concept extraction?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#costs-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Costs &amp; Performance
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Costs &amp; Performance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-fast-is-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How fast is search?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-do-i-reduce-seeding-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How do I reduce seeding costs?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-privacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data &amp; Privacy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data &amp; Privacy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#is-my-data-private" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Is my data private?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#can-i-export-my-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Can I export my data?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#still-have-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Still Have Questions?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -641,7 +952,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../troubleshooting/" class="md-nav__link">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -676,7 +987,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/" class="md-nav__link">
+      <a href="../api-reference/" class="md-nav__link">
         
   
   
@@ -738,7 +1049,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../architecture/" class="md-nav__link ">
               
   
   
@@ -782,7 +1093,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../seeding-architecture/" class="md-nav__link">
+      <a href="../architecture/seeding-architecture/" class="md-nav__link">
         
   
   
@@ -810,7 +1121,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../bm25-keywords/" class="md-nav__link">
+      <a href="../architecture/bm25-keywords/" class="md-nav__link">
         
   
   
@@ -838,7 +1149,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../wordnet-enrichment/" class="md-nav__link">
+      <a href="../architecture/wordnet-enrichment/" class="md-nav__link">
         
   
   
@@ -866,7 +1177,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../database-schema/" class="md-nav__link">
+      <a href="../database-schema/" class="md-nav__link">
         
   
   
@@ -894,7 +1205,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../stage-cache-structure/" class="md-nav__link">
+      <a href="../stage-cache-structure/" class="md-nav__link">
         
   
   
@@ -926,10 +1237,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -1041,22 +1350,21 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -1074,7 +1382,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1092,7 +1400,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0001-typescript-nodejs-runtime/" class="md-nav__link">
+      <a href="../architecture/adr0001-typescript-nodejs-runtime/" class="md-nav__link">
         
   
   
@@ -1120,7 +1428,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0002-lancedb-vector-storage/" class="md-nav__link">
+      <a href="../architecture/adr0002-lancedb-vector-storage/" class="md-nav__link">
         
   
   
@@ -1148,7 +1456,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0003-mcp-protocol/" class="md-nav__link">
+      <a href="../architecture/adr0003-mcp-protocol/" class="md-nav__link">
         
   
   
@@ -1176,7 +1484,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0004-rag-architecture/" class="md-nav__link">
+      <a href="../architecture/adr0004-rag-architecture/" class="md-nav__link">
         
   
   
@@ -1204,7 +1512,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0005-pdf-document-processing/" class="md-nav__link">
+      <a href="../architecture/adr0005-pdf-document-processing/" class="md-nav__link">
         
   
   
@@ -1232,7 +1540,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0006-hybrid-search-strategy/" class="md-nav__link">
+      <a href="../architecture/adr0006-hybrid-search-strategy/" class="md-nav__link">
         
   
   
@@ -1260,7 +1568,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0007-concept-extraction-llm/" class="md-nav__link">
+      <a href="../architecture/adr0007-concept-extraction-llm/" class="md-nav__link">
         
   
   
@@ -1288,7 +1596,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0008-wordnet-integration/" class="md-nav__link">
+      <a href="../architecture/adr0008-wordnet-integration/" class="md-nav__link">
         
   
   
@@ -1316,7 +1624,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0009-three-table-architecture/" class="md-nav__link">
+      <a href="../architecture/adr0009-three-table-architecture/" class="md-nav__link">
         
   
   
@@ -1344,7 +1652,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0010-query-expansion/" class="md-nav__link">
+      <a href="../architecture/adr0010-query-expansion/" class="md-nav__link">
         
   
   
@@ -1372,7 +1680,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0011-multi-model-strategy/" class="md-nav__link">
+      <a href="../architecture/adr0011-multi-model-strategy/" class="md-nav__link">
         
   
   
@@ -1400,7 +1708,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0012-ocr-fallback-tesseract/" class="md-nav__link">
+      <a href="../architecture/adr0012-ocr-fallback-tesseract/" class="md-nav__link">
         
   
   
@@ -1428,7 +1736,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0013-incremental-seeding/" class="md-nav__link">
+      <a href="../architecture/adr0013-incremental-seeding/" class="md-nav__link">
         
   
   
@@ -1456,7 +1764,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0014-multi-pass-extraction/" class="md-nav__link">
+      <a href="../architecture/adr0014-multi-pass-extraction/" class="md-nav__link">
         
   
   
@@ -1481,37 +1789,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-0015: Formal Concept Model
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../architecture/adr0015-formal-concept-model/" class="md-nav__link">
         
   
   
@@ -1527,303 +1808,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#context-and-problem-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Context and Problem Statement
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#alternative-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Alternative Options
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#decision-outcome" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision Outcome
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Decision Outcome">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#the-formal-definition" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Formal Definition
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#key-components" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Key Components
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#inclusion-criteria" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Inclusion Criteria
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#exclusion-criteria" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Exclusion Criteria
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#implementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#consequences" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Consequences
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#confirmation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Confirmation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#pros-and-cons-of-the-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pros and Cons of the Options
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Pros and Cons of the Options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-1-formal-definition-with-rules-chosen" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 1: Formal Definition with Rules - Chosen
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-2-example-based" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 2: Example-Based
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-3-no-formal-definition" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 3: No Formal Definition
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-4-schema-based" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 4: Schema-Based
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-5-taxonomy-based" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 5: Taxonomy-Based
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation Notes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Implementation Notes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#agentsmd-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AGENTS.md Structure
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#integration-in-extraction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Integration in Extraction
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#future-enhancements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Future Enhancements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related-decisions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related Decisions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        References
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="References">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#related-decisions_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related Decisions
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1836,7 +1820,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0016-layered-architecture-refactoring/" class="md-nav__link">
+      <a href="../architecture/adr0016-layered-architecture-refactoring/" class="md-nav__link">
         
   
   
@@ -1864,7 +1848,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0017-repository-pattern/" class="md-nav__link">
+      <a href="../architecture/adr0017-repository-pattern/" class="md-nav__link">
         
   
   
@@ -1892,7 +1876,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0018-dependency-injection-container/" class="md-nav__link">
+      <a href="../architecture/adr0018-dependency-injection-container/" class="md-nav__link">
         
   
   
@@ -1920,7 +1904,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0019-vitest-testing-framework/" class="md-nav__link">
+      <a href="../architecture/adr0019-vitest-testing-framework/" class="md-nav__link">
         
   
   
@@ -1948,7 +1932,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0020-typescript-strict-mode/" class="md-nav__link">
+      <a href="../architecture/adr0020-typescript-strict-mode/" class="md-nav__link">
         
   
   
@@ -1976,7 +1960,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0021-performance-optimization-vector-search/" class="md-nav__link">
+      <a href="../architecture/adr0021-performance-optimization-vector-search/" class="md-nav__link">
         
   
   
@@ -2004,7 +1988,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0022-hybrid-search-service-extraction/" class="md-nav__link">
+      <a href="../architecture/adr0022-hybrid-search-service-extraction/" class="md-nav__link">
         
   
   
@@ -2032,7 +2016,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0023-sql-injection-prevention/" class="md-nav__link">
+      <a href="../architecture/adr0023-sql-injection-prevention/" class="md-nav__link">
         
   
   
@@ -2060,7 +2044,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0024-multi-provider-embeddings/" class="md-nav__link">
+      <a href="../architecture/adr0024-multi-provider-embeddings/" class="md-nav__link">
         
   
   
@@ -2088,7 +2072,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0025-document-loader-factory/" class="md-nav__link">
+      <a href="../architecture/adr0025-document-loader-factory/" class="md-nav__link">
         
   
   
@@ -2116,7 +2100,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0026-epub-format-support/" class="md-nav__link">
+      <a href="../architecture/adr0026-epub-format-support/" class="md-nav__link">
         
   
   
@@ -2144,7 +2128,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0027-hash-based-integer-ids/" class="md-nav__link">
+      <a href="../architecture/adr0027-hash-based-integer-ids/" class="md-nav__link">
         
   
   
@@ -2172,7 +2156,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0028-category-storage-strategy/" class="md-nav__link">
+      <a href="../architecture/adr0028-category-storage-strategy/" class="md-nav__link">
         
   
   
@@ -2200,7 +2184,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0029-category-search-tools/" class="md-nav__link">
+      <a href="../architecture/adr0029-category-search-tools/" class="md-nav__link">
         
   
   
@@ -2228,7 +2212,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0030-auto-extracted-categories/" class="md-nav__link">
+      <a href="../architecture/adr0030-auto-extracted-categories/" class="md-nav__link">
         
   
   
@@ -2256,7 +2240,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0031-eight-specialized-tools-strategy/" class="md-nav__link">
+      <a href="../architecture/adr0031-eight-specialized-tools-strategy/" class="md-nav__link">
         
   
   
@@ -2284,7 +2268,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0032-tool-selection-guide/" class="md-nav__link">
+      <a href="../architecture/adr0032-tool-selection-guide/" class="md-nav__link">
         
   
   
@@ -2312,7 +2296,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0033-basetool-abstraction/" class="md-nav__link">
+      <a href="../architecture/adr0033-basetool-abstraction/" class="md-nav__link">
         
   
   
@@ -2340,7 +2324,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0034-comprehensive-error-handling/" class="md-nav__link">
+      <a href="../architecture/adr0034-comprehensive-error-handling/" class="md-nav__link">
         
   
   
@@ -2368,7 +2352,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0035-test-suite-expansion/" class="md-nav__link">
+      <a href="../architecture/adr0035-test-suite-expansion/" class="md-nav__link">
         
   
   
@@ -2396,7 +2380,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0036-configuration-centralization/" class="md-nav__link">
+      <a href="../architecture/adr0036-configuration-centralization/" class="md-nav__link">
         
   
   
@@ -2424,7 +2408,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0037-functional-validation-layer/" class="md-nav__link">
+      <a href="../architecture/adr0037-functional-validation-layer/" class="md-nav__link">
         
   
   
@@ -2452,7 +2436,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0038-dependency-rules-enforcement/" class="md-nav__link">
+      <a href="../architecture/adr0038-dependency-rules-enforcement/" class="md-nav__link">
         
   
   
@@ -2480,7 +2464,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0039-observability-infrastructure/" class="md-nav__link">
+      <a href="../architecture/adr0039-observability-infrastructure/" class="md-nav__link">
         
   
   
@@ -2508,7 +2492,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0040-result-option-types/" class="md-nav__link">
+      <a href="../architecture/adr0040-result-option-types/" class="md-nav__link">
         
   
   
@@ -2536,7 +2520,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0041-advanced-caching/" class="md-nav__link">
+      <a href="../architecture/adr0041-advanced-caching/" class="md-nav__link">
         
   
   
@@ -2564,7 +2548,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0042-system-resilience-patterns/" class="md-nav__link">
+      <a href="../architecture/adr0042-system-resilience-patterns/" class="md-nav__link">
         
   
   
@@ -2592,7 +2576,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0043-schema-normalization/" class="md-nav__link">
+      <a href="../architecture/adr0043-schema-normalization/" class="md-nav__link">
         
   
   
@@ -2620,7 +2604,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0044-seeding-script-modularization/" class="md-nav__link">
+      <a href="../architecture/adr0044-seeding-script-modularization/" class="md-nav__link">
         
   
   
@@ -2648,7 +2632,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0045-api-key-preflight-check/" class="md-nav__link">
+      <a href="../architecture/adr0045-api-key-preflight-check/" class="md-nav__link">
         
   
   
@@ -2676,7 +2660,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0046-document-type-classification/" class="md-nav__link">
+      <a href="../architecture/adr0046-document-type-classification/" class="md-nav__link">
         
   
   
@@ -2704,7 +2688,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0047-architecture-review-dec-2025/" class="md-nav__link">
+      <a href="../architecture/adr0047-architecture-review-dec-2025/" class="md-nav__link">
         
   
   
@@ -2732,7 +2716,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0048-stage-caching/" class="md-nav__link">
+      <a href="../architecture/adr0048-stage-caching/" class="md-nav__link">
         
   
   
@@ -2760,7 +2744,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0049-incremental-category-summaries/" class="md-nav__link">
+      <a href="../architecture/adr0049-incremental-category-summaries/" class="md-nav__link">
         
   
   
@@ -2788,7 +2772,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0050-mkdocs-material-documentation-site/" class="md-nav__link">
+      <a href="../architecture/adr0050-mkdocs-material-documentation-site/" class="md-nav__link">
         
   
   
@@ -2816,7 +2800,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0051-api-documentation-consolidation/" class="md-nav__link">
+      <a href="../architecture/adr0051-api-documentation-consolidation/" class="md-nav__link">
         
   
   
@@ -2844,7 +2828,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../adr0052-documentation-site-restructure/" class="md-nav__link">
+      <a href="../architecture/adr0052-documentation-site-restructure/" class="md-nav__link">
         
   
   
@@ -2892,221 +2876,270 @@
   
 
 
-<h1 id="15-formal-concept-model-definition">15. Formal Concept Model Definition<a class="headerlink" href="#15-formal-concept-model-definition" title="Permanent link">&para;</a></h1>
-<p><strong>Date:</strong> 2025-11-13<br />
-<strong>Status:</strong> Accepted<br />
-<strong>Deciders:</strong> Engineering Team<br />
-<strong>Technical Story:</strong> Concept Extraction Enhancement (November 13, 2025)</p>
-<p><strong>Sources:</strong>
-- Planning: .ai/planning/2025-11-13-concept-extraction-enhancement/</p>
-<h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
-<p>While concept extraction was working (since October 13) [ADR-0007], there was no formal definition of what constitutes a "concept" in the system [Gap: definition missing]. This led to potential inconsistencies in extraction quality, unclear inclusion/exclusion criteria, and difficulty evaluating whether extracted concepts met quality standards [Problem: no evaluation criteria].</p>
-<p><strong>The Core Problem:</strong> What exactly IS a concept in the concept-RAG system, and how do we ensure all LLM agents extract concepts consistently? [Planning: <code>.ai/planning/2025-11-13-concept-extraction-enhancement/FORMAL_CONCEPT_DEFINITION.md</code>]</p>
-<p><strong>Decision Drivers:</strong>
-* Need consistent extraction across different LLM calls [Requirement: consistency]
-* Evaluation criteria for concept quality [Requirement: quality assessment]
-* Clear guidelines for inclusion/exclusion [Requirement: explicit criteria]
-* Training reference for future LLM agents [Requirement: documentation]
-* Foundation for system improvements [Architecture: formal specification]</p>
-<h2 id="alternative-options">Alternative Options<a class="headerlink" href="#alternative-options" title="Permanent link">&para;</a></h2>
+<h1 id="frequently-asked-questions">Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permanent link">&para;</a></h1>
+<p>Common questions about Concept-RAG answered.</p>
+<hr />
+<h2 id="general">General<a class="headerlink" href="#general" title="Permanent link">&para;</a></h2>
+<h3 id="what-is-concept-rag">What is Concept-RAG?<a class="headerlink" href="#what-is-concept-rag" title="Permanent link">&para;</a></h3>
+<p>Concept-RAG is an MCP (Model Context Protocol) server that enables AI assistants like Claude and Cursor to search your documents using <strong>conceptual understanding</strong> rather than just keywords.</p>
+<h3 id="what-does-conceptual-search-mean">What does "conceptual search" mean?<a class="headerlink" href="#what-does-conceptual-search-mean" title="Permanent link">&para;</a></h3>
+<p>Conceptual search finds information based on <strong>meaning</strong>. For example, searching for "innovation" also finds related concepts like "creative process", "novel solutions", and "breakthrough thinking" because they're semantically related.</p>
+<h3 id="who-is-this-for">Who is this for?<a class="headerlink" href="#who-is-this-for" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>User</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Researchers</strong></td>
+<td>Exploring academic papers and literature</td>
+</tr>
+<tr>
+<td><strong>Knowledge workers</strong></td>
+<td>Managing large document collections</td>
+</tr>
+<tr>
+<td><strong>Students</strong></td>
+<td>Researching topics across multiple sources</td>
+</tr>
+<tr>
+<td><strong>Writers</strong></td>
+<td>Finding information for content creation</td>
+</tr>
+<tr>
+<td><strong>Teams</strong></td>
+<td>Sharing organizational knowledge bases</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="setup-installation">Setup &amp; Installation<a class="headerlink" href="#setup-installation" title="Permanent link">&para;</a></h2>
+<h3 id="what-are-the-system-requirements">What are the system requirements?<a class="headerlink" href="#what-are-the-system-requirements" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Version</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node.js</td>
+<td>18+</td>
+<td>Runtime environment</td>
+</tr>
+<tr>
+<td>Python</td>
+<td>3.9+</td>
+<td>For WordNet integration</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>~100MB per 1000 docs</td>
+<td>Database size varies</td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-much-does-openrouter-cost">How much does OpenRouter cost?<a class="headerlink" href="#how-much-does-openrouter-cost" title="Permanent link">&para;</a></h3>
+<div class="admonition info">
+<p class="admonition-title">One-Time Seeding Costs</p>
 <ul>
-<li><strong>Option 1: Formal Definition with Inclusion/Exclusion Rules</strong> - Explicit specification</li>
-<li><strong>Option 2: Example-Based</strong> - Show examples of good/bad concepts</li>
-<li><strong>Option 3: No Formal Definition</strong> - Let LLM decide implicitly</li>
-<li><strong>Option 4: Schema-Based</strong> - Define via type structure only</li>
-<li><strong>Option 5: Taxonomy-Based</strong> - Define by category membership</li>
+<li>Concept extraction (Claude Sonnet): ~$0.041/doc</li>
+<li>Summary generation (Grok-4-fast): ~$0.007/doc</li>
+<li><strong>Total: ~$0.048 per document</strong></li>
 </ul>
-<h2 id="decision-outcome">Decision Outcome<a class="headerlink" href="#decision-outcome" title="Permanent link">&para;</a></h2>
-<p><strong>Chosen option:</strong> "Formal Definition with Inclusion/Exclusion Rules (Option 1)", because it provides the clearest guidance for LLM extraction, enables quality evaluation, and serves as authoritative documentation for the entire system.</p>
-<h3 id="the-formal-definition">The Formal Definition<a class="headerlink" href="#the-formal-definition" title="Permanent link">&para;</a></h3>
-<p><strong>Canonical Text:</strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, line 9; implemented in <code>AGENTS.md</code>]</p>
-<blockquote>
-<p><strong>A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.</strong></p>
-</blockquote>
-<h3 id="key-components">Key Components<a class="headerlink" href="#key-components" title="Permanent link">&para;</a></h3>
-<p><strong>9 Essential Elements:</strong> [Source: <code>AGENTS.md</code> created November 13, 2025]</p>
-<ol>
-<li><strong>Uniquely Identified</strong> - Distinct from other concepts</li>
-<li><strong>Abstract Idea</strong> - Not concrete instances or examples</li>
-<li><strong>Names</strong> - Multiple names/terms for the concept</li>
-<li><strong>Definition</strong> - Clear meaning and scope</li>
-<li><strong>Distinguishing Features</strong> - What makes it unique</li>
-<li><strong>Relations</strong> - Connections to other concepts</li>
-<li><strong>Detection Cues</strong> - How to recognize in text</li>
-<li><strong>Semantic Matching</strong> - Enables search and retrieval</li>
-<li><strong>Disambiguated</strong> - Clear boundaries vs. related concepts</li>
-</ol>
-<h3 id="inclusion-criteria">Inclusion Criteria<a class="headerlink" href="#inclusion-criteria" title="Permanent link">&para;</a></h3>
-<p><strong>✅ INCLUDE:</strong> [Source: README.md, line 137; <code>AGENTS.md</code>]
-- Domain terms (e.g., "consensus algorithm")
-- Theories (e.g., "Elliott Wave Theory")
-- Methodologies (e.g., "test-driven development")
-- Multi-word conceptual phrases (e.g., "separation of concerns")
-- Phenomena (e.g., "race condition")
-- Abstract principles (e.g., "single responsibility")</p>
-<h3 id="exclusion-criteria">Exclusion Criteria<a class="headerlink" href="#exclusion-criteria" title="Permanent link">&para;</a></h3>
-<p><strong>❌ EXCLUDE:</strong> [Source: README.md, line 138; <code>AGENTS.md</code>]
-- Temporal descriptions ("in 2020", "during the war")
-- Action phrases ("should implement", "must configure")
-- Suppositions ("might be", "could potentially")
-- Proper names (people, places, organizations)
-- Dates and numbers
-- Generic words without conceptual meaning</p>
-<h3 id="implementation">Implementation<a class="headerlink" href="#implementation" title="Permanent link">&para;</a></h3>
-<p><strong>Files Created/Updated:</strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, lines 13-38]</p>
-<ol>
-<li><strong><code>AGENTS.md</code> (Project Root)</strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, lines 13-24]</li>
-<li>Formal definition</li>
-<li>Key components breakdown</li>
-<li>Extraction guidelines</li>
-<li>
-<p>Integration instructions</p>
-</li>
-<li>
-<p><strong><code>src/concepts/concept_extractor.ts</code></strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, lines 26-38]</p>
-</li>
-<li>Line 102: Multi-pass extraction prompt updated</li>
-<li>Line 197: Single-pass extraction prompt updated</li>
-<li>Both include formal definition at beginning</li>
-</ol>
-<p><strong>Prompt Integration:</strong> [Source: <code>concept_extractor.ts</code>, lines 102 and 197]
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="sb">FORMAL DEFINITION:</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="sb">A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="sb">[... rest of extraction prompt ...]</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="sb">`</span><span class="p">;</span>
-</code></pre></div></p>
-<h3 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h3>
-<p><strong>Positive:</strong>
-* <strong>Consistency:</strong> All LLM agents receive same definition [Benefit: <code>FORMAL_CONCEPT_DEFINITION.md</code>, line 42-43]
-* <strong>Quality:</strong> Clear guidelines improve extraction quality [Benefit: lines 48-54]
-* <strong>Evaluation:</strong> Can assess if extractions meet criteria [Benefit: quality metrics possible]
-* <strong>Documentation:</strong> Authoritative reference for developers [Benefit: lines 57-62]
-* <strong>Training:</strong> Future agents can reference formal model [Benefit: onboarding]
-* <strong>Disambiguation:</strong> Explicit guidance on concept boundaries [Benefit: clarity]
-* <strong>System alignment:</strong> All components reference same model [Benefit: lines 64-70]</p>
-<p><strong>Negative:</strong>
-* <strong>Rigidity:</strong> Definition may need evolution as system grows [Risk: future constraints]
-* <strong>Interpretation:</strong> LLMs may still interpret definition differently [Limitation: LLM variance]
-* <strong>Verification:</strong> Hard to programmatically verify compliance [Challenge: quality assurance]
-* <strong>Maintenance:</strong> Definition must be kept synchronized across prompts [Burden: consistency maintenance]</p>
-<p><strong>Neutral:</strong>
-* <strong>Backward compatibility:</strong> Doesn't invalidate existing concepts [Impact: historical data]
-* <strong>Iterative refinement:</strong> Definition can be improved over time [Process: evolutionary]</p>
-<h3 id="confirmation">Confirmation<a class="headerlink" href="#confirmation" title="Permanent link">&para;</a></h3>
-<p><strong>Validation:</strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, lines 82-88]
-- ✅ AGENTS.md created with formal definition
-- ✅ Chunk extraction prompt updated (line 102)
-- ✅ Single-pass extraction prompt updated (line 197)
-- ✅ TypeScript compiled successfully
-- ✅ No linting errors
-- ✅ Planning documentation created</p>
-<p><strong>Production Impact:</strong>
-- Clearer concept extraction from Nov 13 onwards
-- Consistent quality across documents indexed after formalization
-- Reference point for evaluating existing concepts</p>
-<h2 id="pros-and-cons-of-the-options">Pros and Cons of the Options<a class="headerlink" href="#pros-and-cons-of-the-options" title="Permanent link">&para;</a></h2>
-<h3 id="option-1-formal-definition-with-rules-chosen">Option 1: Formal Definition with Rules - Chosen<a class="headerlink" href="#option-1-formal-definition-with-rules-chosen" title="Permanent link">&para;</a></h3>
-<p><strong>Pros:</strong>
-* Crystal clear guidelines [Source: definition text]
-* Explicit inclusion/exclusion rules [Source: AGENTS.md]
-* Evaluatable quality
-* Authoritative documentation
-* Improves extraction consistency [Validated: FORMAL_CONCEPT_DEFINITION.md]</p>
-<p><strong>Cons:</strong>
-* May need evolution
-* LLM interpretation variance
-* Hard to verify programmatically
-* Maintenance burden</p>
-<h3 id="option-2-example-based">Option 2: Example-Based<a class="headerlink" href="#option-2-example-based" title="Permanent link">&para;</a></h3>
-<p>Provide good/bad examples instead of formal definition.</p>
-<p><strong>Pros:</strong>
-* Concrete and easy to understand
-* Shows real cases
-* Less abstract</p>
-<p><strong>Cons:</strong>
-* <strong>Less precise:</strong> Examples don't cover all cases [Limitation: incomplete]
-* <strong>Ambiguity:</strong> What about edge cases not in examples?
-* <strong>Maintenance:</strong> Must update examples as system evolves
-* <strong>Inconsistent:</strong> Different agents may generalize differently from examples</p>
-<h3 id="option-3-no-formal-definition">Option 3: No Formal Definition<a class="headerlink" href="#option-3-no-formal-definition" title="Permanent link">&para;</a></h3>
-<p>Let LLM decide what concepts are based on its training.</p>
-<p><strong>Pros:</strong>
-* Zero effort (current state before Nov 13)
-* LLM uses built-in understanding
-* Flexible</p>
-<p><strong>Cons:</strong>
-* <strong>Inconsistent:</strong> Different calls may extract differently [Problem: variance]
-* <strong>No quality criteria:</strong> Can't evaluate extraction quality [Gap: no standards]
-* <strong>Unclear expectations:</strong> Developers don't know what to expect [Documentation: lacking]
-* <strong>This was the problem:</strong> Why formalization was needed [History: pre-Nov-13 state]</p>
-<h3 id="option-4-schema-based">Option 4: Schema-Based<a class="headerlink" href="#option-4-schema-based" title="Permanent link">&para;</a></h3>
-<p>Define via TypeScript interfaces only.</p>
-<p><strong>Pros:</strong>
-* Type-safe
-* Programmatically enforced
-* IDE support</p>
-<p><strong>Cons:</strong>
-* <strong>Doesn't guide extraction:</strong> LLM doesn't see TypeScript types [Gap: not in prompts]
-* <strong>Structure without semantics:</strong> Types show "what" not "why"
-* <strong>Incomplete:</strong> Doesn't specify inclusion/exclusion criteria</p>
-<h3 id="option-5-taxonomy-based">Option 5: Taxonomy-Based<a class="headerlink" href="#option-5-taxonomy-based" title="Permanent link">&para;</a></h3>
-<p>Define concepts by their position in taxonomy.</p>
-<p><strong>Pros:</strong>
-* Hierarchical organization
-* Clear categories
-* Navigable structure</p>
-<p><strong>Cons:</strong>
-* <strong>Doesn't define concept itself:</strong> What makes something a concept? [Gap: fundamental question]
-* <strong>Circular:</strong> Need to define concepts before building taxonomy
-* <strong>Rigid:</strong> Forces concepts into predetermined categories
-* <strong>Over-constrains:</strong> Some concepts span categories</p>
-<h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
-<h3 id="agentsmd-structure">AGENTS.md Structure<a class="headerlink" href="#agentsmd-structure" title="Permanent link">&para;</a></h3>
-<p><strong>File Location:</strong> Project root [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, line 15]</p>
-<p><strong>Sections:</strong> [Source: lines 15-24]
-1. Formal definition
-2. Key components breakdown (9 elements)
-3. Document parsing guidelines
-4. Concept extraction process
-5. Integration guidelines
-6. Usage instructions for system components</p>
-<h3 id="integration-in-extraction">Integration in Extraction<a class="headerlink" href="#integration-in-extraction" title="Permanent link">&para;</a></h3>
-<p><strong>Both Prompts Updated:</strong> [Source: lines 30-38]
-- Multi-pass extraction (line 102 of concept_extractor.ts)
-- Single-pass extraction (line 197 of concept_extractor.ts)</p>
-<p><strong>Format:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>FORMAL DEFINITION:
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>[Definition text here]
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>EXTRACTION GUIDELINES:
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>[Detailed instructions...]
-</code></pre></div></p>
-<h3 id="future-enhancements">Future Enhancements<a class="headerlink" href="#future-enhancements" title="Permanent link">&para;</a></h3>
-<p><strong>Optional Improvements:</strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, lines 72-80]
-1. Structured concept schema (capture relations explicitly)
-2. Concept validation logic
-3. Relation extraction (hierarchical, associative, causal)
-4. Detection cue database
-5. Quality metrics</p>
-<h2 id="related-decisions">Related Decisions<a class="headerlink" href="#related-decisions" title="Permanent link">&para;</a></h2>
+<p><strong>Search is always free</strong> — queries run locally with no API calls.</p>
+</div>
+<h3 id="do-i-need-a-gpu">Do I need a GPU?<a class="headerlink" href="#do-i-need-a-gpu" title="Permanent link">&para;</a></h3>
+<p><strong>No!</strong> Concept-RAG uses:</p>
 <ul>
-<li><a href="../adr0007-concept-extraction-llm/">ADR-0007: Concept Extraction</a> - Extraction process formalized</li>
-<li><a href="../adr0009-three-table-architecture/">ADR-0009: Three-Table Architecture</a> - Concept storage</li>
-<li><a href="../adr0008-wordnet-integration/">ADR-0008: WordNet Integration</a> - Semantic relationships</li>
+<li>CPU-based local embeddings (Xenova/all-MiniLM-L6-v2)</li>
+<li>Efficient LanceDB vector search</li>
+<li>API calls only for initial concept extraction</li>
 </ul>
-<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
-<h3 id="related-decisions_1">Related Decisions<a class="headerlink" href="#related-decisions_1" title="Permanent link">&para;</a></h3>
+<h3 id="can-i-use-local-llms-instead-of-openrouter">Can I use local LLMs instead of OpenRouter?<a class="headerlink" href="#can-i-use-local-llms-instead-of-openrouter" title="Permanent link">&para;</a></h3>
+<p>Currently, Concept-RAG requires OpenRouter for concept extraction. However:</p>
 <ul>
-<li><a href="../adr0007-concept-extraction-llm/">ADR-0007: Concept Extraction</a></li>
+<li>Search is completely local (no API calls)</li>
+<li>You could modify the code to use local LLMs</li>
+<li>See <a href="https://github.com/m2ux/concept-rag/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for development guidelines</li>
 </ul>
 <hr />
-<p><strong>Confidence Level:</strong> HIGH
-<strong>Attribution:</strong>
-- Planning docs: November 13, 2024
-- Documented in: FORMAL_CONCEPT_DEFINITION.md</p>
-<p><strong>Traceability:</strong> .ai/planning/2025-11-13-concept-extraction-enhancement/</p>
+<h2 id="usage-features">Usage &amp; Features<a class="headerlink" href="#usage-features" title="Permanent link">&para;</a></h2>
+<h3 id="which-search-tool-should-i-use">Which search tool should I use?<a class="headerlink" href="#which-search-tool-should-i-use" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Goal</th>
+<th>Tool</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Find documents</td>
+<td><code>catalog_search</code></td>
+<td>"software architecture books"</td>
+</tr>
+<tr>
+<td>Research a concept</td>
+<td><code>concept_search</code></td>
+<td>"design patterns"</td>
+</tr>
+<tr>
+<td>Search phrases</td>
+<td><code>broad_chunks_search</code></td>
+<td>"how to implement caching"</td>
+</tr>
+<tr>
+<td>Search in known doc</td>
+<td><code>chunks_search</code></td>
+<td>"SOLID principles" + source</td>
+</tr>
+<tr>
+<td>Extract concept list</td>
+<td><code>extract_concepts</code></td>
+<td>"Clean Architecture"</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../tool-selection-guide/">Tool Selection Guide</a> for detailed guidance.</p>
+<h3 id="what-document-formats-are-supported">What document formats are supported?<a class="headerlink" href="#what-document-formats-are-supported" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PDF</td>
+<td>✅ Supported</td>
+<td>Text-based and scanned (OCR fallback)</td>
+</tr>
+<tr>
+<td>EPUB</td>
+<td>✅ Supported</td>
+<td>Electronic publication format</td>
+</tr>
+<tr>
+<td>DOCX, TXT, MD</td>
+<td>📋 Planned</td>
+<td>Contributions welcome</td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-accurate-is-concept-extraction">How accurate is concept extraction?<a class="headerlink" href="#how-accurate-is-concept-extraction" title="Permanent link">&para;</a></h3>
+<p>Very accurate! We use:</p>
+<ul>
+<li><strong>Claude Sonnet 4.5</strong>: State-of-the-art LLM</li>
+<li><strong>Formal concept model</strong>: Rigorous definition ensuring semantic matching</li>
+<li><strong>Multi-pass extraction</strong>: For large documents (&gt;100k tokens)</li>
+<li><strong>80-150+ concepts</strong> per document with high precision</li>
+</ul>
+<h3 id="can-i-customize-concept-extraction">Can I customize concept extraction?<a class="headerlink" href="#can-i-customize-concept-extraction" title="Permanent link">&para;</a></h3>
+<p>Yes! Edit <code>prompts/concept-extraction.txt</code> to adjust:</p>
+<ul>
+<li>Concept levels (thematic, domain-specific, technical)</li>
+<li>Examples and categorization rules</li>
+<li>Extraction strategy</li>
+</ul>
+<hr />
+<h2 id="costs-performance">Costs &amp; Performance<a class="headerlink" href="#costs-performance" title="Permanent link">&para;</a></h2>
+<h3 id="how-fast-is-search">How fast is search?<a class="headerlink" href="#how-fast-is-search" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Query</th>
+<th>Latency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>First query</td>
+<td>1-3 seconds (database loading)</td>
+</tr>
+<tr>
+<td>Subsequent queries</td>
+<td>&lt;1 second</td>
+</tr>
+<tr>
+<td>Concept extraction</td>
+<td>Instant (pre-computed)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-do-i-reduce-seeding-costs">How do I reduce seeding costs?<a class="headerlink" href="#how-do-i-reduce-seeding-costs" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Use incremental seeding</strong> — only process new documents:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span>--dbpath<span class="w"> </span>~/.concept_rag<span class="w"> </span>--filesdir<span class="w"> </span>~/docs
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Batch processing</strong> — process many documents at once</p>
+</li>
+<li>
+<p><strong>Selective processing</strong> — only seed documents you need</p>
+</li>
+</ol>
+<hr />
+<h2 id="data-privacy">Data &amp; Privacy<a class="headerlink" href="#data-privacy" title="Permanent link">&para;</a></h2>
+<h3 id="is-my-data-private">Is my data private?<a class="headerlink" href="#is-my-data-private" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PDF files</td>
+<td>✅ Local only</td>
+</tr>
+<tr>
+<td>Database (LanceDB)</td>
+<td>✅ Local only</td>
+</tr>
+<tr>
+<td>Vector embeddings</td>
+<td>✅ Local only</td>
+</tr>
+<tr>
+<td>Search queries</td>
+<td>✅ Local only</td>
+</tr>
+<tr>
+<td>Document text (seeding)</td>
+<td>⚠️ Sent to OpenRouter</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Search is 100% Local</p>
+<p>After initial seeding, all search queries run locally with zero API calls.</p>
+</div>
+<p>See <a href="https://github.com/m2ux/concept-rag/blob/main/SECURITY.md">SECURITY.md</a> for details.</p>
+<h3 id="can-i-export-my-data">Can I export my data?<a class="headerlink" href="#can-i-export-my-data" title="Permanent link">&para;</a></h3>
+<p><strong>Concepts</strong> (per document):
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/extract_concepts.ts<span class="w"> </span><span class="s2">&quot;document name&quot;</span><span class="w"> </span>markdown
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/extract_concepts.ts<span class="w"> </span><span class="s2">&quot;document name&quot;</span><span class="w"> </span>json
+</code></pre></div></p>
+<p><strong>Database</strong>: LanceDB uses Apache Arrow format (readable with Arrow libraries)</p>
+<hr />
+<h2 id="still-have-questions">Still Have Questions?<a class="headerlink" href="#still-have-questions" title="Permanent link">&para;</a></h2>
+<ul>
+<li>📖 <a href="../troubleshooting/">Troubleshooting Guide</a></li>
+<li>💬 <a href="https://github.com/m2ux/concept-rag/discussions">GitHub Discussions</a></li>
+<li>🐛 <a href="https://github.com/m2ux/concept-rag/issues">Report an Issue</a></li>
+</ul>
 
 
 
@@ -3162,10 +3195,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "toc.integrate", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

@@ -12,13 +12,11 @@
         <meta name="author" content="Alex Komyagin">
       
       
-        <link rel="canonical" href="https://m2ux.github.io/concept-rag/architecture/adr0015-formal-concept-model/">
+        <link rel="canonical" href="https://m2ux.github.io/concept-rag/architecture/adr0052-documentation-site-restructure/">
       
       
-        <link rel="prev" href="../adr0014-multi-pass-extraction/">
+        <link rel="prev" href="../adr0051-api-documentation-consolidation/">
       
-      
-        <link rel="next" href="../adr0016-layered-architecture-refactoring/">
       
       
         
@@ -29,7 +27,7 @@
     
     
       
-        <title>ADR-0015: Formal Concept Model - Concept-RAG Documentation</title>
+        <title>ADR-0052: Docs Restructure - Concept-RAG Documentation</title>
       
     
     
@@ -80,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#15-formal-concept-model-definition" class="md-skip">
+        <a href="#adr-0052-documentation-site-restructure" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-0015: Formal Concept Model
+              ADR-0052: Docs Restructure
             
           </span>
         </div>
@@ -1481,37 +1479,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-0015: Formal Concept Model
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../adr0015-formal-concept-model/" class="md-nav__link">
         
   
   
@@ -1527,303 +1498,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#context-and-problem-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Context and Problem Statement
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#alternative-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Alternative Options
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#decision-outcome" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision Outcome
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Decision Outcome">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#the-formal-definition" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Formal Definition
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#key-components" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Key Components
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#inclusion-criteria" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Inclusion Criteria
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#exclusion-criteria" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Exclusion Criteria
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#implementation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#consequences" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Consequences
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#confirmation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Confirmation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#pros-and-cons-of-the-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pros and Cons of the Options
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Pros and Cons of the Options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-1-formal-definition-with-rules-chosen" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 1: Formal Definition with Rules - Chosen
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-2-example-based" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 2: Example-Based
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-3-no-formal-definition" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 3: No Formal Definition
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-4-schema-based" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 4: Schema-Based
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-5-taxonomy-based" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 5: Taxonomy-Based
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation Notes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Implementation Notes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#agentsmd-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AGENTS.md Structure
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#integration-in-extraction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Integration in Extraction
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#future-enhancements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Future Enhancements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related-decisions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related Decisions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        References
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="References">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#related-decisions_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related Decisions
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2841,10 +2515,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../adr0052-documentation-site-restructure/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0052: Docs Restructure
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -2860,6 +2561,181 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Date
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-navigation-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Navigation Hierarchy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-mermaid-diagram-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Mermaid Diagram Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-content-consolidation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Content Consolidation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-per-page-navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Per-Page Navigation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Consequences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#positive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Positive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#negative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Negative
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neutral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Neutral
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2892,221 +2768,76 @@
   
 
 
-<h1 id="15-formal-concept-model-definition">15. Formal Concept Model Definition<a class="headerlink" href="#15-formal-concept-model-definition" title="Permanent link">&para;</a></h1>
-<p><strong>Date:</strong> 2025-11-13<br />
-<strong>Status:</strong> Accepted<br />
-<strong>Deciders:</strong> Engineering Team<br />
-<strong>Technical Story:</strong> Concept Extraction Enhancement (November 13, 2025)</p>
-<p><strong>Sources:</strong>
-- Planning: .ai/planning/2025-11-13-concept-extraction-enhancement/</p>
-<h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
-<p>While concept extraction was working (since October 13) [ADR-0007], there was no formal definition of what constitutes a "concept" in the system [Gap: definition missing]. This led to potential inconsistencies in extraction quality, unclear inclusion/exclusion criteria, and difficulty evaluating whether extracted concepts met quality standards [Problem: no evaluation criteria].</p>
-<p><strong>The Core Problem:</strong> What exactly IS a concept in the concept-RAG system, and how do we ensure all LLM agents extract concepts consistently? [Planning: <code>.ai/planning/2025-11-13-concept-extraction-enhancement/FORMAL_CONCEPT_DEFINITION.md</code>]</p>
-<p><strong>Decision Drivers:</strong>
-* Need consistent extraction across different LLM calls [Requirement: consistency]
-* Evaluation criteria for concept quality [Requirement: quality assessment]
-* Clear guidelines for inclusion/exclusion [Requirement: explicit criteria]
-* Training reference for future LLM agents [Requirement: documentation]
-* Foundation for system improvements [Architecture: formal specification]</p>
-<h2 id="alternative-options">Alternative Options<a class="headerlink" href="#alternative-options" title="Permanent link">&para;</a></h2>
+<h1 id="adr-0052-documentation-site-restructure">ADR-0052: Documentation Site Restructure<a class="headerlink" href="#adr-0052-documentation-site-restructure" title="Permanent link">&para;</a></h1>
+<h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">&para;</a></h2>
+<p>Accepted</p>
+<h2 id="date">Date<a class="headerlink" href="#date" title="Permanent link">&para;</a></h2>
+<p>2025-12-25</p>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>The current MkDocs Material documentation site at m2ux.github.io/concept-rag has several usability issues:</p>
+<ol>
+<li><strong>Flat navigation</strong>: The ADR listing contains 50+ items without hierarchical grouping, making it overwhelming to navigate</li>
+<li><strong>Duplicate content</strong>: The index.md page largely duplicates README.md content rather than providing a unique landing experience</li>
+<li><strong>ASCII diagrams</strong>: Architecture diagrams use text-based ASCII art instead of rendered visual diagrams</li>
+<li><strong>Missing integration</strong>: FAQ.md and TROUBLESHOOTING.md exist in the repository root but aren't accessible from the documentation site</li>
+<li><strong>Limited visual hierarchy</strong>: Lack of collapsible sections and visual workflow diagrams</li>
+</ol>
+<p>Reference sites like docs.nudges.dev demonstrate better patterns with:
+- Collapsible navigation sections
+- Mermaid-rendered diagrams
+- Repository structure tables
+- Prominent Quick Start sections
+- Per-page table of contents</p>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p>We will restructure the documentation site with the following changes:</p>
+<h3 id="1-navigation-hierarchy">1. Navigation Hierarchy<a class="headerlink" href="#1-navigation-hierarchy" title="Permanent link">&para;</a></h3>
+<p>Reorganize <code>mkdocs.yml</code> navigation into collapsible sections:
+- <strong>Home</strong> - Unique landing page
+- <strong>Getting Started</strong> - Quick Start with numbered steps
+- <strong>Usage Guide</strong> - FAQ, Troubleshooting, Examples
+- <strong>API Reference</strong> - MCP tool documentation
+- <strong>Architecture</strong> - Overview with Mermaid diagrams
+- <strong>ADRs</strong> - Grouped by development phase
+- <strong>Contributing</strong> - Contribution guidelines</p>
+<h3 id="2-mermaid-diagram-support">2. Mermaid Diagram Support<a class="headerlink" href="#2-mermaid-diagram-support" title="Permanent link">&para;</a></h3>
+<p>Enable Mermaid rendering via <code>pymdownx.superfences</code> configuration:
+- Architecture flowchart showing document processing pipeline
+- Sequence diagram for document seeding workflow
+- Replace ASCII art with rendered diagrams</p>
+<h3 id="3-content-consolidation">3. Content Consolidation<a class="headerlink" href="#3-content-consolidation" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Option 1: Formal Definition with Inclusion/Exclusion Rules</strong> - Explicit specification</li>
-<li><strong>Option 2: Example-Based</strong> - Show examples of good/bad concepts</li>
-<li><strong>Option 3: No Formal Definition</strong> - Let LLM decide implicitly</li>
-<li><strong>Option 4: Schema-Based</strong> - Define via type structure only</li>
-<li><strong>Option 5: Taxonomy-Based</strong> - Define by category membership</li>
+<li>Create unique landing page with Repository Structure table</li>
+<li>Add "How It Works" visual explanation</li>
+<li>Integrate FAQ.md and TROUBLESHOOTING.md into docs site</li>
+<li>Create dedicated getting-started.md with Quick Start</li>
 </ul>
-<h2 id="decision-outcome">Decision Outcome<a class="headerlink" href="#decision-outcome" title="Permanent link">&para;</a></h2>
-<p><strong>Chosen option:</strong> "Formal Definition with Inclusion/Exclusion Rules (Option 1)", because it provides the clearest guidance for LLM extraction, enables quality evaluation, and serves as authoritative documentation for the entire system.</p>
-<h3 id="the-formal-definition">The Formal Definition<a class="headerlink" href="#the-formal-definition" title="Permanent link">&para;</a></h3>
-<p><strong>Canonical Text:</strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, line 9; implemented in <code>AGENTS.md</code>]</p>
-<blockquote>
-<p><strong>A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.</strong></p>
-</blockquote>
-<h3 id="key-components">Key Components<a class="headerlink" href="#key-components" title="Permanent link">&para;</a></h3>
-<p><strong>9 Essential Elements:</strong> [Source: <code>AGENTS.md</code> created November 13, 2025]</p>
-<ol>
-<li><strong>Uniquely Identified</strong> - Distinct from other concepts</li>
-<li><strong>Abstract Idea</strong> - Not concrete instances or examples</li>
-<li><strong>Names</strong> - Multiple names/terms for the concept</li>
-<li><strong>Definition</strong> - Clear meaning and scope</li>
-<li><strong>Distinguishing Features</strong> - What makes it unique</li>
-<li><strong>Relations</strong> - Connections to other concepts</li>
-<li><strong>Detection Cues</strong> - How to recognize in text</li>
-<li><strong>Semantic Matching</strong> - Enables search and retrieval</li>
-<li><strong>Disambiguated</strong> - Clear boundaries vs. related concepts</li>
-</ol>
-<h3 id="inclusion-criteria">Inclusion Criteria<a class="headerlink" href="#inclusion-criteria" title="Permanent link">&para;</a></h3>
-<p><strong>✅ INCLUDE:</strong> [Source: README.md, line 137; <code>AGENTS.md</code>]
-- Domain terms (e.g., "consensus algorithm")
-- Theories (e.g., "Elliott Wave Theory")
-- Methodologies (e.g., "test-driven development")
-- Multi-word conceptual phrases (e.g., "separation of concerns")
-- Phenomena (e.g., "race condition")
-- Abstract principles (e.g., "single responsibility")</p>
-<h3 id="exclusion-criteria">Exclusion Criteria<a class="headerlink" href="#exclusion-criteria" title="Permanent link">&para;</a></h3>
-<p><strong>❌ EXCLUDE:</strong> [Source: README.md, line 138; <code>AGENTS.md</code>]
-- Temporal descriptions ("in 2020", "during the war")
-- Action phrases ("should implement", "must configure")
-- Suppositions ("might be", "could potentially")
-- Proper names (people, places, organizations)
-- Dates and numbers
-- Generic words without conceptual meaning</p>
-<h3 id="implementation">Implementation<a class="headerlink" href="#implementation" title="Permanent link">&para;</a></h3>
-<p><strong>Files Created/Updated:</strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, lines 13-38]</p>
-<ol>
-<li><strong><code>AGENTS.md</code> (Project Root)</strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, lines 13-24]</li>
-<li>Formal definition</li>
-<li>Key components breakdown</li>
-<li>Extraction guidelines</li>
-<li>
-<p>Integration instructions</p>
-</li>
-<li>
-<p><strong><code>src/concepts/concept_extractor.ts</code></strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, lines 26-38]</p>
-</li>
-<li>Line 102: Multi-pass extraction prompt updated</li>
-<li>Line 197: Single-pass extraction prompt updated</li>
-<li>Both include formal definition at beginning</li>
-</ol>
-<p><strong>Prompt Integration:</strong> [Source: <code>concept_extractor.ts</code>, lines 102 and 197]
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">prompt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="sb">FORMAL DEFINITION:</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="sb">A concept is a uniquely identified, abstract idea packaged with its names, definition, distinguishing features, relations, and detection cues, enabling semantic matching and disambiguated retrieval across texts.</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="sb">[... rest of extraction prompt ...]</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="sb">`</span><span class="p">;</span>
-</code></pre></div></p>
-<h3 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h3>
-<p><strong>Positive:</strong>
-* <strong>Consistency:</strong> All LLM agents receive same definition [Benefit: <code>FORMAL_CONCEPT_DEFINITION.md</code>, line 42-43]
-* <strong>Quality:</strong> Clear guidelines improve extraction quality [Benefit: lines 48-54]
-* <strong>Evaluation:</strong> Can assess if extractions meet criteria [Benefit: quality metrics possible]
-* <strong>Documentation:</strong> Authoritative reference for developers [Benefit: lines 57-62]
-* <strong>Training:</strong> Future agents can reference formal model [Benefit: onboarding]
-* <strong>Disambiguation:</strong> Explicit guidance on concept boundaries [Benefit: clarity]
-* <strong>System alignment:</strong> All components reference same model [Benefit: lines 64-70]</p>
-<p><strong>Negative:</strong>
-* <strong>Rigidity:</strong> Definition may need evolution as system grows [Risk: future constraints]
-* <strong>Interpretation:</strong> LLMs may still interpret definition differently [Limitation: LLM variance]
-* <strong>Verification:</strong> Hard to programmatically verify compliance [Challenge: quality assurance]
-* <strong>Maintenance:</strong> Definition must be kept synchronized across prompts [Burden: consistency maintenance]</p>
-<p><strong>Neutral:</strong>
-* <strong>Backward compatibility:</strong> Doesn't invalidate existing concepts [Impact: historical data]
-* <strong>Iterative refinement:</strong> Definition can be improved over time [Process: evolutionary]</p>
-<h3 id="confirmation">Confirmation<a class="headerlink" href="#confirmation" title="Permanent link">&para;</a></h3>
-<p><strong>Validation:</strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, lines 82-88]
-- ✅ AGENTS.md created with formal definition
-- ✅ Chunk extraction prompt updated (line 102)
-- ✅ Single-pass extraction prompt updated (line 197)
-- ✅ TypeScript compiled successfully
-- ✅ No linting errors
-- ✅ Planning documentation created</p>
-<p><strong>Production Impact:</strong>
-- Clearer concept extraction from Nov 13 onwards
-- Consistent quality across documents indexed after formalization
-- Reference point for evaluating existing concepts</p>
-<h2 id="pros-and-cons-of-the-options">Pros and Cons of the Options<a class="headerlink" href="#pros-and-cons-of-the-options" title="Permanent link">&para;</a></h2>
-<h3 id="option-1-formal-definition-with-rules-chosen">Option 1: Formal Definition with Rules - Chosen<a class="headerlink" href="#option-1-formal-definition-with-rules-chosen" title="Permanent link">&para;</a></h3>
-<p><strong>Pros:</strong>
-* Crystal clear guidelines [Source: definition text]
-* Explicit inclusion/exclusion rules [Source: AGENTS.md]
-* Evaluatable quality
-* Authoritative documentation
-* Improves extraction consistency [Validated: FORMAL_CONCEPT_DEFINITION.md]</p>
-<p><strong>Cons:</strong>
-* May need evolution
-* LLM interpretation variance
-* Hard to verify programmatically
-* Maintenance burden</p>
-<h3 id="option-2-example-based">Option 2: Example-Based<a class="headerlink" href="#option-2-example-based" title="Permanent link">&para;</a></h3>
-<p>Provide good/bad examples instead of formal definition.</p>
-<p><strong>Pros:</strong>
-* Concrete and easy to understand
-* Shows real cases
-* Less abstract</p>
-<p><strong>Cons:</strong>
-* <strong>Less precise:</strong> Examples don't cover all cases [Limitation: incomplete]
-* <strong>Ambiguity:</strong> What about edge cases not in examples?
-* <strong>Maintenance:</strong> Must update examples as system evolves
-* <strong>Inconsistent:</strong> Different agents may generalize differently from examples</p>
-<h3 id="option-3-no-formal-definition">Option 3: No Formal Definition<a class="headerlink" href="#option-3-no-formal-definition" title="Permanent link">&para;</a></h3>
-<p>Let LLM decide what concepts are based on its training.</p>
-<p><strong>Pros:</strong>
-* Zero effort (current state before Nov 13)
-* LLM uses built-in understanding
-* Flexible</p>
-<p><strong>Cons:</strong>
-* <strong>Inconsistent:</strong> Different calls may extract differently [Problem: variance]
-* <strong>No quality criteria:</strong> Can't evaluate extraction quality [Gap: no standards]
-* <strong>Unclear expectations:</strong> Developers don't know what to expect [Documentation: lacking]
-* <strong>This was the problem:</strong> Why formalization was needed [History: pre-Nov-13 state]</p>
-<h3 id="option-4-schema-based">Option 4: Schema-Based<a class="headerlink" href="#option-4-schema-based" title="Permanent link">&para;</a></h3>
-<p>Define via TypeScript interfaces only.</p>
-<p><strong>Pros:</strong>
-* Type-safe
-* Programmatically enforced
-* IDE support</p>
-<p><strong>Cons:</strong>
-* <strong>Doesn't guide extraction:</strong> LLM doesn't see TypeScript types [Gap: not in prompts]
-* <strong>Structure without semantics:</strong> Types show "what" not "why"
-* <strong>Incomplete:</strong> Doesn't specify inclusion/exclusion criteria</p>
-<h3 id="option-5-taxonomy-based">Option 5: Taxonomy-Based<a class="headerlink" href="#option-5-taxonomy-based" title="Permanent link">&para;</a></h3>
-<p>Define concepts by their position in taxonomy.</p>
-<p><strong>Pros:</strong>
-* Hierarchical organization
-* Clear categories
-* Navigable structure</p>
-<p><strong>Cons:</strong>
-* <strong>Doesn't define concept itself:</strong> What makes something a concept? [Gap: fundamental question]
-* <strong>Circular:</strong> Need to define concepts before building taxonomy
-* <strong>Rigid:</strong> Forces concepts into predetermined categories
-* <strong>Over-constrains:</strong> Some concepts span categories</p>
-<h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
-<h3 id="agentsmd-structure">AGENTS.md Structure<a class="headerlink" href="#agentsmd-structure" title="Permanent link">&para;</a></h3>
-<p><strong>File Location:</strong> Project root [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, line 15]</p>
-<p><strong>Sections:</strong> [Source: lines 15-24]
-1. Formal definition
-2. Key components breakdown (9 elements)
-3. Document parsing guidelines
-4. Concept extraction process
-5. Integration guidelines
-6. Usage instructions for system components</p>
-<h3 id="integration-in-extraction">Integration in Extraction<a class="headerlink" href="#integration-in-extraction" title="Permanent link">&para;</a></h3>
-<p><strong>Both Prompts Updated:</strong> [Source: lines 30-38]
-- Multi-pass extraction (line 102 of concept_extractor.ts)
-- Single-pass extraction (line 197 of concept_extractor.ts)</p>
-<p><strong>Format:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>FORMAL DEFINITION:
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>[Definition text here]
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>EXTRACTION GUIDELINES:
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>[Detailed instructions...]
-</code></pre></div></p>
-<h3 id="future-enhancements">Future Enhancements<a class="headerlink" href="#future-enhancements" title="Permanent link">&para;</a></h3>
-<p><strong>Optional Improvements:</strong> [Source: <code>FORMAL_CONCEPT_DEFINITION.md</code>, lines 72-80]
-1. Structured concept schema (capture relations explicitly)
-2. Concept validation logic
-3. Relation extraction (hierarchical, associative, causal)
-4. Detection cue database
-5. Quality metrics</p>
-<h2 id="related-decisions">Related Decisions<a class="headerlink" href="#related-decisions" title="Permanent link">&para;</a></h2>
+<h3 id="4-per-page-navigation">4. Per-Page Navigation<a class="headerlink" href="#4-per-page-navigation" title="Permanent link">&para;</a></h3>
+<p>Configure table of contents for right-side per-page navigation on all pages.</p>
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
+<h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
 <ul>
-<li><a href="../adr0007-concept-extraction-llm/">ADR-0007: Concept Extraction</a> - Extraction process formalized</li>
-<li><a href="../adr0009-three-table-architecture/">ADR-0009: Three-Table Architecture</a> - Concept storage</li>
-<li><a href="../adr0008-wordnet-integration/">ADR-0008: WordNet Integration</a> - Semantic relationships</li>
+<li><strong>Better discoverability</strong>: Collapsible sections make finding content easier</li>
+<li><strong>Visual clarity</strong>: Mermaid diagrams communicate architecture more effectively than ASCII art</li>
+<li><strong>Reduced duplication</strong>: Unique landing page eliminates README.md copying</li>
+<li><strong>Complete documentation</strong>: FAQ and Troubleshooting now accessible from docs site</li>
+<li><strong>Professional appearance</strong>: Matches quality of reference documentation sites</li>
+</ul>
+<h3 id="negative">Negative<a class="headerlink" href="#negative" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Maintenance overhead</strong>: More structured navigation requires updating mkdocs.yml when adding new pages</li>
+<li><strong>Build dependency</strong>: Mermaid rendering requires JavaScript (handled by MkDocs Material)</li>
+</ul>
+<h3 id="neutral">Neutral<a class="headerlink" href="#neutral" title="Permanent link">&para;</a></h3>
+<ul>
+<li>FAQ.md and TROUBLESHOOTING.md in root remain for GitHub browsing; docs versions are the canonical references</li>
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
-<h3 id="related-decisions_1">Related Decisions<a class="headerlink" href="#related-decisions_1" title="Permanent link">&para;</a></h3>
 <ul>
-<li><a href="../adr0007-concept-extraction-llm/">ADR-0007: Concept Extraction</a></li>
+<li><a href="https://github.com/m2ux/concept-rag/issues/50">GitHub Issue #50</a></li>
+<li><a href="https://squidfunk.github.io/mkdocs-material/setup/setting-up-navigation/">MkDocs Material - Setting up navigation</a></li>
+<li><a href="https://squidfunk.github.io/mkdocs-material/reference/diagrams/">MkDocs Material - Diagrams</a></li>
+<li>Reference implementation: <a href="https://docs.nudges.dev">docs.nudges.dev</a></li>
 </ul>
-<hr />
-<p><strong>Confidence Level:</strong> HIGH
-<strong>Attribution:</strong>
-- Planning docs: November 13, 2024
-- Documented in: FORMAL_CONCEPT_DEFINITION.md</p>
-<p><strong>Traceability:</strong> .ai/planning/2025-11-13-concept-extraction-enhancement/</p>
 
 
 

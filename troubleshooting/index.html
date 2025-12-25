@@ -12,13 +12,13 @@
         <meta name="author" content="Alex Komyagin">
       
       
-        <link rel="canonical" href="https://m2ux.github.io/concept-rag/tool-selection-guide/">
+        <link rel="canonical" href="https://m2ux.github.io/concept-rag/troubleshooting/">
       
       
-        <link rel="prev" href="../getting-started/">
+        <link rel="prev" href="../faq/">
       
       
-        <link rel="next" href="../faq/">
+        <link rel="next" href="../api-reference/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Tool Selection Guide - Concept-RAG Documentation</title>
+        <title>Troubleshooting - Concept-RAG Documentation</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#tool-selection-guide" class="md-skip">
+        <a href="#troubleshooting" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Tool Selection Guide
+              Troubleshooting
             
           </span>
         </div>
@@ -272,7 +272,7 @@
     
     
       <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+        <a href="../tool-selection-guide/" class="md-tabs__link">
           
   
   
@@ -585,37 +585,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tool Selection Guide
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../tool-selection-guide/" class="md-nav__link">
         
   
   
@@ -631,452 +604,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quick-decision-tree" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Decision Tree
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-3-questions-method" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The "3 Questions" Method
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The &#34;3 Questions&#34; Method">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#question-1-is-this-about-documents-or-content" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Question 1: "Is this about DOCUMENTS or CONTENT?"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#question-2-is-this-a-concept-name-or-a-phrasequestion" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Question 2: "Is this a CONCEPT NAME or a PHRASE/QUESTION?"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#question-3-do-i-know-the-specific-document" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Question 3: "Do I know the SPECIFIC DOCUMENT?"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#special-case-does-the-user-want-to-extractlist-concepts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Special Case: "Does the user want to EXTRACT/LIST concepts?"
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#detailed-tool-selection-criteria" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Detailed Tool Selection Criteria
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Detailed Tool Selection Criteria">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#catalog_search" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        catalog_search
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#broad_chunks_search" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        broad_chunks_search
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#chunks_search" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        chunks_search
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#concept_search" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        concept_search
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#extract_concepts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        extract_concepts
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#source_concepts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        source_concepts
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#concept_sources" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        concept_sources
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#category_search" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        category_search
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#list_categories" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        list_categories
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#list_concepts_in_category" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        list_concepts_in_category
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#decision-logic-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision Logic Examples
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Decision Logic Examples">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#example-1-find-information-about-innovation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example 1: "Find information about innovation"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-2-what-do-my-documents-say-about-innovation-and-organizational-change" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example 2: "What do my documents say about innovation and organizational change?"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-3-what-documents-do-i-have-about-military-strategy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example 3: "What documents do I have about military strategy?"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-4-find-where-sun-tzu-discusses-deception" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example 4: "Find where Sun Tzu discusses deception"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-5-extract-concepts-from-the-art-of-war" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example 5: "Extract concepts from the Art of War"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-6-what-categories-do-i-have" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example 6: "What categories do I have?"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-7-show-me-documents-about-software-engineering" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example 7: "Show me documents about software engineering"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-8-which-books-discuss-tdd" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example 8: "Which books discuss TDD?"
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-patterns-and-anti-patterns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common Patterns and Anti-Patterns
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Common Patterns and Anti-Patterns">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#good-patterns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ✅ Good Patterns
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#anti-patterns" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ❌ Anti-Patterns
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-workflows" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common Workflows
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Common Workflows">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-explore-your-library" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Explore Your Library
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-research-a-topic" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Research a Topic
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-discover-concepts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Discover Concepts
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-explore-a-domain" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Explore a Domain
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tool-selection-validation-test-cases" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tool Selection Validation Test Cases
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1114,10 +641,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../troubleshooting/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1133,6 +687,320 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Installation Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#node-command-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "node: command not found"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#npm-install-fails" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "npm install" fails
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pythonnltk-not-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Python/NLTK not found
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#seeding-problems" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Seeding Problems
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Seeding Problems">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#error-openrouter_api_key-not-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "Error: OPENROUTER_API_KEY not set"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#no-pdf-files-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "No PDF files found"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pdf-parsing-failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PDF parsing failed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#out-of-memory-during-seeding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of memory during seeding
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#search-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Search Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-results-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No results found
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-returns-irrelevant-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search returns irrelevant results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#slow-search-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Slow search queries
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mcp-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP Integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MCP Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mcp-server-not-connecting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP server not connecting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp-tools-not-appearing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP tools not appearing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permission-denied-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Permission denied errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#incomplete-catalog-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incomplete catalog records
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#missing-concepts-for-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Missing concepts for document
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Messages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debug-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debug Mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-fixes-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Fixes Checklist
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#get-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get Help
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -3041,503 +2909,276 @@
   
 
 
-<h1 id="tool-selection-guide">Tool Selection Guide<a class="headerlink" href="#tool-selection-guide" title="Permanent link">&para;</a></h1>
-<p>This guide helps AI agents and developers select the appropriate MCP tool for their query. For JSON input/output schemas, see <a href="../api-reference/">api-reference.md</a>.</p>
+<h1 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h1>
+<p>Solutions to common issues with Concept-RAG.</p>
 <hr />
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>Concept-RAG provides <strong>10 MCP tools</strong> organized into four categories:</p>
-<table>
-<thead>
-<tr>
-<th>Category</th>
-<th>Tools</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Document Discovery</strong></td>
-<td><code>catalog_search</code></td>
-<td>Find documents by title, author, topic</td>
-</tr>
-<tr>
-<td><strong>Content Search</strong></td>
-<td><code>broad_chunks_search</code>, <code>chunks_search</code></td>
-<td>Search within document content</td>
-</tr>
-<tr>
-<td><strong>Concept Analysis</strong></td>
-<td><code>concept_search</code>, <code>extract_concepts</code>, <code>source_concepts</code>, <code>concept_sources</code></td>
-<td>Analyze and track concepts</td>
-</tr>
-<tr>
-<td><strong>Category Browsing</strong></td>
-<td><code>category_search</code>, <code>list_categories</code>, <code>list_concepts_in_category</code></td>
-<td>Browse by domain/category</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="quick-decision-tree">Quick Decision Tree<a class="headerlink" href="#quick-decision-tree" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>START: User asks a question
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├─ Are they asking &quot;what documents do I have?&quot; or looking for documents by title/author?
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│  └─ YES → Use `catalog_search`
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├─ Are they asking to browse BY CATEGORY or filter by domain?
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  ├─ &quot;What categories?&quot; → Use `list_categories`
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│  ├─ &quot;Documents in [category]&quot; → Use `category_search`
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│  └─ &quot;Concepts in [category]&quot; → Use `list_concepts_in_category`
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├─ Are they explicitly asking to &quot;extract&quot;, &quot;list&quot;, &quot;show&quot;, or &quot;export&quot; ALL concepts from a document?
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│  └─ YES → Use `extract_concepts`
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├─ Are they asking which SOURCES/DOCUMENTS contain a concept?
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│  ├─ Need merged list with overlap info → Use `source_concepts`
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│  └─ Need separate lists per concept → Use `concept_sources`
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>├─ Are they searching for a CONCEPTUAL TOPIC (single concept name like &quot;innovation&quot;, &quot;leadership&quot;)?
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│  └─ YES → Use `concept_search` (highest precision)
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>├─ Do they already know the SPECIFIC DOCUMENT they want to search within?
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│  ├─ YES → Use `chunks_search` (requires source path)
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│  └─ NO → Continue...
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>├─ Are they searching for SPECIFIC PHRASES, KEYWORDS, or asking NATURAL LANGUAGE QUESTIONS?
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│  └─ YES → Use `broad_chunks_search` (comprehensive cross-document)
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>└─ DEFAULT → Use `catalog_search` for exploration, then follow up with more specific tools
+<h2 id="installation-issues">Installation Issues<a class="headerlink" href="#installation-issues" title="Permanent link">&para;</a></h2>
+<h3 id="node-command-not-found">"node: command not found"<a class="headerlink" href="#node-command-not-found" title="Permanent link">&para;</a></h3>
+<p>Node.js not installed or not in PATH.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Ubuntu/Debian</label><label for="__tabbed_1_2">macOS</label><label for="__tabbed_1_3">Manual</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>update
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>nodejs<span class="w"> </span>npm
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>brew<span class="w"> </span>install<span class="w"> </span>node
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Download from <a href="https://nodejs.org/">nodejs.org</a></p>
+</div>
+</div>
+</div>
+<h3 id="npm-install-fails">"npm install" fails<a class="headerlink" href="#npm-install-fails" title="Permanent link">&para;</a></h3>
+<p>Clear cache and reinstall:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>rm<span class="w"> </span>-rf<span class="w"> </span>node_modules<span class="w"> </span>package-lock.json
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>npm<span class="w"> </span>cache<span class="w"> </span>clean<span class="w"> </span>--force
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>npm<span class="w"> </span>install
+</code></pre></div>
+<h3 id="pythonnltk-not-found">Python/NLTK not found<a class="headerlink" href="#pythonnltk-not-found" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Install NLTK</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>pip3<span class="w"> </span>install<span class="w"> </span>nltk
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Download WordNet data</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import nltk; nltk.download(&#39;wordnet&#39;); nltk.download(&#39;omw-1.4&#39;)&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Verify</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;from nltk.corpus import wordnet as wn; print(f&#39;✅ WordNet: {len(list(wn.all_synsets()))} synsets&#39;)&quot;</span>
 </code></pre></div>
 <hr />
-<h2 id="the-3-questions-method">The "3 Questions" Method<a class="headerlink" href="#the-3-questions-method" title="Permanent link">&para;</a></h2>
-<p>When an AI agent encounters a user query, ask these 3 questions in order:</p>
-<h3 id="question-1-is-this-about-documents-or-content">Question 1: "Is this about DOCUMENTS or CONTENT?"<a class="headerlink" href="#question-1-is-this-about-documents-or-content" title="Permanent link">&para;</a></h3>
+<h2 id="seeding-problems">Seeding Problems<a class="headerlink" href="#seeding-problems" title="Permanent link">&para;</a></h2>
+<h3 id="error-openrouter_api_key-not-set">"Error: OPENROUTER_API_KEY not set"<a class="headerlink" href="#error-openrouter_api_key-not-set" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Create .env file</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;OPENROUTER_API_KEY=your_key_here&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>.env
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Or export directly</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENROUTER_API_KEY</span><span class="o">=</span><span class="s2">&quot;your_key_here&quot;</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># Get key at: https://openrouter.ai/keys</span>
+</code></pre></div>
+<h3 id="no-pdf-files-found">"No PDF files found"<a class="headerlink" href="#no-pdf-files-found" title="Permanent link">&para;</a></h3>
+<div class="admonition tip">
+<p class="admonition-title">Check your paths</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Verify directory exists</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>ls<span class="w"> </span>-la<span class="w"> </span>~/Documents/pdfs
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Find PDFs</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>find<span class="w"> </span>~/Documents/pdfs<span class="w"> </span>-name<span class="w"> </span><span class="s2">&quot;*.pdf&quot;</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Use absolute path</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">  </span>--dbpath<span class="w"> </span>~/.concept_rag<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">  </span>--filesdir<span class="w"> </span>/absolute/path/to/pdfs
+</code></pre></div>
+</div>
+<h3 id="pdf-parsing-failed">PDF parsing failed<a class="headerlink" href="#pdf-parsing-failed" title="Permanent link">&para;</a></h3>
+<p><strong>Possible causes:</strong></p>
 <ul>
-<li><strong>Documents</strong> → <code>catalog_search</code></li>
-<li><strong>Content</strong> → Continue to Q2</li>
+<li>Corrupted PDF</li>
+<li>Password-protected PDF</li>
+<li>Unusual encoding</li>
 </ul>
-<h3 id="question-2-is-this-a-concept-name-or-a-phrasequestion">Question 2: "Is this a CONCEPT NAME or a PHRASE/QUESTION?"<a class="headerlink" href="#question-2-is-this-a-concept-name-or-a-phrasequestion" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Concept name</strong> (1-3 words, conceptual) → <code>concept_search</code></li>
-<li><strong>Phrase/question</strong> → Continue to Q3</li>
-</ul>
-<h3 id="question-3-do-i-know-the-specific-document">Question 3: "Do I know the SPECIFIC DOCUMENT?"<a class="headerlink" href="#question-3-do-i-know-the-specific-document" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Yes, have source path</strong> → <code>chunks_search</code></li>
-<li><strong>No</strong> → <code>broad_chunks_search</code></li>
-</ul>
-<h3 id="special-case-does-the-user-want-to-extractlist-concepts">Special Case: "Does the user want to EXTRACT/LIST concepts?"<a class="headerlink" href="#special-case-does-the-user-want-to-extractlist-concepts" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Yes</strong> → <code>extract_concepts</code></li>
-</ul>
-<p>This simple decision tree routes 95% of queries correctly.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li>OCR fallback handles scanned PDFs automatically</li>
+<li>Re-save PDF using another tool</li>
+<li>Check if PDF opens in a reader</li>
+<li>Try converting to PDF/A format</li>
+</ol>
+<h3 id="out-of-memory-during-seeding">Out of memory during seeding<a class="headerlink" href="#out-of-memory-during-seeding" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Increase Node.js memory</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nv">NODE_OPTIONS</span><span class="o">=</span><span class="s2">&quot;--max-old-space-size=4096&quot;</span><span class="w"> </span>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--dbpath<span class="w"> </span>~/.concept_rag<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span>--filesdir<span class="w"> </span>~/docs
+</code></pre></div>
+<p>Or process documents in smaller batches.</p>
 <hr />
-<h2 id="detailed-tool-selection-criteria">Detailed Tool Selection Criteria<a class="headerlink" href="#detailed-tool-selection-criteria" title="Permanent link">&para;</a></h2>
-<h3 id="catalog_search">catalog_search<a class="headerlink" href="#catalog_search" title="Permanent link">&para;</a></h3>
-<p>✅ Finding documents about a specific topic or subject area<br />
-✅ Looking for documents by title, author, or keywords<br />
-✅ Need document-level results rather than specific chunks<br />
-✅ Starting exploratory research to identify relevant sources</p>
-<p>❌ Listing all documents in your library (use <code>list_categories</code> then <code>category_search</code>)<br />
-❌ Finding specific information within documents (use <code>broad_chunks_search</code> or <code>chunks_search</code>)<br />
-❌ Tracking specific concept usage across chunks (use <code>concept_search</code>)</p>
-<p><strong>Query Examples:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>✅ &quot;What documents do I have?&quot;
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>✅ &quot;Sun Tzu Art of War&quot;
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>✅ &quot;documents about healthcare&quot;
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>✅ &quot;books by Christopher Alexander&quot;
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>❌ &quot;how does Sun Tzu describe deception?&quot; (use chunks_search after finding document)
-</code></pre></div></p>
-<hr />
-<h3 id="broad_chunks_search">broad_chunks_search<a class="headerlink" href="#broad_chunks_search" title="Permanent link">&para;</a></h3>
-<p>✅ Searching for specific phrases, keywords, or technical terms across all documents<br />
-✅ Need comprehensive cross-document research on a topic<br />
-✅ Looking for textual content that may or may not be tagged as a concept<br />
-✅ Query contains multiple terms or is phrased as a natural language question<br />
-✅ Want to find content regardless of whether it was identified as a formal concept</p>
-<p>❌ Finding documents by title or getting document overviews (use <code>catalog_search</code>)<br />
-❌ Searching within a single known document (use <code>chunks_search</code>)<br />
-❌ Finding semantically-tagged concept discussions (use <code>concept_search</code>)</p>
-<p><strong>Query Examples:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>✅ &quot;how do organizations implement innovation processes&quot;
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>✅ &quot;strategic deception tactics&quot;
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>✅ &quot;leadership in complex systems&quot;
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>✅ &quot;user authentication methods&quot;
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>❌ &quot;innovation&quot; (use concept_search for higher precision)
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>❌ &quot;documents about leadership&quot; (use catalog_search)
-</code></pre></div></p>
-<hr />
-<h3 id="chunks_search">chunks_search<a class="headerlink" href="#chunks_search" title="Permanent link">&para;</a></h3>
-<p>✅ You know which document contains the information<br />
-✅ Following up from <code>catalog_search</code> results with a specific source<br />
-✅ Focused analysis of one document's content<br />
-✅ Have the exact source path from a previous search</p>
-<p>❌ Don't know which document to search (use <code>catalog_search</code> first)<br />
-❌ Need to search across multiple documents (use <code>broad_chunks_search</code>)<br />
-❌ Tracking concepts across entire library (use <code>concept_search</code>)<br />
-❌ Don't have the exact source path</p>
-<p><strong>Recommended Workflow:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Step 1: catalog_search(&quot;Sun Tzu&quot;) → get source path
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>Step 2: chunks_search(&quot;deception&quot;, source=&quot;&lt;path from step 1&gt;&quot;)
-</code></pre></div></p>
-<hr />
-<h3 id="concept_search">concept_search<a class="headerlink" href="#concept_search" title="Permanent link">&para;</a></h3>
-<p>✅ User asks about a CONCEPT (e.g., "innovation", "leadership", "strategic thinking")<br />
-✅ Query is a single conceptual term or short phrase (1-3 words)<br />
-✅ Need semantically validated, high-precision results<br />
-✅ Researching how/where a concept is discussed across the library</p>
-<p>❌ Query contains multiple phrases or full sentences<br />
-❌ Looking for exact keyword matches (not semantic concepts)<br />
-❌ User wants documents, not chunks<br />
-❌ Searching for specific technical phrases</p>
-<p><strong>Query Examples:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>✅ &quot;innovation&quot;
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>✅ &quot;military strategy&quot;  
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>✅ &quot;leadership principles&quot;
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>✅ &quot;organizational learning&quot;
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>❌ &quot;how do organizations innovate&quot; (use broad_chunks_search)
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>❌ &quot;leadership in the context of military strategy&quot; (use broad_chunks_search)
-</code></pre></div></p>
-<p><strong>Technical Note:</strong> Concept search has 100% precision for concept-tagged results. Uses fuzzy matching and expands to lexically-related concepts.</p>
-<hr />
-<h3 id="extract_concepts">extract_concepts<a class="headerlink" href="#extract_concepts" title="Permanent link">&para;</a></h3>
-<p>✅ User explicitly asks to "extract", "list", "show", or "export" concepts<br />
-✅ Creating concept maps or taxonomies<br />
-✅ Reviewing concept extraction quality<br />
-✅ Exporting for external analysis</p>
-<p>❌ Searching for information (use search tools)<br />
-❌ Finding where a concept is discussed (use <code>concept_search</code>)<br />
-❌ General document discovery (use <code>catalog_search</code>)</p>
-<p><strong>Query Examples:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>✅ &quot;Extract all concepts from Sun Tzu&#39;s Art of War&quot;
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>✅ &quot;List concepts in the healthcare document&quot;
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>✅ &quot;Show me all concepts from the TRIZ book&quot;
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>❌ &quot;Find information about innovation&quot; (use concept_search)
-</code></pre></div></p>
-<hr />
-<h3 id="source_concepts">source_concepts<a class="headerlink" href="#source_concepts" title="Permanent link">&para;</a></h3>
-<p>✅ "Which books mention [concept]?" or "Where is [concept] discussed?"<br />
-✅ Finding source attribution for research or citation<br />
-✅ Understanding concept coverage across your library<br />
-✅ Finding documents that cover MULTIPLE concepts (pass an array)<br />
-✅ Need overlap analysis (which sources cover the most concepts)</p>
-<p>❌ Need separate per-concept lists (use <code>concept_sources</code>)<br />
-❌ Finding specific text passages (use <code>concept_search</code>)<br />
-❌ Finding documents by title (use <code>catalog_search</code>)</p>
-<p><strong>Query Examples:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>✅ &quot;Which books discuss dependency injection?&quot;
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>✅ &quot;Find sources that mention both TDD and refactoring&quot;
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>❌ &quot;Find passages about TDD&quot; (use concept_search for content)
-</code></pre></div></p>
-<hr />
-<h3 id="concept_sources">concept_sources<a class="headerlink" href="#concept_sources" title="Permanent link">&para;</a></h3>
-<p>✅ Need separate source lists for each concept (not merged)<br />
-✅ Comparing which sources cover which specific concepts<br />
-✅ Building per-concept bibliographies or citations<br />
-✅ Need to know exactly which sources discuss each individual concept</p>
-<p>❌ Need merged/union list with overlap info (use <code>source_concepts</code>)<br />
-❌ Finding specific text passages (use <code>concept_search</code>)<br />
-❌ Finding documents by title (use <code>catalog_search</code>)</p>
-<p><strong>Comparison: source_concepts vs concept_sources:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Feature</th>
-<th>source_concepts</th>
-<th>concept_sources</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Output</td>
-<td>Union with concept_indices</td>
-<td>Separate arrays</td>
-</tr>
-<tr>
-<td>Duplicates</td>
-<td>Deduplicated</td>
-<td>May repeat across arrays</td>
-</tr>
-<tr>
-<td>Use case</td>
-<td>"What covers these?"</td>
-<td>"Sources per concept"</td>
-</tr>
-<tr>
-<td>Sorting</td>
-<td>By match count</td>
-<td>By input position</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h3 id="category_search">category_search<a class="headerlink" href="#category_search" title="Permanent link">&para;</a></h3>
-<p>✅ Browse documents in a specific domain or subject area<br />
-✅ Filter library by category<br />
-✅ List all documents in a category</p>
-<p>❌ Don't know what categories exist (use <code>list_categories</code> first)<br />
-❌ Need content search, not document listing (use <code>broad_chunks_search</code>)<br />
-❌ Looking for a concept, not a category (use <code>concept_search</code>)</p>
-<hr />
-<h3 id="list_categories">list_categories<a class="headerlink" href="#list_categories" title="Permanent link">&para;</a></h3>
-<p>✅ "What categories do I have?"<br />
-✅ Explore available subject areas in your library<br />
-✅ Get category statistics and metadata<br />
-✅ Category discovery before using <code>category_search</code></p>
-<p>❌ Looking for specific documents (use <code>catalog_search</code> or <code>category_search</code>)<br />
-❌ Searching content (use search tools)<br />
-❌ Already know the category (use <code>category_search</code> directly)</p>
-<hr />
-<h3 id="list_concepts_in_category">list_concepts_in_category<a class="headerlink" href="#list_concepts_in_category" title="Permanent link">&para;</a></h3>
-<p>✅ "What concepts appear in [category] documents?"<br />
-✅ Analyze conceptual landscape of a domain<br />
-✅ Find key concepts for a subject area<br />
-✅ Cross-domain concept discovery</p>
-<p>❌ Need to search for content (use <code>concept_search</code> or <code>broad_chunks_search</code>)<br />
-❌ Want documents in a category (use <code>category_search</code>)<br />
-❌ Looking for a specific concept (use <code>concept_search</code>)</p>
-<hr />
-<h2 id="decision-logic-examples">Decision Logic Examples<a class="headerlink" href="#decision-logic-examples" title="Permanent link">&para;</a></h2>
-<h3 id="example-1-find-information-about-innovation">Example 1: "Find information about innovation"<a class="headerlink" href="#example-1-find-information-about-innovation" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Analysis:</strong> Single concept term, asking ABOUT a concept</li>
-<li><strong>Decision:</strong> <code>concept_search</code></li>
-<li><strong>Result:</strong> Concept-tagged chunks with 100% relevance</li>
-</ul>
-<h3 id="example-2-what-do-my-documents-say-about-innovation-and-organizational-change">Example 2: "What do my documents say about innovation and organizational change?"<a class="headerlink" href="#example-2-what-do-my-documents-say-about-innovation-and-organizational-change" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Analysis:</strong> Multi-concept query, natural language phrasing</li>
-<li><strong>Decision:</strong> <code>broad_chunks_search</code></li>
-<li><strong>Result:</strong> Top chunks discussing both topics</li>
-</ul>
-<h3 id="example-3-what-documents-do-i-have-about-military-strategy">Example 3: "What documents do I have about military strategy?"<a class="headerlink" href="#example-3-what-documents-do-i-have-about-military-strategy" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Analysis:</strong> Explicit question about "documents", topic-based</li>
-<li><strong>Decision:</strong> <code>catalog_search</code></li>
-<li><strong>Result:</strong> Top documents about military strategy with summaries</li>
-</ul>
-<h3 id="example-4-find-where-sun-tzu-discusses-deception">Example 4: "Find where Sun Tzu discusses deception"<a class="headerlink" href="#example-4-find-where-sun-tzu-discusses-deception" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Analysis:</strong> Specific document mentioned, specific topic</li>
-<li><strong>Decision:</strong> <code>catalog_search</code> → <code>chunks_search</code></li>
-<li><strong>Workflow:</strong> Find document path, then search within</li>
-</ul>
-<h3 id="example-5-extract-concepts-from-the-art-of-war">Example 5: "Extract concepts from the Art of War"<a class="headerlink" href="#example-5-extract-concepts-from-the-art-of-war" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Analysis:</strong> Explicit "extract concepts" request</li>
-<li><strong>Decision:</strong> <code>extract_concepts</code></li>
-<li><strong>Result:</strong> Complete concept inventory (100+ concepts)</li>
-</ul>
-<h3 id="example-6-what-categories-do-i-have">Example 6: "What categories do I have?"<a class="headerlink" href="#example-6-what-categories-do-i-have" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Analysis:</strong> Asking about categories, not content</li>
-<li><strong>Decision:</strong> <code>list_categories</code></li>
-<li><strong>Result:</strong> All categories with statistics</li>
-</ul>
-<h3 id="example-7-show-me-documents-about-software-engineering">Example 7: "Show me documents about software engineering"<a class="headerlink" href="#example-7-show-me-documents-about-software-engineering" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Analysis:</strong> Domain-based filtering, likely a category</li>
-<li><strong>Decision:</strong> <code>category_search</code></li>
-<li><strong>Result:</strong> Documents in software engineering category</li>
-</ul>
-<h3 id="example-8-which-books-discuss-tdd">Example 8: "Which books discuss TDD?"<a class="headerlink" href="#example-8-which-books-discuss-tdd" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Analysis:</strong> Source attribution for a concept</li>
-<li><strong>Decision:</strong> <code>source_concepts</code></li>
-<li><strong>Result:</strong> All documents containing "TDD" concept</li>
-</ul>
-<hr />
-<h2 id="common-patterns-and-anti-patterns">Common Patterns and Anti-Patterns<a class="headerlink" href="#common-patterns-and-anti-patterns" title="Permanent link">&para;</a></h2>
-<h3 id="good-patterns">✅ Good Patterns<a class="headerlink" href="#good-patterns" title="Permanent link">&para;</a></h3>
+<h2 id="search-issues">Search Issues<a class="headerlink" href="#search-issues" title="Permanent link">&para;</a></h2>
+<h3 id="no-results-found">No results found<a class="headerlink" href="#no-results-found" title="Permanent link">&para;</a></h3>
 <ol>
 <li>
-<p><strong>Exploratory workflow:</strong>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>catalog_search(&quot;topic&quot;) → identify relevant documents
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>→ concept_search(&quot;specific concept&quot;) → deep dive
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>→ extract_concepts(&quot;document&quot;) → get full concept map
+<p><strong>Verify documents are indexed:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/health-check.ts
 </code></pre></div></p>
 </li>
 <li>
-<p><strong>Precise concept research:</strong>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>concept_search(&quot;innovation&quot;) → high-precision concept-tagged results
-</code></pre></div></p>
+<p><strong>Try different search tools:</strong></p>
+</li>
+<li><code>concept_search</code> → <code>broad_chunks_search</code></li>
+<li>
+<p><code>catalog_search</code> → <code>chunks_search</code></p>
 </li>
 <li>
-<p><strong>Comprehensive content search:</strong>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>broad_chunks_search(&quot;how do organizations innovate?&quot;) → hybrid search
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Document-focused workflow:</strong>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>catalog_search(&quot;Sun Tzu&quot;) → get source path
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>→ chunks_search(&quot;deception&quot;, source=path) → focused search
-</code></pre></div></p>
+<p><strong>Check query phrasing:</strong>
+   | ❌ Bad | ✅ Good |
+   |--------|---------|
+   | "show me innovation stuff" | "innovation" |
+   | "stuff about AI" | "machine learning applications" |</p>
 </li>
 </ol>
-<h3 id="anti-patterns">❌ Anti-Patterns<a class="headerlink" href="#anti-patterns" title="Permanent link">&para;</a></h3>
-<ol>
-<li>
-<p><strong>Using broad_chunks_search for single concepts:</strong>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>❌ broad_chunks_search(&quot;innovation&quot;)
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>✅ concept_search(&quot;innovation&quot;)
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>Reason: Concept search has 100% precision for concepts
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Using concept_search for multi-word queries:</strong>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>❌ concept_search(&quot;how innovation happens in organizations&quot;)
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>✅ broad_chunks_search(&quot;how innovation happens in organizations&quot;)
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>Reason: Concept search expects concept terms, not questions
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Using chunks_search without knowing document:</strong>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>❌ chunks_search(&quot;leadership&quot;, source=&quot;unknown&quot;)
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>✅ catalog_search(&quot;leadership&quot;) first to identify documents
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>Reason: chunks_search requires exact source path
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Using extract_concepts for search:</strong>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>❌ extract_concepts(&quot;documents about innovation&quot;)
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>✅ concept_search(&quot;innovation&quot;) OR catalog_search(&quot;innovation&quot;)
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>Reason: extract_concepts is for export, not search
-</code></pre></div></p>
-</li>
-</ol>
-<hr />
-<h2 id="common-workflows">Common Workflows<a class="headerlink" href="#common-workflows" title="Permanent link">&para;</a></h2>
-<h3 id="1-explore-your-library">1. Explore Your Library<a class="headerlink" href="#1-explore-your-library" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>list_categories → see what subject areas exist
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    ↓
-<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>category_search → browse documents in each area
-</code></pre></div>
-<h3 id="2-research-a-topic">2. Research a Topic<a class="headerlink" href="#2-research-a-topic" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>catalog_search → find relevant documents
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    ↓
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>chunks_search → dive into specific document
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>    ↓
-<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>extract_concepts → understand document&#39;s conceptual structure
-</code></pre></div>
-<h3 id="3-discover-concepts">3. Discover Concepts<a class="headerlink" href="#3-discover-concepts" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>concept_search → find concepts by description
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    ↓
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>concept_search → find where concept is discussed
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>    ↓
-<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>source_concepts → get source attribution
-</code></pre></div>
-<h3 id="4-explore-a-domain">4. Explore a Domain<a class="headerlink" href="#4-explore-a-domain" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>list_categories → discover available domains
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    ↓
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>category_search → browse documents in domain
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    ↓
-<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>list_concepts_in_category → understand domain vocabulary
-</code></pre></div>
-<hr />
-<h2 id="tool-selection-validation-test-cases">Tool Selection Validation Test Cases<a class="headerlink" href="#tool-selection-validation-test-cases" title="Permanent link">&para;</a></h2>
+<h3 id="search-returns-irrelevant-results">Search returns irrelevant results<a class="headerlink" href="#search-returns-irrelevant-results" title="Permanent link">&para;</a></h3>
+<p>Use the right tool for your goal:</p>
 <table>
 <thead>
 <tr>
-<th>User Query</th>
-<th>Correct Tool</th>
-<th>Reasoning</th>
+<th>Goal</th>
+<th>Use</th>
+<th>Not</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>"What documents do I have?"</td>
-<td><code>list_categories</code></td>
-<td>Asking for library overview</td>
-</tr>
-<tr>
-<td>"What categories do I have?"</td>
-<td><code>list_categories</code></td>
-<td>Asking for categories</td>
-</tr>
-<tr>
-<td>"innovation"</td>
+<td>Find by concept</td>
 <td><code>concept_search</code></td>
-<td>Single concept term</td>
-</tr>
-<tr>
-<td>"Find all mentions of leadership"</td>
-<td><code>concept_search</code></td>
-<td>Concept tracking</td>
-</tr>
-<tr>
-<td>"Show me software engineering documents"</td>
-<td><code>category_search</code></td>
-<td>Category-based filtering</td>
-</tr>
-<tr>
-<td>"What concepts are in distributed systems?"</td>
-<td><code>list_concepts_in_category</code></td>
-<td>Concepts within category</td>
-</tr>
-<tr>
-<td>"How do teams collaborate?"</td>
 <td><code>broad_chunks_search</code></td>
-<td>Natural language question</td>
 </tr>
 <tr>
-<td>"strategic planning frameworks"</td>
-<td><code>broad_chunks_search</code></td>
-<td>Multi-word phrase</td>
-</tr>
-<tr>
-<td>"Search Sun Tzu for deception"</td>
+<td>Search in document</td>
 <td><code>chunks_search</code></td>
-<td>Known document</td>
-</tr>
-<tr>
-<td>"Extract concepts from Art of War"</td>
-<td><code>extract_concepts</code></td>
-<td>Explicit extraction request</td>
-</tr>
-<tr>
-<td>"documents about healthcare"</td>
 <td><code>catalog_search</code></td>
-<td>Document discovery</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../tool-selection-guide/">Tool Selection Guide</a>.</p>
+<h3 id="slow-search-queries">Slow search queries<a class="headerlink" href="#slow-search-queries" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Rebuild indexes</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/rebuild_indexes.ts
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Check database size</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>du<span class="w"> </span>-sh<span class="w"> </span>~/.concept_rag
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1"># Restart MCP client</span>
+</code></pre></div>
+<hr />
+<h2 id="mcp-integration">MCP Integration<a class="headerlink" href="#mcp-integration" title="Permanent link">&para;</a></h2>
+<h3 id="mcp-server-not-connecting">MCP server not connecting<a class="headerlink" href="#mcp-server-not-connecting" title="Permanent link">&para;</a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Checklist</p>
+<ol>
+<li>✅ Paths are <strong>absolute</strong> (not relative)</li>
+<li>✅ Project is built (<code>npm run build</code>)</li>
+<li>✅ Database path exists</li>
+<li>✅ Client restarted after config changes</li>
+</ol>
+</div>
+<p><strong>Verify paths:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Get absolute path</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nb">cd</span><span class="w"> </span>/path/to/concept-rag<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">pwd</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Check database</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>ls<span class="w"> </span>-la<span class="w"> </span>~/.concept_rag
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># Check build</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>ls<span class="w"> </span>-la<span class="w"> </span>dist/conceptual_index.js
+</code></pre></div></p>
+<h3 id="mcp-tools-not-appearing">MCP tools not appearing<a class="headerlink" href="#mcp-tools-not-appearing" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Check configuration syntax:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python3<span class="w"> </span>-m<span class="w"> </span>json.tool<span class="w"> </span>~/.cursor/mcp.json
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Test with MCP Inspector:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>npx<span class="w"> </span>@modelcontextprotocol/inspector<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span>dist/conceptual_index.js<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>~/.concept_rag
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Check for conflicting servers</strong> — remove others temporarily</p>
+</li>
+</ol>
+<h3 id="permission-denied-errors">Permission denied errors<a class="headerlink" href="#permission-denied-errors" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Fix permissions</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>chmod<span class="w"> </span>+x<span class="w"> </span>/path/to/concept-rag/dist/conceptual_index.js
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>chmod<span class="w"> </span>-R<span class="w"> </span><span class="m">755</span><span class="w"> </span>~/.concept_rag
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1"># Fix ownership</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>sudo<span class="w"> </span>chown<span class="w"> </span>-R<span class="w"> </span><span class="nv">$USER</span>:<span class="nv">$USER</span><span class="w"> </span>~/.concept_rag
+</code></pre></div>
+<hr />
+<h2 id="data-issues">Data Issues<a class="headerlink" href="#data-issues" title="Permanent link">&para;</a></h2>
+<h3 id="incomplete-catalog-records">Incomplete catalog records<a class="headerlink" href="#incomplete-catalog-records" title="Permanent link">&para;</a></h3>
+<p><strong>Symptoms:</strong>
+- "Mapped X/Y sources" where X &lt; Y
+- Duplicate source path warnings</p>
+<p><strong>Solution:</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>--filesdir<span class="w"> </span>~/Documents<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>--auto-reseed
+</code></pre></div></p>
+<h3 id="missing-concepts-for-document">Missing concepts for document<a class="headerlink" href="#missing-concepts-for-document" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Re-extract concepts</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/repair_missing_concepts.ts<span class="w"> </span>--min-concepts<span class="w"> </span><span class="m">50</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># Or full re-seed</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span>--dbpath<span class="w"> </span>~/.concept_rag<span class="w"> </span>--filesdir<span class="w"> </span>~/docs<span class="w"> </span>--overwrite
+</code></pre></div>
+<hr />
+<h2 id="error-messages">Error Messages<a class="headerlink" href="#error-messages" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Error</th>
+<th>Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Cannot find module '@lancedb/lancedb'</code></td>
+<td><code>npm install &amp;&amp; npm run build</code></td>
 </tr>
 <tr>
-<td>"organizational learning"</td>
-<td><code>concept_search</code></td>
-<td>Conceptual term</td>
+<td><code>ENOENT: no such file or directory</code></td>
+<td>Create directory: <code>mkdir -p ~/.concept_rag</code></td>
 </tr>
 <tr>
-<td>"What is the process for user authentication?"</td>
-<td><code>broad_chunks_search</code></td>
-<td>Specific technical question</td>
+<td><code>Table not found: catalog</code></td>
+<td>Seed the database first</td>
 </tr>
 <tr>
-<td>"Browse real-time systems category"</td>
-<td><code>category_search</code></td>
-<td>Explicit category browsing</td>
-</tr>
-<tr>
-<td>"Which books discuss TDD?"</td>
-<td><code>source_concepts</code></td>
-<td>Source attribution for concept</td>
-</tr>
-<tr>
-<td>"Find sources for TDD, DI, and CI"</td>
-<td><code>source_concepts</code></td>
-<td>Multi-concept source lookup</td>
-</tr>
-<tr>
-<td>"List sources for each concept separately"</td>
-<td><code>concept_sources</code></td>
-<td>Per-concept bibliographies</td>
-</tr>
-<tr>
-<td>"What books cover the most of these topics?"</td>
-<td><code>source_concepts</code></td>
-<td>Overlap analysis</td>
+<td><code>spawn python3 ENOENT</code></td>
+<td>Install Python or add to PATH</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<p><em>This guide is based on empirical analysis showing concept_search achieved 100% relevance vs. broad_chunks_search at 0% relevance for conceptual queries, validating the need for clear tool selection guidance.</em></p>
+<h2 id="debug-mode">Debug Mode<a class="headerlink" href="#debug-mode" title="Permanent link">&para;</a></h2>
+<p>Enable verbose logging:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LOG_LEVEL</span><span class="o">=</span>debug
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span>--dbpath<span class="w"> </span>~/.concept_rag<span class="w"> </span>--filesdir<span class="w"> </span>~/docs
+</code></pre></div>
+<p>Check log files:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># View latest log</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>ls<span class="w"> </span>-t<span class="w"> </span>logs/seed-*.log<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span>cat
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Search for errors</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>grep<span class="w"> </span>ERROR<span class="w"> </span>logs/seed-*.log
+</code></pre></div>
+<hr />
+<h2 id="quick-fixes-checklist">Quick Fixes Checklist<a class="headerlink" href="#quick-fixes-checklist" title="Permanent link">&para;</a></h2>
+<p>When something doesn't work, try in order:</p>
+<ul>
+<li>[ ] Restart Claude/Cursor</li>
+<li>[ ] Rebuild: <code>npm run build</code></li>
+<li>[ ] Check paths are absolute</li>
+<li>[ ] Verify API key is set</li>
+<li>[ ] Test with MCP Inspector</li>
+<li>[ ] Rebuild indexes: <code>npx tsx scripts/rebuild_indexes.ts</code></li>
+<li>[ ] Check database exists: <code>ls -la ~/.concept_rag</code></li>
+<li>[ ] Verify Python/NLTK installed</li>
+<li>[ ] Clear and reinstall: <code>rm -rf node_modules &amp;&amp; npm install</code></li>
+</ul>
+<hr />
+<h2 id="get-help">Get Help<a class="headerlink" href="#get-help" title="Permanent link">&para;</a></h2>
+<ul>
+<li>💬 <a href="https://github.com/m2ux/concept-rag/discussions">GitHub Discussions</a></li>
+<li>🐛 <a href="https://github.com/m2ux/concept-rag/issues">Report an Issue</a></li>
+<li>📖 <a href="../faq/">FAQ</a></li>
+</ul>
 
 
 
