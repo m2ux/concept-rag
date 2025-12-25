@@ -163,6 +163,55 @@ Restart your MCP client and try these queries:
 
 ---
 
+## Seeding Workflow
+
+Understanding what happens when you seed documents:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Seeder as hybrid_fast_seed.ts
+    participant Loader as Document Loader
+    participant LLM as OpenRouter API
+    participant DB as LanceDB
+
+    User->>Seeder: npx tsx hybrid_fast_seed.ts --filesdir ~/docs
+    
+    Seeder->>Seeder: Scan directory for PDF/EPUB files
+    Seeder->>DB: Check existing documents (incremental mode)
+    
+    loop For each new document
+        Seeder->>Loader: Load document
+        Loader->>Loader: Extract text (or OCR fallback)
+        Loader-->>Seeder: Text content
+        
+        Seeder->>Seeder: Chunk text into segments
+        Seeder->>Seeder: Generate embeddings (local)
+        
+        Seeder->>LLM: Extract concepts (Claude Sonnet)
+        LLM-->>Seeder: 80-150+ concepts
+        
+        Seeder->>LLM: Generate summary (Grok-4-fast)
+        LLM-->>Seeder: Document summary
+        
+        Seeder->>DB: Store catalog entry
+        Seeder->>DB: Store chunks
+        Seeder->>DB: Update concepts index
+    end
+    
+    Seeder->>DB: Rebuild indexes
+    Seeder-->>User: ✅ Seeding complete
+```
+
+**Key points:**
+
+- **Incremental by default**: Only new documents are processed
+- **Parallel processing**: Up to 10 documents concurrently
+- **Checkpoint recovery**: Resume interrupted runs with `--resume`
+- **Progress tracking**: Real-time progress bars for each stage
+
+---
+
 ## Verify Installation
 
 Run the health check to verify your database:
