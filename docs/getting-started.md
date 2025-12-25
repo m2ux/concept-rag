@@ -188,16 +188,3 @@ npx @modelcontextprotocol/inspector \
 - **[FAQ](faq.md)** — Common questions answered
 - **[Troubleshooting](troubleshooting.md)** — Fix common issues
 
----
-
-## Cost Estimate
-
-| Operation | Cost per Document | When |
-|-----------|------------------|------|
-| Concept extraction | ~$0.041 | One-time (seeding) |
-| Summary generation | ~$0.007 | One-time (seeding) |
-| **Total seeding** | **~$0.048** | One-time |
-| **Search queries** | **$0** | Always free (local) |
-
-**Example**: Seeding 100 documents ≈ $4.80 (one-time cost)
-
