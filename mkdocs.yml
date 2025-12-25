@@ -17,6 +17,8 @@ theme:
     - navigation.sections
     - navigation.expand
     - navigation.top
+    - navigation.indexes
+    - toc.integrate
     - search.suggest
     - search.highlight
     - content.code.copy
@@ -40,26 +42,49 @@ theme:
 markdown_extensions:
   - admonition
   - pymdownx.details
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.tabbed:
       alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - tables
+  - attr_list
+  - md_in_html
   - toc:
       permalink: true
+      toc_depth: 3
 
 # Navigation
 nav:
   - Home: index.md
+
+  - Getting Started:
+    - Quick Start: getting-started.md
+
+  - Usage Guide:
+    - Tool Selection Guide: tool-selection-guide.md
+    - FAQ: faq.md
+    - Troubleshooting: troubleshooting.md
+
   - API Reference: api-reference.md
+
   - Architecture:
     - Overview: architecture/README.md
+    - Seeding Architecture: architecture/seeding-architecture.md
+    - BM25 Keywords: architecture/bm25-keywords.md
+    - WordNet Enrichment: architecture/wordnet-enrichment.md
     - Database Schema: database-schema.md
     - Stage Cache: stage-cache-structure.md
-    - Tool Selection Guide: tool-selection-guide.md
+
   - ADRs:
     - "ADR-0001: TypeScript Runtime": architecture/adr0001-typescript-nodejs-runtime.md
     - "ADR-0002: LanceDB Storage": architecture/adr0002-lancedb-vector-storage.md
@@ -111,6 +136,8 @@ nav:
     - "ADR-0048: Stage Caching": architecture/adr0048-stage-caching.md
     - "ADR-0049: Incremental Summaries": architecture/adr0049-incremental-category-summaries.md
     - "ADR-0050: MkDocs Site": architecture/adr0050-mkdocs-material-documentation-site.md
+    - "ADR-0051: API Documentation": architecture/adr0051-api-documentation-consolidation.md
+    - "ADR-0052: Docs Restructure": architecture/adr0052-documentation-site-restructure.md
 
 # Plugins
 plugins:
