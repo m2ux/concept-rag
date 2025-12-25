@@ -457,15 +457,4 @@ list_concepts_in_category → understand domain vocabulary
 
 ---
 
-## Performance Characteristics
-
-| Tool | Precision | Recall | Notes |
-|------|-----------|--------|-------|
-| `concept_search` | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | 100% precision for concept queries |
-| `broad_chunks_search` | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | May include false positives |
-| `catalog_search` | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | Strong title matching |
-| `chunks_search` | ⭐⭐⭐⭐ | ⭐⭐⭐ | Limited to single document |
-
----
-
 *This guide is based on empirical analysis showing concept_search achieved 100% relevance vs. broad_chunks_search at 0% relevance for conceptual queries, validating the need for clear tool selection guidance.*
