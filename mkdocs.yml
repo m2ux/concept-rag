@@ -79,6 +79,7 @@ nav:
 
   - Architecture:
     - Overview: architecture/README.md
+    - Seeding Architecture: architecture/seeding-architecture.md
     - Database Schema: database-schema.md
     - Stage Cache: stage-cache-structure.md
     - "ADR-0001: TypeScript Runtime": architecture/adr0001-typescript-nodejs-runtime.md
