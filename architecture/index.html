@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#architectural-decision-records-adrs" class="md-skip">
+        <a href="#architecture" class="md-skip">
           Skip to content
         </a>
       
@@ -267,20 +267,17 @@
   
   
   
-    
-    
-      <li class="md-tabs__item">
-        <a href="../tool-selection-guide/" class="md-tabs__link">
-          
+    <li class="md-tabs__item">
+      <a href="../tool-selection-guide/" class="md-tabs__link">
+        
   
   
     
   
-  Usage Guide
+  Tool Selection
 
-        </a>
-      </li>
-    
+      </a>
+    </li>
   
 
       
@@ -346,6 +343,25 @@
         </a>
       </li>
     
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../faq/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  FAQ
+
+      </a>
+    </li>
   
 
       
@@ -434,6 +450,8 @@
       
         
       
+        
+      
     
     
     
@@ -509,131 +527,6 @@
 
               
             
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Usage Guide
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Usage Guide
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../tool-selection-guide/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tool Selection Guide
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../faq/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    FAQ
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
               
                 
   
@@ -665,6 +558,33 @@
           </ul>
         </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tool-selection-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tool Selection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2548,6 +2468,33 @@
   
 
     
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -2568,10 +2515,66 @@
   
 
 
-<h1 id="architectural-decision-records-adrs">Architectural Decision Records (ADRs)<a class="headerlink" href="#architectural-decision-records-adrs" title="Permanent link">&para;</a></h1>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<h1 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h1>
+<h2 id="repository-structure">Repository Structure<a class="headerlink" href="#repository-structure" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Directory</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/</code></td>
+<td>TypeScript source code</td>
+</tr>
+<tr>
+<td><code>src/application/</code></td>
+<td>Composition root, dependency injection</td>
+</tr>
+<tr>
+<td><code>src/domain/</code></td>
+<td>Domain models, services, interfaces</td>
+</tr>
+<tr>
+<td><code>src/infrastructure/</code></td>
+<td>Database adapters, search, embeddings, resilience</td>
+</tr>
+<tr>
+<td><code>src/concepts/</code></td>
+<td>Concept extraction, indexing, query expansion</td>
+</tr>
+<tr>
+<td><code>src/tools/</code></td>
+<td>MCP tool implementations (10 tools)</td>
+</tr>
+<tr>
+<td><code>src/wordnet/</code></td>
+<td>WordNet integration and strategies</td>
+</tr>
+<tr>
+<td><code>docs/</code></td>
+<td>MkDocs documentation site</td>
+</tr>
+<tr>
+<td><code>docs/architecture/</code></td>
+<td>52 Architecture Decision Records</td>
+</tr>
+<tr>
+<td><code>scripts/</code></td>
+<td>Maintenance and diagnostic utilities</td>
+</tr>
+<tr>
+<td><code>prompts/</code></td>
+<td>LLM prompt templates</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="architectural-decision-records-adrs">Architectural Decision Records (ADRs)<a class="headerlink" href="#architectural-decision-records-adrs" title="Permanent link">&para;</a></h2>
 <p>This directory contains all architectural decisions made during the development of concept-rag, from its fork from lance-mcp (2024) through December 2025. Each ADR documents the context, alternatives considered, decision made, and consequences.</p>
-<h2 id="adr-index">ADR Index<a class="headerlink" href="#adr-index" title="Permanent link">&para;</a></h2>
+<h3 id="adr-index">ADR Index<a class="headerlink" href="#adr-index" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -2897,8 +2900,8 @@
 </tbody>
 </table>
 <hr />
-<h2 id="using-this-documentation">Using This Documentation<a class="headerlink" href="#using-this-documentation" title="Permanent link">&para;</a></h2>
-<h3 id="for-adding-new-adrs">For Adding New ADRs<a class="headerlink" href="#for-adding-new-adrs" title="Permanent link">&para;</a></h3>
+<h3 id="using-this-documentation">Using This Documentation<a class="headerlink" href="#using-this-documentation" title="Permanent link">&para;</a></h3>
+<h4 id="for-adding-new-adrs">For Adding New ADRs<a class="headerlink" href="#for-adding-new-adrs" title="Permanent link">&para;</a></h4>
 <ol>
 <li><strong>Use the template:</strong> Copy an existing ADR as a starting point</li>
 <li><strong>Determine number:</strong> Next sequential number (adr0053, adr0054, etc.)</li>
@@ -2906,14 +2909,14 @@
 <li><strong>Add to this index:</strong> Update README.md with new ADR</li>
 <li><strong>Cross-reference:</strong> Link to related ADRs</li>
 </ol>
-<h3 id="for-updating-adrs">For Updating ADRs<a class="headerlink" href="#for-updating-adrs" title="Permanent link">&para;</a></h3>
+<h4 id="for-updating-adrs">For Updating ADRs<a class="headerlink" href="#for-updating-adrs" title="Permanent link">&para;</a></h4>
 <p><strong>ADRs are immutable</strong> once accepted. To change a decision:</p>
 <ol>
 <li>Create new ADR with new decision</li>
 <li>Update old ADR status to "Superseded by ADR-XXXX"</li>
 <li>Link between old and new ADRs</li>
 </ol>
-<h3 id="for-deprecating-adrs">For Deprecating ADRs<a class="headerlink" href="#for-deprecating-adrs" title="Permanent link">&para;</a></h3>
+<h4 id="for-deprecating-adrs">For Deprecating ADRs<a class="headerlink" href="#for-deprecating-adrs" title="Permanent link">&para;</a></h4>
 <p>If decision is reversed without replacement:</p>
 <ol>
 <li>Change status to "Deprecated"</li>
