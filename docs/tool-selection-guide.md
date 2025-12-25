@@ -52,29 +52,6 @@ START: User asks a question
 
 ---
 
-## The "3 Questions" Method
-
-When an AI agent encounters a user query, ask these 3 questions in order:
-
-### Question 1: "Is this about DOCUMENTS or CONTENT?"
-- **Documents** → `catalog_search`
-- **Content** → Continue to Q2
-
-### Question 2: "Is this a CONCEPT NAME or a PHRASE/QUESTION?"
-- **Concept name** (1-3 words, conceptual) → `concept_search`
-- **Phrase/question** → Continue to Q3
-
-### Question 3: "Do I know the SPECIFIC DOCUMENT?"
-- **Yes, have source path** → `chunks_search`
-- **No** → `broad_chunks_search`
-
-### Special Case: "Does the user want to EXTRACT/LIST concepts?"
-- **Yes** → `extract_concepts`
-
-This simple decision tree routes 95% of queries correctly.
-
----
-
 ## Detailed Tool Selection Criteria
 
 ### catalog_search
@@ -87,15 +64,6 @@ This simple decision tree routes 95% of queries correctly.
 ❌ Listing all documents in your library (use `list_categories` then `category_search`)  
 ❌ Finding specific information within documents (use `broad_chunks_search` or `chunks_search`)  
 ❌ Tracking specific concept usage across chunks (use `concept_search`)
-
-**Query Examples:**
-```
-✅ "What documents do I have?"
-✅ "Sun Tzu Art of War"
-✅ "documents about healthcare"
-✅ "books by Christopher Alexander"
-❌ "how does Sun Tzu describe deception?" (use chunks_search after finding document)
-```
 
 ---
 
@@ -111,16 +79,6 @@ This simple decision tree routes 95% of queries correctly.
 ❌ Searching within a single known document (use `chunks_search`)  
 ❌ Finding semantically-tagged concept discussions (use `concept_search`)
 
-**Query Examples:**
-```
-✅ "how do organizations implement innovation processes"
-✅ "strategic deception tactics"
-✅ "leadership in complex systems"
-✅ "user authentication methods"
-❌ "innovation" (use concept_search for higher precision)
-❌ "documents about leadership" (use catalog_search)
-```
-
 ---
 
 ### chunks_search
@@ -134,12 +92,6 @@ This simple decision tree routes 95% of queries correctly.
 ❌ Need to search across multiple documents (use `broad_chunks_search`)  
 ❌ Tracking concepts across entire library (use `concept_search`)  
 ❌ Don't have the exact source path
-
-**Recommended Workflow:**
-```
-Step 1: catalog_search("Sun Tzu") → get source path
-Step 2: chunks_search("deception", source="<path from step 1>")
-```
 
 ---
 
@@ -155,18 +107,6 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 ❌ User wants documents, not chunks  
 ❌ Searching for specific technical phrases
 
-**Query Examples:**
-```
-✅ "innovation"
-✅ "military strategy"  
-✅ "leadership principles"
-✅ "organizational learning"
-❌ "how do organizations innovate" (use broad_chunks_search)
-❌ "leadership in the context of military strategy" (use broad_chunks_search)
-```
-
-**Technical Note:** Concept search has 100% precision for concept-tagged results. Uses fuzzy matching and expands to lexically-related concepts.
-
 ---
 
 ### extract_concepts
@@ -179,14 +119,6 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 ❌ Searching for information (use search tools)  
 ❌ Finding where a concept is discussed (use `concept_search`)  
 ❌ General document discovery (use `catalog_search`)
-
-**Query Examples:**
-```
-✅ "Extract all concepts from Sun Tzu's Art of War"
-✅ "List concepts in the healthcare document"
-✅ "Show me all concepts from the TRIZ book"
-❌ "Find information about innovation" (use concept_search)
-```
 
 ---
 
@@ -202,13 +134,6 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 ❌ Finding specific text passages (use `concept_search`)  
 ❌ Finding documents by title (use `catalog_search`)
 
-**Query Examples:**
-```
-✅ "Which books discuss dependency injection?"
-✅ "Find sources that mention both TDD and refactoring"
-❌ "Find passages about TDD" (use concept_search for content)
-```
-
 ---
 
 ### concept_sources
@@ -221,15 +146,6 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 ❌ Need merged/union list with overlap info (use `source_concepts`)  
 ❌ Finding specific text passages (use `concept_search`)  
 ❌ Finding documents by title (use `catalog_search`)
-
-**Comparison: source_concepts vs concept_sources:**
-
-| Feature | source_concepts | concept_sources |
-|---------|-----------------|-----------------|
-| Output | Union with concept_indices | Separate arrays |
-| Duplicates | Deduplicated | May repeat across arrays |
-| Use case | "What covers these?" | "Sources per concept" |
-| Sorting | By match count | By input position |
 
 ---
 
@@ -268,109 +184,6 @@ Step 2: chunks_search("deception", source="<path from step 1>")
 ❌ Need to search for content (use `concept_search` or `broad_chunks_search`)  
 ❌ Want documents in a category (use `category_search`)  
 ❌ Looking for a specific concept (use `concept_search`)
-
----
-
-## Decision Logic Examples
-
-### Example 1: "Find information about innovation"
-- **Analysis:** Single concept term, asking ABOUT a concept
-- **Decision:** `concept_search`
-- **Result:** Concept-tagged chunks with 100% relevance
-
-### Example 2: "What do my documents say about innovation and organizational change?"
-- **Analysis:** Multi-concept query, natural language phrasing
-- **Decision:** `broad_chunks_search`
-- **Result:** Top chunks discussing both topics
-
-### Example 3: "What documents do I have about military strategy?"
-- **Analysis:** Explicit question about "documents", topic-based
-- **Decision:** `catalog_search`
-- **Result:** Top documents about military strategy with summaries
-
-### Example 4: "Find where Sun Tzu discusses deception"
-- **Analysis:** Specific document mentioned, specific topic
-- **Decision:** `catalog_search` → `chunks_search`
-- **Workflow:** Find document path, then search within
-
-### Example 5: "Extract concepts from the Art of War"
-- **Analysis:** Explicit "extract concepts" request
-- **Decision:** `extract_concepts`
-- **Result:** Complete concept inventory (100+ concepts)
-
-### Example 6: "What categories do I have?"
-- **Analysis:** Asking about categories, not content
-- **Decision:** `list_categories`
-- **Result:** All categories with statistics
-
-### Example 7: "Show me documents about software engineering"
-- **Analysis:** Domain-based filtering, likely a category
-- **Decision:** `category_search`
-- **Result:** Documents in software engineering category
-
-### Example 8: "Which books discuss TDD?"
-- **Analysis:** Source attribution for a concept
-- **Decision:** `source_concepts`
-- **Result:** All documents containing "TDD" concept
-
----
-
-## Common Patterns and Anti-Patterns
-
-### ✅ Good Patterns
-
-1. **Exploratory workflow:**
-   ```
-   catalog_search("topic") → identify relevant documents
-   → concept_search("specific concept") → deep dive
-   → extract_concepts("document") → get full concept map
-   ```
-
-2. **Precise concept research:**
-   ```
-   concept_search("innovation") → high-precision concept-tagged results
-   ```
-
-3. **Comprehensive content search:**
-   ```
-   broad_chunks_search("how do organizations innovate?") → hybrid search
-   ```
-
-4. **Document-focused workflow:**
-   ```
-   catalog_search("Sun Tzu") → get source path
-   → chunks_search("deception", source=path) → focused search
-   ```
-
-### ❌ Anti-Patterns
-
-1. **Using broad_chunks_search for single concepts:**
-   ```
-   ❌ broad_chunks_search("innovation")
-   ✅ concept_search("innovation")
-   Reason: Concept search has 100% precision for concepts
-   ```
-
-2. **Using concept_search for multi-word queries:**
-   ```
-   ❌ concept_search("how innovation happens in organizations")
-   ✅ broad_chunks_search("how innovation happens in organizations")
-   Reason: Concept search expects concept terms, not questions
-   ```
-
-3. **Using chunks_search without knowing document:**
-   ```
-   ❌ chunks_search("leadership", source="unknown")
-   ✅ catalog_search("leadership") first to identify documents
-   Reason: chunks_search requires exact source path
-   ```
-
-4. **Using extract_concepts for search:**
-   ```
-   ❌ extract_concepts("documents about innovation")
-   ✅ concept_search("innovation") OR catalog_search("innovation")
-   Reason: extract_concepts is for export, not search
-   ```
 
 ---
 
