@@ -976,6 +976,12 @@ async function createLanceTableWithSimpleEmbeddings(
             
             // Mark if chunk has extraction quality issues (garbled math)
             baseData.has_extraction_issues = doc.metadata.has_extraction_issues ?? false;
+            
+            // Meta content classification fields (ADR-0053)
+            baseData.is_toc = doc.metadata.is_toc ?? false;
+            baseData.is_front_matter = doc.metadata.is_front_matter ?? false;
+            baseData.is_back_matter = doc.metadata.is_back_matter ?? false;
+            baseData.is_meta_content = doc.metadata.is_meta_content ?? false;
         }
         
         // Add bibliographic fields for catalog entries (parsed from filename)
