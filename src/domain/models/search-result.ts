@@ -189,4 +189,7 @@ export interface SearchQuery {
   
   /** Exclude chunks with extraction issues (garbled math) */
   excludeExtractionIssues?: boolean;
+  
+  /** Exclude meta content (ToC, front matter, back matter) from results */
+  excludeMetaContent?: boolean;
 }

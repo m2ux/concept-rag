@@ -182,7 +182,8 @@ export class LanceDBChunkRepository implements ChunkRepository {
       {
         debug: query.debug ?? false,
         excludeReferences: query.excludeReferences ?? true,  // Default to excluding refs
-        excludeExtractionIssues: query.excludeExtractionIssues ?? false
+        excludeExtractionIssues: query.excludeExtractionIssues ?? false,
+        excludeMetaContent: query.excludeMetaContent ?? true  // Default to excluding meta content
       }
     );
   }
