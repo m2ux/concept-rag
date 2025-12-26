@@ -12,13 +12,13 @@
         <meta name="author" content="Alex Komyagin">
       
       
-        <link rel="canonical" href="https://m2ux.github.io/concept-rag/troubleshooting/">
+        <link rel="canonical" href="https://m2ux.github.io/concept-rag/how-it-works/">
       
       
-        <link rel="prev" href="../getting-started/">
+        <link rel="prev" href="..">
       
       
-        <link rel="next" href="../tool-selection-guide/">
+        <link rel="next" href="../getting-started/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Troubleshooting - Concept-RAG Documentation</title>
+        <title>How It Works - Concept-RAG Documentation</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#troubleshooting" class="md-skip">
+        <a href="#how-it-works" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Troubleshooting
+              How It Works
             
           </span>
         </div>
@@ -244,9 +244,11 @@
   
   
   
+    
   
-    <li class="md-tabs__item">
-      <a href="../how-it-works/" class="md-tabs__link">
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
         
   
   
@@ -263,12 +265,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../getting-started/" class="md-tabs__link">
           
   
@@ -462,10 +462,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../how-it-works/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How It Works
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -481,6 +508,98 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-stages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline Stages
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Stages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-document-ingestion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Document Ingestion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-text-chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Text Chunking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-concept-extraction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Concept Extraction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-embedding-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Embedding Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-hybrid-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Hybrid Search
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -489,10 +608,8 @@
       
   
   
-    
   
   
-  
     
     
       
@@ -504,22 +621,21 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -537,7 +653,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -580,37 +696,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Troubleshooting
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../troubleshooting/" class="md-nav__link">
         
   
   
@@ -626,320 +715,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#installation-issues" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Installation Issues
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Installation Issues">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#node-command-not-found" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        "node: command not found"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#npm-install-fails" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        "npm install" fails
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pythonnltk-not-found" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Python/NLTK not found
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#seeding-problems" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Seeding Problems
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Seeding Problems">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#error-openrouter_api_key-not-set" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        "Error: OPENROUTER_API_KEY not set"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#no-pdf-files-found" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        "No PDF files found"
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#pdf-parsing-failed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PDF parsing failed
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#out-of-memory-during-seeding" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Out of memory during seeding
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#search-issues" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Search Issues
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Search Issues">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#no-results-found" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        No results found
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#search-returns-irrelevant-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Search returns irrelevant results
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#slow-search-queries" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Slow search queries
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#mcp-integration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MCP Integration
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="MCP Integration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#mcp-server-not-connecting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MCP server not connecting
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#mcp-tools-not-appearing" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        MCP tools not appearing
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#permission-denied-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Permission denied errors
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#data-issues" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Data Issues
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Data Issues">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#incomplete-catalog-records" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Incomplete catalog records
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#missing-concepts-for-document" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Missing concepts for document
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#error-messages" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error Messages
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#debug-mode" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Debug Mode
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#quick-fixes-checklist" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Quick Fixes Checklist
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#get-help" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Get Help
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2902,276 +2677,129 @@
   
 
 
-<h1 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h1>
-<p>Solutions to common issues with Concept-RAG.</p>
-<hr />
-<h2 id="installation-issues">Installation Issues<a class="headerlink" href="#installation-issues" title="Permanent link">&para;</a></h2>
-<h3 id="node-command-not-found">"node: command not found"<a class="headerlink" href="#node-command-not-found" title="Permanent link">&para;</a></h3>
-<p>Node.js not installed or not in PATH.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Ubuntu/Debian</label><label for="__tabbed_1_2">macOS</label><label for="__tabbed_1_3">Manual</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>update
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>nodejs<span class="w"> </span>npm
-</code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>brew<span class="w"> </span>install<span class="w"> </span>node
-</code></pre></div>
-</div>
-<div class="tabbed-block">
-<p>Download from <a href="https://nodejs.org/">nodejs.org</a></p>
-</div>
-</div>
-</div>
-<h3 id="npm-install-fails">"npm install" fails<a class="headerlink" href="#npm-install-fails" title="Permanent link">&para;</a></h3>
-<p>Clear cache and reinstall:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>rm<span class="w"> </span>-rf<span class="w"> </span>node_modules<span class="w"> </span>package-lock.json
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>npm<span class="w"> </span>cache<span class="w"> </span>clean<span class="w"> </span>--force
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>npm<span class="w"> </span>install
-</code></pre></div>
-<h3 id="pythonnltk-not-found">Python/NLTK not found<a class="headerlink" href="#pythonnltk-not-found" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Install NLTK</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>pip3<span class="w"> </span>install<span class="w"> </span>nltk
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Download WordNet data</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import nltk; nltk.download(&#39;wordnet&#39;); nltk.download(&#39;omw-1.4&#39;)&quot;</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Verify</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;from nltk.corpus import wordnet as wn; print(f&#39;✅ WordNet: {len(list(wn.all_synsets()))} synsets&#39;)&quot;</span>
-</code></pre></div>
-<hr />
-<h2 id="seeding-problems">Seeding Problems<a class="headerlink" href="#seeding-problems" title="Permanent link">&para;</a></h2>
-<h3 id="error-openrouter_api_key-not-set">"Error: OPENROUTER_API_KEY not set"<a class="headerlink" href="#error-openrouter_api_key-not-set" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Create .env file</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;OPENROUTER_API_KEY=your_key_here&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>.env
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Or export directly</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENROUTER_API_KEY</span><span class="o">=</span><span class="s2">&quot;your_key_here&quot;</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># Get key at: https://openrouter.ai/keys</span>
-</code></pre></div>
-<h3 id="no-pdf-files-found">"No PDF files found"<a class="headerlink" href="#no-pdf-files-found" title="Permanent link">&para;</a></h3>
-<div class="admonition tip">
-<p class="admonition-title">Check your paths</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Verify directory exists</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>ls<span class="w"> </span>-la<span class="w"> </span>~/Documents/pdfs
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Find PDFs</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>find<span class="w"> </span>~/Documents/pdfs<span class="w"> </span>-name<span class="w"> </span><span class="s2">&quot;*.pdf&quot;</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Use absolute path</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">  </span>--dbpath<span class="w"> </span>~/.concept_rag<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">  </span>--filesdir<span class="w"> </span>/absolute/path/to/pdfs
-</code></pre></div>
-</div>
-<h3 id="pdf-parsing-failed">PDF parsing failed<a class="headerlink" href="#pdf-parsing-failed" title="Permanent link">&para;</a></h3>
-<p><strong>Possible causes:</strong></p>
+<h1 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h1>
+<p>Concept-RAG processes your documents through a multi-stage pipeline that extracts meaning, generates embeddings, and enables powerful hybrid search.</p>
+<pre class="mermaid"><code>flowchart TB
+    subgraph Input["📄 Documents"]
+        PDF[PDF Files]
+        EPUB[EPUB Files]
+    end
+
+    subgraph Processing["⚙️ Processing Pipeline"]
+        Parse[Parse &amp; Extract Text]
+        OCR[OCR Fallback]
+        Chunk[Chunk Text]
+        Extract[Extract Concepts]
+        Embed[Generate Embeddings]
+        Summarize[Generate Summary]
+    end
+
+    subgraph Storage["💾 LanceDB Storage"]
+        Catalog[(Catalog&lt;br/&gt;Documents)]
+        Chunks[(Chunks&lt;br/&gt;Text Segments)]
+        Concepts[(Concepts&lt;br/&gt;Index)]
+        Categories[(Categories&lt;br/&gt;Taxonomy)]
+    end
+
+    subgraph Search["🔍 Hybrid Search"]
+        Vector[Vector Similarity]
+        BM25[BM25 Keywords]
+        ConceptMatch[Concept Matching]
+        WordNet[WordNet Expansion]
+        Rank[Weighted Ranking]
+    end
+
+    subgraph Output["🤖 MCP Tools"]
+        Tools[10 Specialized Tools]
+        AI[AI Assistants]
+    end
+
+    PDF --&gt; Parse
+    EPUB --&gt; Parse
+    Parse --&gt; OCR
+    OCR --&gt; Chunk
+    Chunk --&gt; Extract
+    Chunk --&gt; Embed
+    Extract --&gt; Summarize
+
+    Embed --&gt; Chunks
+    Extract --&gt; Concepts
+    Summarize --&gt; Catalog
+    Extract --&gt; Categories
+
+    Catalog --&gt; Vector
+    Chunks --&gt; Vector
+    Concepts --&gt; ConceptMatch
+
+    Vector --&gt; Rank
+    BM25 --&gt; Rank
+    ConceptMatch --&gt; Rank
+    WordNet --&gt; Rank
+
+    Rank --&gt; Tools
+    Tools --&gt; AI</code></pre>
+<h2 id="pipeline-stages">Pipeline Stages<a class="headerlink" href="#pipeline-stages" title="Permanent link">&para;</a></h2>
+<h3 id="1-document-ingestion">1. Document Ingestion<a class="headerlink" href="#1-document-ingestion" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Corrupted PDF</li>
-<li>Password-protected PDF</li>
-<li>Unusual encoding</li>
+<li><strong>PDF Processing</strong>: Text extraction with layout preservation</li>
+<li><strong>EPUB Processing</strong>: Structured content extraction from chapters</li>
+<li><strong>OCR Fallback</strong>: Tesseract for scanned documents with no extractable text</li>
 </ul>
-<p><strong>Solutions:</strong></p>
-<ol>
-<li>OCR fallback handles scanned PDFs automatically</li>
-<li>Re-save PDF using another tool</li>
-<li>Check if PDF opens in a reader</li>
-<li>Try converting to PDF/A format</li>
-</ol>
-<h3 id="out-of-memory-during-seeding">Out of memory during seeding<a class="headerlink" href="#out-of-memory-during-seeding" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Increase Node.js memory</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nv">NODE_OPTIONS</span><span class="o">=</span><span class="s2">&quot;--max-old-space-size=4096&quot;</span><span class="w"> </span>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--dbpath<span class="w"> </span>~/.concept_rag<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span>--filesdir<span class="w"> </span>~/docs
-</code></pre></div>
-<p>Or process documents in smaller batches.</p>
-<hr />
-<h2 id="search-issues">Search Issues<a class="headerlink" href="#search-issues" title="Permanent link">&para;</a></h2>
-<h3 id="no-results-found">No results found<a class="headerlink" href="#no-results-found" title="Permanent link">&para;</a></h3>
-<ol>
-<li>
-<p><strong>Verify documents are indexed:</strong>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/health-check.ts
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Try different search tools:</strong></p>
-</li>
-<li><code>concept_search</code> → <code>broad_chunks_search</code></li>
-<li>
-<p><code>catalog_search</code> → <code>chunks_search</code></p>
-</li>
-<li>
-<p><strong>Check query phrasing:</strong>
-   | ❌ Bad | ✅ Good |
-   |--------|---------|
-   | "show me innovation stuff" | "innovation" |
-   | "stuff about AI" | "machine learning applications" |</p>
-</li>
-</ol>
-<h3 id="search-returns-irrelevant-results">Search returns irrelevant results<a class="headerlink" href="#search-returns-irrelevant-results" title="Permanent link">&para;</a></h3>
-<p>Use the right tool for your goal:</p>
+<h3 id="2-text-chunking">2. Text Chunking<a class="headerlink" href="#2-text-chunking" title="Permanent link">&para;</a></h3>
+<p>Documents are split into semantic chunks optimized for retrieval:</p>
+<ul>
+<li>Target size: ~500 tokens per chunk</li>
+<li>Overlap between chunks to preserve context</li>
+<li>Page number tracking for citations</li>
+</ul>
+<h3 id="3-concept-extraction">3. Concept Extraction<a class="headerlink" href="#3-concept-extraction" title="Permanent link">&para;</a></h3>
+<p>Each document is analyzed by an LLM to extract:</p>
+<ul>
+<li><strong>Primary Concepts</strong>: Core topics and themes (15-25 per document)</li>
+<li><strong>Technical Terms</strong>: Domain-specific vocabulary</li>
+<li><strong>Related Concepts</strong>: Secondary ideas and connections</li>
+</ul>
+<h3 id="4-embedding-generation">4. Embedding Generation<a class="headerlink" href="#4-embedding-generation" title="Permanent link">&para;</a></h3>
+<p>Vector embeddings are generated for:</p>
+<ul>
+<li>Document summaries (catalog search)</li>
+<li>Individual chunks (content search)</li>
+<li>Concept definitions (semantic matching)</li>
+</ul>
+<h3 id="5-hybrid-search">5. Hybrid Search<a class="headerlink" href="#5-hybrid-search" title="Permanent link">&para;</a></h3>
+<p>Queries are scored using four signals:</p>
 <table>
 <thead>
 <tr>
-<th>Goal</th>
-<th>Use</th>
-<th>Not</th>
+<th>Signal</th>
+<th>Weight</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Find by concept</td>
-<td><code>concept_search</code></td>
-<td><code>broad_chunks_search</code></td>
+<td>Vector Similarity</td>
+<td>35%</td>
+<td>Semantic meaning match</td>
 </tr>
 <tr>
-<td>Search in document</td>
-<td><code>chunks_search</code></td>
-<td><code>catalog_search</code></td>
+<td>BM25 Keywords</td>
+<td>35%</td>
+<td>Exact term matching</td>
+</tr>
+<tr>
+<td>Concept Matching</td>
+<td>15%</td>
+<td>Extracted concept overlap</td>
+</tr>
+<tr>
+<td>WordNet Expansion</td>
+<td>15%</td>
+<td>Synonym and hypernym matching</td>
 </tr>
 </tbody>
 </table>
-<p>See <a href="../tool-selection-guide/">Tool Selection Guide</a>.</p>
-<h3 id="slow-search-queries">Slow search queries<a class="headerlink" href="#slow-search-queries" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Rebuild indexes</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/rebuild_indexes.ts
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Check database size</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>du<span class="w"> </span>-sh<span class="w"> </span>~/.concept_rag
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="c1"># Restart MCP client</span>
-</code></pre></div>
-<hr />
-<h2 id="mcp-integration">MCP Integration<a class="headerlink" href="#mcp-integration" title="Permanent link">&para;</a></h2>
-<h3 id="mcp-server-not-connecting">MCP server not connecting<a class="headerlink" href="#mcp-server-not-connecting" title="Permanent link">&para;</a></h3>
-<div class="admonition warning">
-<p class="admonition-title">Checklist</p>
-<ol>
-<li>✅ Paths are <strong>absolute</strong> (not relative)</li>
-<li>✅ Project is built (<code>npm run build</code>)</li>
-<li>✅ Database path exists</li>
-<li>✅ Client restarted after config changes</li>
-</ol>
-</div>
-<p><strong>Verify paths:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Get absolute path</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nb">cd</span><span class="w"> </span>/path/to/concept-rag<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">pwd</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Check database</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>ls<span class="w"> </span>-la<span class="w"> </span>~/.concept_rag
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># Check build</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>ls<span class="w"> </span>-la<span class="w"> </span>dist/conceptual_index.js
-</code></pre></div></p>
-<h3 id="mcp-tools-not-appearing">MCP tools not appearing<a class="headerlink" href="#mcp-tools-not-appearing" title="Permanent link">&para;</a></h3>
-<ol>
-<li>
-<p><strong>Check configuration syntax:</strong>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>python3<span class="w"> </span>-m<span class="w"> </span>json.tool<span class="w"> </span>~/.cursor/mcp.json
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Test with MCP Inspector:</strong>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>npx<span class="w"> </span>@modelcontextprotocol/inspector<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span>dist/conceptual_index.js<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>~/.concept_rag
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Check for conflicting servers</strong> — remove others temporarily</p>
-</li>
-</ol>
-<h3 id="permission-denied-errors">Permission denied errors<a class="headerlink" href="#permission-denied-errors" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Fix permissions</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>chmod<span class="w"> </span>+x<span class="w"> </span>/path/to/concept-rag/dist/conceptual_index.js
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>chmod<span class="w"> </span>-R<span class="w"> </span><span class="m">755</span><span class="w"> </span>~/.concept_rag
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1"># Fix ownership</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>sudo<span class="w"> </span>chown<span class="w"> </span>-R<span class="w"> </span><span class="nv">$USER</span>:<span class="nv">$USER</span><span class="w"> </span>~/.concept_rag
-</code></pre></div>
-<hr />
-<h2 id="data-issues">Data Issues<a class="headerlink" href="#data-issues" title="Permanent link">&para;</a></h2>
-<h3 id="incomplete-catalog-records">Incomplete catalog records<a class="headerlink" href="#incomplete-catalog-records" title="Permanent link">&para;</a></h3>
-<p><strong>Symptoms:</strong>
-- "Mapped X/Y sources" where X &lt; Y
-- Duplicate source path warnings</p>
-<p><strong>Solution:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>--filesdir<span class="w"> </span>~/Documents<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>--auto-reseed
-</code></pre></div></p>
-<h3 id="missing-concepts-for-document">Missing concepts for document<a class="headerlink" href="#missing-concepts-for-document" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># Re-extract concepts</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/repair_missing_concepts.ts<span class="w"> </span>--min-concepts<span class="w"> </span><span class="m">50</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># Or full re-seed</span>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span>--dbpath<span class="w"> </span>~/.concept_rag<span class="w"> </span>--filesdir<span class="w"> </span>~/docs<span class="w"> </span>--overwrite
-</code></pre></div>
-<hr />
-<h2 id="error-messages">Error Messages<a class="headerlink" href="#error-messages" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Error</th>
-<th>Solution</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Cannot find module '@lancedb/lancedb'</code></td>
-<td><code>npm install &amp;&amp; npm run build</code></td>
-</tr>
-<tr>
-<td><code>ENOENT: no such file or directory</code></td>
-<td>Create directory: <code>mkdir -p ~/.concept_rag</code></td>
-</tr>
-<tr>
-<td><code>Table not found: catalog</code></td>
-<td>Seed the database first</td>
-</tr>
-<tr>
-<td><code>spawn python3 ENOENT</code></td>
-<td>Install Python or add to PATH</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="debug-mode">Debug Mode<a class="headerlink" href="#debug-mode" title="Permanent link">&para;</a></h2>
-<p>Enable verbose logging:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LOG_LEVEL</span><span class="o">=</span>debug
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span>--dbpath<span class="w"> </span>~/.concept_rag<span class="w"> </span>--filesdir<span class="w"> </span>~/docs
-</code></pre></div>
-<p>Check log files:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># View latest log</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>ls<span class="w"> </span>-t<span class="w"> </span>logs/seed-*.log<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="w"> </span>cat
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Search for errors</span>
-<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>grep<span class="w"> </span>ERROR<span class="w"> </span>logs/seed-*.log
-</code></pre></div>
-<hr />
-<h2 id="quick-fixes-checklist">Quick Fixes Checklist<a class="headerlink" href="#quick-fixes-checklist" title="Permanent link">&para;</a></h2>
-<p>When something doesn't work, try in order:</p>
-<ul>
-<li>[ ] Restart Claude/Cursor</li>
-<li>[ ] Rebuild: <code>npm run build</code></li>
-<li>[ ] Check paths are absolute</li>
-<li>[ ] Verify API key is set</li>
-<li>[ ] Test with MCP Inspector</li>
-<li>[ ] Rebuild indexes: <code>npx tsx scripts/rebuild_indexes.ts</code></li>
-<li>[ ] Check database exists: <code>ls -la ~/.concept_rag</code></li>
-<li>[ ] Verify Python/NLTK installed</li>
-<li>[ ] Clear and reinstall: <code>rm -rf node_modules &amp;&amp; npm install</code></li>
-</ul>
-<hr />
-<h2 id="get-help">Get Help<a class="headerlink" href="#get-help" title="Permanent link">&para;</a></h2>
-<ul>
-<li>💬 <a href="https://github.com/m2ux/concept-rag/discussions">GitHub Discussions</a></li>
-<li>🐛 <a href="https://github.com/m2ux/concept-rag/issues">Report an Issue</a></li>
-<li>📖 <a href="../faq/">FAQ</a></li>
-</ul>
+<p>Results are combined using weighted ranking for optimal retrieval accuracy.</p>
 
 
 

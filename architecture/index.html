@@ -245,6 +245,25 @@
   
   
   
+    <li class="md-tabs__item">
+      <a href="../how-it-works/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  How It Works
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
     
     
       <li class="md-tabs__item">
@@ -445,6 +464,33 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../how-it-works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How It Works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     
     
       
@@ -467,10 +513,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -488,8 +534,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -657,7 +703,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
           <div class="md-nav__link md-nav__container">
@@ -679,14 +725,14 @@
             </a>
             
               
-              <label class="md-nav__link md-nav__link--active" for="__nav_5" id="__nav_5_label" tabindex="">
+              <label class="md-nav__link md-nav__link--active" for="__nav_6" id="__nav_6_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -973,10 +1019,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
             
   
   
@@ -994,8 +1040,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2516,6 +2562,7 @@
 
 
 <h1 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h1>
+<p>This section covers the technical architecture of Concept-RAG.</p>
 <h2 id="repository-structure">Repository Structure<a class="headerlink" href="#repository-structure" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -2559,7 +2606,7 @@
 </tr>
 <tr>
 <td><code>docs/architecture/</code></td>
-<td>52 Architecture Decision Records</td>
+<td>Architecture Decision Records</td>
 </tr>
 <tr>
 <td><code>scripts/</code></td>
@@ -2571,358 +2618,15 @@
 </tr>
 </tbody>
 </table>
-<hr />
-<h2 id="architectural-decision-records-adrs">Architectural Decision Records (ADRs)<a class="headerlink" href="#architectural-decision-records-adrs" title="Permanent link">&para;</a></h2>
-<p>This directory contains all architectural decisions made during the development of concept-rag, from its fork from lance-mcp (2024) through December 2025. Each ADR documents the context, alternatives considered, decision made, and consequences.</p>
-<h3 id="adr-index">ADR Index<a class="headerlink" href="#adr-index" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Title</th>
-<th>Date</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="adr0001-typescript-nodejs-runtime/">ADR-0001</a></td>
-<td>TypeScript with Node.js Runtime</td>
-<td>~2024</td>
-<td>Accepted (Inherited)</td>
-</tr>
-<tr>
-<td><a href="adr0002-lancedb-vector-storage/">ADR-0002</a></td>
-<td>LanceDB for Vector Storage</td>
-<td>~2024</td>
-<td>Accepted (Inherited)</td>
-</tr>
-<tr>
-<td><a href="adr0003-mcp-protocol/">ADR-0003</a></td>
-<td>MCP Protocol for AI Agent Integration</td>
-<td>~2024</td>
-<td>Accepted (Inherited)</td>
-</tr>
-<tr>
-<td><a href="adr0004-rag-architecture/">ADR-0004</a></td>
-<td>RAG Architecture Approach</td>
-<td>~2024</td>
-<td>Accepted (Inherited)</td>
-</tr>
-<tr>
-<td><a href="adr0005-pdf-document-processing/">ADR-0005</a></td>
-<td>PDF Document Processing</td>
-<td>~2024</td>
-<td>Accepted (Inherited)</td>
-</tr>
-<tr>
-<td><a href="adr0006-hybrid-search-strategy/">ADR-0006</a></td>
-<td>Hybrid Search Strategy (Multi-Signal Ranking)</td>
-<td>2025-10-13</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0007-concept-extraction-llm/">ADR-0007</a></td>
-<td>Concept Extraction with LLM (Claude Sonnet 4.5)</td>
-<td>2025-10-13</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0008-wordnet-integration/">ADR-0008</a></td>
-<td>WordNet Integration for Semantic Enrichment</td>
-<td>2025-10-13</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0009-three-table-architecture/">ADR-0009</a></td>
-<td>Three-Table Architecture (Catalog, Chunks, Concepts)</td>
-<td>2025-10-13</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0010-query-expansion/">ADR-0010</a></td>
-<td>Query Expansion Strategy (Corpus + WordNet)</td>
-<td>2025-10-13</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0011-multi-model-strategy/">ADR-0011</a></td>
-<td>Multi-Model Strategy (Claude + Grok)</td>
-<td>2025-10-13</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0012-ocr-fallback-tesseract/">ADR-0012</a></td>
-<td>OCR Fallback with Tesseract</td>
-<td>2025-10-21</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0013-incremental-seeding/">ADR-0013</a></td>
-<td>Incremental Seeding Strategy</td>
-<td>2025-11-12</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0014-multi-pass-extraction/">ADR-0014</a></td>
-<td>Multi-Pass Extraction for Large Documents</td>
-<td>2025-11-12</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0015-formal-concept-model/">ADR-0015</a></td>
-<td>Formal Concept Model Definition</td>
-<td>2025-11-13</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0016-layered-architecture-refactoring/">ADR-0016</a></td>
-<td>Layered Architecture Refactoring</td>
-<td>2025-11-14</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0017-repository-pattern/">ADR-0017</a></td>
-<td>Repository Pattern for Data Access</td>
-<td>2025-11-14</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0018-dependency-injection-container/">ADR-0018</a></td>
-<td>Dependency Injection Container</td>
-<td>2025-11-14</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0019-vitest-testing-framework/">ADR-0019</a></td>
-<td>Vitest as Testing Framework</td>
-<td>2025-11-14</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0020-typescript-strict-mode/">ADR-0020</a></td>
-<td>TypeScript Strict Mode Enablement</td>
-<td>2025-11-14</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0021-performance-optimization-vector-search/">ADR-0021</a></td>
-<td>Performance Optimization (O(n) to O(log n))</td>
-<td>2025-11-14</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0022-hybrid-search-service-extraction/">ADR-0022</a></td>
-<td>HybridSearchService Extraction</td>
-<td>2025-11-14</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0023-sql-injection-prevention/">ADR-0023</a></td>
-<td>SQL Injection Prevention</td>
-<td>2025-11-14</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0024-multi-provider-embeddings/">ADR-0024</a></td>
-<td>Multi-Provider Embedding Architecture</td>
-<td>2025-11-15</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0025-document-loader-factory/">ADR-0025</a></td>
-<td>Document Loader Factory Pattern</td>
-<td>2025-11-15</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0026-epub-format-support/">ADR-0026</a></td>
-<td>EPUB Format Support</td>
-<td>2025-11-15</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0027-hash-based-integer-ids/">ADR-0027</a></td>
-<td>Hash-Based Integer IDs (FNV-1a)</td>
-<td>2025-11-19</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0028-category-storage-strategy/">ADR-0028</a></td>
-<td>Category Storage Strategy</td>
-<td>2025-11-19</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0029-category-search-tools/">ADR-0029</a></td>
-<td>Category Search Tools</td>
-<td>2025-11-19</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0030-auto-extracted-categories/">ADR-0030</a></td>
-<td>46 Auto-Extracted Categories</td>
-<td>2025-11-19</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0031-eight-specialized-tools-strategy/">ADR-0031</a></td>
-<td>Eight Specialized Tools Strategy</td>
-<td>2025-11-19</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0032-tool-selection-guide/">ADR-0032</a></td>
-<td>Tool Selection Guide for AI Agents</td>
-<td>2025-11-13</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0033-basetool-abstraction/">ADR-0033</a></td>
-<td>BaseTool Abstraction Pattern</td>
-<td>~2024-2025</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0034-comprehensive-error-handling/">ADR-0034</a></td>
-<td>Comprehensive Error Handling Infrastructure</td>
-<td>2025-11-22</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0035-test-suite-expansion/">ADR-0035</a></td>
-<td>Test Suite Expansion (120 → 534 tests)</td>
-<td>2025-11-22</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0036-configuration-centralization/">ADR-0036</a></td>
-<td>Configuration Centralization with Type Safety</td>
-<td>2025-11-22</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0037-functional-validation-layer/">ADR-0037</a></td>
-<td>Functional Validation Layer Pattern</td>
-<td>2025-11-22</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0038-dependency-rules-enforcement/">ADR-0038</a></td>
-<td>Architecture Dependency Rules Enforcement</td>
-<td>2025-11-22</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0039-observability-infrastructure/">ADR-0039</a></td>
-<td>Observability Infrastructure</td>
-<td>2025-11-23</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0040-result-option-types/">ADR-0040</a></td>
-<td>Result/Option Types for Functional Error Handling</td>
-<td>2025-11-23</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0041-advanced-caching/">ADR-0041</a></td>
-<td>Multi-Level Caching Strategy (LRU + TTL)</td>
-<td>2025-11-24</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0042-system-resilience-patterns/">ADR-0042</a></td>
-<td>System Resilience Patterns</td>
-<td>2025-11-25</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0043-schema-normalization/">ADR-0043</a></td>
-<td>Schema Normalization</td>
-<td>2025-11-26</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0044-seeding-script-modularization/">ADR-0044</a></td>
-<td>Seeding Script Modularization</td>
-<td>2025-12-03</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0045-api-key-preflight-check/">ADR-0045</a></td>
-<td>API Key Preflight Check</td>
-<td>2025-12-05</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0046-document-type-classification/">ADR-0046</a></td>
-<td>Document Type Classification</td>
-<td>2025-12-07</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0047-architecture-review-dec-2025/">ADR-0047</a></td>
-<td>Architecture Review December 2025</td>
-<td>2025-12-08</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0048-stage-caching/">ADR-0048</a></td>
-<td>Stage Caching</td>
-<td>2025-12-10</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0049-incremental-category-summaries/">ADR-0049</a></td>
-<td>Incremental Category Summaries</td>
-<td>2025-12-12</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0050-mkdocs-material-documentation-site/">ADR-0050</a></td>
-<td>MkDocs Material Documentation Site</td>
-<td>2025-12-14</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0051-api-documentation-consolidation/">ADR-0051</a></td>
-<td>API Documentation Separation of Concerns</td>
-<td>2025-12-14</td>
-<td>Accepted</td>
-</tr>
-<tr>
-<td><a href="adr0052-documentation-site-restructure/">ADR-0052</a></td>
-<td>Documentation Site Restructure</td>
-<td>2025-12-25</td>
-<td>Accepted</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h3 id="using-this-documentation">Using This Documentation<a class="headerlink" href="#using-this-documentation" title="Permanent link">&para;</a></h3>
-<h4 id="for-adding-new-adrs">For Adding New ADRs<a class="headerlink" href="#for-adding-new-adrs" title="Permanent link">&para;</a></h4>
-<ol>
-<li><strong>Use the template:</strong> Copy an existing ADR as a starting point</li>
-<li><strong>Determine number:</strong> Next sequential number (adr0053, adr0054, etc.)</li>
-<li><strong>Include citations:</strong> Every fact needs source reference</li>
-<li><strong>Add to this index:</strong> Update README.md with new ADR</li>
-<li><strong>Cross-reference:</strong> Link to related ADRs</li>
-</ol>
-<h4 id="for-updating-adrs">For Updating ADRs<a class="headerlink" href="#for-updating-adrs" title="Permanent link">&para;</a></h4>
-<p><strong>ADRs are immutable</strong> once accepted. To change a decision:</p>
-<ol>
-<li>Create new ADR with new decision</li>
-<li>Update old ADR status to "Superseded by ADR-XXXX"</li>
-<li>Link between old and new ADRs</li>
-</ol>
-<h4 id="for-deprecating-adrs">For Deprecating ADRs<a class="headerlink" href="#for-deprecating-adrs" title="Permanent link">&para;</a></h4>
-<p>If decision is reversed without replacement:</p>
-<ol>
-<li>Change status to "Deprecated"</li>
-<li>Add deprecation note explaining why</li>
-<li>Keep content intact (historical record)</li>
-</ol>
+<h2 id="key-components">Key Components<a class="headerlink" href="#key-components" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong><a href="seeding-architecture/">Seeding Architecture</a></strong> - Document processing pipeline with checkpoint/recovery</li>
+<li><strong><a href="bm25-keywords/">BM25 Keywords</a></strong> - Keyword-based search scoring  </li>
+<li><strong><a href="wordnet-enrichment/">WordNet Enrichment</a></strong> - Semantic query expansion</li>
+<li><strong><a href="../database-schema/">Database Schema</a></strong> - LanceDB table structures</li>
+<li><strong><a href="../stage-cache-structure/">Stage Cache</a></strong> - Intermediate processing cache</li>
+</ul>
+<p>For architectural decisions and their rationale, see the <strong><a href="adr0001-typescript-nodejs-runtime/">ADRs</a></strong> section.</p>
 
 
 
