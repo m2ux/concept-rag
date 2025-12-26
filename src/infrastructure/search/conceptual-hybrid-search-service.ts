@@ -140,6 +140,11 @@ export class ConceptualHybridSearchService implements HybridSearchService {
         filterParts.push('has_extraction_issues = false');
       }
       
+      // Exclude meta content (ToC, front matter, back matter)
+      if (options.excludeMetaContent) {
+        filterParts.push('is_meta_content = false');
+      }
+      
       // Add custom filter if provided
       if (options.filter) {
         filterParts.push(options.filter);

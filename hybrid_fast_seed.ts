@@ -43,6 +43,7 @@ import { PaperDetector, detectDocumentType } from './src/infrastructure/document
 import { PaperMetadataExtractor, extractPaperMetadata } from './src/infrastructure/document-loaders/paper-metadata-extractor.js';
 import { ReferencesDetector, detectReferencesStart, ReferencesDetectionResult } from './src/infrastructure/document-loaders/references-detector.js';
 import { MathContentHandler } from './src/infrastructure/document-loaders/math-content-handler.js';
+import { MetaContentDetector } from './src/infrastructure/document-loaders/meta-content-detector.js';
 
 // Shared embedding service instance for consistent embeddings
 const embeddingService = new SimpleEmbeddingService();
@@ -976,6 +977,12 @@ async function createLanceTableWithSimpleEmbeddings(
             
             // Mark if chunk has extraction quality issues (garbled math)
             baseData.has_extraction_issues = doc.metadata.has_extraction_issues ?? false;
+            
+            // Meta content classification fields (ADR-0053)
+            baseData.is_toc = doc.metadata.is_toc ?? false;
+            baseData.is_front_matter = doc.metadata.is_front_matter ?? false;
+            baseData.is_back_matter = doc.metadata.is_back_matter ?? false;
+            baseData.is_meta_content = doc.metadata.is_meta_content ?? false;
         }
         
         // Add bibliographic fields for catalog entries (parsed from filename)
@@ -2349,6 +2356,46 @@ async function processSourceDirectory(currentFilesDir: string) {
         }
         if (issueChunkCount > 0) {
             console.log(`⚠️  Found ${issueChunkCount} chunks with extraction issues (garbled math)`);
+        }
+    }
+    
+    // Detect meta content (ToC, front matter, back matter) in chunks
+    {
+        const metaDetector = new MetaContentDetector();
+        let tocCount = 0;
+        let frontCount = 0;
+        let backCount = 0;
+        
+        // Build source -> total pages map for position-based detection
+        const sourceTotalPagesMap = new Map<string, number>();
+        for (const doc of docsNeedingNewChunks) {
+            const source = doc.metadata.source;
+            const pageNum = doc.metadata.page_number ?? 1;
+            if (source) {
+                const current = sourceTotalPagesMap.get(source) ?? 0;
+                sourceTotalPagesMap.set(source, Math.max(current, pageNum));
+            }
+        }
+        
+        for (const chunk of newChunks) {
+            const source = chunk.metadata.source;
+            const pageNumber = chunk.metadata.page_number ?? 1;
+            const totalPages = sourceTotalPagesMap.get(source) ?? 100;
+            
+            const analysis = metaDetector.analyze(chunk.pageContent, pageNumber, totalPages);
+            chunk.metadata.is_toc = analysis.isToc;
+            chunk.metadata.is_front_matter = analysis.isFrontMatter;
+            chunk.metadata.is_back_matter = analysis.isBackMatter;
+            chunk.metadata.is_meta_content = analysis.isMetaContent;
+            
+            if (analysis.isToc) tocCount++;
+            if (analysis.isFrontMatter) frontCount++;
+            if (analysis.isBackMatter) backCount++;
+        }
+        
+        const metaTotal = tocCount + frontCount + backCount;
+        if (metaTotal > 0) {
+            console.log(`📑 Detected meta content: ${tocCount} ToC, ${frontCount} front matter, ${backCount} back matter`);
         }
     }
     
