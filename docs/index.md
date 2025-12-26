@@ -6,134 +6,70 @@ Concept-RAG is an MCP server that enables AI assistants to interact with your PD
 
 <div class="grid cards" markdown>
 
--   :material-brain:{ .lg .middle } **Conceptual Search**
+-   :material-cog-play:{ .lg .middle } **How It Works**
 
     ---
 
-    Search by meaning with 80-150+ extracted concepts per document
+    Document processing pipeline and hybrid search architecture
 
-    [:octicons-arrow-right-24: How it works](#how-it-works)
+    [:octicons-arrow-right-24: Learn more](how-it-works.md)
 
--   :material-magnify:{ .lg .middle } **Hybrid Ranking**
-
-    ---
-
-    4-signal scoring: Vector + BM25 + Concepts + WordNet
-
-    [:octicons-arrow-right-24: Architecture](architecture/README.md)
-
--   :material-book-multiple:{ .lg .middle } **Multi-Format**
+-   :material-rocket-launch:{ .lg .middle } **Getting Started**
 
     ---
-
-    PDF and EPUB with OCR fallback for scanned documents
-
-    [:octicons-arrow-right-24: Getting Started](getting-started.md)
-
--   :material-lightning-bolt:{ .lg .middle } **High Performance**
-
-    ---
-
-    80x-240x faster searches with optimized indexing
-
-    [:octicons-arrow-right-24: API Reference](api-reference.md)
-
-</div>
-
----
-
-## How It Works
-
-```mermaid
-flowchart TB
-    subgraph Input["📄 Documents"]
-        PDF[PDF Files]
-        EPUB[EPUB Files]
-    end
-
-    subgraph Processing["⚙️ Processing Pipeline"]
-        Parse[Parse & Extract Text]
-        OCR[OCR Fallback]
-        Chunk[Chunk Text]
-        Extract[Extract Concepts<br/>Claude Sonnet]
-        Embed[Generate Embeddings]
-        Summarize[Generate Summary<br/>Grok-4-fast]
-    end
-
-    subgraph Storage["💾 LanceDB Storage"]
-        Catalog[(Catalog<br/>Documents)]
-        Chunks[(Chunks<br/>Text Segments)]
-        Concepts[(Concepts<br/>Index)]
-        Categories[(Categories<br/>Taxonomy)]
-    end
-
-    subgraph Search["🔍 Hybrid Search"]
-        Vector[Vector Similarity]
-        BM25[BM25 Keywords]
-        ConceptMatch[Concept Matching]
-        WordNet[WordNet Expansion]
-        Rank[Weighted Ranking]
-    end
-
-    subgraph Output["🤖 MCP Tools"]
-        Tools[10 Specialized Tools]
-        AI[AI Assistants]
-    end
-
-    PDF --> Parse
-    EPUB --> Parse
-    Parse --> OCR
-    OCR --> Chunk
-    Chunk --> Extract
-    Chunk --> Embed
-    Extract --> Summarize
-
-    Embed --> Chunks
-    Extract --> Concepts
-    Summarize --> Catalog
-    Extract --> Categories
-
-    Catalog --> Vector
-    Chunks --> Vector
-    Concepts --> ConceptMatch
-    
-    Vector --> Rank
-    BM25 --> Rank
-    ConceptMatch --> Rank
-    WordNet --> Rank
-    
-    Rank --> Tools
-    Tools --> AI
-```
-
----
-
-## Quick Links
-
-<div class="grid cards" markdown>
-
--   [:material-rocket-launch: **Getting Started**](getting-started.md)
 
     Install and configure in under 10 minutes
 
--   [:material-compass: **Tool Selection Guide**](tool-selection-guide.md)
+    [:octicons-arrow-right-24: Quick start](getting-started.md)
 
-    Choose the right tool for your query
+-   :material-compass:{ .lg .middle } **Tool Selection**
 
--   [:material-api: **API Reference**](api-reference.md)
+    ---
 
-    Complete MCP tool documentation
+    Choose the right MCP tool for your query type
 
--   [:material-help-circle: **FAQ**](faq.md)
+    [:octicons-arrow-right-24: Selection guide](tool-selection-guide.md)
+
+-   :material-api:{ .lg .middle } **API Reference**
+
+    ---
+
+    Complete documentation for all 10 MCP tools
+
+    [:octicons-arrow-right-24: View API](api-reference.md)
+
+-   :material-sitemap:{ .lg .middle } **Architecture**
+
+    ---
+
+    Technical deep-dive into system design and components
+
+    [:octicons-arrow-right-24: Explore](architecture/README.md)
+
+-   :material-help-circle:{ .lg .middle } **FAQ**
+
+    ---
 
     Common questions answered
 
--   [:material-wrench: **Troubleshooting**](troubleshooting.md)
+    [:octicons-arrow-right-24: Read FAQ](faq.md)
 
-    Fix common issues
+-   :material-wrench:{ .lg .middle } **Troubleshooting**
 
--   [:material-github: **GitHub**](https://github.com/m2ux/concept-rag)
+    ---
+
+    Fix common issues quickly
+
+    [:octicons-arrow-right-24: Get help](troubleshooting.md)
+
+-   :material-github:{ .lg .middle } **GitHub**
+
+    ---
 
     Source code and contributions
 
+    [:octicons-arrow-right-24: Repository](https://github.com/m2ux/concept-rag)
+
 </div>
+
+

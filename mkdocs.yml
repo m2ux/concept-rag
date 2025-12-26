@@ -67,6 +67,8 @@ markdown_extensions:
 nav:
   - Home: index.md
 
+  - How It Works: how-it-works.md
+
   - Getting Started:
     - Quick Start: getting-started.md
     - Troubleshooting: troubleshooting.md
