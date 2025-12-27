@@ -116,13 +116,15 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
       .map((r: SearchResult) => ({
         text: r.text,
         source: r.source,
-        scores: {
-          hybrid: r.hybridScore.toFixed(3),
-          vector: r.vectorScore.toFixed(3),
-          bm25: r.bm25Score.toFixed(3),
-          concept: r.conceptScore.toFixed(3),
-          wordnet: r.wordnetScore.toFixed(3)
-        },
+        score: r.hybridScore.toFixed(3),  // Hybrid score always shown
+        ...(debugSearch && {
+          score_components: {  // Component breakdown only in debug mode
+            vector: r.vectorScore.toFixed(3),
+            bm25: r.bm25Score.toFixed(3),
+            concept: r.conceptScore.toFixed(3),
+            wordnet: r.wordnetScore.toFixed(3)
+          }
+        }),
         expanded_terms: r.expandedTerms
       }));
     

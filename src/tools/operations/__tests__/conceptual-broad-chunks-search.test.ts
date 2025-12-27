@@ -56,7 +56,7 @@ describe('ConceptualBroadChunksSearchTool', () => {
       expect(Array.isArray(parsedContent)).toBe(true);
       expect(parsedContent).toHaveLength(2);
       expect(parsedContent[0].source).toBe('/test/doc1.pdf');
-      expect(parsedContent[0].scores).toBeDefined();
+      expect(parsedContent[0].score).toBeDefined();  // Hybrid score always shown
     });
     
     it('should respect limit parameter (defaults to 10)', async () => {
@@ -95,11 +95,10 @@ describe('ConceptualBroadChunksSearchTool', () => {
       // EXERCISE
       const result = await tool.execute({ text: 'test' });
       
-      // VERIFY
+      // VERIFY - hybrid score always shown as 'score', components only in debug
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent[0].scores.hybrid).toBe('0.950');
-      expect(parsedContent[0].scores.vector).toBe('0.850');
-      expect(parsedContent[0].scores.bm25).toBe('0.750');
+      expect(parsedContent[0].score).toBe('0.950');
+      expect(parsedContent[0].score_components).toBeUndefined();  // Not in debug mode
     });
     
     it('should include expanded terms when debug is enabled', async () => {

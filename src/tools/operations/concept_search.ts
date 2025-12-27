@@ -191,10 +191,12 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
         chunks_returned: result.chunks.length
       },
       
-      // Detailed hybrid search scores (always shown for debugging)
-      ...(result.scores ? {
-        scores: {
-          hybrid: result.scores.hybridScore.toFixed(3),
+      // Hybrid score always shown
+      ...(result.scores ? { score: result.scores.hybridScore.toFixed(3) } : {}),
+      
+      // Component breakdown only when debug enabled
+      ...(debug && result.scores ? {
+        score_components: {
           name: result.scores.nameScore.toFixed(3),
           vector: result.scores.vectorScore.toFixed(3),
           bm25: result.scores.bm25Score.toFixed(3),
