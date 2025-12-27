@@ -22,8 +22,10 @@ import {
   calculateWordNetBonus,
   calculateHybridScore,
   getMatchedConcepts,
+  filterByScoreGap,
   type ExpandedQuery,
-  type ScoreComponents
+  type ScoreComponents,
+  type Scored
 } from '../scoring-strategies.js';
 
 describe('Scoring Strategies', () => {
@@ -930,6 +932,170 @@ describe('Scoring Strategies', () => {
 
       // VERIFY
       expect(matched).toEqual([]);
+    });
+  });
+
+  describe('filterByScoreGap', () => {
+    it('should return empty array for empty input', () => {
+      // SETUP
+      const results: Scored[] = [];
+
+      // EXERCISE
+      const filtered = filterByScoreGap(results);
+
+      // VERIFY
+      expect(filtered).toEqual([]);
+    });
+
+    it('should return single result unchanged', () => {
+      // SETUP
+      const results: Scored[] = [{ hybridScore: 0.8 }];
+
+      // EXERCISE
+      const filtered = filterByScoreGap(results);
+
+      // VERIFY
+      expect(filtered).toEqual([{ hybridScore: 0.8 }]);
+    });
+
+    it('should return all results when no significant gap exists', () => {
+      // SETUP - all scores within 0.01 of each other
+      const results: Scored[] = [
+        { hybridScore: 0.80 },
+        { hybridScore: 0.795 },
+        { hybridScore: 0.79 },
+        { hybridScore: 0.785 }
+      ];
+
+      // EXERCISE
+      const filtered = filterByScoreGap(results);
+
+      // VERIFY - all returned because no gap >= 0.01
+      expect(filtered).toHaveLength(4);
+    });
+
+    it('should detect largest gap and return results above it', () => {
+      // SETUP - clear gap between 0.75 and 0.40
+      const results: Scored[] = [
+        { hybridScore: 0.85 },
+        { hybridScore: 0.82 },
+        { hybridScore: 0.78 },
+        { hybridScore: 0.75 },
+        { hybridScore: 0.40 },  // Large gap here (0.35)
+        { hybridScore: 0.38 },
+        { hybridScore: 0.35 }
+      ];
+
+      // EXERCISE
+      const filtered = filterByScoreGap(results);
+
+      // VERIFY - returns first 4 results (above the gap)
+      expect(filtered).toHaveLength(4);
+      expect(filtered[0].hybridScore).toBe(0.85);
+      expect(filtered[3].hybridScore).toBe(0.75);
+    });
+
+    it('should handle gap at the beginning', () => {
+      // SETUP - largest gap between first and second result
+      const results: Scored[] = [
+        { hybridScore: 0.90 },  // Gap of 0.30 here
+        { hybridScore: 0.60 },
+        { hybridScore: 0.58 },
+        { hybridScore: 0.55 }
+      ];
+
+      // EXERCISE
+      const filtered = filterByScoreGap(results);
+
+      // VERIFY - returns only first result
+      expect(filtered).toHaveLength(1);
+      expect(filtered[0].hybridScore).toBe(0.90);
+    });
+
+    it('should handle gap at the end', () => {
+      // SETUP - largest gap between second-to-last and last result
+      const results: Scored[] = [
+        { hybridScore: 0.85 },
+        { hybridScore: 0.83 },
+        { hybridScore: 0.80 },
+        { hybridScore: 0.30 }   // Gap of 0.50 here
+      ];
+
+      // EXERCISE
+      const filtered = filterByScoreGap(results);
+
+      // VERIFY - returns first 3 results
+      expect(filtered).toHaveLength(3);
+    });
+
+    it('should handle two equal gaps by taking the first', () => {
+      // SETUP - two gaps of equal size
+      const results: Scored[] = [
+        { hybridScore: 0.80 },
+        { hybridScore: 0.60 },  // Gap of 0.20
+        { hybridScore: 0.58 },
+        { hybridScore: 0.38 }   // Gap of 0.20
+      ];
+
+      // EXERCISE
+      const filtered = filterByScoreGap(results);
+
+      // VERIFY - takes first gap (returns 1 result)
+      expect(filtered).toHaveLength(1);
+    });
+
+    it('should preserve additional properties on scored objects', () => {
+      // SETUP
+      interface ScoredResult extends Scored {
+        id: string;
+        text: string;
+      }
+      const results: ScoredResult[] = [
+        { hybridScore: 0.90, id: 'a', text: 'first' },
+        { hybridScore: 0.85, id: 'b', text: 'second' },
+        { hybridScore: 0.40, id: 'c', text: 'third' }
+      ];
+
+      // EXERCISE
+      const filtered = filterByScoreGap(results);
+
+      // VERIFY
+      expect(filtered).toHaveLength(2);
+      expect(filtered[0].id).toBe('a');
+      expect(filtered[0].text).toBe('first');
+      expect(filtered[1].id).toBe('b');
+    });
+
+    it('should handle scores that decrease monotonically with small gaps', () => {
+      // SETUP - steady decrease with no large gap
+      const results: Scored[] = [
+        { hybridScore: 0.90 },
+        { hybridScore: 0.85 },
+        { hybridScore: 0.80 },
+        { hybridScore: 0.75 },
+        { hybridScore: 0.70 }
+      ];
+
+      // EXERCISE
+      const filtered = filterByScoreGap(results);
+
+      // VERIFY - all gaps are 0.05, so first one is taken (returns 1)
+      expect(filtered).toHaveLength(1);
+    });
+
+    it('should handle identical scores', () => {
+      // SETUP - all same score (no gaps)
+      const results: Scored[] = [
+        { hybridScore: 0.75 },
+        { hybridScore: 0.75 },
+        { hybridScore: 0.75 }
+      ];
+
+      // EXERCISE
+      const filtered = filterByScoreGap(results);
+
+      // VERIFY - all returned (no gap >= 0.01)
+      expect(filtered).toHaveLength(3);
     });
   });
 });

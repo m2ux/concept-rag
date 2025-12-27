@@ -12,7 +12,6 @@ import { isSome } from '../../domain/functional/index.js';
 export interface CategorySearchToolParams extends ToolParams {
   category: string;
   includeChildren?: boolean;
-  limit?: number;
 }
 
 export class CategorySearchTool extends BaseTool<CategorySearchToolParams> {
@@ -26,7 +25,7 @@ export class CategorySearchTool extends BaseTool<CategorySearchToolParams> {
   }
   
   name = "category_search";
-  description = "Find documents by category. Browse documents in a specific domain or subject area.";
+  description = "Find documents by category. Browse documents in a specific domain or subject area. Returns all documents in the category.";
   
   inputSchema = {
     type: "object" as const,
@@ -38,10 +37,6 @@ export class CategorySearchTool extends BaseTool<CategorySearchToolParams> {
       includeChildren: {
         type: "boolean",
         description: "Include child categories in hierarchy (default: false)"
-      },
-      limit: {
-        type: "number",
-        description: "Maximum number of documents to return (default: 10)"
       }
     },
     required: ["category"]
@@ -85,12 +80,8 @@ export class CategorySearchTool extends BaseTool<CategorySearchToolParams> {
       // Get unique concepts in this category
       const uniqueConceptIds = await this.catalogRepo.getConceptsInCategory(category.id);
       
-      // Limit results
-      const limit = params.limit || 10;
-      const limitedDocs = documents.slice(0, limit);
-      
-      // Format documents for output - use title from catalog
-      const formattedDocs = limitedDocs.map(doc => ({
+      // Format documents for output - use title from catalog (no limit - return all)
+      const formattedDocs = documents.map(doc => ({
         title: (doc as any).title || '',
         preview: doc.text.substring(0, 200) + '...',
         primaryConcepts: doc.concepts?.primary_concepts?.slice(0, 5) || []
@@ -129,7 +120,7 @@ export class CategorySearchTool extends BaseTool<CategorySearchToolParams> {
           totalDocuments: category.documentCount || documents.length,
           totalChunks: category.chunkCount || 0,
           totalConcepts: uniqueConceptIds.length,
-          documentsReturned: limitedDocs.length
+          documentsReturned: documents.length
         },
         documents: formattedDocs,
         includeChildren: params.includeChildren || false,

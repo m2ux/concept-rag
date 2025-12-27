@@ -109,3 +109,28 @@ Queries are scored using four signals:
 
 Results are combined using weighted ranking for optimal retrieval accuracy.
 
+### 6. Gap Detection (Elbow Method)
+
+Search results are filtered using **gap detection** instead of fixed limits:
+
+```
+Scores: [0.85, 0.82, 0.78, 0.75, 0.40, 0.38, 0.35]
+Gaps:   [0.03, 0.04, 0.03, 0.35, 0.02, 0.03]
+                            ↑ largest gap
+Returns: [0.85, 0.82, 0.78, 0.75] (high-scoring cluster)
+```
+
+This approach:
+
+- **Adaptive**: Returns more results for broad queries, fewer for specific ones
+- **Quality-focused**: Filters based on score quality, not arbitrary counts
+- **Automatic**: Finds the natural boundary between relevant and less-relevant results
+
+| Tool | Result Filtering |
+|------|------------------|
+| `catalog_search` | Gap detection (1-30 results) |
+| `broad_chunks_search` | Gap detection (1-30 results) |
+| `chunks_search` | Fixed limit (5 results) |
+| `concept_search` | All matching content |
+| `category_search` | All documents in category |
+

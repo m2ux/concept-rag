@@ -4,6 +4,7 @@ import { InputValidator } from "../../domain/services/validation/index.js";
 import { isErr } from "../../domain/functional/index.js";
 import { SearchResult } from "../../domain/models/index.js";
 import { Configuration } from "../../application/config/index.js";
+import { filterByScoreGap } from "../../infrastructure/search/scoring-strategies.js";
 
 export interface ConceptualCatalogSearchParams extends ToolParams {
   text: string;
@@ -36,7 +37,7 @@ DO NOT USE for:
 - Finding specific information within documents (use broad_chunks_search or chunks_search)
 - Tracking specific concept usage across chunks (use concept_chunks)
 
-RETURNS: Top 10 documents with text previews, hybrid scores (including strong title matching bonus), matched concepts, and query expansion details.
+RETURNS: Documents in the high-scoring cluster (adaptive count based on score gaps), with text previews, hybrid scores, matched concepts, and query expansion details.
 
 Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
   inputSchema = {
@@ -73,11 +74,11 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
       };
     }
     
-    // Delegate to service (Result-based)
+    // Delegate to service with sufficient limit for gap detection
     const debugSearch = Configuration.getInstance().logging.debugSearch;
     const result = await this.catalogSearchService.searchCatalog({
       text: params.text,
-      limit: 10,
+      limit: 30,  // Sufficient for gap detection while keeping performance
       debug: debugSearch
     });
     
@@ -106,11 +107,13 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
       };
     }
     
-    // Format results for MCP response, filtering out zero/negative scores
+    // Filter by score > 0, then apply gap detection to find natural cluster
     // @ts-expect-error - Type narrowing limitation
-    const formattedResults = result.value
-      .filter((r: SearchResult) => r.hybridScore > 0)
-      .map((r: SearchResult) => ({
+    const positiveResults: SearchResult[] = result.value.filter((r: SearchResult) => r.hybridScore > 0);
+    const clusteredResults = filterByScoreGap(positiveResults) as SearchResult[];
+    
+    // Format results for MCP response
+    const formattedResults = clusteredResults.map((r) => ({
         source: r.source,
         summary: r.text,  // Full summary (not truncated)
         score: r.hybridScore.toFixed(3),  // Hybrid score always shown

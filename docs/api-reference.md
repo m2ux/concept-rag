@@ -47,7 +47,7 @@ Search document summaries and metadata to discover relevant documents.
 | `score` | string | Combined hybrid score (0.000-1.000) |
 | `expanded_terms` | string[] | Expanded query terms |
 
-**Limits:** 10 documents max.
+**Result Filtering:** Gap detection (elbow method) - returns high-scoring cluster based on score gaps, not a fixed count. Typically 1-10 results depending on query specificity.
 
 #### Additional Fields with Debug Enabled
 
@@ -103,7 +103,7 @@ Search across all document chunks using hybrid search.
 | `score` | string | Combined hybrid score (0.000-1.000) |
 | `expanded_terms` | string[] | Expanded query terms |
 
-**Limits:** 20 chunks max.
+**Result Filtering:** Gap detection (elbow method) - returns high-scoring cluster based on score gaps, not a fixed count. Typically 1-30 results depending on query specificity.
 
 #### Additional Fields with Debug Enabled
 
@@ -160,7 +160,7 @@ Search within a single known document.
 | `concepts` | string[] | Concept names in chunk |
 | `concept_ids` | number[] | Concept IDs |
 
-**Limits:** 20 chunks max.
+**Limits:** 5 chunks max (fixed limit for single-document search).
 
 ---
 
@@ -175,7 +175,6 @@ Find chunks associated with a concept, organized hierarchically.
 ```json
 {
   "concept": "string",
-  "limit": 20,
   "source_filter": "string"
 }
 ```
@@ -183,8 +182,9 @@ Find chunks associated with a concept, organized hierarchically.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `concept` | string | ✅ | — | Concept to search for |
-| `limit` | number | ❌ | `20` | Max sources to return |
 | `source_filter` | string | ❌ | — | Filter by source path |
+
+**Result Filtering:** Returns all matching sources and chunks (no fixed limit).
 
 > **Debug Output:** Enable via `DEBUG_SEARCH=true` environment variable. When enabled, includes `page_previews` in sources.
 
@@ -431,8 +431,7 @@ Find documents by category.
 ```json
 {
   "category": "string",
-  "includeChildren": false,
-  "limit": 10
+  "includeChildren": false
 }
 ```
 
@@ -440,7 +439,8 @@ Find documents by category.
 |-----------|------|----------|---------|-------------|
 | `category` | string | ✅ | — | Category name, ID, or alias |
 | `includeChildren` | boolean | ❌ | `false` | Include child categories |
-| `limit` | number | ❌ | `10` | Max documents |
+
+**Result Filtering:** Returns all documents in the category (no fixed limit).
 
 #### Output Schema
 
