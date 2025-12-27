@@ -12,13 +12,13 @@
         <meta name="author" content="Alex Komyagin">
       
       
-        <link rel="canonical" href="https://m2ux.github.io/concept-rag/architecture/adr0004-rag-architecture/">
+        <link rel="canonical" href="https://m2ux.github.io/concept-rag/architecture/adr0054-deprecate-debug-input-schema/">
       
       
-        <link rel="prev" href="../adr0003-mcp-protocol/">
+        <link rel="prev" href="../adr0053-meta-content-detection/">
       
       
-        <link rel="next" href="../adr0005-pdf-document-processing/">
+        <link rel="next" href="../../faq/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>ADR-0004: RAG Architecture - Concept-RAG Documentation</title>
+        <title>ADR-0054: Debug Flag Deprecation - Concept-RAG Documentation</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#4-rag-retrieval-augmented-generation-architecture" class="md-skip">
+        <a href="#adr-0054-deprecate-debug-flag-from-tool-input-schemas" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              ADR-0004: RAG Architecture
+              ADR-0054: Debug Flag Deprecation
             
           </span>
         </div>
@@ -1143,37 +1143,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-0004: RAG Architecture
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../adr0004-rag-architecture/" class="md-nav__link">
         
   
   
@@ -1189,292 +1162,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#context-and-problem-statement" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Context and Problem Statement
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#alternative-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Alternative Options
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#decision-outcome" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Decision Outcome
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Decision Outcome">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#rag-pipeline-architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RAG Pipeline Architecture
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#key-design-decisions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Key Design Decisions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#consequences" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Consequences
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#confirmation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Confirmation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#pros-and-cons-of-the-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pros and Cons of the Options
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Pros and Cons of the Options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-1-rag-with-vector-search-chosen" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 1: RAG with Vector Search (Chosen)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-2-full-document-context" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 2: Full Document Context
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-3-fine-tuning" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 3: Fine-Tuning
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-4-knowledge-graph" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 4: Knowledge Graph
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-5-traditional-search-only" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option 5: Traditional Search Only
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#implementation-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Implementation Notes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Implementation Notes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#indexing-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Indexing Pipeline
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#chunking" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Chunking
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#embeddings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Embeddings
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cost-analysis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cost Analysis
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related-decisions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related Decisions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#more-information" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        More Information
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        References
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="References">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#related-decisions_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related Decisions
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2856,10 +2543,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../adr0054-deprecate-debug-input-schema/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-0054: Debug Flag Deprecation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -2875,6 +2589,187 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decision
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decision">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consequences
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Consequences">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#positive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Positive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#negative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Negative
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neutral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Neutral
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alternatives-considered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternatives Considered
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Alternatives Considered">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-keep-debug-parameter-ignore-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Keep Debug Parameter, Ignore It
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-inject-configuration-via-constructor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Inject Configuration via Constructor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#affected-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Affected Files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related Decisions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2934,197 +2829,132 @@
   
 
 
-<h1 id="4-rag-retrieval-augmented-generation-architecture">4. RAG (Retrieval-Augmented Generation) Architecture<a class="headerlink" href="#4-rag-retrieval-augmented-generation-architecture" title="Permanent link">&para;</a></h1>
-<p><strong>Date:</strong> ~2024 (lance-mcp upstream project)<br />
-<strong>Status:</strong> Accepted (Inherited)<br />
-<strong>Original Deciders:</strong> adiom-data team (lance-mcp)<br />
-<strong>Inherited By:</strong> concept-rag fork (2025)<br />
-<strong>Technical Story:</strong> Foundational RAG approach from upstream lance-mcp project  </p>
-<p><strong>Git Commit:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Commit: 082c38e2429a8c9074a9a176dd0b1defc84a5ae2
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Date: November 19, 2024
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Project: lance-mcp (upstream)
-</code></pre></div></p>
-<h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
-<p>The project needed an architecture for enabling LLMs to search and retrieve information from personal document collections. The core question: How should documents be processed, stored, and retrieved to best support AI agent queries?</p>
-<p><strong>Decision Drivers:</strong>
-* Enable LLMs to access knowledge from personal documents
-* Support semantic search (not just keyword matching)
-* Efficient retrieval without sending entire documents to LLM
-* Scalable to thousands of documents
-* Support for various document formats (PDF, EPUB)
-* Cost-effective for personal use</p>
-<h2 id="alternative-options">Alternative Options<a class="headerlink" href="#alternative-options" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Option 1: RAG with Vector Search</strong> - Index documents as embeddings, retrieve relevant chunks</li>
-<li><strong>Option 2: Full Document Context</strong> - Send entire documents to LLM (context stuffing)</li>
-<li><strong>Option 3: Fine-Tuning</strong> - Fine-tune LLM on document corpus</li>
-<li><strong>Option 4: Knowledge Graph</strong> - Build structured knowledge graph from documents</li>
-<li><strong>Option 5: Traditional Search</strong> - Keyword-based search only (Elasticsearch/Solr)</li>
-</ul>
-<h2 id="decision-outcome">Decision Outcome<a class="headerlink" href="#decision-outcome" title="Permanent link">&para;</a></h2>
-<p><strong>Chosen option:</strong> "RAG with Vector Search (Option 1)"</p>
-<h3 id="rag-pipeline-architecture">RAG Pipeline Architecture<a class="headerlink" href="#rag-pipeline-architecture" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>PDF Documents
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>        ↓
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>   Text Extraction (PDFLoader)
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        ↓
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>   Summary Generation (Ollama LLM)
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>   map-reduce chain
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        ↓
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>   Text Chunking
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>   RecursiveCharacterTextSplitter
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>   (chunk size: 500, overlap: 10)
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        ↓
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>   Embedding Generation
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>   (Ollama: snowflake-arctic-embed2)
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        ↓
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>   Storage (LanceDB)
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>   ├── Catalog Table (summaries + vectors)
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>   └── Chunks Table (chunks + vectors)
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        ↓
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>   Vector Similarity Search
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        ↓
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>   Retrieved Chunks
-</code></pre></div>
-[Source: lance-mcp <code>src/seed.ts</code>, lines 69-186]</p>
-<h3 id="key-design-decisions">Key Design Decisions<a class="headerlink" href="#key-design-decisions" title="Permanent link">&para;</a></h3>
+<h1 id="adr-0054-deprecate-debug-flag-from-tool-input-schemas">ADR 0054: Deprecate Debug Flag from Tool Input Schemas<a class="headerlink" href="#adr-0054-deprecate-debug-flag-from-tool-input-schemas" title="Permanent link">&para;</a></h1>
+<p><strong>Status</strong>: Accepted<br />
+<strong>Date</strong>: 2025-12-27<br />
+<strong>Deciders</strong>: Development Team<br />
+<strong>Related ADRs</strong>: <a href="../adr0036-configuration-centralization/">adr0036</a><br />
+<strong>Issue</strong>: <a href="https://github.com/m2ux/concept-rag/issues/57">#57</a></p>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>The <code>debug</code> flag is duplicated across 4 tool input schemas:
+- <code>catalog_search</code>
+- <code>broad_chunks_search</code>
+- <code>chunks_search</code>
+- <code>concept_search</code></p>
+<p>This creates several problems:</p>
 <ol>
-<li><strong>Chunking</strong>: RecursiveCharacterTextSplitter, 500 tokens, 10 overlap</li>
-<li><strong>Summaries</strong>: Ollama LLM with map-reduce chain</li>
-<li><strong>Embeddings</strong>: Ollama (snowflake-arctic-embed2)</li>
-<li><strong>Tables</strong>: Two tables (catalog for summaries, chunks for retrieval)</li>
-<li><strong>Search</strong>: Vector similarity only</li>
+<li><strong>Schema Noise</strong>: LLM agents see the <code>debug</code> parameter in every tool's schema, adding cognitive overhead when parsing tool definitions</li>
+<li><strong>Per-Call Decision</strong>: Agents must decide whether to pass <code>debug</code> on each call</li>
+<li><strong>Duplication</strong>: The same parameter defined in 4 places</li>
+<li><strong>Underutilized Configuration</strong>: A centralized <code>LoggingConfig.debugSearch</code> already exists (via <code>DEBUG_SEARCH</code> env var) but is not used by tools</li>
 </ol>
-<h3 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h3>
-<p><strong>Positive:</strong>
-* <strong>Cost-Effective</strong>: Only relevant chunks sent to LLM (not entire documents)
-* <strong>Scalable</strong>: Works with document collections
-* <strong>Semantic Search</strong>: Finds relevant information even without keyword matches
-* <strong>Up-to-Date</strong>: Can add new documents without retraining
-* <strong>Privacy</strong>: All processing local, documents don't leave machine (except LLM API for extraction)
-* <strong>Flexible</strong>: Can improve retrieval without changing generation
-* <strong>Explainable</strong>: Can see which chunks were retrieved and why</p>
-<p><strong>Negative:</strong>
-* <strong>Chunk Boundaries</strong>: May split related information across chunks
-* <strong>Context Window</strong>: Limited to K chunks (may miss relevant information)
-* <strong>Embedding Quality</strong>: Depends on embedding model quality
-* <strong>Two-Stage Latency</strong>: Retrieval + generation adds latency
-* <strong>Index Maintenance</strong>: Must re-index when documents change</p>
-<p><strong>Neutral:</strong>
-* <strong>Embedding Cost</strong>: One-time cost to generate embeddings (~$0.05/doc)
-* <strong>Storage</strong>: Requires vector database
-* <strong>Complexity</strong>: More complex than simple search</p>
-<h3 id="confirmation">Confirmation<a class="headerlink" href="#confirmation" title="Permanent link">&para;</a></h3>
-<p>System validated by:
-- Local Ollama models working
-- Vector search functional
-- Zero API costs</p>
-<h2 id="pros-and-cons-of-the-options">Pros and Cons of the Options<a class="headerlink" href="#pros-and-cons-of-the-options" title="Permanent link">&para;</a></h2>
-<h3 id="option-1-rag-with-vector-search-chosen">Option 1: RAG with Vector Search (Chosen)<a class="headerlink" href="#option-1-rag-with-vector-search-chosen" title="Permanent link">&para;</a></h3>
-<p><strong>Pros:</strong>
-* Best accuracy for semantic queries
-* Cost-effective (only send relevant chunks)
-* Scalable to large corpora
-* Privacy-friendly (local processing)
-* No retraining needed for new documents
-* Flexible retrieval strategies</p>
-<p><strong>Cons:</strong>
-* Chunking may split information
-* Depends on embedding quality
-* Two-stage adds latency
-* Requires vector database</p>
-<h3 id="option-2-full-document-context">Option 2: Full Document Context<a class="headerlink" href="#option-2-full-document-context" title="Permanent link">&para;</a></h3>
-<p><strong>Pros:</strong>
-* No retrieval errors (LLM sees everything)
-* Simple implementation
-* No chunking issues</p>
-<p><strong>Cons:</strong>
-* <strong>Expensive</strong>: Context window costs scale with document size
-* <strong>Limited</strong>: Can only handle few documents at once (context window limits)
-* <strong>Slow</strong>: Large contexts slow LLM processing
-* <strong>Not scalable</strong>: Breaks down with many documents</p>
-<h3 id="option-3-fine-tuning">Option 3: Fine-Tuning<a class="headerlink" href="#option-3-fine-tuning" title="Permanent link">&para;</a></h3>
-<p><strong>Pros:</strong>
-* Knowledge "baked in" to model
-* Fast inference (no retrieval)
-* No external storage needed</p>
-<p><strong>Cons:</strong>
-* <strong>Very expensive</strong>: $100s-$1000s to fine-tune
-* <strong>Static</strong>: Must retrain for new documents
-* <strong>Hallucination risk</strong>: Model may confabulate
-* <strong>No citations</strong>: Can't trace answers to sources
-* <strong>Over-engineering</strong>: Overkill for personal use</p>
-<h3 id="option-4-knowledge-graph">Option 4: Knowledge Graph<a class="headerlink" href="#option-4-knowledge-graph" title="Permanent link">&para;</a></h3>
-<p><strong>Pros:</strong>
-* Structured relationships
-* Good for graph queries
-* Explicit knowledge representation</p>
-<p><strong>Cons:</strong>
-* <strong>High upfront cost</strong>: Expensive to extract graph structure
-* <strong>Complex</strong>: Requires ontology design
-* <strong>Not suitable</strong>: Documents are unstructured, not graph-structured
-* <strong>Over-engineering</strong>: Too complex for search use case</p>
-<h3 id="option-5-traditional-search-only">Option 5: Traditional Search Only<a class="headerlink" href="#option-5-traditional-search-only" title="Permanent link">&para;</a></h3>
-<p><strong>Pros:</strong>
-* Well-understood technology
-* Fast keyword search
-* Simple implementation</p>
-<p><strong>Cons:</strong>
-* <strong>No semantic understanding</strong>: Misses synonyms
-* <strong>Keyword dependency</strong>: Must know exact terms
-* <strong>Limited query capability</strong>: Requires keyword matches
-* <strong>No embeddings</strong>: Can't leverage semantic similarity</p>
-<h2 id="implementation-notes">Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permanent link">&para;</a></h2>
-<h3 id="indexing-pipeline">Indexing Pipeline<a class="headerlink" href="#indexing-pipeline" title="Permanent link">&para;</a></h3>
-<p><strong>Script</strong>: <code>src/seed.ts</code></p>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// For each document:</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="mf">1.</span><span class="w"> </span><span class="nx">Load</span><span class="w"> </span><span class="nx">PDF</span><span class="w"> </span><span class="p">(</span><span class="nx">PDFLoader</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="nx">langchain</span><span class="p">)</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="mf">2.</span><span class="w"> </span><span class="nx">Generate</span><span class="w"> </span><span class="nx">summary</span><span class="w"> </span><span class="p">(</span><span class="nx">Ollama</span><span class="w"> </span><span class="nx">LLM</span><span class="w"> </span><span class="kd">with</span><span class="w"> </span><span class="nx">map</span><span class="o">-</span><span class="nx">reduce</span><span class="p">)</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="mf">3.</span><span class="w"> </span><span class="nx">Create</span><span class="w"> </span><span class="nx">chunks</span><span class="w"> </span><span class="p">(</span><span class="nx">RecursiveCharacterTextSplitter</span><span class="p">,</span><span class="w"> </span><span class="mf">500</span><span class="w"> </span><span class="nx">tokens</span><span class="p">)</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="mf">4.</span><span class="w"> </span><span class="nx">Generate</span><span class="w"> </span><span class="nx">embeddings</span><span class="w"> </span><span class="p">(</span><span class="nx">Ollama</span><span class="w"> </span><span class="nx">snowflake</span><span class="o">-</span><span class="nx">arctic</span><span class="o">-</span><span class="nx">embed2</span><span class="p">)</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="mf">5.</span><span class="w"> </span><span class="nx">Store</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nx">LanceDB</span><span class="w"> </span><span class="p">(</span><span class="nx">catalog</span><span class="w"> </span><span class="nx">table</span><span class="p">,</span><span class="w"> </span><span class="nx">chunks</span><span class="w"> </span><span class="nx">table</span><span class="p">)</span>
-</code></pre></div>
-[Source: lance-mcp <code>src/seed.ts</code>]</p>
-<h3 id="chunking">Chunking<a class="headerlink" href="#chunking" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kd">const</span><span class="w"> </span><span class="nx">splitter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">RecursiveCharacterTextSplitter</span><span class="p">({</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="nx">chunkSize</span><span class="o">:</span><span class="w"> </span><span class="kt">500</span><span class="p">,</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nx">chunkOverlap</span><span class="o">:</span><span class="w"> </span><span class="kt">10</span><span class="p">,</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">});</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kd">const</span><span class="w"> </span><span class="nx">docs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">splitter</span><span class="p">.</span><span class="nx">splitDocuments</span><span class="p">(</span><span class="nx">filteredRawDocs</span><span class="p">);</span>
-</code></pre></div>
-[Source: lance-mcp <code>src/seed.ts</code>, lines 172-175]</p>
-<h3 id="embeddings">Embeddings<a class="headerlink" href="#embeddings" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1">// Ollama embeddings</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="ow">new</span><span class="w"> </span><span class="nx">OllamaEmbeddings</span><span class="p">({</span><span class="nx">model</span><span class="o">:</span><span class="w"> </span><span class="kt">defaults.EMBEDDING_MODEL</span><span class="p">})</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1">// Default: snowflake-arctic-embed2</span>
-</code></pre></div>
-[Source: lance-mcp <code>src/seed.ts</code>, lines 160, 180]</p>
-<h3 id="cost-analysis">Cost Analysis<a class="headerlink" href="#cost-analysis" title="Permanent link">&para;</a></h3>
-<p><strong>One-Time Indexing:</strong>
-- Ollama local models (zero cost)
-- Summary generation: Local
-- Embeddings: Local</p>
-<p><strong>Runtime:</strong>
-- Vector search: Local (zero cost)
-- LLM: Local Ollama</p>
+<h2 id="decision">Decision<a class="headerlink" href="#decision" title="Permanent link">&para;</a></h2>
+<p>Remove the <code>debug</code> parameter from all tool input schemas and use the existing <code>Configuration.getInstance().logging.debugSearch</code> setting instead.</p>
+<h3 id="changes">Changes<a class="headerlink" href="#changes" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Remove from params interfaces</strong>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// Before</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">ConceptualCatalogSearchParams</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">ToolParams</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nx">debug?</span><span class="o">:</span><span class="w"> </span><span class="kt">boolean</span><span class="p">;</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1">// After</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">export</span><span class="w"> </span><span class="kd">interface</span><span class="w"> </span><span class="nx">ConceptualCatalogSearchParams</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">ToolParams</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="p">}</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Remove from input schemas</strong>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Before</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nx">inputSchema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nx">properties</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nx">debug</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="kr">type</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">      </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Show debug information&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="nx">default</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="p">};</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1">// After</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="nx">inputSchema</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">  </span><span class="nx">properties</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="p">};</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Use configuration in execute methods</strong>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">Configuration</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s1">&#39;../../application/config/index.js&#39;</span><span class="p">;</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">async</span><span class="w"> </span><span class="nx">execute</span><span class="p">(</span><span class="nx">params</span><span class="o">:</span><span class="w"> </span><span class="kt">ConceptualCatalogSearchParams</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">debugSearch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">Configuration</span><span class="p">.</span><span class="nx">getInstance</span><span class="p">().</span><span class="nx">logging</span><span class="p">.</span><span class="nx">debugSearch</span><span class="p">;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">service</span><span class="p">.</span><span class="nx">search</span><span class="p">({</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="nx">text</span><span class="o">:</span><span class="w"> </span><span class="kt">params.text</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="nx">limit</span><span class="o">:</span><span class="w"> </span><span class="kt">10</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="nx">debug</span><span class="o">:</span><span class="w"> </span><span class="kt">debugSearch</span><span class="w">  </span><span class="c1">// From config, not params</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="p">});</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">}</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Update tool descriptions</strong> to mention config-based debug:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nx">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`Search document summaries...</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="sb">Debug output can be enabled via DEBUG_SEARCH=true environment variable.`</span><span class="p">;</span>
+</code></pre></div></p>
+</li>
+</ol>
+<h2 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h2>
+<h3 id="positive">Positive<a class="headerlink" href="#positive" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Cleaner Schemas</strong>: Tools have fewer parameters for LLMs to parse</li>
+<li><strong>Single Source of Truth</strong>: Debug setting controlled via configuration</li>
+<li><strong>Consistent Behavior</strong>: All tools use the same debug setting</li>
+<li><strong>Simpler Agent Logic</strong>: LLMs don't need to consider debug on each call</li>
+</ol>
+<h3 id="negative">Negative<a class="headerlink" href="#negative" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>No Per-Call Override</strong>: Cannot enable debug for a single call via tool parameters</li>
+<li>Mitigation: Use <code>DEBUG_SEARCH=true</code> env var for debug sessions</li>
+<li>This is acceptable since debug is primarily for development/troubleshooting</li>
+</ol>
+<h3 id="neutral">Neutral<a class="headerlink" href="#neutral" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Service Interface Unchanged</strong>: Services still accept <code>debug</code> parameter; only the tool layer changes</li>
+<li><strong>Environment Variable Required</strong>: Debug requires setting env var, not just passing parameter</li>
+</ol>
+<h2 id="alternatives-considered">Alternatives Considered<a class="headerlink" href="#alternatives-considered" title="Permanent link">&para;</a></h2>
+<h3 id="1-keep-debug-parameter-ignore-it">1. Keep Debug Parameter, Ignore It<a class="headerlink" href="#1-keep-debug-parameter-ignore-it" title="Permanent link">&para;</a></h3>
+<p><strong>Approach</strong>: Keep <code>debug</code> in schema but always use config</p>
+<p><strong>Pros</strong>: No breaking change to schema</p>
+<p><strong>Cons</strong>: Still clutters schemas; misleading parameter</p>
+<p><strong>Decision</strong>: Rejected - Defeats the purpose</p>
+<h3 id="2-inject-configuration-via-constructor">2. Inject Configuration via Constructor<a class="headerlink" href="#2-inject-configuration-via-constructor" title="Permanent link">&para;</a></h3>
+<p><strong>Approach</strong>: Pass <code>IConfiguration</code> to tool constructors</p>
+<p><strong>Pros</strong>: More testable; explicit dependency</p>
+<p><strong>Cons</strong>: Requires modifying tool instantiation in container</p>
+<p><strong>Decision</strong>: Rejected for this change - Over-engineering for a simple parameter removal. Can be done in future refactoring.</p>
+<h2 id="affected-files">Affected Files<a class="headerlink" href="#affected-files" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>src/tools/operations/conceptual_catalog_search.ts</code></li>
+<li><code>src/tools/operations/conceptual_broad_chunks_search.ts</code></li>
+<li><code>src/tools/operations/conceptual_chunks_search.ts</code></li>
+<li><code>src/tools/operations/concept_search.ts</code></li>
+</ul>
 <h2 id="related-decisions">Related Decisions<a class="headerlink" href="#related-decisions" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../adr0002-lancedb-vector-storage/">ADR-0002: LanceDB</a> - Storage for RAG</li>
-<li><a href="../adr0005-pdf-document-processing/">ADR-0005: PDF Processing</a> - Document loading</li>
+<li><a href="../adr0036-configuration-centralization/">adr0036</a> - Introduced <code>LoggingConfig.debugSearch</code></li>
+<li><a href="../adr0031-eight-specialized-tools-strategy/">adr0031</a> - Tool schema design principles</li>
 </ul>
-<h2 id="more-information">More Information<a class="headerlink" href="#more-information" title="Permanent link">&para;</a></h2>
-<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
-<h3 id="related-decisions_1">Related Decisions<a class="headerlink" href="#related-decisions_1" title="Permanent link">&para;</a></h3>
-<ul>
-<li><a href="../adr0002-lancedb-vector-storage/">ADR-0002: LanceDB</a></li>
-<li><a href="../adr0005-pdf-document-processing/">ADR-0005: PDF Processing</a></li>
-</ul>
-<hr />
-<p><strong>Confidence Level:</strong> MEDIUM (Inherited)<br />
-<strong>Attribution:</strong>
-- Inherited from upstream lance-mcp (adiom-data team)
-- Evidence: Git clone commit 082c38e2</p>
+<h2 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h2>
+<p>This is a non-breaking change from the perspective of tool consumers. Tools will continue to work the same way; they simply won't advertise the <code>debug</code> parameter. Debug output is now controlled solely via the <code>DEBUG_SEARCH</code> environment variable.</p>
 
 
 
