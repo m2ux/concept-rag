@@ -4,11 +4,11 @@ import { CatalogRepository } from "../../domain/interfaces/repositories/catalog-
 import { InputValidator } from "../../domain/services/validation/index.js";
 import { isErr, isSome } from "../../domain/functional/index.js";
 import { Chunk } from "../../domain/models/index.js";
+import { Configuration } from "../../application/config/index.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
   text: string;
   source: string;
-  debug?: boolean;
 }
 
 /**
@@ -42,7 +42,9 @@ DO NOT USE for:
 
 RETURNS: Top 5 chunks from the specified document, ranked by hybrid score with concept and WordNet expansion. Requires exact source path match.
 
-NOTE: Source path must match exactly. First use catalog_search to identify the correct document path, then use that path in the 'source' parameter.`;
+NOTE: Source path must match exactly. First use catalog_search to identify the correct document path, then use that path in the 'source' parameter.
+
+Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
   inputSchema = {
     type: "object" as const,
     properties: {
@@ -53,11 +55,6 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
       source: {
         type: "string",
         description: "REQUIRED: Full file path of the source document (e.g., '/home/user/Documents/ebooks/Philosophy/Book Title.pdf'). Use catalog_search first to find the exact path.",
-      },
-      debug: {
-        type: "boolean",
-        description: "Show debug information",
-        default: false
       }
     },
     required: ["text", "source"],
@@ -105,10 +102,11 @@ NOTE: Source path must match exactly. First use catalog_search to identify the c
     }
     
     // Delegate to service with catalog ID (normalized)
+    const debugSearch = Configuration.getInstance().logging.debugSearch;
     const result = await this.chunkSearchService.searchByCatalogId({
       catalogId: catalogOpt.value.id,
       limit: 20,
-      debug: params.debug || false
+      debug: debugSearch
     });
     
     // Handle Result type

@@ -3,10 +3,10 @@ import { CatalogSearchService } from "../../domain/services/index.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
 import { isErr } from "../../domain/functional/index.js";
 import { SearchResult } from "../../domain/models/index.js";
+import { Configuration } from "../../application/config/index.js";
 
 export interface ConceptualCatalogSearchParams extends ToolParams {
   text: string;
-  debug?: boolean;
 }
 
 /**
@@ -36,18 +36,15 @@ DO NOT USE for:
 - Finding specific information within documents (use broad_chunks_search or chunks_search)
 - Tracking specific concept usage across chunks (use concept_chunks)
 
-RETURNS: Top 10 documents with text previews, hybrid scores (including strong title matching bonus), matched concepts, and query expansion details.`;
+RETURNS: Top 10 documents with text previews, hybrid scores (including strong title matching bonus), matched concepts, and query expansion details.
+
+Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
   inputSchema = {
     type: "object" as const,
     properties: {
       text: {
         type: "string",
         description: "Search query - document titles, author names, subject areas, or general topics. Title matches receive significant ranking boost.",
-      },
-      debug: {
-        type: "boolean",
-        description: "Show debug information (query expansion, score breakdown)",
-        default: false
       }
     },
     required: ["text"],
@@ -77,10 +74,11 @@ RETURNS: Top 10 documents with text previews, hybrid scores (including strong ti
     }
     
     // Delegate to service (Result-based)
+    const debugSearch = Configuration.getInstance().logging.debugSearch;
     const result = await this.catalogSearchService.searchCatalog({
       text: params.text,
       limit: 10,
-      debug: params.debug || false
+      debug: debugSearch
     });
     
     // Handle Result type
