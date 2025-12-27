@@ -31,16 +31,16 @@ describe('Error Handling Integration Tests', () => {
 
     it('should throw structured validation error for out of range value', () => {
       try {
-        validator.validateSearchQuery({ text: 'test', limit: 150 });
+        validator.validateSearchQuery({ text: 'test', limit: 1500 });
         expect.fail('Should have thrown ValueOutOfRangeError');
       } catch (error) {
         expect(error).toBeInstanceOf(ValueOutOfRangeError);
         const err = error as ValueOutOfRangeError;
         expect(err.code).toBe('VALIDATION_LIMIT_INVALID');
         expect(err.context.field).toBe('limit');
-        expect(err.context.value).toBe(150);
+        expect(err.context.value).toBe(1500);
         expect(err.context.min).toBe(1);
-        expect(err.context.max).toBe(100);
+        expect(err.context.max).toBe(1000);
       }
     });
 
@@ -282,7 +282,7 @@ describe('Error Handling Integration Tests', () => {
       expect(() => {
         validator.validateConceptSearch({
           concept: 'test',
-          limit: 101
+          limit: 1001
         });
       }).toThrow(ValueOutOfRangeError);
     });

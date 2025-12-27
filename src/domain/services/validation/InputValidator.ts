@@ -30,13 +30,13 @@ export class InputValidator {
       throw new ValueOutOfRangeError('text.length', params.text.length, 1, 10000);
     }
     
-    // Validate limit if provided
+    // Validate limit if provided (high max for gap detection)
     if (params.limit !== undefined) {
       if (!Number.isInteger(params.limit)) {
         throw new InvalidFormatError('limit', params.limit, 'integer');
       }
-      if (params.limit < 1 || params.limit > 100) {
-        throw new ValueOutOfRangeError('limit', params.limit, 1, 100);
+      if (params.limit < 1 || params.limit > 1000) {
+        throw new ValueOutOfRangeError('limit', params.limit, 1, 1000);
       }
     }
   }
@@ -61,13 +61,13 @@ export class InputValidator {
       throw new ValueOutOfRangeError('concept.length', params.concept.length, 1, 1000);
     }
     
-    // Validate limit if provided
+    // Validate limit if provided (high max for gap detection)
     if (params.limit !== undefined) {
       if (!Number.isInteger(params.limit)) {
         throw new InvalidFormatError('limit', params.limit, 'integer');
       }
-      if (params.limit < 1 || params.limit > 100) {
-        throw new ValueOutOfRangeError('limit', params.limit, 1, 100);
+      if (params.limit < 1 || params.limit > 1000) {
+        throw new ValueOutOfRangeError('limit', params.limit, 1, 1000);
       }
     }
   }
@@ -195,13 +195,13 @@ export class InputValidator {
       throw new InvalidFormatError('includeChildren', params.includeChildren, 'boolean');
     }
     
-    // Validate limit if provided
+    // Validate limit if provided (high max for gap detection)
     if (params.limit !== undefined) {
       if (!Number.isInteger(params.limit)) {
         throw new InvalidFormatError('limit', params.limit, 'integer');
       }
-      if (params.limit < 1 || params.limit > 100) {
-        throw new ValueOutOfRangeError('limit', params.limit, 1, 100);
+      if (params.limit < 1 || params.limit > 1000) {
+        throw new ValueOutOfRangeError('limit', params.limit, 1, 1000);
       }
     }
   }
@@ -216,13 +216,13 @@ export class InputValidator {
     search?: string;
     sortBy?: string;
   }): void {
-    // Validate limit if provided
+    // Validate limit if provided (high max for gap detection)
     if (params.limit !== undefined) {
       if (!Number.isInteger(params.limit)) {
         throw new InvalidFormatError('limit', params.limit, 'integer');
       }
-      if (params.limit < 1 || params.limit > 200) {
-        throw new ValueOutOfRangeError('limit', params.limit, 1, 200);
+      if (params.limit < 1 || params.limit > 1000) {
+        throw new ValueOutOfRangeError('limit', params.limit, 1, 1000);
       }
     }
     

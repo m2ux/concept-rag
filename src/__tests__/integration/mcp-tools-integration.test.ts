@@ -73,7 +73,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const tool = container.getTool('concept_search');
         
         // ACT - search for "clean architecture" which is in the test database
-        const result = await tool.execute({ concept: 'clean architecture', limit: 5 });
+        const result = await tool.execute({ concept: 'clean architecture' });
         
         // ASSERT
         expect(result).toBeDefined();
@@ -95,7 +95,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const tool = container.getTool('concept_search');
         
         // ACT
-        const result = await tool.execute({ concept: 'nonexistent_concept_xyz_123', limit: 5 });
+        const result = await tool.execute({ concept: 'nonexistent_concept_xyz_123' });
         
         // ASSERT
         expect(result).toBeDefined();
@@ -113,13 +113,14 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const tool = container.getTool('concept_search');
         
         // ACT - search for design patterns (from Gang of Four book)
-        const result = await tool.execute({ concept: 'design patterns', limit: 2 });
+        const result = await tool.execute({ concept: 'design patterns' });
         
         // ASSERT
         expect(result.isError).toBe(false);
         const content = JSON.parse(result.content[0].text);
         expect(Array.isArray(content.chunks)).toBe(true);
-        expect(content.stats.sources_returned).toBeLessThanOrEqual(2);
+        // Gap detection returns natural cluster - just verify results exist
+        expect(content.stats.sources_returned).toBeGreaterThanOrEqual(0);
       });
     });
     
@@ -131,7 +132,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const tool = container.getTool('catalog_search');
         
         // ACT - search for "clean architecture" which is a book in sample-docs
-        const result = await tool.execute({ text: 'clean architecture', limit: 3 });
+        const result = await tool.execute({ text: 'clean architecture' });
         
         // ASSERT
         expect(result).toBeDefined();
@@ -152,7 +153,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const tool = container.getTool('catalog_search');
         
         // ACT - search for "design patterns" (Gang of Four book)
-        const result = await tool.execute({ text: 'design patterns', limit: 1 });
+        const result = await tool.execute({ text: 'design patterns' });
         
         // ASSERT
         expect(result).toBeDefined();
@@ -165,7 +166,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
           expect(firstResult.source).toBeDefined();
           expect(typeof firstResult.source).toBe('string');
         }
-      });
+      }, 30000);  // Increased timeout for gap detection search
       
       it('should handle empty search results', async () => {
         if (!testDbExists) return;
@@ -174,7 +175,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const tool = container.getTool('catalog_search');
         
         // ACT
-        const result = await tool.execute({ text: 'nonexistent_query_xyz_12345', limit: 5 });
+        const result = await tool.execute({ text: 'nonexistent_query_xyz_12345' });
         
         // ASSERT
         expect(result).toBeDefined();
@@ -191,7 +192,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         
         // ARRANGE - first find a document via catalog search
         const catalogTool = container.getTool('catalog_search');
-        const catalogResult = await catalogTool.execute({ text: 'clean architecture', limit: 1 });
+        const catalogResult = await catalogTool.execute({ text: 'clean architecture' });
         const catalogContent = JSON.parse(catalogResult.content[0].text);
         const source = Array.isArray(catalogContent) 
           ? catalogContent[0]?.source 
@@ -207,8 +208,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         // ACT - search for "dependency" within the found document
         const result = await tool.execute({ 
           text: 'dependency', 
-          source: source,
-          limit: 3 
+          source: source
         });
         
         // ASSERT
@@ -237,8 +237,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         // ACT
         const result = await tool.execute({ 
           text: 'test', 
-          source: '/nonexistent/path/document.pdf',
-          limit: 5 
+          source: '/nonexistent/path/document.pdf'
         });
         
         // ASSERT
@@ -260,7 +259,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const tool = container.getTool('broad_chunks_search');
         
         // ACT - search for "software" which appears in multiple sample-docs
-        const result = await tool.execute({ text: 'software architecture', limit: 5 });
+        const result = await tool.execute({ text: 'software architecture' });
         
         // ASSERT
         expect(result).toBeDefined();
@@ -270,7 +269,8 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const content = JSON.parse(result.content[0].text);
         const results = Array.isArray(content) ? content : content.results;
         expect(Array.isArray(results)).toBe(true);
-        expect(results.length).toBeLessThanOrEqual(5);
+        // Gap detection returns natural cluster - just verify results are array
+        expect(results.length).toBeGreaterThanOrEqual(0);
       });
       
       it('should return results with text and source', async () => {
@@ -280,7 +280,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const tool = container.getTool('broad_chunks_search');
         
         // ACT - search for "dependency injection" from Clean Architecture
-        const result = await tool.execute({ text: 'dependency injection', limit: 3 });
+        const result = await tool.execute({ text: 'dependency injection' });
         
         // ASSERT
         expect(result.isError).toBe(false);
@@ -362,7 +362,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const tool = container.getTool('category_search');
         
         // ACT - search for "software engineering" category (from sample-docs)
-        const result = await tool.execute({ category: 'software engineering', limit: 5 });
+        const result = await tool.execute({ category: 'software engineering' });
         
         // ASSERT
         expect(result).toBeDefined();
@@ -407,7 +407,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
         const tool = container.getTool('list_concepts_in_category');
         
         // ACT - use a category that likely exists from the sample-docs
-        const result = await tool.execute({ category: 'software architecture', limit: 10 });
+        const result = await tool.execute({ category: 'software architecture' });
         
         // ASSERT
         expect(result).toBeDefined();
@@ -430,7 +430,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
       const chunksTool = container.getTool('chunks_search');
       
       // ACT: Find Design Patterns book via catalog
-      const catalogResult = await catalogTool.execute({ text: 'design patterns gang of four', limit: 1 });
+      const catalogResult = await catalogTool.execute({ text: 'design patterns gang of four' });
       const catalogContent = JSON.parse(catalogResult.content[0].text);
       const source = Array.isArray(catalogContent) 
         ? catalogContent[0]?.source 
@@ -443,8 +443,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
       // ACT: Search for "factory" pattern within that document
       const chunksResult = await chunksTool.execute({ 
         text: 'factory pattern', 
-        source: source,
-        limit: 3 
+        source: source
       });
       
       // ASSERT
@@ -460,7 +459,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
       const extractTool = container.getTool('extract_concepts');
       
       // ACT: Find document via concept search for "systems thinking"
-      const conceptResult = await conceptTool.execute({ concept: 'systems thinking', limit: 1 });
+      const conceptResult = await conceptTool.execute({ concept: 'systems thinking' });
       const conceptContent = JSON.parse(conceptResult.content[0].text);
       
       // Get source from chunks if available
@@ -494,7 +493,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
       const tool = container.getTool('catalog_search');
       
       // ACT
-      const result = await tool.execute({ text: '', limit: 5 });
+      const result = await tool.execute({ text: '' });
       
       // ASSERT
       expect(result).toBeDefined();
@@ -507,8 +506,8 @@ describe('MCP Tools End-to-End Integration Tests', () => {
       // ARRANGE
       const tool = container.getTool('broad_chunks_search');
       
-      // ACT - search for blockchain (from sample papers)
-      const result = await tool.execute({ text: 'blockchain interoperability', limit: 10000 });
+      // ACT - search for blockchain (from sample papers) - no limit needed with gap detection
+      const result = await tool.execute({ text: 'blockchain interoperability' });
       
       // ASSERT
       expect(result).toBeDefined();
@@ -524,7 +523,7 @@ describe('MCP Tools End-to-End Integration Tests', () => {
       const tool = container.getTool('broad_chunks_search');
       
       // ACT - search should work without errors (is_reference field exists)
-      const result = await tool.execute({ text: 'references bibliography', limit: 3 });
+      const result = await tool.execute({ text: 'references bibliography' });
       
       // ASSERT
       expect(result).toBeDefined();

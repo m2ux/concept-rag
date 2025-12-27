@@ -6,9 +6,6 @@ export interface ConceptSearchParams extends ToolParams {
   /** The concept to search for */
   concept: string;
   
-  /** Maximum sources to return (default: 20) */
-  limit?: number;
-  
   /** Optional source path filter */
   source_filter?: string;
 }
@@ -47,10 +44,10 @@ DO NOT USE for:
 - Finding documents by title (use catalog_search instead)
 - Searching within a known document (use chunks_search instead)
 
-RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
+RETURNS: All matching content organized as Concept → Sources → Chunks:
 - Concept metadata: summary, synonyms, broader/narrower terms
-- Source documents with match_type: 'primary' (direct) or 'related' (via linked concept)
-- Chunks: text with page numbers and concept density ranking
+- All source documents with match_type: 'primary' (direct) or 'related' (via linked concept)
+- All chunks: text with page numbers and concept density ranking
 
 Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
 
@@ -60,11 +57,6 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
       concept: {
         type: "string",
         description: "The concept to search for - use conceptual terms not exact phrases (e.g., 'innovation' not 'innovation process')",
-      },
-      limit: {
-        type: "number",
-        description: "Maximum number of sources to return (default: 20)",
-        default: 20
       },
       source_filter: {
         type: "string",
@@ -93,17 +85,15 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
       };
     }
     
-    const maxSources = params.limit || 20;
-    
     console.error(`🔍 Hierarchical concept search: "${params.concept}"`);
     
     try {
-      // Perform hierarchical search
+      // Perform hierarchical search - no limits, return all matching content
       const result = await this.conceptSearchService.search({
         concept: params.concept,
-        maxSources,
-        maxChunks: maxSources * 3, // ~3 chunks per source
-        chunksPerSource: 3,
+        maxSources: 1000,   // Effectively unlimited
+        maxChunks: 3000,    // Effectively unlimited (~3 per source)
+        chunksPerSource: 10,
         sourceFilter: params.source_filter
       });
       

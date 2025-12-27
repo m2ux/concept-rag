@@ -46,7 +46,7 @@ describe('InputValidator', () => {
       }).toThrow(ValueOutOfRangeError);
       
       expect(() => {
-        validator.validateSearchQuery({ text: 'test', limit: 101 });
+        validator.validateSearchQuery({ text: 'test', limit: 1001 });
       }).toThrow(ValueOutOfRangeError);
     });
   });
@@ -77,7 +77,7 @@ describe('InputValidator', () => {
       }).not.toThrow();
       
       expect(() => {
-        validator.validateConceptSearch({ concept: 'test', limit: 101 });
+        validator.validateConceptSearch({ concept: 'test', limit: 1001 });
       }).toThrow(ValueOutOfRangeError);
     });
   });
@@ -267,7 +267,7 @@ describe('InputValidator', () => {
       expect(() => {
         validator.validateCategorySearch({
           category: 'test',
-          limit: 101
+          limit: 1001
         });
       }).toThrow(ValueOutOfRangeError);
     });
@@ -286,7 +286,7 @@ describe('InputValidator', () => {
       }).not.toThrow();
       
       expect(() => {
-        validator.validateListCategories({ limit: 201 });
+        validator.validateListCategories({ limit: 1001 });
       }).toThrow(ValueOutOfRangeError);
     });
 
