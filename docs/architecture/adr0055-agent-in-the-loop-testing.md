@@ -1,6 +1,6 @@
 # ADR 0055: Agent-in-the-Loop E2E Testing
 
-**Status**: Proposed  
+**Status**: Accepted  
 **Date**: 2025-12-27  
 **Deciders**: Development Team  
 **Related ADRs**: [adr0035](adr0035-test-suite-expansion.md), [adr0019](adr0019-vitest-testing-framework.md), [adr0032](adr0032-tool-selection-guide.md), [adr0031](adr0031-eight-specialized-tools-strategy.md)
