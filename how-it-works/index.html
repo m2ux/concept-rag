@@ -591,6 +591,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#6-gap-detection-elbow-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Gap Detection (Elbow Method)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2860,6 +2871,49 @@
 </tbody>
 </table>
 <p>Results are combined using weighted ranking for optimal retrieval accuracy.</p>
+<h3 id="6-gap-detection-elbow-method">6. Gap Detection (Elbow Method)<a class="headerlink" href="#6-gap-detection-elbow-method" title="Permanent link">&para;</a></h3>
+<p>Search results are filtered using <strong>gap detection</strong> instead of fixed limits:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Scores: [0.85, 0.82, 0.78, 0.75, 0.40, 0.38, 0.35]
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Gaps:   [0.03, 0.04, 0.03, 0.35, 0.02, 0.03]
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                            ↑ largest gap
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Returns: [0.85, 0.82, 0.78, 0.75] (high-scoring cluster)
+</code></pre></div>
+<p>This approach:</p>
+<ul>
+<li><strong>Adaptive</strong>: Returns more results for broad queries, fewer for specific ones</li>
+<li><strong>Quality-focused</strong>: Filters based on score quality, not arbitrary counts</li>
+<li><strong>Automatic</strong>: Finds the natural boundary between relevant and less-relevant results</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Result Filtering</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>catalog_search</code></td>
+<td>Gap detection (1-30 results)</td>
+</tr>
+<tr>
+<td><code>broad_chunks_search</code></td>
+<td>Gap detection (1-30 results)</td>
+</tr>
+<tr>
+<td><code>chunks_search</code></td>
+<td>Fixed limit (5 results)</td>
+</tr>
+<tr>
+<td><code>concept_search</code></td>
+<td>All matching content</td>
+</tr>
+<tr>
+<td><code>category_search</code></td>
+<td>All documents in category</td>
+</tr>
+</tbody>
+</table>
 
 
 
