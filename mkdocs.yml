@@ -138,6 +138,8 @@ nav:
     - "ADR-0050: MkDocs Site": architecture/adr0050-mkdocs-material-documentation-site.md
     - "ADR-0051: API Documentation": architecture/adr0051-api-documentation-consolidation.md
     - "ADR-0052: Docs Restructure": architecture/adr0052-documentation-site-restructure.md
+    - "ADR-0053: Meta Content Detection": architecture/adr0053-meta-content-detection.md
+    - "ADR-0054: Debug Flag Deprecation": architecture/adr0054-deprecate-debug-input-schema.md
 
   - FAQ: faq.md
 

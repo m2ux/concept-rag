@@ -1,5 +1,6 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ConceptSearchService, ConceptSearchResult, EnrichedChunk, SourceWithPages } from "../../domain/services/concept-search-service.js";
+import { Configuration } from "../../application/config/index.js";
 
 export interface ConceptSearchParams extends ToolParams {
   /** The concept to search for */
@@ -10,9 +11,6 @@ export interface ConceptSearchParams extends ToolParams {
   
   /** Optional source path filter */
   source_filter?: string;
-  
-  /** Show debug information */
-  debug?: boolean;
 }
 
 /**
@@ -52,7 +50,9 @@ DO NOT USE for:
 RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
 - Concept metadata: summary, synonyms, broader/narrower terms
 - Source documents with match_type: 'primary' (direct) or 'related' (via linked concept)
-- Chunks: text with page numbers and concept density ranking`;
+- Chunks: text with page numbers and concept density ranking
+
+Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
 
   inputSchema = {
     type: "object" as const,
@@ -69,11 +69,6 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
       source_filter: {
         type: "string",
         description: "Optional: Filter results to documents containing this text in their source path"
-      },
-      debug: {
-        type: "boolean",
-        description: "Show debug information",
-        default: false
       }
     },
     required: ["concept"],
@@ -113,7 +108,8 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
       });
       
       // Format for MCP response
-      const formatted = this.formatResult(result, params.debug);
+      const debugSearch = Configuration.getInstance().logging.debugSearch;
+      const formatted = this.formatResult(result, debugSearch);
       
       console.error(`✅ Found: ${result.totalDocuments} documents, ${result.chunks.length} chunks across ${result.sources.length} sources`);
       
