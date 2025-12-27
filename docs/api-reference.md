@@ -17,15 +17,15 @@ Search document summaries and metadata to discover relevant documents.
 
 ```json
 {
-  "text": "string",
-  "debug": "boolean"
+  "text": "string"
 }
 ```
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `text` | string | ✅ | — | Search query |
-| `debug` | boolean | ❌ | `false` | Enable debug logging |
+
+> **Debug Output:** Enable via `DEBUG_SEARCH=true` environment variable.
 
 #### Output Schema
 
@@ -73,15 +73,15 @@ Search across all document chunks using hybrid search.
 
 ```json
 {
-  "text": "string",
-  "debug": "boolean"
+  "text": "string"
 }
 ```
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `text` | string | ✅ | — | Search query |
-| `debug` | boolean | ❌ | `false` | Enable debug logging |
+
+> **Debug Output:** Enable via `DEBUG_SEARCH=true` environment variable.
 
 #### Output Schema
 
@@ -126,8 +126,7 @@ Search within a single known document.
 ```json
 {
   "text": "string",
-  "source": "string",
-  "debug": "boolean"
+  "source": "string"
 }
 ```
 
@@ -135,7 +134,8 @@ Search within a single known document.
 |-----------|------|----------|---------|-------------|
 | `text` | string | ✅ | — | Search query |
 | `source` | string | ✅ | — | Full file path of document |
-| `debug` | boolean | ❌ | `false` | Enable debug logging |
+
+> **Debug Output:** Enable via `DEBUG_SEARCH=true` environment variable.
 
 #### Output Schema
 
@@ -175,8 +175,7 @@ Find chunks associated with a concept, organized hierarchically.
 {
   "concept": "string",
   "limit": 20,
-  "source_filter": "string",
-  "debug": "boolean"
+  "source_filter": "string"
 }
 ```
 
@@ -185,7 +184,8 @@ Find chunks associated with a concept, organized hierarchically.
 | `concept` | string | ✅ | — | Concept to search for |
 | `limit` | number | ❌ | `20` | Max sources to return |
 | `source_filter` | string | ❌ | — | Filter by source path |
-| `debug` | boolean | ❌ | `false` | Include `page_previews` in sources |
+
+> **Debug Output:** Enable via `DEBUG_SEARCH=true` environment variable. When enabled, includes `page_previews` in sources.
 
 #### Output Schema
 
@@ -250,9 +250,9 @@ Find chunks associated with a concept, organized hierarchically.
 | `stats` | object | Search statistics |
 | `scores` | object | Hybrid search scores |
 
-#### Additional Fields with `debug: true`
+#### Additional Fields with Debug Enabled
 
-When `debug: true`, each source includes `page_previews`:
+When `DEBUG_SEARCH=true` environment variable is set, each source includes `page_previews`:
 
 | Field | Type | Description |
 |-------|------|-------------|

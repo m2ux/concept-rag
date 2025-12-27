@@ -88,16 +88,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       text: {
         type: "string",
         description: "Search query (title, author, topic, or concept)"
-      },
-      debug: {
-        type: "boolean",
-        description: "Include detailed scoring information"
       }
     },
     required: ["text"]
   }
 }
 ```
+
+> **Note:** Debug output is controlled via `DEBUG_SEARCH=true` environment variable, not per-call parameters. See [ADR 0054](adr0054-deprecate-debug-input-schema.md).
 
 ### Client Configuration
 
