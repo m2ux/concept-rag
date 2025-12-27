@@ -1,6 +1,6 @@
 # ADR 0054: Deprecate Debug Flag from Tool Input Schemas
 
-**Status**: Proposed  
+**Status**: Accepted  
 **Date**: 2025-12-27  
 **Deciders**: Development Team  
 **Related ADRs**: [adr0036](adr0036-configuration-centralization.md)  
