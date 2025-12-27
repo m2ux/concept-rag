@@ -34,14 +34,7 @@ Search document summaries and metadata to discover relevant documents.
   {
     "source": "string",
     "summary": "string",
-    "scores": {
-      "hybrid": "string",
-      "vector": "string",
-      "bm25": "string",
-      "title": "string",
-      "concept": "string",
-      "wordnet": "string"
-    },
+    "score": "string",
     "expanded_terms": ["string"]
   }
 ]
@@ -51,15 +44,22 @@ Search document summaries and metadata to discover relevant documents.
 |-------|------|-------------|
 | `source` | string | Full file path to document |
 | `summary` | string | Document summary text |
-| `scores.hybrid` | string | Combined weighted score |
-| `scores.vector` | string | Semantic similarity (0-1) |
-| `scores.bm25` | string | Keyword relevance (0-1) |
-| `scores.title` | string | Title match (0-1) |
-| `scores.concept` | string | Concept alignment (0-1) |
-| `scores.wordnet` | string | Synonym expansion (0-1) |
+| `score` | string | Combined hybrid score (0.000-1.000) |
 | `expanded_terms` | string[] | Expanded query terms |
 
 **Limits:** 10 documents max.
+
+#### Additional Fields with Debug Enabled
+
+When `DEBUG_SEARCH=true`, each result includes score component breakdown:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `score_components.vector` | string | Semantic similarity (0-1) |
+| `score_components.bm25` | string | Keyword relevance (0-1) |
+| `score_components.title` | string | Title match (0-1) |
+| `score_components.concept` | string | Concept alignment (0-1) |
+| `score_components.wordnet` | string | Synonym expansion (0-1) |
 
 ---
 
@@ -90,13 +90,7 @@ Search across all document chunks using hybrid search.
   {
     "text": "string",
     "source": "string",
-    "scores": {
-      "hybrid": "string",
-      "vector": "string",
-      "bm25": "string",
-      "concept": "string",
-      "wordnet": "string"
-    },
+    "score": "string",
     "expanded_terms": ["string"]
   }
 ]
@@ -106,14 +100,21 @@ Search across all document chunks using hybrid search.
 |-------|------|-------------|
 | `text` | string | Chunk content |
 | `source` | string | Source document path |
-| `scores.hybrid` | string | Combined score |
-| `scores.vector` | string | Semantic similarity |
-| `scores.bm25` | string | Keyword relevance |
-| `scores.concept` | string | Concept alignment |
-| `scores.wordnet` | string | Synonym expansion |
+| `score` | string | Combined hybrid score (0.000-1.000) |
 | `expanded_terms` | string[] | Expanded query terms |
 
 **Limits:** 20 chunks max.
+
+#### Additional Fields with Debug Enabled
+
+When `DEBUG_SEARCH=true`, each result includes score component breakdown:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `score_components.vector` | string | Semantic similarity (0-1) |
+| `score_components.bm25` | string | Keyword relevance (0-1) |
+| `score_components.concept` | string | Concept alignment (0-1) |
+| `score_components.wordnet` | string | Synonym expansion (0-1) |
 
 ---
 
@@ -221,13 +222,7 @@ Find chunks associated with a concept, organized hierarchically.
     "sources_returned": 0,
     "chunks_returned": 0
   },
-  "scores": {
-    "hybrid": "string",
-    "name": "string",
-    "vector": "string",
-    "bm25": "string",
-    "wordnet": "string"
-  }
+  "score": "string"
 }
 ```
 
@@ -248,15 +243,26 @@ Find chunks associated with a concept, organized hierarchically.
 | `chunks[].page` | number | Page number |
 | `chunks[].concept_density` | string | Prominence (0.000-1.000) |
 | `stats` | object | Search statistics |
-| `scores` | object | Hybrid search scores |
+| `score` | string | Combined hybrid score (0.000-1.000) |
 
 #### Additional Fields with Debug Enabled
 
-When `DEBUG_SEARCH=true` environment variable is set, each source includes `page_previews`:
+When `DEBUG_SEARCH=true` environment variable is set:
+
+**Sources include page previews:**
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `sources[].page_previews` | string[] | Text previews from each page |
+
+**Score component breakdown is included:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `score_components.name` | string | Concept name match (0-1) |
+| `score_components.vector` | string | Semantic similarity (0-1) |
+| `score_components.bm25` | string | Keyword relevance (0-1) |
+| `score_components.wordnet` | string | Synonym expansion (0-1) |
 
 ---
 

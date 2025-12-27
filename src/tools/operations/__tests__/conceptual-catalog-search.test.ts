@@ -57,8 +57,7 @@ describe('ConceptualCatalogSearchTool', () => {
       expect(Array.isArray(parsedContent)).toBe(true);
       expect(parsedContent.length).toBeGreaterThan(0);
       expect(parsedContent[0].source).toBeDefined();
-      expect(parsedContent[0].scores).toBeDefined();
-      expect(parsedContent[0].scores.hybrid).toBeDefined();
+      expect(parsedContent[0].score).toBeDefined();  // Hybrid score always shown
     });
     
     it('should respect limit parameter (defaults to 10)', async () => {
@@ -111,7 +110,7 @@ describe('ConceptualCatalogSearchTool', () => {
       expect(parsedContent).toEqual([]);
     });
     
-    it('should format scores correctly', async () => {
+    it('should format score correctly', async () => {
       // SETUP
       const testResults = [
         createTestSearchResult({
@@ -127,11 +126,10 @@ describe('ConceptualCatalogSearchTool', () => {
       // EXERCISE
       const result = await tool.execute({ text: 'test' });
       
-      // VERIFY
+      // VERIFY - hybrid score always shown as 'score', components only in debug
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent[0].scores.hybrid).toBe('0.123');
-      expect(parsedContent[0].scores.vector).toBe('0.789');
-      expect(parsedContent[0].scores.bm25).toBe('0.346');
+      expect(parsedContent[0].score).toBe('0.123');
+      expect(parsedContent[0].score_components).toBeUndefined();  // Not in debug mode
     });
     
     it('should handle errors gracefully', async () => {
