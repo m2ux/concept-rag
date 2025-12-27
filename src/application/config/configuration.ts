@@ -100,13 +100,12 @@ export class Configuration implements IConfiguration {
   }
   
   /**
-   * Get existing configuration instance
-   * 
-   * @throws Error if not initialized
+   * Get existing configuration instance.
+   * Auto-initializes with process.env if not already initialized.
    */
   static getInstance(): Configuration {
     if (!Configuration.instance) {
-      throw new Error('Configuration not initialized. Call Configuration.initialize() first.');
+      Configuration.instance = Configuration.initialize(process.env);
     }
     return Configuration.instance;
   }

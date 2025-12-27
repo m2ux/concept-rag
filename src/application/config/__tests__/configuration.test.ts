@@ -56,8 +56,12 @@ describe('Configuration', () => {
       expect(config1).toBe(config2);
     });
     
-    it('should throw if getInstance called before initialize', () => {
-      expect(() => Configuration.getInstance()).toThrow('Configuration not initialized');
+    it('should auto-initialize with process.env if getInstance called before initialize', () => {
+      const config = Configuration.getInstance();
+      
+      // Should auto-initialize with defaults
+      expect(config).toBeDefined();
+      expect(config.database.url).toBe('~/.concept_rag');
     });
   });
   
