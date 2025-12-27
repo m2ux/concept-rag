@@ -2917,17 +2917,10 @@
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="p">{</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;scores&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="nt">&quot;hybrid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">      </span><span class="nt">&quot;vector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">      </span><span class="nt">&quot;bm25&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">      </span><span class="nt">&quot;concept&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">      </span><span class="nt">&quot;wordnet&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span><span class="nt">&quot;expanded_terms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;string&quot;</span><span class="p">]</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span><span class="p">}</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="p">]</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">&quot;expanded_terms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;string&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">]</span>
 </code></pre></div>
 <table>
 <thead>
@@ -2949,34 +2942,9 @@
 <td>Document summary text</td>
 </tr>
 <tr>
-<td><code>scores.hybrid</code></td>
+<td><code>score</code></td>
 <td>string</td>
-<td>Combined weighted score</td>
-</tr>
-<tr>
-<td><code>scores.vector</code></td>
-<td>string</td>
-<td>Semantic similarity (0-1)</td>
-</tr>
-<tr>
-<td><code>scores.bm25</code></td>
-<td>string</td>
-<td>Keyword relevance (0-1)</td>
-</tr>
-<tr>
-<td><code>scores.title</code></td>
-<td>string</td>
-<td>Title match (0-1)</td>
-</tr>
-<tr>
-<td><code>scores.concept</code></td>
-<td>string</td>
-<td>Concept alignment (0-1)</td>
-</tr>
-<tr>
-<td><code>scores.wordnet</code></td>
-<td>string</td>
-<td>Synonym expansion (0-1)</td>
+<td>Combined hybrid score (0.000-1.000)</td>
 </tr>
 <tr>
 <td><code>expanded_terms</code></td>
@@ -2986,6 +2954,44 @@
 </tbody>
 </table>
 <p><strong>Limits:</strong> 10 documents max.</p>
+<h4 id="additional-fields-with-debug-enabled">Additional Fields with Debug Enabled<a class="headerlink" href="#additional-fields-with-debug-enabled" title="Permanent link">&para;</a></h4>
+<p>When <code>DEBUG_SEARCH=true</code>, each result includes score component breakdown:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>score_components.vector</code></td>
+<td>string</td>
+<td>Semantic similarity (0-1)</td>
+</tr>
+<tr>
+<td><code>score_components.bm25</code></td>
+<td>string</td>
+<td>Keyword relevance (0-1)</td>
+</tr>
+<tr>
+<td><code>score_components.title</code></td>
+<td>string</td>
+<td>Title match (0-1)</td>
+</tr>
+<tr>
+<td><code>score_components.concept</code></td>
+<td>string</td>
+<td>Concept alignment (0-1)</td>
+</tr>
+<tr>
+<td><code>score_components.wordnet</code></td>
+<td>string</td>
+<td>Synonym expansion (0-1)</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h2 id="content-search">Content Search<a class="headerlink" href="#content-search" title="Permanent link">&para;</a></h2>
 <h3 id="broad_chunks_search">broad_chunks_search<a class="headerlink" href="#broad_chunks_search" title="Permanent link">&para;</a></h3>
@@ -3023,16 +3029,10 @@
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="p">{</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nt">&quot;scores&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">      </span><span class="nt">&quot;hybrid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">      </span><span class="nt">&quot;vector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">      </span><span class="nt">&quot;bm25&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">      </span><span class="nt">&quot;concept&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">      </span><span class="nt">&quot;wordnet&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="nt">&quot;expanded_terms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;string&quot;</span><span class="p">]</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">  </span><span class="p">}</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="p">]</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nt">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="nt">&quot;expanded_terms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;string&quot;</span><span class="p">]</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">]</span>
 </code></pre></div>
 <table>
 <thead>
@@ -3054,29 +3054,9 @@
 <td>Source document path</td>
 </tr>
 <tr>
-<td><code>scores.hybrid</code></td>
+<td><code>score</code></td>
 <td>string</td>
-<td>Combined score</td>
-</tr>
-<tr>
-<td><code>scores.vector</code></td>
-<td>string</td>
-<td>Semantic similarity</td>
-</tr>
-<tr>
-<td><code>scores.bm25</code></td>
-<td>string</td>
-<td>Keyword relevance</td>
-</tr>
-<tr>
-<td><code>scores.concept</code></td>
-<td>string</td>
-<td>Concept alignment</td>
-</tr>
-<tr>
-<td><code>scores.wordnet</code></td>
-<td>string</td>
-<td>Synonym expansion</td>
+<td>Combined hybrid score (0.000-1.000)</td>
 </tr>
 <tr>
 <td><code>expanded_terms</code></td>
@@ -3086,6 +3066,39 @@
 </tbody>
 </table>
 <p><strong>Limits:</strong> 20 chunks max.</p>
+<h4 id="additional-fields-with-debug-enabled_1">Additional Fields with Debug Enabled<a class="headerlink" href="#additional-fields-with-debug-enabled_1" title="Permanent link">&para;</a></h4>
+<p>When <code>DEBUG_SEARCH=true</code>, each result includes score component breakdown:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>score_components.vector</code></td>
+<td>string</td>
+<td>Semantic similarity (0-1)</td>
+</tr>
+<tr>
+<td><code>score_components.bm25</code></td>
+<td>string</td>
+<td>Keyword relevance (0-1)</td>
+</tr>
+<tr>
+<td><code>score_components.concept</code></td>
+<td>string</td>
+<td>Concept alignment (0-1)</td>
+</tr>
+<tr>
+<td><code>score_components.wordnet</code></td>
+<td>string</td>
+<td>Synonym expansion (0-1)</td>
+</tr>
+</tbody>
+</table>
 <hr />
 <h3 id="chunks_search">chunks_search<a class="headerlink" href="#chunks_search" title="Permanent link">&para;</a></h3>
 <p>Search within a single known document.</p>
@@ -3253,14 +3266,8 @@
 <a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="w">    </span><span class="nt">&quot;sources_returned&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
 <a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a><span class="w">    </span><span class="nt">&quot;chunks_returned&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
 <a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a><span class="w">  </span><span class="nt">&quot;scores&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a><span class="w">    </span><span class="nt">&quot;hybrid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a><span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a><span class="w">    </span><span class="nt">&quot;vector&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a><span class="w">    </span><span class="nt">&quot;bm25&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a><span class="w">    </span><span class="nt">&quot;wordnet&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
-<a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a><span class="w">  </span><span class="p">}</span>
-<a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a><span class="p">}</span>
+<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a><span class="w">  </span><span class="nt">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span>
+<a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a><span class="p">}</span>
 </code></pre></div>
 <table>
 <thead>
@@ -3347,14 +3354,15 @@
 <td>Search statistics</td>
 </tr>
 <tr>
-<td><code>scores</code></td>
-<td>object</td>
-<td>Hybrid search scores</td>
+<td><code>score</code></td>
+<td>string</td>
+<td>Combined hybrid score (0.000-1.000)</td>
 </tr>
 </tbody>
 </table>
-<h4 id="additional-fields-with-debug-enabled">Additional Fields with Debug Enabled<a class="headerlink" href="#additional-fields-with-debug-enabled" title="Permanent link">&para;</a></h4>
-<p>When <code>DEBUG_SEARCH=true</code> environment variable is set, each source includes <code>page_previews</code>:</p>
+<h4 id="additional-fields-with-debug-enabled_2">Additional Fields with Debug Enabled<a class="headerlink" href="#additional-fields-with-debug-enabled_2" title="Permanent link">&para;</a></h4>
+<p>When <code>DEBUG_SEARCH=true</code> environment variable is set:</p>
+<p><strong>Sources include page previews:</strong></p>
 <table>
 <thead>
 <tr>
@@ -3368,6 +3376,38 @@
 <td><code>sources[].page_previews</code></td>
 <td>string[]</td>
 <td>Text previews from each page</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Score component breakdown is included:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>score_components.name</code></td>
+<td>string</td>
+<td>Concept name match (0-1)</td>
+</tr>
+<tr>
+<td><code>score_components.vector</code></td>
+<td>string</td>
+<td>Semantic similarity (0-1)</td>
+</tr>
+<tr>
+<td><code>score_components.bm25</code></td>
+<td>string</td>
+<td>Keyword relevance (0-1)</td>
+</tr>
+<tr>
+<td><code>score_components.wordnet</code></td>
+<td>string</td>
+<td>Synonym expansion (0-1)</td>
 </tr>
 </tbody>
 </table>
