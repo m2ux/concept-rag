@@ -94,7 +94,8 @@ describe('AIL Tier 1: Single-Document Retrieval', () => {
   let runner: ScenarioRunner;
   
   // Check if test database exists
-  const testDbPath = './db/test';
+  // Use AIL_TEST_DB env var or default to db/test
+  const testDbPath = process.env.AIL_TEST_DB || './db/test';
   const testDbExists = fs.existsSync(testDbPath);
   
   beforeAll(async () => {
