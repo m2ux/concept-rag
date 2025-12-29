@@ -25,7 +25,24 @@ export class ListCategoriesTool extends BaseTool<ListCategoriesToolParams> {
   }
   
   name = "list_categories";
-  description = "List all available categories with statistics. Discover what subject areas are in your library.";
+  description = `List all available categories with statistics. Discover what subject areas are in your library.
+
+USE THIS TOOL WHEN:
+- User asks "what categories exist?" or "what subject areas do you have?"
+- Starting category-based exploration of the library
+- Need to discover available domains before drilling into specific categories
+- Building an overview of the library's organizational structure
+- Finding the right category name/ID for use with category_search
+
+DO NOT USE for:
+- Finding documents about a specific topic (use catalog_search instead)
+- Searching within document content (use broad_chunks_search instead)
+- Finding where a concept appears (use concept_search or source_concepts)
+- Getting documents in a known category (use category_search with the category name)
+
+RETURNS: Array of categories with names, descriptions, aliases, hierarchy paths, parent/child relationships, and statistics (document count, chunk count, concept count). Includes summary with total categories and root category count.
+
+COMMON WORKFLOW: Use list_categories first to discover available categories, then use category_search with a specific category name to get documents in that category.`;
   
   inputSchema = {
     type: "object" as const,

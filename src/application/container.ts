@@ -21,6 +21,7 @@ import { ConceptSourcesTool } from '../tools/operations/concept_sources.js';
 import { CategorySearchTool } from '../tools/operations/category-search-tool.js';
 import { ListCategoriesTool } from '../tools/operations/list-categories-tool.js';
 import { ListConceptsInCategoryTool } from '../tools/operations/list-concepts-in-category-tool.js';
+import { GetGuidanceTool } from '../tools/operations/get-guidance-tool.js';
 import { BaseTool } from '../tools/base/tool.js';
 import { EmbeddingCache, SearchResultCache } from '../infrastructure/cache/index.js';
 import { LanceDBCategoryRepository } from '../infrastructure/lancedb/repositories/lancedb-category-repository.js';
@@ -184,6 +185,7 @@ export class ApplicationContainer {
     this.tools.set('extract_concepts', new DocumentConceptsExtractTool(catalogRepo));
     this.tools.set('concept_sources', new ConceptSourcesTool(conceptSourcesService));
     this.tools.set('source_concepts', new SourceConceptsTool(conceptSourcesService));
+    this.tools.set('get_guidance', new GetGuidanceTool());
     
     // 7a. Register category tools if categories table exists
     if (categoriesTable && this.categoryRepo) {

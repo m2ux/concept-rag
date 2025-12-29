@@ -1,0 +1,1 @@
+When using concept-rag MCP tools, always call `get_guidance` first before any other tool calls. This returns research guidelines that ensure correct tool selection, efficient searching (4-6 calls max), and proper answer synthesis. Never narrate your search process - just synthesize answers and cite sources.

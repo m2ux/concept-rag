@@ -6,10 +6,11 @@ This guide helps AI agents and developers select the appropriate MCP tool for th
 
 ## Overview
 
-Concept-RAG provides **10 MCP tools** organized into four categories:
+Concept-RAG provides **11 MCP tools** organized into five categories:
 
 | Category | Tools | Purpose |
 |----------|-------|---------|
+| **Guidance** | `get_guidance` | Get research rules and tool selection help (**call first!**) |
 | **Document Discovery** | `catalog_search` | Find documents by title, author, topic |
 | **Content Search** | `broad_chunks_search`, `chunks_search` | Search within document content |
 | **Concept Analysis** | `concept_search`, `extract_concepts`, `source_concepts`, `concept_sources` | Analyze and track concepts |
@@ -53,6 +54,22 @@ START: User asks a question
 ---
 
 ## Detailed Tool Selection Criteria
+
+### get_guidance
+
+✅ **CALL FIRST** before starting any research session  
+✅ Unsure which tool to use for a specific query  
+✅ Need to review best practices for answer synthesis  
+✅ Want to understand efficient search patterns
+
+❌ Never skip this tool at the start of a session
+
+**Parameters:**
+- `topic='rules'` (default): Get agent research rules
+- `topic='tool-selection'`: Get this tool selection guide
+- `topic='all'`: Get both documents
+
+---
 
 ### catalog_search
 
