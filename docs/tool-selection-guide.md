@@ -6,7 +6,7 @@ This guide helps AI agents and developers select the appropriate MCP tool for th
 
 ## Overview
 
-Concept-RAG provides **11 MCP tools** organized into five categories:
+Concept-RAG provides **12 MCP tools** organized into six categories:
 
 | Category | Tools | Purpose |
 |----------|-------|---------|
@@ -15,6 +15,7 @@ Concept-RAG provides **11 MCP tools** organized into five categories:
 | **Content Search** | `broad_chunks_search`, `chunks_search` | Search within document content |
 | **Concept Analysis** | `concept_search`, `extract_concepts`, `source_concepts`, `concept_sources` | Analyze and track concepts |
 | **Category Browsing** | `category_search`, `list_categories`, `list_concepts_in_category` | Browse by domain/category |
+| **Visual Content** | `get_visuals` | Retrieve diagrams, charts, tables, figures |
 
 ---
 
@@ -204,6 +205,26 @@ START: User asks a question
 
 ---
 
+### get_visuals
+
+✅ Looking for diagrams, charts, or figures that illustrate a concept  
+✅ Finding visual representations from a specific document  
+✅ Retrieving visual context after a chunk search  
+✅ Browsing available diagrams by type (diagram, flowchart, chart, table, figure)
+
+❌ Text-based search (use `broad_chunks_search` or `chunks_search`)  
+❌ Finding documents by title (use `catalog_search`)  
+❌ Searching for concepts in text (use `concept_search`)
+
+**Parameters:**
+- `catalog_id`: Filter by document
+- `visual_type`: Filter by type (diagram, flowchart, chart, table, figure)
+- `page_number`: Filter by page
+- `concept`: Filter by associated concept
+- `limit`: Maximum results (default: 20)
+
+---
+
 ## Common Workflows
 
 ### 1. Explore Your Library
@@ -240,6 +261,24 @@ category_search → browse documents in domain
 list_concepts_in_category → understand domain vocabulary
 ```
 
+### 5. Enrich Search with Diagrams
+```
+broad_chunks_search → find relevant text content
+    ↓
+get_visuals (concept: <topic>) → find diagrams illustrating the topic
+    ↓
+Combine text + visuals for comprehensive understanding
+```
+
+### 6. Browse Diagrams in a Document
+```
+catalog_search → find the document
+    ↓
+get_visuals (catalog_id: <id>) → list all diagrams in document
+    ↓
+get_visuals (page_number: <n>) → find diagrams on specific page
+```
+
 ---
 
 ## Tool Selection Validation Test Cases
@@ -264,6 +303,9 @@ list_concepts_in_category → understand domain vocabulary
 | "Find sources for TDD, DI, and CI" | `source_concepts` | Multi-concept source lookup |
 | "List sources for each concept separately" | `concept_sources` | Per-concept bibliographies |
 | "What books cover the most of these topics?" | `source_concepts` | Overlap analysis |
+| "Show me diagrams about architecture" | `get_visuals` | Visual content by concept |
+| "What diagrams are in this book?" | `get_visuals` | Visual content by document |
+| "Find flowcharts" | `get_visuals` | Visual content by type |
 
 ---
 
