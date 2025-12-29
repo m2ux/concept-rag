@@ -709,6 +709,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#get_guidance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_guidance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#catalog_search" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2890,7 +2901,7 @@
 <p>This guide helps AI agents and developers select the appropriate MCP tool for their query. For JSON input/output schemas, see <a href="../api-reference/">api-reference.md</a>.</p>
 <hr />
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>Concept-RAG provides <strong>10 MCP tools</strong> organized into four categories:</p>
+<p>Concept-RAG provides <strong>11 MCP tools</strong> organized into five categories:</p>
 <table>
 <thead>
 <tr>
@@ -2900,6 +2911,11 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><strong>Guidance</strong></td>
+<td><code>get_guidance</code></td>
+<td>Get research rules and tool selection help (<strong>call first!</strong>)</td>
+</tr>
 <tr>
 <td><strong>Document Discovery</strong></td>
 <td><code>catalog_search</code></td>
@@ -2955,6 +2971,17 @@
 </code></pre></div>
 <hr />
 <h2 id="detailed-tool-selection-criteria">Detailed Tool Selection Criteria<a class="headerlink" href="#detailed-tool-selection-criteria" title="Permanent link">&para;</a></h2>
+<h3 id="get_guidance">get_guidance<a class="headerlink" href="#get_guidance" title="Permanent link">&para;</a></h3>
+<p>✅ <strong>CALL FIRST</strong> before starting any research session<br />
+✅ Unsure which tool to use for a specific query<br />
+✅ Need to review best practices for answer synthesis<br />
+✅ Want to understand efficient search patterns</p>
+<p>❌ Never skip this tool at the start of a session</p>
+<p><strong>Parameters:</strong>
+- <code>topic='rules'</code> (default): Get agent research rules
+- <code>topic='tool-selection'</code>: Get this tool selection guide
+- <code>topic='all'</code>: Get both documents</p>
+<hr />
 <h3 id="catalog_search">catalog_search<a class="headerlink" href="#catalog_search" title="Permanent link">&para;</a></h3>
 <p>✅ Finding documents about a specific topic or subject area<br />
 ✅ Looking for documents by title, author, or keywords<br />
