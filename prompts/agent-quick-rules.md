@@ -1,43 +1,27 @@
-# Agent Quick Reference Rules
+# Concept-RAG Agent Rules
 
-## ABSOLUTE RULE: No Search Narration
+When using **concept-rag** MCP tools for document research, follow these rules:
 
-**NEVER output any of these phrases:**
-- "Let me search..."
-- "Let me try..."
-- "I'll look for..."
-- "I found that..."
-- "Based on my search..."
+## Before Starting Any Research
 
-**INSTEAD:** Just use the tool and then state what you found directly.
-
-## Workflow
-
-1. **Start with `catalog_search`** to find relevant documents
-2. **Use `chunks_search`** to get specific content from those documents
-3. **After 4-5 tool calls, STOP and synthesize your answer**
-
-## When to Stop Searching
-
-Stop immediately if:
-- You found ANY relevant content (even partial)
-- You've made 5+ tool calls
-- The same results keep appearing
-
-Then provide your answer with whatever you found.
-
-## Answer Format
+**Always call `get_guidance` first** before making any other tool calls.
 
 ```
-## [Topic]
-
-[State the information directly - no preamble]
-
-**Source:** [Document] by [Author]
+get_guidance
 ```
 
-## Example
+This returns research guidelines and tool selection guidance that will help you:
+- Select the right tool for each query type
+- Limit unnecessary tool calls
+- Synthesize proper answers instead of reporting search status
 
-❌ BAD: "Let me search for more information about terrain types..."
+## Key Principles
 
-✅ GOOD: "Sun Tzu describes six types of terrain: accessible ground, entangling ground, temporizing ground, narrow passes, precipitous heights, and positions at great distance from the enemy."
+1. **Call `get_guidance` first** - Every session, before any research
+2. **Synthesize answers** - Never narrate your search process
+3. **Cite sources** - Include document titles and authors
+4. **Stop early** - 4-6 tool calls is usually enough
+
+## Integration
+
+Copy these rules into your project's agent configuration to ensure consistent behavior when using concept-rag tools.
