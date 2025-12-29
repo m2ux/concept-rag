@@ -199,3 +199,226 @@ export function cleanupRenderedPages(renderResult: RenderResult): void {
   }
 }
 
+/**
+ * Result of extracting embedded images from PDF.
+ */
+export interface ImageExtractionResult {
+  /** Directory containing extracted images */
+  outputDir: string;
+  /** Extracted images with page info */
+  images: ExtractedImage[];
+}
+
+/**
+ * Extracted image metadata.
+ */
+export interface ExtractedImage {
+  /** Path to the image file */
+  imagePath: string;
+  /** Page number (1-indexed) */
+  pageNumber: number;
+  /** Image index on the page (0-indexed) */
+  imageIndex: number;
+  /** Image width in pixels */
+  width: number;
+  /** Image height in pixels */
+  height: number;
+}
+
+/**
+ * Check if pdfimages is available.
+ */
+export function isPdfImagesAvailable(): boolean {
+  try {
+    execSync('which pdfimages', { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Extract embedded images from a PDF file using pdfimages.
+ * 
+ * This extracts the actual image objects embedded in the PDF,
+ * not rendered pages. Much more accurate for finding diagrams.
+ * 
+ * @param pdfPath - Path to the PDF file
+ * @param options - Extraction options
+ * @returns Promise resolving to extraction result
+ */
+export async function extractPdfImages(
+  pdfPath: string,
+  options: {
+    outputDir?: string;
+    minWidth?: number;
+    minHeight?: number;
+    timeout?: number;
+  } = {}
+): Promise<ImageExtractionResult> {
+  const {
+    outputDir = path.join(os.tmpdir(), `pdf-images-${Date.now()}`),
+    minWidth = 100,
+    minHeight = 100,
+    timeout = 300000
+  } = options;
+
+  // Verify pdfimages is available
+  if (!isPdfImagesAvailable()) {
+    throw new Error(
+      'pdfimages not found. Install poppler-utils:\n' +
+      '  Ubuntu/Debian: sudo apt install poppler-utils\n' +
+      '  macOS: brew install poppler'
+    );
+  }
+
+  // Verify PDF exists
+  if (!fs.existsSync(pdfPath)) {
+    throw new Error(`PDF file not found: ${pdfPath}`);
+  }
+
+  // Create output directory
+  fs.mkdirSync(outputDir, { recursive: true });
+
+  const outputPrefix = path.join(outputDir, 'img');
+
+  // First, get image list with metadata using -list
+  let imageList = '';
+  try {
+    imageList = execSync(`pdfimages -list "${pdfPath}" 2>/dev/null`, {
+      encoding: 'utf-8',
+      timeout: 30000
+    });
+  } catch {
+    // pdfimages -list may fail on some PDFs, continue with extraction
+  }
+
+  // Parse image list to get page numbers
+  const pageMap = new Map<string, number>();  // image index -> page number
+  if (imageList) {
+    const lines = imageList.split('\n').slice(2);  // Skip header
+    for (const line of lines) {
+      const parts = line.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        const page = parseInt(parts[0], 10);
+        const imgNum = parseInt(parts[1], 10);
+        if (!isNaN(page) && !isNaN(imgNum)) {
+          pageMap.set(imgNum.toString().padStart(3, '0'), page);
+        }
+      }
+    }
+  }
+
+  // Extract images as PNG
+  await new Promise<void>((resolve, reject) => {
+    const process = spawn('pdfimages', ['-png', pdfPath, outputPrefix]);
+    
+    let stderr = '';
+    
+    process.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    const timeoutId = setTimeout(() => {
+      process.kill();
+      reject(new Error(`Image extraction timed out after ${timeout}ms`));
+    }, timeout);
+
+    process.on('close', (code) => {
+      clearTimeout(timeoutId);
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`pdfimages failed with code ${code}: ${stderr}`));
+      }
+    });
+
+    process.on('error', (err) => {
+      clearTimeout(timeoutId);
+      reject(err);
+    });
+  });
+
+  // Collect extracted images and filter by size
+  const files = fs.readdirSync(outputDir)
+    .filter(f => f.startsWith('img-') && f.endsWith('.png'))
+    .sort();
+
+  const images: ExtractedImage[] = [];
+  const pageImageCounts = new Map<number, number>();  // Track image index per page
+
+  for (const file of files) {
+    const imagePath = path.join(outputDir, file);
+    
+    // Get image dimensions
+    let width = 0, height = 0;
+    try {
+      const result = execSync(`identify -format "%w %h" "${imagePath}"`, {
+        encoding: 'utf-8',
+        timeout: 5000
+      });
+      const [w, h] = result.trim().split(' ');
+      width = parseInt(w, 10);
+      height = parseInt(h, 10);
+    } catch {
+      // Skip images we can't read
+      continue;
+    }
+
+    // Filter by minimum size
+    if (width < minWidth || height < minHeight) {
+      fs.unlinkSync(imagePath);  // Clean up small images
+      continue;
+    }
+
+    // Extract image number from filename (img-000.png, img-001.png, etc.)
+    const match = file.match(/img-(\d+)\.png/);
+    const imgNumStr = match?.[1] || '000';
+    
+    // Get page number from the list output, or default to 1
+    let pageNumber = pageMap.get(imgNumStr) || 1;
+    
+    // Track image index per page
+    const currentIndex = pageImageCounts.get(pageNumber) || 0;
+    pageImageCounts.set(pageNumber, currentIndex + 1);
+
+    images.push({
+      imagePath,
+      pageNumber,
+      imageIndex: currentIndex,
+      width,
+      height
+    });
+  }
+
+  return {
+    outputDir,
+    images
+  };
+}
+
+/**
+ * Clean up extracted images.
+ * 
+ * @param result - Result from extractPdfImages
+ */
+export function cleanupExtractedImages(result: ImageExtractionResult): void {
+  try {
+    for (const img of result.images) {
+      if (fs.existsSync(img.imagePath)) {
+        fs.unlinkSync(img.imagePath);
+      }
+    }
+    // Clean any remaining files
+    if (fs.existsSync(result.outputDir)) {
+      const remaining = fs.readdirSync(result.outputDir);
+      for (const f of remaining) {
+        fs.unlinkSync(path.join(result.outputDir, f));
+      }
+      fs.rmdirSync(result.outputDir);
+    }
+  } catch {
+    // Ignore cleanup errors
+  }
+}
+

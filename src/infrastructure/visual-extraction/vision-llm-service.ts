@@ -6,7 +6,8 @@
  * - Semantic description generation
  * 
  * Supports models with vision capabilities:
- * - anthropic/claude-sonnet-4 (recommended)
+ * - anthropic/claude-3-5-haiku-20241022 (default - fast and cost-effective)
+ * - anthropic/claude-sonnet-4
  * - openai/gpt-4o
  * - google/gemini-2.0-flash-001
  */
@@ -60,7 +61,8 @@ export interface PageVisualDetectionResult {
   hasVisuals: boolean;
 }
 
-const DEFAULT_VISION_MODEL = 'anthropic/claude-sonnet-4';
+import { Configuration } from '../../application/config/index.js';
+
 const DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1';
 const DEFAULT_TIMEOUT_MS = 60000;
 
@@ -117,9 +119,13 @@ export class VisionLLMService {
       throw new Error('Vision LLM API key is required');
     }
 
+    // Get default model from configuration
+    const appConfig = Configuration.getInstance();
+    const defaultModel = appConfig.llm.visionModel;
+
     this.config = {
       apiKey: config.apiKey,
-      model: config.model || DEFAULT_VISION_MODEL,
+      model: config.model || defaultModel,
       baseUrl: config.baseUrl || DEFAULT_BASE_URL,
       timeoutMs: config.timeoutMs || DEFAULT_TIMEOUT_MS,
       maxRetries: config.maxRetries || 2
@@ -263,7 +269,7 @@ export class VisionLLMService {
 }
 
 /**
- * Create a Vision LLM service from environment variables.
+ * Create a Vision LLM service from environment/configuration.
  */
 export function createVisionLLMService(
   options: {
@@ -271,7 +277,8 @@ export function createVisionLLMService(
     model?: string;
   } = {}
 ): VisionLLMService {
-  const apiKey = options.apiKey || process.env.OPENROUTER_API_KEY;
+  const config = Configuration.getInstance();
+  const apiKey = options.apiKey || config.llm.apiKey;
   
   if (!apiKey) {
     throw new Error(
@@ -282,7 +289,7 @@ export function createVisionLLMService(
 
   return new VisionLLMService({
     apiKey,
-    model: options.model || process.env.VISION_MODEL || DEFAULT_VISION_MODEL
+    model: options.model  // Will use config default if undefined
   });
 }
 

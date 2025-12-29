@@ -12,8 +12,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { renderPdfPages, cleanupRenderedPages, getPdfPageCount } from './pdf-page-renderer.js';
-import { convertToGrayscale, getImageMetadata, loadImageAsBase64 } from './image-processor.js';
+import { extractPdfImages, cleanupExtractedImages, isPdfImagesAvailable } from './pdf-page-renderer.js';
+import { convertToGrayscale, getImageMetadata } from './image-processor.js';
 import { VisionLLMService, createVisionLLMService } from './vision-llm-service.js';
 import type { ExtractedVisual, VisualExtractionConfig, VisualExtractionProgressCallback } from './types.js';
 import { DEFAULT_VISUAL_EXTRACTION_CONFIG } from './types.js';
@@ -98,6 +98,9 @@ export class VisualExtractor {
   /**
    * Extract visuals from a PDF document.
    * 
+   * Uses pdfimages to extract embedded images from the PDF,
+   * then classifies each image to filter out photos/decorative images.
+   * 
    * @param pdfPath - Path to the PDF file
    * @param catalogId - Catalog ID for the document
    * @param options - Extraction options
@@ -111,7 +114,7 @@ export class VisualExtractor {
       pages?: number[];
     } = {}
   ): Promise<VisualExtractionResult> {
-    const { onProgress, pages } = options;
+    const { onProgress } = options;
     
     const result: VisualExtractionResult = {
       catalogId,
@@ -123,66 +126,63 @@ export class VisualExtractor {
       errors: []
     };
 
+    // Verify pdfimages is available
+    if (!isPdfImagesAvailable()) {
+      result.errors.push('pdfimages not found. Install poppler-utils.');
+      return result;
+    }
+
     // Create catalog-specific images directory
     const catalogImagesDir = path.join(this.imagesDir, catalogId.toString());
     if (!fs.existsSync(catalogImagesDir)) {
       fs.mkdirSync(catalogImagesDir, { recursive: true });
     }
 
-    let renderResult;
+    let extractionResult;
     try {
-      // Step 1: Render PDF pages to images
+      // Step 1: Extract embedded images from PDF
       if (onProgress) {
-        onProgress('rendering', 0, 1, 'Rendering PDF pages...');
+        onProgress('extracting', 0, 1, 'Extracting images from PDF...');
       }
 
-      renderResult = await renderPdfPages(pdfPath, {
-        dpi: this.config.renderDpi,
-        pages,
-        onProgress: (current, total) => {
-          if (onProgress) {
-            onProgress('rendering', current, total);
-          }
-        }
+      extractionResult = await extractPdfImages(pdfPath, {
+        minWidth: this.config.minWidth,
+        minHeight: this.config.minHeight
       });
 
-      const totalPages = renderResult.pageImages.length;
+      const totalImages = extractionResult.images.length;
 
-      // Step 2: Process each page
-      for (let i = 0; i < totalPages; i++) {
-        const pageImagePath = renderResult.pageImages[i];
-        const pageNumber = i + 1;
+      if (totalImages === 0) {
+        result.pagesSkipped = 1;
+        return result;
+      }
+
+      if (onProgress) {
+        onProgress('extracting', 1, 1, `Found ${totalImages} images`);
+      }
+
+      // Step 2: Classify and process each extracted image
+      for (let i = 0; i < totalImages; i++) {
+        const img = extractionResult.images[i];
 
         if (onProgress) {
-          onProgress('classifying', i + 1, totalPages, `Classifying page ${pageNumber}`);
+          onProgress('classifying', i + 1, totalImages, `Classifying image ${i + 1}`);
         }
 
         try {
-          // Classify the full page image
-          const classification = await this.visionService.classifyImage(pageImagePath);
+          // Classify the image
+          const classification = await this.visionService.classifyImage(img.imagePath);
 
           if (classification.type === 'skip') {
-            result.pagesSkipped++;
             result.imagesFiltered++;
             continue;
           }
 
-          // Check minimum size requirements
-          const metadata = await getImageMetadata(pageImagePath);
-          if (metadata.width < this.config.minWidth || metadata.height < this.config.minHeight) {
-            result.pagesSkipped++;
-            continue;
-          }
-
-          // Step 3: Save the page as a grayscale image
-          if (onProgress) {
-            onProgress('extracting', i + 1, totalPages, `Extracting visual from page ${pageNumber}`);
-          }
-
-          const outputFilename = `p${pageNumber}_v0.png`;
+          // Step 3: Save as grayscale with consistent naming
+          const outputFilename = `p${img.pageNumber}_v${img.imageIndex}.png`;
           const outputPath = path.join(catalogImagesDir, outputFilename);
 
-          await convertToGrayscale(pageImagePath, outputPath, {
+          await convertToGrayscale(img.imagePath, outputPath, {
             pngCompression: this.config.pngCompression,
             maxWidth: 1200  // Limit max width for storage
           });
@@ -190,11 +190,11 @@ export class VisualExtractor {
           const outputMetadata = await getImageMetadata(outputPath);
 
           const extractedVisual: ExtractedVisual = {
-            pageNumber,
-            visualIndex: 0,
+            pageNumber: img.pageNumber,
+            visualIndex: img.imageIndex,
             type: classification.type as VisualType,
             imagePath: path.join('images', catalogId.toString(), outputFilename),
-            boundingBox: { x: 0, y: 0, width: 1, height: 1 },  // Full page
+            boundingBox: { x: 0, y: 0, width: 1, height: 1 },  // Full image
             width: outputMetadata.width,
             height: outputMetadata.height
           };
@@ -202,17 +202,17 @@ export class VisualExtractor {
           result.visuals.push(extractedVisual);
           result.pagesProcessed++;
 
-        } catch (pageError: any) {
-          result.errors.push(`Page ${pageNumber}: ${pageError.message}`);
+        } catch (imgError: any) {
+          result.errors.push(`Image ${i + 1}: ${imgError.message}`);
         }
       }
 
     } catch (error: any) {
       result.errors.push(`Extraction failed: ${error.message}`);
     } finally {
-      // Clean up rendered page images
-      if (renderResult) {
-        cleanupRenderedPages(renderResult);
+      // Clean up extracted images from temp directory
+      if (extractionResult) {
+        cleanupExtractedImages(extractionResult);
       }
     }
 
