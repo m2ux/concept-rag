@@ -22,6 +22,8 @@ import { CategorySearchTool } from '../tools/operations/category-search-tool.js'
 import { ListCategoriesTool } from '../tools/operations/list-categories-tool.js';
 import { ListConceptsInCategoryTool } from '../tools/operations/list-concepts-in-category-tool.js';
 import { GetGuidanceTool } from '../tools/operations/get-guidance-tool.js';
+import { GetVisualsTool } from '../tools/operations/get-visuals-tool.js';
+import { LanceDBVisualRepository } from '../infrastructure/lancedb/repositories/lancedb-visual-repository.js';
 import { BaseTool } from '../tools/base/tool.js';
 import { EmbeddingCache, SearchResultCache } from '../infrastructure/cache/index.js';
 import { LanceDBCategoryRepository } from '../infrastructure/lancedb/repositories/lancedb-category-repository.js';
@@ -137,6 +139,15 @@ export class ApplicationContainer {
       console.error('⚠️  Categories table not found (skipping category features)');
     }
     
+    // 3b. Open visuals table if it exists (optional for diagram awareness)
+    let visualsTable = null;
+    try {
+      visualsTable = await this.dbConnection.openTable('visuals');
+      console.error('✅ Visuals table found');
+    } catch (err) {
+      console.error('⚠️  Visuals table not found (skipping visual features)');
+    }
+    
     // 3b. Create performance caches (for embeddings and search results only)
     this.embeddingCache = new EmbeddingCache(10000); // Cache up to 10k embeddings
     this.searchResultCache = new SearchResultCache<SearchResult[]>(1000, 5 * 60 * 1000); // 1k searches, 5min TTL
@@ -193,6 +204,13 @@ export class ApplicationContainer {
       this.tools.set('list_categories', new ListCategoriesTool(this.categoryRepo, catalogRepo));
       this.tools.set('list_concepts_in_category', new ListConceptsInCategoryTool(this.categoryRepo, catalogRepo, conceptRepo));
       console.error(`✅ Category tools registered (3 tools)`);
+    }
+    
+    // 7b. Register visual tools if visuals table exists
+    if (visualsTable) {
+      const visualRepo = new LanceDBVisualRepository(visualsTable);
+      this.tools.set('get_visuals', new GetVisualsTool(visualRepo, catalogRepo));
+      console.error(`✅ Visual tools registered (1 tool)`);
     }
     
     console.error(`✅ Container initialized with ${this.tools.size} tool(s)`);

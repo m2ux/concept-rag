@@ -127,6 +127,23 @@ export interface VisualRepository {
   findByConceptId(conceptId: number, limit: number): Promise<Visual[]>;
   
   /**
+   * Find visuals associated with a concept by name.
+   * 
+   * Searches the concept_names derived field for matching concepts.
+   * Uses case-insensitive partial matching.
+   * 
+   * @param conceptName - The concept name to search for
+   * @param limit - Maximum number of visuals to return
+   * @returns Promise resolving to visuals containing the concept
+   * 
+   * @example
+   * ```typescript
+   * const visuals = await visualRepo.findByConceptName('dependency injection', 10);
+   * ```
+   */
+  findByConceptName(conceptName: string, limit: number): Promise<Visual[]>;
+  
+  /**
    * Find visuals near specific text chunks.
    * 
    * Retrieves visuals that have any of the specified chunk IDs in their chunk_ids.

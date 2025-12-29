@@ -153,6 +153,35 @@ export class LanceDBVisualRepository implements VisualRepository {
     }
   }
   
+  async findByConceptName(conceptName: string, limit: number): Promise<Visual[]> {
+    try {
+      // Query all visuals and filter by concept name in memory
+      const results = await this.visualsTable
+        .query()
+        .limit(10000)
+        .toArray();
+      
+      const searchName = conceptName.toLowerCase();
+      
+      const matches = results
+        .filter(row => {
+          const conceptNames = this.parseArrayField<string>(row.concept_names);
+          return conceptNames.some(name => 
+            name.toLowerCase().includes(searchName)
+          );
+        })
+        .slice(0, limit);
+      
+      return matches.map(row => this.mapRowToVisual(row));
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to find visuals for concept name "${conceptName}"`,
+        'query',
+        error as Error
+      );
+    }
+  }
+  
   async findByChunkIds(chunkIds: number[], limit: number): Promise<Visual[]> {
     if (chunkIds.length === 0) {
       return [];
