@@ -25,7 +25,24 @@ export class CategorySearchTool extends BaseTool<CategorySearchToolParams> {
   }
   
   name = "category_search";
-  description = "Find documents by category. Browse documents in a specific domain or subject area. Returns all documents in the category.";
+  description = `Find documents by category. Browse documents in a specific domain or subject area. Returns all documents in the category.
+
+USE THIS TOOL WHEN:
+- User asks "what documents do I have about [domain]?" where domain is a category
+- Browsing documents by subject area (e.g., "software engineering", "philosophy")
+- Need all documents in a specific category, not just search matches
+- Exploring a domain after discovering categories via list_categories
+- Getting a complete inventory of documents in a subject area
+
+DO NOT USE for:
+- Searching for specific content within documents (use broad_chunks_search)
+- Finding documents by title or author (use catalog_search)
+- Discovering what categories exist (use list_categories first)
+- Finding where a concept is discussed (use concept_search or source_concepts)
+
+RETURNS: Category metadata (name, description, hierarchy, aliases, related categories), statistics (document count, chunk count, concept count), and all documents in the category with titles, previews, and primary concepts.
+
+COMMON WORKFLOW: First use list_categories to discover available categories, then use this tool with a specific category name to get all documents in that domain.`;
   
   inputSchema = {
     type: "object" as const,

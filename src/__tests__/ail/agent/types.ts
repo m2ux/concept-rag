@@ -28,10 +28,9 @@ export interface AgentConfig {
 }
 
 /**
- * Default agent configuration
+ * Default agent configuration (model should be provided via config.ts)
  */
 export const DEFAULT_AGENT_CONFIG: Partial<AgentConfig> = {
-  model: 'anthropic/claude-sonnet-4',
   temperature: 0.1,
   maxTokens: 4096,
   maxIterations: 10,

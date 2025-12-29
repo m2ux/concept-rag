@@ -6,8 +6,7 @@
  */
 
 import { AccuracyResult, AccuracyEvaluatorConfig, GroundTruth } from './types.js';
-
-const DEFAULT_EVAL_MODEL = 'anthropic/claude-sonnet-4';
+import { getAILConfig } from '../config.js';
 
 const EVALUATION_PROMPT = `You are an evaluation judge assessing whether an AI agent's answer correctly addresses a question based on ground truth information.
 
@@ -46,8 +45,9 @@ export class AccuracyEvaluator {
   private config: Required<AccuracyEvaluatorConfig>;
   
   constructor(config: AccuracyEvaluatorConfig) {
+    const ailConfig = getAILConfig();
     this.config = {
-      model: DEFAULT_EVAL_MODEL,
+      model: ailConfig.evalModel,
       temperature: 0.1,
       ...config,
     };

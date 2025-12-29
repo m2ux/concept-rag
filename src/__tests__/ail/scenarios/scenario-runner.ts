@@ -18,6 +18,7 @@ import {
   ScenarioSuiteResult,
   ScenarioTier,
 } from './types.js';
+import { getAILConfig } from '../config.js';
 
 /**
  * Configuration for the scenario runner
@@ -321,10 +322,11 @@ export function createScenarioRunnerFromContainer(
     return tool.execute(args);
   };
   
+  const ailConfig = getAILConfig();
   return new ScenarioRunner({
     agentConfig: {
       apiKey,
-      model: options?.model ?? 'anthropic/claude-sonnet-4',
+      model: options?.model ?? ailConfig.model,
     },
     tools,
     toolExecutor,

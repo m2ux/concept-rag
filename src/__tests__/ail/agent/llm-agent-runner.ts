@@ -5,6 +5,8 @@
  * Uses OpenRouter API for LLM calls with configurable model selection.
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   AgentConfig,
   AgentExecutionResult,
@@ -16,30 +18,14 @@ import {
 import { ToolCallRecorder } from './tool-call-recorder.js';
 
 /**
- * System prompt for the agent during AIL testing
+ * System prompt for the agent - kept minimal since detailed rules are injected via get_guidance
  */
-const SYSTEM_PROMPT = `You are a research assistant with access to a document knowledge base through specialized tools.
-
-Your task is to answer the user's question using ONLY information from the available tools. Follow these guidelines:
-
-1. **Tool Selection**: Choose the most appropriate tool for each step:
-   - Use \`catalog_search\` to find documents by title, author, or topic
-   - Use \`broad_chunks_search\` for comprehensive cross-document research
-   - Use \`chunks_search\` when you know the specific document to search within
-   - Use \`concept_search\` for tracking specific concepts across documents
-   - Use \`list_categories\` to see available subject areas
-   - Use \`category_search\` to browse documents in a category
-
-2. **Efficient Searching**: Start with discovery tools, then narrow down:
-   - catalog_search → chunks_search (find doc, then search within)
-   - list_categories → category_search (explore domains)
-
-3. **Answer Format**: Provide a clear, direct answer based on the tool results.
-   - Cite sources when possible
-   - If information is not found, say so clearly
-
-4. **Completion**: When you have sufficient information to answer, provide your final answer.
-   Do not make additional tool calls after you have the answer.`;
+function loadSystemPrompt(): string {
+  return `You are a research assistant with access to a document knowledge base.
+Your task is to answer questions using ONLY information from the available tools.
+You have already received research guidelines - follow them precisely.
+NEVER narrate your search process. Just use tools and provide synthesized answers.`;
+}
 
 /**
  * LLM Agent Runner for AIL testing
@@ -49,12 +35,14 @@ Your task is to answer the user's question using ONLY information from the avail
  */
 export class LLMAgentRunner {
   private config: Required<AgentConfig>;
+  private systemPrompt: string;
   
   constructor(config: AgentConfig) {
     this.config = {
       ...DEFAULT_AGENT_CONFIG,
       ...config,
     } as Required<AgentConfig>;
+    this.systemPrompt = loadSystemPrompt();
   }
   
   /**
@@ -76,7 +64,33 @@ export class LLMAgentRunner {
     let totalPromptTokens = 0;
     let totalCompletionTokens = 0;
     
-    // Initial user message with the goal
+    // MANDATORY: Call get_guidance first to ensure agent has research rules
+    // This guarantees consistent behavior regardless of LLM instruction-following
+    const guidanceResult = await recorder.execute('get_guidance', {});
+    
+    // Load compact quick rules from prompt file
+    const quickRulesPath = path.resolve(process.cwd(), 'prompts/agent-quick-rules.md');
+    let quickRules = '';
+    try {
+      if (fs.existsSync(quickRulesPath)) {
+        quickRules = fs.readFileSync(quickRulesPath, 'utf-8');
+      }
+    } catch {
+      // Fall back to basic rules if file not found
+      quickRules = 'Use catalog_search to find documents, then chunks_search for content. Synthesize answers from results.';
+    }
+    
+    // Inject compact guidance as a prior exchange
+    messages.push({
+      role: 'user',
+      content: 'Please review these research guidelines before answering my question.',
+    });
+    messages.push({
+      role: 'assistant',
+      content: `I've reviewed the guidelines:\n\n${quickRules}\n\nReady for your question.`,
+    });
+    
+    // Now add the actual user question
     messages.push({
       role: 'user',
       content: goal,
@@ -199,7 +213,7 @@ export class LLMAgentRunner {
         body: JSON.stringify({
           model: this.config.model,
           messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'system', content: this.systemPrompt },
             ...this.formatMessages(messages),
           ],
           tools: this.formatTools(tools),

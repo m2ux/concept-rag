@@ -78,7 +78,12 @@ const TOOL_SELECTION_PATTERNS: Array<{
 ];
 
 /**
- * Recommended tool workflows
+ * Tools that are always valid (should not be penalized)
+ */
+const ALWAYS_VALID_TOOLS = ['get_guidance'];
+
+/**
+ * Recommended tool workflows (get_guidance can always prefix these)
  */
 const VALID_WORKFLOWS: string[][] = [
   ['catalog_search'],
@@ -119,10 +124,14 @@ export class ToolSelectionEvaluator {
     // Determine expected tools from patterns if not provided
     const expected = expectedTools || this.inferExpectedTools(query);
     
-    // Calculate matches
+    // Calculate matches (always-valid tools like get_guidance don't count as unexpected)
     const correctTools = uniqueActualTools.filter(t => expected.includes(t));
-    const unexpectedTools = uniqueActualTools.filter(t => !expected.includes(t));
-    const missingTools = expected.filter(t => !uniqueActualTools.includes(t));
+    const unexpectedTools = uniqueActualTools.filter(t => 
+      !expected.includes(t) && !ALWAYS_VALID_TOOLS.includes(t)
+    );
+    const missingTools = expected.filter(t => 
+      !uniqueActualTools.includes(t) && !ALWAYS_VALID_TOOLS.includes(t)
+    );
     
     // Calculate score
     // - Full credit for using expected tools
@@ -175,9 +184,13 @@ export class ToolSelectionEvaluator {
     // Empty is valid (though not useful)
     if (tools.length === 0) return true;
     
+    // Filter out always-valid tools (like get_guidance) before checking workflow
+    const filteredTools = tools.filter(t => !ALWAYS_VALID_TOOLS.includes(t));
+    if (filteredTools.length === 0) return true;
+    
     // Normalize to unique tools in order
     const normalizedTools: string[] = [];
-    for (const tool of tools) {
+    for (const tool of filteredTools) {
       if (normalizedTools.length === 0 || normalizedTools[normalizedTools.length - 1] !== tool) {
         normalizedTools.push(tool);
       }

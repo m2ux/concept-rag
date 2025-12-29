@@ -20,10 +20,12 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import * as fs from 'fs';
 import { ApplicationContainer } from '../../application/container.js';
 import { createScenarioRunnerFromContainer, ScenarioRunner, TestScenario } from './scenarios/index.js';
+import { getAILConfig } from './config.js';
 
-// Skip if no API key available
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const SKIP_AIL = !OPENROUTER_API_KEY;
+// Load configuration
+const config = getAILConfig();
+// Skip unless explicitly enabled via AIL_TESTS=true (prevents CI failures)
+const SKIP_AIL = process.env.AIL_TESTS !== 'true' || !config.apiKey;
 
 /**
  * Tier 3 Test Scenarios: Complex Research Tasks
@@ -45,8 +47,8 @@ const TIER3_SCENARIOS: TestScenario[] = [
         'Cites both sources',
       ],
     },
-    expectedTools: ['catalog_search', 'chunks_search', 'broad_chunks_search'],
-    maxToolCalls: 12,
+    expectedTools: ['get_guidance', 'catalog_search', 'chunks_search', 'broad_chunks_search'],
+    maxToolCalls: 13,
     description: 'Tests cross-domain reasoning and synthesis',
     tags: ['cross-domain', 'multi-hop'],
   },
@@ -63,8 +65,8 @@ const TIER3_SCENARIOS: TestScenario[] = [
         'Provides examples or context from the documents',
       ],
     },
-    expectedTools: ['concept_search', 'source_concepts', 'chunks_search'],
-    maxToolCalls: 12,
+    expectedTools: ['get_guidance', 'concept_search', 'source_concepts', 'chunks_search'],
+    maxToolCalls: 13,
     description: 'Tests deep exploration of a single concept',
     tags: ['concept-exploration', 'deep-dive'],
   },
@@ -81,8 +83,8 @@ const TIER3_SCENARIOS: TestScenario[] = [
         'Provides some context about the concepts',
       ],
     },
-    expectedTools: ['list_categories', 'category_search', 'list_concepts_in_category'],
-    maxToolCalls: 10,
+    expectedTools: ['get_guidance', 'list_categories', 'category_search', 'list_concepts_in_category'],
+    maxToolCalls: 11,
     description: 'Tests category-based concept exploration',
     tags: ['category-exploration', 'concepts'],
   },
@@ -93,9 +95,7 @@ describe('AIL Tier 3: Complex Research Tasks', () => {
   let runner: ScenarioRunner;
   
   // Check if test database exists
-  // Use AIL_TEST_DB env var or default to db/test
-  const testDbPath = process.env.AIL_TEST_DB || './db/test';
-  const testDbExists = fs.existsSync(testDbPath);
+  const testDbExists = fs.existsSync(config.databasePath);
   
   beforeAll(async () => {
     if (SKIP_AIL) {
@@ -104,22 +104,22 @@ describe('AIL Tier 3: Complex Research Tasks', () => {
     }
     
     if (!testDbExists) {
-      console.warn('⚠️  Test database not found at ./db/test');
+      console.warn(`⚠️  Test database not found at ${config.databasePath}`);
       console.warn('   Run: ./scripts/seed-test-database.sh');
       return;
     }
     
     // Initialize container with test database
     container = new ApplicationContainer();
-    await container.initialize(testDbPath);
+    await container.initialize(config.databasePath);
     
-    // Create scenario runner
+    // Create scenario runner with config
     runner = createScenarioRunnerFromContainer(
       container,
-      OPENROUTER_API_KEY!,
+      config.apiKey,
       { 
-        model: 'anthropic/claude-sonnet-4',
-        verbose: true,
+        model: config.model,
+        verbose: config.verbose,
       }
     );
   }, 60000);
