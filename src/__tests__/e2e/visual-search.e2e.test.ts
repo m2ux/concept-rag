@@ -299,5 +299,136 @@ describe('E2E: Visual Search Integration', () => {
       });
     });
   });
+
+  describe('Semantic Relevance Validation', () => {
+    it('should return images with descriptions relevant to the searched concept', async () => {
+      // Search for "architecture" concept
+      const conceptResult = await conceptSearchTool.execute({ concept: 'architecture' });
+      const conceptResponse = JSON.parse(conceptResult.content[0].text);
+      
+      if (conceptResponse.image_ids && conceptResponse.image_ids.length > 0) {
+        // Retrieve associated images
+        const visualResult = await getVisualsTool.execute({ 
+          ids: conceptResponse.image_ids.slice(0, 10) 
+        });
+        const visualResponse = JSON.parse(visualResult.content[0].text);
+        
+        // Define terms that would indicate relevance to "architecture"
+        const relevantTerms = [
+          'architecture', 'layer', 'component', 'module', 'system',
+          'design', 'pattern', 'structure', 'diagram', 'flow',
+          'dependency', 'interface', 'service', 'class', 'model',
+          'clean', 'hexagonal', 'onion', 'domain', 'application'
+        ];
+        
+        // Check that at least some images have relevant descriptions
+        const imagesWithRelevantDescriptions = visualResponse.visuals.filter((v: any) => {
+          const description = (v.description || '').toLowerCase();
+          const concepts = (v.concepts || []).map((c: string) => c.toLowerCase());
+          const allText = description + ' ' + concepts.join(' ');
+          
+          return relevantTerms.some(term => allText.includes(term));
+        });
+        
+        // At least 50% of returned images should have relevant descriptions
+        const relevanceRatio = imagesWithRelevantDescriptions.length / visualResponse.visuals.length;
+        expect(relevanceRatio).toBeGreaterThanOrEqual(0.5);
+        
+        console.error(`  📊 Relevance: ${imagesWithRelevantDescriptions.length}/${visualResponse.visuals.length} images (${(relevanceRatio * 100).toFixed(0)}%) have architecture-related content`);
+      }
+    });
+
+    it('should return images with concepts matching the search term', async () => {
+      // Search for "dependency" concept
+      const conceptResult = await conceptSearchTool.execute({ concept: 'dependency' });
+      const conceptResponse = JSON.parse(conceptResult.content[0].text);
+      
+      if (conceptResponse.image_ids && conceptResponse.image_ids.length > 0) {
+        const visualResult = await getVisualsTool.execute({ 
+          ids: conceptResponse.image_ids.slice(0, 10) 
+        });
+        const visualResponse = JSON.parse(visualResult.content[0].text);
+        
+        // Check that images have the searched concept or related terms
+        const relatedTerms = ['dependency', 'injection', 'inversion', 'coupling', 'interface'];
+        
+        const imagesWithMatchingConcepts = visualResponse.visuals.filter((v: any) => {
+          const concepts = (v.concepts || []).map((c: string) => c.toLowerCase());
+          const description = (v.description || '').toLowerCase();
+          
+          return relatedTerms.some(term => 
+            concepts.some((c: string) => c.includes(term)) || 
+            description.includes(term)
+          );
+        });
+        
+        // Log the match results
+        console.error(`  📊 Concept match: ${imagesWithMatchingConcepts.length}/${visualResponse.visuals.length} images match "dependency" or related terms`);
+        
+        // At least one image should match
+        if (visualResponse.visuals.length > 0) {
+          expect(imagesWithMatchingConcepts.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('should return images that have the searched concept in their concept list', async () => {
+      // Search for a concept and verify images have that concept associated
+      const conceptResult = await conceptSearchTool.execute({ concept: 'software' });
+      const conceptResponse = JSON.parse(conceptResult.content[0].text);
+      
+      if (conceptResponse.image_ids && conceptResponse.image_ids.length > 0) {
+        // Retrieve associated images
+        const visualResult = await getVisualsTool.execute({ 
+          ids: conceptResponse.image_ids.slice(0, 10) 
+        });
+        const visualResponse = JSON.parse(visualResult.content[0].text);
+        
+        // Verify images have the searched concept or related terms in their concepts/description
+        const relatedTerms = ['software', 'application', 'system', 'program', 'code'];
+        
+        const imagesWithMatchingConcept = visualResponse.visuals.filter((v: any) => {
+          const concepts = (v.concepts || []).map((c: string) => c.toLowerCase());
+          const description = (v.description || '').toLowerCase();
+          
+          return relatedTerms.some(term => 
+            concepts.some((c: string) => c.includes(term)) || 
+            description.includes(term)
+          );
+        });
+        
+        console.error(`  📊 Concept association: ${imagesWithMatchingConcept.length}/${visualResponse.visuals.length} images have "software" or related concepts`);
+        
+        // Images associated with the concept should have relevant content
+        if (visualResponse.visuals.length > 0) {
+          const matchRatio = imagesWithMatchingConcept.length / visualResponse.visuals.length;
+          expect(matchRatio).toBeGreaterThanOrEqual(0.5); // At least half should match
+        }
+      }
+    });
+
+    it('should return diagram-type visuals with meaningful descriptions', async () => {
+      // Get diagrams specifically
+      const result = await getVisualsTool.execute({ visual_type: 'diagram', limit: 10 });
+      const response = JSON.parse(result.content[0].text);
+      
+      if (response.visuals.length > 0) {
+        // Diagrams should have substantive descriptions (not just "No description")
+        const diagramsWithMeaningfulDescriptions = response.visuals.filter((v: any) => {
+          const desc = v.description || '';
+          return desc.length > 20 && 
+                 desc !== 'No description available' &&
+                 !desc.startsWith('Error');
+        });
+        
+        const meaningfulRatio = diagramsWithMeaningfulDescriptions.length / response.visuals.length;
+        
+        console.error(`  📊 Description quality: ${diagramsWithMeaningfulDescriptions.length}/${response.visuals.length} diagrams (${(meaningfulRatio * 100).toFixed(0)}%) have meaningful descriptions`);
+        
+        // At least 70% should have meaningful descriptions
+        expect(meaningfulRatio).toBeGreaterThanOrEqual(0.7);
+      }
+    });
+  });
 });
 
