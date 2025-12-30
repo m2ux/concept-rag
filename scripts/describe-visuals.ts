@@ -18,6 +18,7 @@
  *   --redescribe       Re-describe visuals that already have descriptions
  *   --model <name>     Vision model to use (default: anthropic/claude-sonnet-4)
  *   --dry-run          Show what would be processed without calling API
+ *   --cleanup          Remove stale visual records with missing image files
  * 
  * Examples:
  *   npx tsx scripts/describe-visuals.ts
@@ -42,6 +43,7 @@ const limit = args.limit ? parseInt(args.limit, 10) : undefined;
 const redescribe = args.redescribe || false;
 const visionModel = args.model as string | undefined;
 const dryRun = args['dry-run'] || false;
+const cleanupStale = args.cleanup || false;
 
 // Rate limiting: Vision API calls per second
 const RATE_LIMIT_DELAY_MS = 2000;
@@ -149,6 +151,30 @@ async function main() {
   const concepts = await db.openTable('concepts');
   const chunks = await db.openTable('chunks');
 
+  // Cleanup stale records if requested
+  if (cleanupStale) {
+    console.log('\n🧹 Cleaning up stale visual records...');
+    const allVisuals = await visuals.query().limit(100000).toArray();
+    let removedCount = 0;
+    
+    for (const visual of allVisuals) {
+      const imagePath = path.join(dbPath, visual.image_path);
+      if (!fs.existsSync(imagePath)) {
+        await visuals.delete(`id = ${visual.id}`);
+        removedCount++;
+      }
+    }
+    
+    if (removedCount > 0) {
+      console.log(`   Removed ${removedCount} stale records`);
+    } else {
+      console.log('   No stale records found');
+    }
+    
+    const visualCount = await visuals.countRows();
+    console.log(`   Visuals table now has ${visualCount} rows`);
+  }
+
   // Get visuals to process
   let visualEntries: any[] = [];
   
@@ -229,21 +255,21 @@ async function main() {
 
   let processed = 0;
   let errors = 0;
+  let skippedMissing = 0;
 
   // Process each visual
   for (let i = 0; i < visualEntries.length; i++) {
     const visual = visualEntries[i];
     const imagePath = path.join(dbPath, visual.image_path);
 
-    console.log(`\n[${i + 1}/${visualEntries.length}] 📷 Visual ${visual.id}`);
-    console.log(`   Page ${visual.page_number}, Type: ${visual.visual_type}`);
-
-    // Check image exists
+    // Check image exists - silently skip missing images (stale records)
     if (!fs.existsSync(imagePath)) {
-      console.log(`   ⚠️  Image not found: ${imagePath}`);
-      errors++;
+      skippedMissing++;
       continue;
     }
+
+    console.log(`\n[${i + 1}/${visualEntries.length}] 📷 Visual ${visual.id}`);
+    console.log(`   Page ${visual.page_number}, Type: ${visual.visual_type}`);
 
     try {
       // Generate description
@@ -317,7 +343,12 @@ async function main() {
   console.log('✅ Description generation complete!\n');
   console.log('📊 Summary:');
   console.log(`   Visuals processed: ${processed}`);
-  console.log(`   Errors: ${errors}`);
+  if (skippedMissing > 0) {
+    console.log(`   Skipped (stale records): ${skippedMissing}`);
+  }
+  if (errors > 0) {
+    console.log(`   Errors: ${errors}`);
+  }
 
   // Verify visuals table
   const visualCount = await visuals.countRows();

@@ -166,8 +166,16 @@ async function main() {
       continue;
     }
 
+    // Build document info for intuitive folder naming
+    const documentInfo = {
+      title,
+      author: entry.author || undefined,
+      year: entry.year || undefined,
+      id: catalogId
+    };
+
     // Extract visuals
-    const result = await extractor.extractFromPdf(source, catalogId, {
+    const result = await extractor.extractFromPdf(source, catalogId, documentInfo, {
       onProgress: (stage, current, total, message) => {
         const stageIcon = stage === 'rendering' ? '📷' :
                          stage === 'classifying' ? '🔍' :
@@ -180,6 +188,7 @@ async function main() {
     process.stdout.write('\r' + ' '.repeat(80) + '\r');
 
     // Report results
+    console.log(`   📁 Folder: ${result.folderSlug}`);
     console.log(`   ✅ Extracted: ${result.visuals.length} visuals, Filtered: ${result.imagesFiltered} non-semantic images`);
     
     if (result.errors.length > 0) {

@@ -18,6 +18,7 @@ import { VisionLLMService, createVisionLLMService } from './vision-llm-service.j
 import type { ExtractedVisual, VisualExtractionConfig, VisualExtractionProgressCallback } from './types.js';
 import { DEFAULT_VISUAL_EXTRACTION_CONFIG } from './types.js';
 import type { VisualType } from '../../domain/models/visual.js';
+import { slugifyDocument, formatVisualFilename, type DocumentInfo } from '../utils/slugify.js';
 
 /**
  * Result of visual extraction for a document.
@@ -27,6 +28,8 @@ export interface VisualExtractionResult {
   catalogId: number;
   /** Path to source PDF */
   sourcePath: string;
+  /** Human-readable folder slug (e.g., "martin_clean-architecture_2017") */
+  folderSlug: string;
   /** Extracted visuals */
   visuals: ExtractedVisual[];
   /** Pages processed */
@@ -103,12 +106,14 @@ export class VisualExtractor {
    * 
    * @param pdfPath - Path to the PDF file
    * @param catalogId - Catalog ID for the document
+   * @param documentInfo - Document metadata for folder naming
    * @param options - Extraction options
    * @returns Extraction result
    */
   async extractFromPdf(
     pdfPath: string,
     catalogId: number,
+    documentInfo: DocumentInfo,
     options: {
       onProgress?: VisualExtractionProgressCallback;
       pages?: number[];
@@ -116,9 +121,13 @@ export class VisualExtractor {
   ): Promise<VisualExtractionResult> {
     const { onProgress } = options;
     
+    // Generate human-readable folder slug
+    const folderSlug = slugifyDocument({ ...documentInfo, id: catalogId });
+    
     const result: VisualExtractionResult = {
       catalogId,
       sourcePath: pdfPath,
+      folderSlug,
       visuals: [],
       pagesProcessed: 0,
       pagesSkipped: 0,
@@ -132,8 +141,8 @@ export class VisualExtractor {
       return result;
     }
 
-    // Create catalog-specific images directory
-    const catalogImagesDir = path.join(this.imagesDir, catalogId.toString());
+    // Create document-specific images directory with intuitive name
+    const catalogImagesDir = path.join(this.imagesDir, folderSlug);
     if (!fs.existsSync(catalogImagesDir)) {
       fs.mkdirSync(catalogImagesDir, { recursive: true });
     }
@@ -179,7 +188,7 @@ export class VisualExtractor {
           }
 
           // Step 3: Save as grayscale with consistent naming
-          const outputFilename = `p${img.pageNumber}_v${img.imageIndex}.png`;
+          const outputFilename = formatVisualFilename(img.pageNumber, img.imageIndex);
           const outputPath = path.join(catalogImagesDir, outputFilename);
 
           await convertToGrayscale(img.imagePath, outputPath, {
@@ -193,7 +202,7 @@ export class VisualExtractor {
             pageNumber: img.pageNumber,
             visualIndex: img.imageIndex,
             type: classification.type as VisualType,
-            imagePath: path.join('images', catalogId.toString(), outputFilename),
+            imagePath: path.join('images', folderSlug, outputFilename),
             boundingBox: { x: 0, y: 0, width: 1, height: 1 },  // Full image
             width: outputMetadata.width,
             height: outputMetadata.height
@@ -222,35 +231,35 @@ export class VisualExtractor {
   /**
    * Get the path to a stored visual image.
    * 
-   * @param catalogId - Catalog ID
+   * @param folderSlug - Document folder slug (e.g., "martin_clean-architecture_2017")
    * @param pageNumber - Page number (1-indexed)
    * @param visualIndex - Visual index on the page (0-indexed)
    * @returns Full path to the image file
    */
-  getVisualPath(catalogId: number, pageNumber: number, visualIndex: number): string {
-    const filename = `p${pageNumber}_v${visualIndex}.png`;
-    return path.join(this.imagesDir, catalogId.toString(), filename);
+  getVisualPath(folderSlug: string, pageNumber: number, visualIndex: number): string {
+    const filename = formatVisualFilename(pageNumber, visualIndex);
+    return path.join(this.imagesDir, folderSlug, filename);
   }
 
   /**
-   * Delete all extracted visuals for a catalog entry.
+   * Delete all extracted visuals for a document.
    * 
-   * @param catalogId - Catalog ID
+   * @param folderSlug - Document folder slug
    * @returns Number of files deleted
    */
-  async deleteVisualsForCatalog(catalogId: number): Promise<number> {
-    const catalogDir = path.join(this.imagesDir, catalogId.toString());
+  async deleteVisualsForDocument(folderSlug: string): Promise<number> {
+    const docDir = path.join(this.imagesDir, folderSlug);
     
-    if (!fs.existsSync(catalogDir)) {
+    if (!fs.existsSync(docDir)) {
       return 0;
     }
 
-    const files = fs.readdirSync(catalogDir);
+    const files = fs.readdirSync(docDir);
     let deleted = 0;
 
     for (const file of files) {
       try {
-        fs.unlinkSync(path.join(catalogDir, file));
+        fs.unlinkSync(path.join(docDir, file));
         deleted++;
       } catch {
         // Ignore individual file errors
@@ -259,15 +268,30 @@ export class VisualExtractor {
 
     // Try to remove the directory if empty
     try {
-      const remaining = fs.readdirSync(catalogDir);
+      const remaining = fs.readdirSync(docDir);
       if (remaining.length === 0) {
-        fs.rmdirSync(catalogDir);
+        fs.rmdirSync(docDir);
       }
     } catch {
       // Ignore directory removal errors
     }
 
     return deleted;
+  }
+
+  /**
+   * List all document folders in the images directory.
+   * 
+   * @returns Array of folder slugs
+   */
+  listDocumentFolders(): string[] {
+    if (!fs.existsSync(this.imagesDir)) {
+      return [];
+    }
+    
+    return fs.readdirSync(this.imagesDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name);
   }
 }
 
