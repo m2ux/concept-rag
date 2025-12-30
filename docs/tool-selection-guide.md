@@ -43,7 +43,7 @@ START: User asks a question
 │  └─ YES → Use `concept_search` (highest precision)
 │
 ├─ Do they already know the SPECIFIC DOCUMENT they want to search within?
-│  ├─ YES → Use `chunks_search` (requires source path)
+│  ├─ YES → Use `chunks_search` (requires catalog_id from catalog_search)
 │  └─ NO → Continue...
 │
 ├─ Are they searching for SPECIFIC PHRASES, KEYWORDS, or asking NATURAL LANGUAGE QUESTIONS?
@@ -102,14 +102,14 @@ START: User asks a question
 ### chunks_search
 
 ✅ You know which document contains the information  
-✅ Following up from `catalog_search` results with a specific source  
+✅ Following up from `catalog_search` results with a specific `catalog_id`  
 ✅ Focused analysis of one document's content  
-✅ Have the exact source path from a previous search
+✅ Have the `catalog_id` from a previous search
 
 ❌ Don't know which document to search (use `catalog_search` first)  
 ❌ Need to search across multiple documents (use `broad_chunks_search`)  
 ❌ Tracking concepts across entire library (use `concept_search`)  
-❌ Don't have the exact source path
+❌ Don't have the `catalog_id`
 
 ---
 
@@ -207,9 +207,9 @@ START: User asks a question
 
 ### get_visuals
 
+✅ Fetching visuals by ID (from `concept_search` `image_ids`)  
 ✅ Looking for diagrams, charts, or figures that illustrate a concept  
 ✅ Finding visual representations from a specific document  
-✅ Retrieving visual context after a chunk search  
 ✅ Browsing available diagrams by type (diagram, flowchart, chart, table, figure)
 
 ❌ Text-based search (use `broad_chunks_search` or `chunks_search`)  
@@ -217,9 +217,9 @@ START: User asks a question
 ❌ Searching for concepts in text (use `concept_search`)
 
 **Parameters:**
+- `ids`: Retrieve specific visuals by ID (from `concept_search` `image_ids`)
 - `catalog_id`: Filter by document
 - `visual_type`: Filter by type (diagram, flowchart, chart, table, figure)
-- `page_number`: Filter by page
 - `concept`: Filter by associated concept
 - `limit`: Maximum results (default: 20)
 
@@ -236,9 +236,9 @@ category_search → browse documents in each area
 
 ### 2. Research a Topic
 ```
-catalog_search → find relevant documents
+catalog_search → find relevant documents (get catalog_id)
     ↓
-chunks_search → dive into specific document
+chunks_search (catalog_id) → dive into specific document
     ↓
 extract_concepts → understand document's conceptual structure
 ```
@@ -263,20 +263,18 @@ list_concepts_in_category → understand domain vocabulary
 
 ### 5. Enrich Search with Diagrams
 ```
-broad_chunks_search → find relevant text content
+concept_search → find concept (includes image_ids)
     ↓
-get_visuals (concept: <topic>) → find diagrams illustrating the topic
+get_visuals (ids: <image_ids>) → fetch diagrams for the concept
     ↓
 Combine text + visuals for comprehensive understanding
 ```
 
 ### 6. Browse Diagrams in a Document
 ```
-catalog_search → find the document
+catalog_search → find the document (get catalog_id)
     ↓
 get_visuals (catalog_id: <id>) → list all diagrams in document
-    ↓
-get_visuals (page_number: <n>) → find diagrams on specific page
 ```
 
 ---
@@ -293,7 +291,7 @@ get_visuals (page_number: <n>) → find diagrams on specific page
 | "What concepts are in distributed systems?" | `list_concepts_in_category` | Concepts within category |
 | "How do teams collaborate?" | `broad_chunks_search` | Natural language question |
 | "strategic planning frameworks" | `broad_chunks_search` | Multi-word phrase |
-| "Search Sun Tzu for deception" | `chunks_search` | Known document |
+| "Search Sun Tzu for deception" | `chunks_search` | Known document (use catalog_id) |
 | "Extract concepts from Art of War" | `extract_concepts` | Explicit extraction request |
 | "documents about healthcare" | `catalog_search` | Document discovery |
 | "organizational learning" | `concept_search` | Conceptual term |
