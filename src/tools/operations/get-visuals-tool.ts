@@ -11,12 +11,12 @@ import type { CatalogRepository } from '../../domain/interfaces/repositories/cat
 import type { Visual, VisualType } from '../../domain/models/visual.js';
 
 export interface GetVisualsParams extends ToolParams {
+  /** Retrieve visuals by specific IDs (from concept_search image_ids) */
+  ids?: number[];
   /** Filter by catalog ID */
   catalog_id?: number;
   /** Filter by visual type */
   visual_type?: VisualType;
-  /** Filter by page number */
-  page_number?: number;
   /** Filter by concept name */
   concept?: string;
   /** Maximum number of visuals to return */
@@ -52,9 +52,9 @@ export class GetVisualsTool extends BaseTool<GetVisualsParams> {
   description = `Retrieve visual content (diagrams, charts, tables, figures) from documents.
 
 USE THIS TOOL WHEN:
+- Fetching visuals by ID (from concept_search image_ids)
 - Looking for diagrams, charts, or figures that illustrate a concept
 - Finding visual representations associated with specific documents
-- Retrieving visual context for text content
 
 DO NOT USE for:
 - Text-based search (use chunks_search or broad_chunks_search instead)
@@ -68,6 +68,11 @@ diagram, flowchart, chart, table, figure.`;
   inputSchema = {
     type: "object" as const,
     properties: {
+      ids: {
+        type: "array",
+        items: { type: "number" },
+        description: "Retrieve specific visuals by their IDs (from concept_search image_ids)",
+      },
       catalog_id: {
         type: "number",
         description: "Filter visuals by catalog (document) ID",
@@ -76,10 +81,6 @@ diagram, flowchart, chart, table, figure.`;
         type: "string",
         enum: ["diagram", "flowchart", "chart", "table", "figure"],
         description: "Filter by visual type: diagram, flowchart, chart, table, or figure",
-      },
-      page_number: {
-        type: "number",
-        description: "Filter by page number within the document",
       },
       concept: {
         type: "string",
@@ -100,8 +101,12 @@ diagram, flowchart, chart, table, figure.`;
       let visuals: Visual[];
 
       // Apply filters in order of specificity
-      if (params.concept) {
-        // Search by concept first (most specific filter)
+      if (params.ids && params.ids.length > 0) {
+        // Retrieve specific visuals by IDs (most direct access)
+        console.error(`🔍 Retrieving ${params.ids.length} visuals by ID`);
+        visuals = await this.visualRepo.findByIds(params.ids);
+      } else if (params.concept) {
+        // Search by concept
         console.error(`🔍 Searching visuals for concept: "${params.concept}"`);
         visuals = await this.visualRepo.findByConceptName(params.concept, limit);
       } else if (params.catalog_id) {
@@ -115,17 +120,13 @@ diagram, flowchart, chart, table, figure.`;
       } else {
         // Get all visuals with limit - use findByType with any type to get all
         console.error(`🔍 Retrieving up to ${limit} visuals`);
-        // Query all types
         visuals = await this.visualRepo.findByType('diagram', limit);
       }
 
-      // Apply page number filter if specified
-      if (params.page_number && visuals.length > 0) {
-        visuals = visuals.filter((v: Visual) => v.pageNumber === params.page_number);
+      // Apply limit (unless fetching by IDs)
+      if (!params.ids) {
+        visuals = visuals.slice(0, limit);
       }
-
-      // Apply limit
-      visuals = visuals.slice(0, limit);
 
       // Format response
       const formattedVisuals = visuals.map((v: Visual) => ({
@@ -136,17 +137,16 @@ diagram, flowchart, chart, table, figure.`;
         page_number: v.pageNumber,
         description: v.description || 'No description available',
         image_path: v.imagePath,
-        concepts: v.conceptNames || [],
-        chunk_ids: v.chunkIds || []
+        concepts: v.conceptNames || []
       }));
 
       const response = {
         visuals: formattedVisuals,
         total_returned: formattedVisuals.length,
         filters_applied: {
+          ...(params.ids && { ids: params.ids }),
           ...(params.catalog_id && { catalog_id: params.catalog_id }),
           ...(params.visual_type && { visual_type: params.visual_type }),
-          ...(params.page_number && { page_number: params.page_number }),
           ...(params.concept && { concept: params.concept })
         }
       };

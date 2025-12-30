@@ -188,8 +188,14 @@ export class ApplicationContainer {
     );
     console.error('✅ ConceptSearchService initialized (hybrid search enabled)');
     
+    // 7b. Create visual repository if visuals table exists (needed for concept_search too)
+    let visualRepo: LanceDBVisualRepository | undefined;
+    if (visualsTable) {
+      visualRepo = new LanceDBVisualRepository(visualsTable);
+    }
+    
     // 7. Create tools (with domain services)
-    this.tools.set('concept_search', new ConceptSearchTool(conceptSearchService));
+    this.tools.set('concept_search', new ConceptSearchTool(conceptSearchService, visualRepo));
     this.tools.set('catalog_search', new ConceptualCatalogSearchTool(catalogSearchService));
     this.tools.set('chunks_search', new ConceptualChunksSearchTool(chunkSearchService, catalogRepo));
     this.tools.set('broad_chunks_search', new ConceptualBroadChunksSearchTool(chunkSearchService));
@@ -206,9 +212,8 @@ export class ApplicationContainer {
       console.error(`✅ Category tools registered (3 tools)`);
     }
     
-    // 7b. Register visual tools if visuals table exists
-    if (visualsTable) {
-      const visualRepo = new LanceDBVisualRepository(visualsTable);
+    // 7c. Register visual tools if visuals table exists
+    if (visualRepo) {
       this.tools.set('get_visuals', new GetVisualsTool(visualRepo, catalogRepo));
       console.error(`✅ Visual tools registered (1 tool)`);
     }
