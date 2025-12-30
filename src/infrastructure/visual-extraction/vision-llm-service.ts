@@ -147,7 +147,10 @@ export class VisionLLMService {
       // Extract JSON from response (may have markdown code blocks)
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        console.warn('Failed to parse classification response:', response);
+        // Only log if there was an actual response (not empty/rate-limited)
+        if (response.trim()) {
+          console.warn('Failed to parse classification response:', response);
+        }
         return { type: 'skip', confidence: 0.5, reason: 'Parse error' };
       }
       
@@ -163,7 +166,7 @@ export class VisionLLMService {
         reason: result.reason
       };
     } catch (error) {
-      console.warn('Failed to parse classification response:', error);
+      // Silently skip - parse errors are expected for non-semantic images
       return { type: 'skip', confidence: 0.5, reason: 'Parse error' };
     }
   }
