@@ -141,7 +141,7 @@ export class Configuration implements IConfiguration {
       baseUrl: this.env.get('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1'),
       apiKey: this.env.get('OPENROUTER_API_KEY'),
       summaryModel: this.env.get('OPENROUTER_SUMMARY_MODEL', 'x-ai/grok-4.1-fast'),
-      conceptModel: this.env.get('OPENROUTER_CONCEPT_MODEL', 'x-ai/grok-4.1-fast'),
+      conceptModel: this.env.get('OPENROUTER_CONCEPT_MODEL', 'google/gemini-3-flash-preview'),
       visionModel: this.env.get('OPENROUTER_VISION_MODEL', 'qwen/qwen2.5-vl-72b-instruct'),
       ...this.overrides?.llm
     };
