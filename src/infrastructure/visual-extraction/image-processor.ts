@@ -109,41 +109,6 @@ export async function cropAndGrayscale(
 }
 
 /**
- * Build PNG tEXt chunks from embedded metadata.
- * 
- * PNG tEXt chunks are key-value pairs stored in the image file.
- * Standard keys: Title, Author, Description, Copyright, Creation Time, Software
- * Custom keys are also supported.
- * 
- * @param metadata - Metadata to embed
- * @returns Object with tEXt chunk key-value pairs
- */
-function buildPngTextChunks(metadata: ImageEmbeddedMetadata): Record<string, string> {
-  const chunks: Record<string, string> = {};
-  
-  if (metadata.title) {
-    chunks['Title'] = metadata.title;
-  }
-  if (metadata.author) {
-    chunks['Author'] = metadata.author;
-  }
-  if (metadata.year) {
-    chunks['Creation Time'] = String(metadata.year);
-  }
-  if (metadata.source) {
-    chunks['Source'] = metadata.source;
-  }
-  
-  // Custom metadata fields
-  chunks['Page'] = String(metadata.pageNumber);
-  chunks['ImageIndex'] = String(metadata.imageIndex);
-  chunks['CatalogId'] = String(metadata.catalogId);
-  chunks['Software'] = 'concept-rag visual extractor';
-  
-  return chunks;
-}
-
-/**
  * Convert a full page image to grayscale and save.
  * 
  * Used when extracting the entire page as a visual.
@@ -180,14 +145,8 @@ export async function convertToGrayscale(
     }
   }
 
-  // Build PNG options with optional text chunks
+  // Build PNG options
   const pngOptions: sharp.PngOptions = { compressionLevel: pngCompression };
-  
-  if (embeddedMetadata) {
-    const textChunks = buildPngTextChunks(embeddedMetadata);
-    // Sharp doesn't directly support tEXt chunks in png(), so we use withMetadata
-    // and write a separate function for full metadata embedding
-  }
 
   await pipeline
     .png(pngOptions)
@@ -235,14 +194,19 @@ export async function embedMetadataInPng(
 
   // Sharp's PNG support for metadata is limited
   // Use EXIF comment field which is preserved in PNG via iTXt/tEXt
-  exifData.exif = {
-    IFD0: {
-      ImageDescription: metadataLines,
-      Artist: metadata.author || undefined,
-      Software: 'concept-rag visual extractor',
-      Copyright: metadata.title ? `From: ${metadata.title}` : undefined,
-    }
+  // Build IFD0 object with only defined fields
+  const ifd0: Record<string, string> = {
+    ImageDescription: metadataLines,
+    Software: 'concept-rag visual extractor',
   };
+  if (metadata.author) {
+    ifd0.Artist = metadata.author;
+  }
+  if (metadata.title) {
+    ifd0.Copyright = `From: ${metadata.title}`;
+  }
+  
+  exifData.exif = { IFD0: ifd0 };
 
   // Write back with metadata
   await sharp(imageBuffer)

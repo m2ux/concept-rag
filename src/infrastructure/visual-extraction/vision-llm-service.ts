@@ -14,7 +14,7 @@
 
 import { loadImageAsBase64 } from './image-processor.js';
 import type { VisualType } from '../../domain/models/visual.js';
-import type { DetectedVisual, BoundingBox } from './types.js';
+import type { DetectedVisual } from './types.js';
 
 /**
  * Configuration for Vision LLM service.

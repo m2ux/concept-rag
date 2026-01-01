@@ -192,10 +192,15 @@ export class VisualExtractor {
           const outputPath = path.join(catalogImagesDir, outputFilename);
 
           // Build metadata for embedding in PNG
+          // Convert year to number if it's a string
+          const yearNum = typeof documentInfo.year === 'string' 
+            ? parseInt(documentInfo.year, 10) || undefined
+            : documentInfo.year;
+            
           const embeddedMetadata: ImageEmbeddedMetadata = {
             title: documentInfo.title,
             author: documentInfo.author,
-            year: documentInfo.year,
+            year: yearNum,
             pageNumber: img.pageNumber,
             imageIndex: img.imageIndex,
             catalogId
