@@ -1,0 +1,16 @@
+Analyze this image from a technical document.
+
+Classify it as ONE of:
+- diagram: flowcharts, UML, architecture diagrams, state machines, sequence diagrams, dependency graphs
+- flowchart: process flows, decision trees, workflow diagrams
+- chart: bar charts, line graphs, pie charts, scatter plots, histograms
+- table: structured tabular data, matrices
+- figure: technical illustrations with labels, annotated diagrams
+- skip: photographs, screenshots, decorative images, logos, icons, cover images
+
+IMPORTANT: Only classify as diagram/flowchart/chart/table/figure if it has semantic technical meaning.
+Photos, decorative elements, and non-technical images should be classified as "skip".
+
+Respond with ONLY a JSON object:
+{"type": "<type>", "confidence": <0-1>, "reason": "<brief reason>"}
+
