@@ -136,17 +136,38 @@ The decision will be validated through:
 
 ## Implementation
 
-### Files to Create
+### Files Created
 
-- `src/infrastructure/document-loaders/content-metadata-extractor.ts`
-- `src/infrastructure/document-loaders/__tests__/content-metadata-extractor.test.ts`
-- `scripts/diagnostics/diagnose-metadata.ts`
-- `scripts/backfill-metadata.ts`
-- `scripts/evaluate-metadata-extraction.ts`
+- `src/infrastructure/document-loaders/content-metadata-extractor.ts` - Pattern-based content extraction
+- `src/infrastructure/document-loaders/__tests__/content-metadata-extractor.test.ts` - Unit tests
+- `scripts/diagnostics/diagnose-metadata.ts` - Analyze metadata coverage
+- `scripts/backfill-metadata.ts` - Backfill from content or re-parse filenames
+- `scripts/evaluate-metadata-extraction.ts` - Measure extraction accuracy
+- `scripts/repair-url-encoded-metadata.ts` - Fix URL-encoded filenames and embedded prefixes
+- `scripts/manual-metadata-updates.ts` - Curated corrections for known documents (94 rules)
 
-### Files to Modify
+### Files Modified
 
-- `hybrid_fast_seed.ts` - Integrate content extraction fallback
+- `hybrid_fast_seed.ts` - Integrate content extraction fallback with stage caching
+- `src/infrastructure/utils/filename-metadata-parser.ts` - Improved URL decoding for consecutive hex patterns
+
+### Operational Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `diagnose-metadata.ts` | Analyze current metadata coverage and identify gaps |
+| `backfill-metadata.ts` | Extract metadata from content for incomplete entries |
+| `repair-url-encoded-metadata.ts` | Fix URL-encoded characters and publisher prefixes in titles |
+| `manual-metadata-updates.ts` | Apply curated metadata for arXiv papers, books, etc. |
+| `evaluate-metadata-extraction.ts` | Measure extraction accuracy against ground truth |
+
+### Results Achieved
+
+After running all repair scripts on production database:
+- **Author coverage**: 73% → 95% (+62 documents)
+- **Year coverage**: 74% → 96% (+61 documents)
+- **Publisher coverage**: 77% → 95% (+50 documents)
+- **Complete metadata (5/5 fields)**: 39% → 43%
 
 ## References
 

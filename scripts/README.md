@@ -143,6 +143,89 @@ npx tsx scripts/repair_missing_concepts.ts --min-concepts 50
 
 ---
 
+### `backfill-metadata.ts` - Backfill Missing Metadata
+
+Extract metadata from document content for entries with incomplete bibliographic information.
+
+**Usage:**
+```bash
+npx tsx scripts/backfill-metadata.ts [--dbpath <path>] [--dry-run] [--reparse-filenames]
+```
+
+**Parameters:**
+- `--dbpath` - Database path (default: `~/.concept_rag`)
+- `--dry-run` - Show what would be updated without applying changes
+- `--reparse-filenames` - Re-parse filenames using improved URL decoding
+
+**Examples:**
+```bash
+# Dry run to see what would be updated
+npx tsx scripts/backfill-metadata.ts --dbpath ~/.concept_rag --dry-run
+
+# Apply content-based extraction
+npx tsx scripts/backfill-metadata.ts --dbpath ~/.concept_rag
+
+# Re-parse filenames with improved URL decoding
+npx tsx scripts/backfill-metadata.ts --dbpath ~/.concept_rag --reparse-filenames
+```
+
+---
+
+### `repair-url-encoded-metadata.ts` - Repair URL-Encoded Titles
+
+Fix catalog entries where URL-encoded filenames or embedded prefixes caused incorrect metadata.
+
+**Usage:**
+```bash
+npx tsx scripts/repair-url-encoded-metadata.ts [--dbpath <path>] [--dry-run] [--verbose]
+```
+
+**What it fixes:**
+- URL-encoded characters (e.g., `_20` → space, `_3A` → colon)
+- Publisher prefixes (e.g., `Cmp Books - `, `O'Reilly - `)
+- Embedded metadata in brackets (e.g., `[ebook]`, `(pdf)`)
+- ISBNs incorrectly stored in publisher field
+
+**Examples:**
+```bash
+# Dry run with verbose output
+npx tsx scripts/repair-url-encoded-metadata.ts --dbpath ~/.concept_rag --dry-run --verbose
+
+# Apply repairs
+npx tsx scripts/repair-url-encoded-metadata.ts --dbpath ~/.concept_rag
+```
+
+---
+
+### `manual-metadata-updates.ts` - Curated Metadata Corrections
+
+Apply manually curated metadata corrections for documents that cannot be automatically extracted.
+
+**Usage:**
+```bash
+npx tsx scripts/manual-metadata-updates.ts [--dbpath <path>] [--dry-run]
+```
+
+**What it includes:**
+- arXiv paper metadata (titles, authors, years)
+- ACM/IEEE paper metadata from Crossref/API lookups
+- Book metadata from OpenLibrary lookups
+- Publisher corrections for typos (e.g., `O'Really` → `O'Reilly`)
+
+**Examples:**
+```bash
+# Dry run to preview changes
+npx tsx scripts/manual-metadata-updates.ts --dbpath ~/.concept_rag --dry-run
+
+# Apply curated updates
+npx tsx scripts/manual-metadata-updates.ts --dbpath ~/.concept_rag
+```
+
+**Adding new corrections:**
+Edit the `METADATA_UPDATES` array in the script to add new rules.
+
+---
+
 ### `seed_specific.ts` - Targeted Document Seeding
 
 Seed (or re-seed) specific documents by hash, filename pattern, or source path.
