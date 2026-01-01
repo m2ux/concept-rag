@@ -1,14 +1,13 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ConceptSearchService, ConceptSearchResult, EnrichedChunk, SourceWithPages } from "../../domain/services/concept-search-service.js";
 import { Configuration } from "../../application/config/index.js";
-import type { VisualRepository } from "../../domain/interfaces/repositories/visual-repository.js";
 
 export interface ConceptSearchParams extends ToolParams {
   /** The concept to search for */
   concept: string;
   
-  /** Optional document title filter */
-  title_filter?: string;
+  /** Optional source path filter */
+  source_filter?: string;
 }
 
 /**
@@ -24,8 +23,7 @@ export interface ConceptSearchParams extends ToolParams {
  */
 export class ConceptSearchTool extends BaseTool<ConceptSearchParams> {
   constructor(
-    private conceptSearchService: ConceptSearchService,
-    private visualRepo?: VisualRepository
+    private conceptSearchService: ConceptSearchService
   ) {
     super();
   }
@@ -60,9 +58,9 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
         type: "string",
         description: "The concept to search for - use conceptual terms not exact phrases (e.g., 'innovation' not 'innovation process')",
       },
-      title_filter: {
+      source_filter: {
         type: "string",
-        description: "Optional: Filter results to documents containing this text in their title"
+        description: "Optional: Filter results to documents containing this text in their source path"
       }
     },
     required: ["concept"],
@@ -96,25 +94,14 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
         maxSources: 1000,   // Effectively unlimited
         maxChunks: 3000,    // Effectively unlimited (~3 per source)
         chunksPerSource: 10,
-        titleFilter: params.title_filter
+        sourceFilter: params.source_filter
       });
-      
-      // Get associated visual IDs for this concept
-      let imageIds: number[] = [];
-      if (this.visualRepo) {
-        try {
-          const visuals = await this.visualRepo.findByConceptName(params.concept, 100);
-          imageIds = visuals.map(v => v.id);
-        } catch {
-          // Visual lookup is optional - don't fail the search
-        }
-      }
       
       // Format for MCP response
       const debugSearch = Configuration.getInstance().logging.debugSearch;
-      const formatted = this.formatResult(result, imageIds, debugSearch);
+      const formatted = this.formatResult(result, debugSearch);
       
-      console.error(`✅ Found: ${result.totalDocuments} documents, ${result.chunks.length} chunks, ${imageIds.length} images across ${result.sources.length} sources`);
+      console.error(`✅ Found: ${result.totalDocuments} documents, ${result.chunks.length} chunks across ${result.sources.length} sources`);
       
       return {
         content: [
@@ -143,10 +130,9 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
   /**
    * Format hierarchical result for LLM consumption.
    */
-  private formatResult(result: ConceptSearchResult, imageIds: number[], debug?: boolean) {
+  private formatResult(result: ConceptSearchResult, debug?: boolean) {
     // Format sources with page context and match type
     const sources = result.sources.map((s: SourceWithPages) => ({
-      catalog_id: s.catalogId,
       title: s.title,
       pages: s.pageNumbers,
       match_type: s.matchType,  // 'primary' or 'related'
@@ -162,9 +148,8 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
         : [];
       
       return {
-        catalog_id: e.chunk.catalogId,
-        title: e.chunk.catalogTitle || e.documentTitle || '',
         text: e.chunk.text,
+        title: e.chunk.catalogTitle || e.documentTitle || '',
         page: e.pageNumber,
         concept_density: e.conceptDensity.toFixed(3),
         concepts: conceptNames
@@ -175,9 +160,6 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
       concept: result.concept,
       concept_id: result.conceptId,
       summary: result.summary,
-      
-      // Associated visuals
-      image_ids: imageIds,
       
       // Semantic relationships
       related_concepts: result.relatedConcepts,
@@ -196,8 +178,7 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
         total_documents: result.totalDocuments,
         total_chunks: result.totalChunks,
         sources_returned: result.sources.length,
-        chunks_returned: result.chunks.length,
-        images_found: imageIds.length
+        chunks_returned: result.chunks.length
       },
       
       // Hybrid score always shown

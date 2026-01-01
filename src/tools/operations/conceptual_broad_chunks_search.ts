@@ -116,18 +116,9 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
     const clusteredResults = filterByScoreGap(positiveResults) as SearchResult[];
     
     // Format results for MCP response
-    const formattedResults = clusteredResults.map((r) => {
-      // Extract concept names
-      const conceptNames = (r.conceptNames && r.conceptNames.length > 0 && r.conceptNames[0] !== '')
-        ? r.conceptNames
-        : [];
-      
-      return {
-        catalog_id: r.catalogId,
-        title: r.catalogTitle || 'Untitled',
+    const formattedResults = clusteredResults.map((r) => ({
         text: r.text,
-        page_number: r.pageNumber,
-        concepts: conceptNames,
+        source: r.source,
         score: r.hybridScore.toFixed(3),  // Hybrid score always shown
         ...(debugSearch && {
           score_components: {  // Component breakdown only in debug mode
@@ -138,8 +129,7 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
           }
         }),
         expanded_terms: r.expandedTerms
-      };
-    });
+      }));
     
     return {
       content: [

@@ -1,7 +1,7 @@
 # Concept-RAG API Reference
 
-**Schema Version:** v8 (December 2025)  
-**Tools:** 12 MCP tools
+**Schema Version:** v7 (December 2025)  
+**Tools:** 10 MCP tools
 
 This document provides JSON input and output schemas for all MCP tools. For tool selection guidance, decision trees, and usage patterns, see [tool-selection-guide.md](tool-selection-guide.md).
 
@@ -32,8 +32,7 @@ Search document summaries and metadata to discover relevant documents.
 ```json
 [
   {
-    "catalog_id": 0,
-    "title": "string",
+    "source": "string",
     "summary": "string",
     "score": "string",
     "expanded_terms": ["string"]
@@ -43,8 +42,7 @@ Search document summaries and metadata to discover relevant documents.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `catalog_id` | number | Document ID for subsequent tool calls |
-| `title` | string | Document title |
+| `source` | string | Full file path to document |
 | `summary` | string | Document summary text |
 | `score` | string | Combined hybrid score (0.000-1.000) |
 | `expanded_terms` | string[] | Expanded query terms |
@@ -90,11 +88,8 @@ Search across all document chunks using hybrid search.
 ```json
 [
   {
-    "catalog_id": 0,
-    "title": "string",
     "text": "string",
-    "page_number": 0,
-    "concepts": ["string"],
+    "source": "string",
     "score": "string",
     "expanded_terms": ["string"]
   }
@@ -103,11 +98,8 @@ Search across all document chunks using hybrid search.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `catalog_id` | number | Document ID for subsequent tool calls |
-| `title` | string | Document title |
 | `text` | string | Chunk content |
-| `page_number` | number | Page number in document |
-| `concepts` | string[] | Concept names in chunk |
+| `source` | string | Source document path |
 | `score` | string | Combined hybrid score (0.000-1.000) |
 | `expanded_terms` | string[] | Expanded query terms |
 
@@ -135,24 +127,25 @@ Search within a single known document.
 ```json
 {
   "text": "string",
-  "catalog_id": 0
+  "source": "string"
 }
 ```
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `text` | string | ✅ | — | Search query |
-| `catalog_id` | number | ✅ | — | Document ID from `catalog_search` |
+| `source` | string | ✅ | — | Full file path of document |
 
-> **Note:** First use `catalog_search` to find the document and get its `catalog_id`.
+> **Debug Output:** Enable via `DEBUG_SEARCH=true` environment variable.
 
 #### Output Schema
 
 ```json
 [
   {
-    "title": "string",
     "text": "string",
+    "source": "string",
+    "title": "string",
     "concepts": ["string"],
     "concept_ids": [0]
   }
@@ -161,12 +154,13 @@ Search within a single known document.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `title` | string | Document title |
 | `text` | string | Chunk content |
+| `source` | string | Source document path |
+| `title` | string | Document title |
 | `concepts` | string[] | Concept names in chunk |
 | `concept_ids` | number[] | Concept IDs |
 
-**Limits:** Top chunks from the document (fixed limit for single-document search).
+**Limits:** 5 chunks max (fixed limit for single-document search).
 
 ---
 
@@ -181,14 +175,14 @@ Find chunks associated with a concept, organized hierarchically.
 ```json
 {
   "concept": "string",
-  "title_filter": "string"
+  "source_filter": "string"
 }
 ```
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `concept` | string | ✅ | — | Concept to search for |
-| `title_filter` | string | ❌ | — | Filter by document title |
+| `source_filter` | string | ❌ | — | Filter by source path |
 
 **Result Filtering:** Returns all matching sources and chunks (no fixed limit).
 
@@ -201,14 +195,12 @@ Find chunks associated with a concept, organized hierarchically.
   "concept": "string",
   "concept_id": 0,
   "summary": "string",
-  "image_ids": [0],
   "related_concepts": ["string"],
   "synonyms": ["string"],
   "broader_terms": ["string"],
   "narrower_terms": ["string"],
   "sources": [
     {
-      "catalog_id": 0,
       "title": "string",
       "pages": [0],
       "match_type": "primary|related",
@@ -217,9 +209,8 @@ Find chunks associated with a concept, organized hierarchically.
   ],
   "chunks": [
     {
-      "catalog_id": 0,
-      "title": "string",
       "text": "string",
+      "title": "string",
       "page": 0,
       "concept_density": "string",
       "concepts": ["string"]
@@ -229,8 +220,7 @@ Find chunks associated with a concept, organized hierarchically.
     "total_documents": 0,
     "total_chunks": 0,
     "sources_returned": 0,
-    "chunks_returned": 0,
-    "images_found": 0
+    "chunks_returned": 0
   },
   "score": "string"
 }
@@ -241,23 +231,18 @@ Find chunks associated with a concept, organized hierarchically.
 | `concept` | string | Matched concept name |
 | `concept_id` | number | Concept identifier |
 | `summary` | string | Concept summary |
-| `image_ids` | number[] | Visual IDs for `get_visuals` |
 | `related_concepts` | string[] | Related concepts |
 | `synonyms` | string[] | Alternative names |
 | `broader_terms` | string[] | More general concepts |
 | `narrower_terms` | string[] | More specific concepts |
-| `sources[].catalog_id` | number | Document ID |
 | `sources[].title` | string | Document title |
 | `sources[].pages` | number[] | Page numbers |
 | `sources[].match_type` | string | `"primary"` or `"related"` |
 | `sources[].via_concept` | string? | Linking concept if related |
-| `chunks[].catalog_id` | number | Document ID |
-| `chunks[].title` | string | Document title |
 | `chunks[].text` | string | Chunk content |
 | `chunks[].page` | number | Page number |
 | `chunks[].concept_density` | string | Prominence (0.000-1.000) |
 | `stats` | object | Search statistics |
-| `stats.images_found` | number | Count of associated visuals |
 | `score` | string | Combined hybrid score (0.000-1.000) |
 
 #### Additional Fields with Debug Enabled
@@ -593,70 +578,6 @@ Find concepts in a category's documents.
 
 ---
 
-## Visual Content
-
-### get_visuals
-
-Retrieve visual content (diagrams, charts, tables, figures) from documents.
-
-#### Input Schema
-
-```json
-{
-  "ids": [0],
-  "catalog_id": 0,
-  "visual_type": "diagram|flowchart|chart|table|figure",
-  "concept": "string",
-  "limit": 20
-}
-```
-
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `ids` | number[] | ❌ | — | Retrieve specific visuals by ID (from `concept_search` `image_ids`) |
-| `catalog_id` | number | ❌ | — | Filter by document ID |
-| `visual_type` | string | ❌ | — | Filter by type |
-| `concept` | string | ❌ | — | Filter by associated concept |
-| `limit` | number | ❌ | `20` | Maximum results |
-
-> **Note:** Use `ids` to fetch visuals returned by `concept_search` `image_ids`. Use `catalog_id` to browse all visuals in a document.
-
-#### Output Schema
-
-```json
-{
-  "visuals": [
-    {
-      "id": 0,
-      "catalog_id": 0,
-      "catalog_title": "string",
-      "visual_type": "string",
-      "page_number": 0,
-      "description": "string",
-      "image_path": "string",
-      "concepts": ["string"]
-    }
-  ],
-  "total_returned": 0,
-  "filters_applied": {}
-}
-```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `visuals[].id` | number | Visual ID |
-| `visuals[].catalog_id` | number | Document ID |
-| `visuals[].catalog_title` | string | Document title |
-| `visuals[].visual_type` | string | Type: diagram, flowchart, chart, table, figure |
-| `visuals[].page_number` | number | Page in document |
-| `visuals[].description` | string | Semantic description |
-| `visuals[].image_path` | string | Path to image file |
-| `visuals[].concepts` | string[] | Associated concept names |
-| `total_returned` | number | Count of visuals returned |
-| `filters_applied` | object | Applied filter parameters |
-
----
-
 ## Error Schema
 
 All tools return errors in this format:
@@ -709,4 +630,3 @@ All tools return errors in this format:
 | `category_search` | 30-130ms |
 | `list_categories` | 10-50ms |
 | `list_concepts_in_category` | 30-100ms |
-| `get_visuals` | 20-100ms |

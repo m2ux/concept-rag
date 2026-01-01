@@ -6,7 +6,7 @@ This guide helps AI agents and developers select the appropriate MCP tool for th
 
 ## Overview
 
-Concept-RAG provides **12 MCP tools** organized into six categories:
+Concept-RAG provides **11 MCP tools** organized into five categories:
 
 | Category | Tools | Purpose |
 |----------|-------|---------|
@@ -15,7 +15,6 @@ Concept-RAG provides **12 MCP tools** organized into six categories:
 | **Content Search** | `broad_chunks_search`, `chunks_search` | Search within document content |
 | **Concept Analysis** | `concept_search`, `extract_concepts`, `source_concepts`, `concept_sources` | Analyze and track concepts |
 | **Category Browsing** | `category_search`, `list_categories`, `list_concepts_in_category` | Browse by domain/category |
-| **Visual Content** | `get_visuals` | Retrieve diagrams, charts, tables, figures |
 
 ---
 
@@ -43,7 +42,7 @@ START: User asks a question
 │  └─ YES → Use `concept_search` (highest precision)
 │
 ├─ Do they already know the SPECIFIC DOCUMENT they want to search within?
-│  ├─ YES → Use `chunks_search` (requires catalog_id from catalog_search)
+│  ├─ YES → Use `chunks_search` (requires source path)
 │  └─ NO → Continue...
 │
 ├─ Are they searching for SPECIFIC PHRASES, KEYWORDS, or asking NATURAL LANGUAGE QUESTIONS?
@@ -102,14 +101,14 @@ START: User asks a question
 ### chunks_search
 
 ✅ You know which document contains the information  
-✅ Following up from `catalog_search` results with a specific `catalog_id`  
+✅ Following up from `catalog_search` results with a specific source  
 ✅ Focused analysis of one document's content  
-✅ Have the `catalog_id` from a previous search
+✅ Have the exact source path from a previous search
 
 ❌ Don't know which document to search (use `catalog_search` first)  
 ❌ Need to search across multiple documents (use `broad_chunks_search`)  
 ❌ Tracking concepts across entire library (use `concept_search`)  
-❌ Don't have the `catalog_id`
+❌ Don't have the exact source path
 
 ---
 
@@ -205,26 +204,6 @@ START: User asks a question
 
 ---
 
-### get_visuals
-
-✅ Fetching visuals by ID (from `concept_search` `image_ids`)  
-✅ Looking for diagrams, charts, or figures that illustrate a concept  
-✅ Finding visual representations from a specific document  
-✅ Browsing available diagrams by type (diagram, flowchart, chart, table, figure)
-
-❌ Text-based search (use `broad_chunks_search` or `chunks_search`)  
-❌ Finding documents by title (use `catalog_search`)  
-❌ Searching for concepts in text (use `concept_search`)
-
-**Parameters:**
-- `ids`: Retrieve specific visuals by ID (from `concept_search` `image_ids`)
-- `catalog_id`: Filter by document
-- `visual_type`: Filter by type (diagram, flowchart, chart, table, figure)
-- `concept`: Filter by associated concept
-- `limit`: Maximum results (default: 20)
-
----
-
 ## Common Workflows
 
 ### 1. Explore Your Library
@@ -236,9 +215,9 @@ category_search → browse documents in each area
 
 ### 2. Research a Topic
 ```
-catalog_search → find relevant documents (get catalog_id)
+catalog_search → find relevant documents
     ↓
-chunks_search (catalog_id) → dive into specific document
+chunks_search → dive into specific document
     ↓
 extract_concepts → understand document's conceptual structure
 ```
@@ -261,22 +240,6 @@ category_search → browse documents in domain
 list_concepts_in_category → understand domain vocabulary
 ```
 
-### 5. Enrich Search with Diagrams
-```
-concept_search → find concept (includes image_ids)
-    ↓
-get_visuals (ids: <image_ids>) → fetch diagrams for the concept
-    ↓
-Combine text + visuals for comprehensive understanding
-```
-
-### 6. Browse Diagrams in a Document
-```
-catalog_search → find the document (get catalog_id)
-    ↓
-get_visuals (catalog_id: <id>) → list all diagrams in document
-```
-
 ---
 
 ## Tool Selection Validation Test Cases
@@ -291,7 +254,7 @@ get_visuals (catalog_id: <id>) → list all diagrams in document
 | "What concepts are in distributed systems?" | `list_concepts_in_category` | Concepts within category |
 | "How do teams collaborate?" | `broad_chunks_search` | Natural language question |
 | "strategic planning frameworks" | `broad_chunks_search` | Multi-word phrase |
-| "Search Sun Tzu for deception" | `chunks_search` | Known document (use catalog_id) |
+| "Search Sun Tzu for deception" | `chunks_search` | Known document |
 | "Extract concepts from Art of War" | `extract_concepts` | Explicit extraction request |
 | "documents about healthcare" | `catalog_search` | Document discovery |
 | "organizational learning" | `concept_search` | Conceptual term |
@@ -301,9 +264,6 @@ get_visuals (catalog_id: <id>) → list all diagrams in document
 | "Find sources for TDD, DI, and CI" | `source_concepts` | Multi-concept source lookup |
 | "List sources for each concept separately" | `concept_sources` | Per-concept bibliographies |
 | "What books cover the most of these topics?" | `source_concepts` | Overlap analysis |
-| "Show me diagrams about architecture" | `get_visuals` | Visual content by concept |
-| "What diagrams are in this book?" | `get_visuals` | Visual content by document |
-| "Find flowcharts" | `get_visuals` | Visual content by type |
 
 ---
 

@@ -19,35 +19,8 @@ export interface FilenameMetadata {
 }
 
 /**
- * Known underscore-encoded characters.
- * Only these specific patterns are decoded to avoid false positives
- * (e.g., "_bar" should not decode as "º" + "r").
- */
-const UNDERSCORE_ENCODINGS: Record<string, string> = {
-    '20': ' ',   // space
-    '2C': ',',   // comma
-    '2F': '/',   // forward slash
-    '26': '&',   // ampersand
-    '27': "'",   // apostrophe
-    '28': '(',   // opening parenthesis
-    '29': ')',   // closing parenthesis
-    '2B': '+',   // plus
-    '3A': ':',   // colon
-    '3B': ';',   // semicolon
-    '3D': '=',   // equals
-    '3F': '?',   // question mark
-    '40': '@',   // at sign
-    '5B': '[',   // opening bracket
-    '5D': ']',   // closing bracket
-};
-
-/**
  * Decode URL-encoded characters in text.
  * Handles both standard percent encoding (%XX) and underscore encoding (_XX).
- * 
- * Only specific known patterns are decoded to avoid false positives where
- * underscore followed by letters (like "_bar") could be misinterpreted as
- * hex encoding.
  * 
  * Common encodings:
  * - _20 or %20 = space
@@ -62,13 +35,13 @@ const UNDERSCORE_ENCODINGS: Record<string, string> = {
  */
 export function decodeUrlEncoding(text: string): string {
     // First handle underscore-style encoding (_XX)
-    // Only decode known patterns to avoid false positives like _bar -> º + r
+    // Match _XX where XX is a valid hex pair
     let decoded = text.replace(/_([0-9A-Fa-f]{2})/g, (match, hex) => {
-        const upperHex = hex.toUpperCase();
-        if (UNDERSCORE_ENCODINGS[upperHex]) {
-            return UNDERSCORE_ENCODINGS[upperHex];
+        try {
+            return String.fromCharCode(parseInt(hex, 16));
+        } catch {
+            return match; // Keep original if decode fails
         }
-        return match; // Keep original if not a known encoding
     });
     
     // Then handle standard percent encoding (%XX)

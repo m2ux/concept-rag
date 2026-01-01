@@ -36,9 +36,6 @@ export interface LLMConfig {
   
   /** Model for concept extraction (comprehensive) */
   conceptModel: string;
-  
-  /** Model for visual classification and description (vision-capable) */
-  visionModel: string;
 }
 
 /**
