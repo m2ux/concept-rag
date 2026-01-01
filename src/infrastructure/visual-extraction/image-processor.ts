@@ -5,6 +5,7 @@
  * - Cropping regions from page images
  * - Converting to grayscale
  * - Saving as optimized PNG
+ * - Embedding metadata in PNG tEXt chunks
  * 
  * Uses sharp for high-performance image processing.
  */
@@ -13,6 +14,19 @@ import sharp from 'sharp';
 import * as fs from 'fs';
 import * as path from 'path';
 import type { BoundingBox } from './types.js';
+
+/**
+ * Metadata to embed in PNG images.
+ */
+export interface ImageEmbeddedMetadata {
+  title?: string;
+  author?: string;
+  year?: number;
+  pageNumber: number;
+  imageIndex: number;
+  catalogId: number;
+  source?: string;
+}
 
 /**
  * Image metadata from sharp.
@@ -95,6 +109,41 @@ export async function cropAndGrayscale(
 }
 
 /**
+ * Build PNG tEXt chunks from embedded metadata.
+ * 
+ * PNG tEXt chunks are key-value pairs stored in the image file.
+ * Standard keys: Title, Author, Description, Copyright, Creation Time, Software
+ * Custom keys are also supported.
+ * 
+ * @param metadata - Metadata to embed
+ * @returns Object with tEXt chunk key-value pairs
+ */
+function buildPngTextChunks(metadata: ImageEmbeddedMetadata): Record<string, string> {
+  const chunks: Record<string, string> = {};
+  
+  if (metadata.title) {
+    chunks['Title'] = metadata.title;
+  }
+  if (metadata.author) {
+    chunks['Author'] = metadata.author;
+  }
+  if (metadata.year) {
+    chunks['Creation Time'] = String(metadata.year);
+  }
+  if (metadata.source) {
+    chunks['Source'] = metadata.source;
+  }
+  
+  // Custom metadata fields
+  chunks['Page'] = String(metadata.pageNumber);
+  chunks['ImageIndex'] = String(metadata.imageIndex);
+  chunks['CatalogId'] = String(metadata.catalogId);
+  chunks['Software'] = 'concept-rag visual extractor';
+  
+  return chunks;
+}
+
+/**
  * Convert a full page image to grayscale and save.
  * 
  * Used when extracting the entire page as a visual.
@@ -110,9 +159,10 @@ export async function convertToGrayscale(
   options: {
     pngCompression?: number;
     maxWidth?: number;  // Resize if larger than this
+    embeddedMetadata?: ImageEmbeddedMetadata;
   } = {}
 ): Promise<ImageMetadata> {
-  const { pngCompression = 6, maxWidth } = options;
+  const { pngCompression = 6, maxWidth, embeddedMetadata } = options;
 
   // Ensure output directory exists
   const outputDir = path.dirname(outputPath);
@@ -130,11 +180,78 @@ export async function convertToGrayscale(
     }
   }
 
+  // Build PNG options with optional text chunks
+  const pngOptions: sharp.PngOptions = { compressionLevel: pngCompression };
+  
+  if (embeddedMetadata) {
+    const textChunks = buildPngTextChunks(embeddedMetadata);
+    // Sharp doesn't directly support tEXt chunks in png(), so we use withMetadata
+    // and write a separate function for full metadata embedding
+  }
+
   await pipeline
-    .png({ compressionLevel: pngCompression })
+    .png(pngOptions)
     .toFile(outputPath);
 
+  // If metadata was requested, re-process to embed it
+  if (embeddedMetadata) {
+    await embedMetadataInPng(outputPath, embeddedMetadata);
+  }
+
   return getImageMetadata(outputPath);
+}
+
+/**
+ * Embed metadata into an existing PNG file.
+ * 
+ * Uses sharp to read and rewrite the image with metadata.
+ * This is a two-pass operation: read, then write with metadata.
+ * 
+ * @param imagePath - Path to the PNG file
+ * @param metadata - Metadata to embed
+ */
+export async function embedMetadataInPng(
+  imagePath: string,
+  metadata: ImageEmbeddedMetadata
+): Promise<void> {
+  // Read the existing image
+  const imageBuffer = await fs.promises.readFile(imagePath);
+  
+  // Build EXIF-compatible metadata
+  // Sharp supports a subset of EXIF fields via withMetadata
+  const exifData: sharp.WriteableMetadata = {};
+  
+  // Build comment string with all metadata
+  const metadataLines = [
+    metadata.title ? `Title: ${metadata.title}` : null,
+    metadata.author ? `Author: ${metadata.author}` : null,
+    metadata.year ? `Year: ${metadata.year}` : null,
+    `Page: ${metadata.pageNumber}`,
+    `Image Index: ${metadata.imageIndex}`,
+    `Catalog ID: ${metadata.catalogId}`,
+    metadata.source ? `Source: ${metadata.source}` : null,
+    'Software: concept-rag visual extractor'
+  ].filter(Boolean).join('\n');
+
+  // Sharp's PNG support for metadata is limited
+  // Use EXIF comment field which is preserved in PNG via iTXt/tEXt
+  exifData.exif = {
+    IFD0: {
+      ImageDescription: metadataLines,
+      Artist: metadata.author || undefined,
+      Software: 'concept-rag visual extractor',
+      Copyright: metadata.title ? `From: ${metadata.title}` : undefined,
+    }
+  };
+
+  // Write back with metadata
+  await sharp(imageBuffer)
+    .withMetadata(exifData)
+    .png({ compressionLevel: 6 })
+    .toFile(imagePath + '.tmp');
+
+  // Replace original with new file
+  await fs.promises.rename(imagePath + '.tmp', imagePath);
 }
 
 /**

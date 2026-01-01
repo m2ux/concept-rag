@@ -13,7 +13,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { extractPdfImages, cleanupExtractedImages, isPdfImagesAvailable } from './pdf-page-renderer.js';
-import { convertToGrayscale, getImageMetadata } from './image-processor.js';
+import { convertToGrayscale, getImageMetadata, type ImageEmbeddedMetadata } from './image-processor.js';
 import { VisionLLMService, createVisionLLMService } from './vision-llm-service.js';
 import type { ExtractedVisual, VisualExtractionConfig, VisualExtractionProgressCallback } from './types.js';
 import { DEFAULT_VISUAL_EXTRACTION_CONFIG } from './types.js';
@@ -187,13 +187,24 @@ export class VisualExtractor {
             continue;
           }
 
-          // Step 3: Save as grayscale with consistent naming
+          // Step 3: Save as grayscale with consistent naming and embedded metadata
           const outputFilename = formatVisualFilename(img.pageNumber, img.imageIndex);
           const outputPath = path.join(catalogImagesDir, outputFilename);
 
+          // Build metadata for embedding in PNG
+          const embeddedMetadata: ImageEmbeddedMetadata = {
+            title: documentInfo.title,
+            author: documentInfo.author,
+            year: documentInfo.year,
+            pageNumber: img.pageNumber,
+            imageIndex: img.imageIndex,
+            catalogId
+          };
+
           await convertToGrayscale(img.imagePath, outputPath, {
             pngCompression: this.config.pngCompression,
-            maxWidth: 1200  // Limit max width for storage
+            maxWidth: 1200,  // Limit max width for storage
+            embeddedMetadata
           });
 
           const outputMetadata = await getImageMetadata(outputPath);

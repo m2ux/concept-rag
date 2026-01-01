@@ -22,6 +22,7 @@
  *   --limit <n>        Limit number of documents to process
  *   --dpi <n>          Rendering DPI (default: 150)
  *   --dry-run          Show what would be extracted without saving
+ *   --resume           Skip documents that already have visuals in the database
  * 
  * Examples:
  *   npx tsx scripts/extract-visuals.ts
@@ -49,6 +50,7 @@ const catalogIdFilter = args['catalog-id'] ? parseInt(args['catalog-id'], 10) : 
 const limit = args.limit ? parseInt(args.limit, 10) : undefined;
 const renderDpi = args.dpi ? parseInt(args.dpi, 10) : 150;
 const dryRun = args['dry-run'] || false;
+const resumeMode = args.resume || false;
 
 async function main() {
   console.log('🖼️  Visual Extraction');
@@ -117,10 +119,29 @@ async function main() {
     catalogEntries = catalogEntries.slice(0, limit);
   }
 
+  // In resume mode, filter out documents that already have visuals
+  let skippedCount = 0;
+  if (resumeMode) {
+    console.log('🔄 Resume mode: checking for already-processed documents...');
+    const existingVisuals = await visuals.query().select(['catalog_id']).limit(100000).toArray();
+    const processedCatalogIds = new Set(existingVisuals.map((v: any) => v.catalog_id));
+    
+    const originalCount = catalogEntries.length;
+    catalogEntries = catalogEntries.filter((e: any) => !processedCatalogIds.has(e.id));
+    skippedCount = originalCount - catalogEntries.length;
+    
+    if (skippedCount > 0) {
+      console.log(`   ⏭️  Skipping ${skippedCount} documents with existing visuals`);
+    }
+  }
+
   console.log(`📚 Found ${catalogEntries.length} documents to process`);
   
   if (catalogEntries.length === 0) {
     console.log('   No documents matched the filter criteria.');
+    if (resumeMode && skippedCount > 0) {
+      console.log(`   (${skippedCount} documents already have visuals)`);
+    }
     process.exit(0);
   }
 
