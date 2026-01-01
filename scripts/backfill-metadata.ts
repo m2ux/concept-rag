@@ -16,6 +16,7 @@ import {
   extractContentMetadata,
   ChunkData,
 } from "../src/infrastructure/document-loaders/content-metadata-extractor.js";
+import { parseFilenameMetadata } from "../src/infrastructure/utils/filename-metadata-parser.js";
 
 interface BackfillOptions {
   dbpath: string;
@@ -24,6 +25,7 @@ interface BackfillOptions {
   fields: Set<string>;
   source?: string;
   verbose: boolean;
+  reparseFilenames: boolean;  // Re-parse filenames with improved URL decoding
 }
 
 interface BackfillResult {
@@ -63,6 +65,7 @@ function parseArgs(): BackfillOptions {
     minConfidence: 0.5,
     fields: new Set(["author", "year", "publisher"]),
     verbose: false,
+    reparseFilenames: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -82,13 +85,128 @@ function parseArgs(): BackfillOptions {
       i++;
     } else if (args[i] === "--verbose" || args[i] === "-v") {
       options.verbose = true;
+    } else if (args[i] === "--reparse-filenames") {
+      options.reparseFilenames = true;
     }
   }
 
   return options;
 }
 
+/**
+ * Re-parse filenames with improved URL decoding to extract metadata.
+ * This is useful for documents with URL-encoded filenames like:
+ * "Title_20--_20Author_20--_20Year.pdf"
+ */
+async function reparseFilenames(options: BackfillOptions): Promise<BackfillResult[]> {
+  const db = await lancedb.connect(options.dbpath);
+  const catalog = await db.openTable("catalog");
+
+  const allDocs: CatalogRecord[] = await catalog.query().limit(100000).toArray();
+
+  // Filter documents needing backfill
+  const docsToProcess = allDocs.filter((d) => {
+    // Skip if specific source requested and doesn't match
+    if (options.source && d.source !== options.source) {
+      return false;
+    }
+
+    // Check if any tracked field is missing
+    const missingAuthor = options.fields.has("author") && (!d.author || !d.author.trim());
+    const missingYear = options.fields.has("year") && (!d.year || d.year === 0);
+    const missingPublisher = options.fields.has("publisher") && (!d.publisher || !d.publisher.trim());
+
+    return missingAuthor || missingYear || missingPublisher;
+  });
+
+  console.log(`Found ${docsToProcess.length} documents with incomplete metadata`);
+
+  const results: BackfillResult[] = [];
+
+  for (const doc of docsToProcess) {
+    if (!doc.source) continue;
+
+    // Re-parse filename with improved URL decoding
+    const parsed = parseFilenameMetadata(doc.source);
+
+    const updates: BackfillResult["updates"] = [];
+
+    // Author - only update if currently missing and newly parsed has value
+    if (
+      options.fields.has("author") &&
+      (!doc.author || !doc.author.trim()) &&
+      parsed.author &&
+      parsed.author.trim()
+    ) {
+      updates.push({
+        field: "author",
+        oldValue: doc.author || "",
+        newValue: parsed.author,
+        confidence: 1.0, // Filename parsing is deterministic
+      });
+    }
+
+    // Year - only update if currently missing/zero and newly parsed has value
+    if (
+      options.fields.has("year") &&
+      (!doc.year || doc.year === 0) &&
+      parsed.year > 0
+    ) {
+      updates.push({
+        field: "year",
+        oldValue: doc.year || 0,
+        newValue: parsed.year,
+        confidence: 1.0,
+      });
+    }
+
+    // Publisher - only update if currently missing and newly parsed has value
+    if (
+      options.fields.has("publisher") &&
+      (!doc.publisher || !doc.publisher.trim()) &&
+      parsed.publisher &&
+      parsed.publisher.trim()
+    ) {
+      updates.push({
+        field: "publisher",
+        oldValue: doc.publisher || "",
+        newValue: parsed.publisher,
+        confidence: 1.0,
+      });
+    }
+
+    // Title - update if parsed title is different and more informative
+    if (parsed.title && parsed.title !== doc.title) {
+      // Only update title if the new one looks more complete
+      // (has spaces, doesn't look like a hash, etc.)
+      const isMoreInformative = 
+        parsed.title.includes(' ') && 
+        !parsed.title.match(/^[a-f0-9]{32}$/i);
+      
+      if (isMoreInformative && options.verbose) {
+        console.log(`  📝 Title could be updated: "${doc.title?.substring(0, 40)}..." → "${parsed.title.substring(0, 40)}..."`);
+      }
+    }
+
+    if (updates.length > 0) {
+      results.push({
+        documentId: doc.id,
+        source: doc.source || "",
+        title: doc.title || "",
+        updates,
+      });
+    }
+  }
+
+  return results;
+}
+
 async function backfillMetadata(options: BackfillOptions): Promise<BackfillResult[]> {
+  // If --reparse-filenames is set, use filename parsing instead of content extraction
+  if (options.reparseFilenames) {
+    return reparseFilenames(options);
+  }
+
   const db = await lancedb.connect(options.dbpath);
   const catalog = await db.openTable("catalog");
   const chunks = await db.openTable("chunks");
@@ -287,7 +405,10 @@ async function main(): Promise<void> {
   console.log("=== Metadata Backfill ===");
   console.log(`Database: ${options.dbpath}`);
   console.log(`Mode: ${options.dryRun ? "DRY RUN" : "LIVE"}`);
-  console.log(`Min confidence: ${options.minConfidence}`);
+  console.log(`Extraction: ${options.reparseFilenames ? "FILENAME PARSING (URL-decoded)" : "CONTENT-BASED"}`);
+  if (!options.reparseFilenames) {
+    console.log(`Min confidence: ${options.minConfidence}`);
+  }
   console.log(`Fields: ${Array.from(options.fields).join(", ")}`);
   if (options.source) {
     console.log(`Source filter: ${options.source}`);

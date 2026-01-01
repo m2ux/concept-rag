@@ -19,17 +19,61 @@ export interface FilenameMetadata {
 }
 
 /**
- * Normalize text by converting encoded characters and underscores to spaces.
- * - Converts URL-encoded spaces (%20, _20) to spaces
- * - Converts underscores to spaces
+ * Decode URL-encoded characters in text.
+ * Handles both standard percent encoding (%XX) and underscore encoding (_XX).
+ * 
+ * Common encodings:
+ * - _20 or %20 = space
+ * - _3A or %3A = colon (:)
+ * - _3B or %3B = semicolon (;)
+ * - _2C or %2C = comma (,)
+ * - _2F or %2F = forward slash (/)
+ * - _26 or %26 = ampersand (&)
+ * - _28 or %28 = opening parenthesis (
+ * - _29 or %29 = closing parenthesis )
+ * - _27 or %27 = apostrophe (')
+ */
+export function decodeUrlEncoding(text: string): string {
+    // First handle underscore-style encoding (_XX)
+    // Match _XX where XX is a valid hex pair
+    let decoded = text.replace(/_([0-9A-Fa-f]{2})/g, (match, hex) => {
+        try {
+            return String.fromCharCode(parseInt(hex, 16));
+        } catch {
+            return match; // Keep original if decode fails
+        }
+    });
+    
+    // Then handle standard percent encoding (%XX)
+    try {
+        decoded = decodeURIComponent(decoded.replace(/%(?![0-9A-Fa-f]{2})/g, '%25'));
+    } catch {
+        // If decodeURIComponent fails, try manual replacement of common patterns
+        decoded = decoded
+            .replace(/%20/g, ' ')
+            .replace(/%3A/gi, ':')
+            .replace(/%3B/gi, ';')
+            .replace(/%2C/gi, ',')
+            .replace(/%2F/gi, '/')
+            .replace(/%26/gi, '&')
+            .replace(/%28/gi, '(')
+            .replace(/%29/gi, ')')
+            .replace(/%27/gi, "'");
+    }
+    
+    return decoded;
+}
+
+/**
+ * Normalize text by converting encoded characters and cleaning up whitespace.
+ * - Decodes URL-encoded characters (both %XX and _XX formats)
+ * - Converts remaining underscores to spaces
  * - Normalizes multiple spaces to single space
  * - Trims leading/trailing whitespace
  */
 export function normalizeText(text: string): string {
-    return text
-        .replace(/%20/g, ' ')      // URL-encoded space
-        .replace(/_20/g, ' ')      // Alternative encoding (sometimes used)
-        .replace(/_/g, ' ')        // Underscores to spaces
+    return decodeUrlEncoding(text)
+        .replace(/_/g, ' ')        // Remaining underscores to spaces
         .replace(/\s+/g, ' ')      // Multiple spaces to single
         .trim();
 }
@@ -61,14 +105,18 @@ export function parseFilenameMetadata(sourcePath: string): FilenameMetadata {
         const extIndex = basename.lastIndexOf('.');
         const filenameWithoutExt = extIndex > 0 ? basename.slice(0, extIndex) : basename;
         
+        // Decode URL-encoded characters BEFORE checking for delimiters
+        // This handles filenames like "Title_20--_20Author" which should become "Title -- Author"
+        const decodedFilename = decodeUrlEncoding(filenameWithoutExt);
+        
         // If no '--' delimiter found, use whole filename as title
-        if (!filenameWithoutExt.includes(' -- ')) {
+        if (!decodedFilename.includes(' -- ')) {
             result.title = normalizeText(filenameWithoutExt);
             return result;
         }
         
         // Split by ' -- ' delimiter (with spaces around dashes)
-        const parts = filenameWithoutExt.split(' -- ').map(p => p.trim());
+        const parts = decodedFilename.split(' -- ').map(p => p.trim());
         
         if (parts.length === 0) {
             return result;
