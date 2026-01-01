@@ -18,11 +18,15 @@
 
 /**
  * Chunk data structure matching what's stored in the database.
+ * Includes ADR-0053 meta content classification fields.
  */
 export interface ChunkData {
   text: string;
   page_number?: number;
   is_reference?: boolean;
+  is_front_matter?: boolean;  // ADR-0053: Copyright, title page, preface
+  is_toc?: boolean;           // ADR-0053: Table of contents entry
+  is_meta_content?: boolean;  // ADR-0053: Aggregate flag
   catalog_title?: string;
   catalog_id?: number;
 }
@@ -203,8 +207,11 @@ export class ContentMetadataExtractor {
   /**
    * Extract metadata from document chunks.
    *
-   * Analyzes front matter chunks (typically pages 1-5) for bibliographic information.
-   * Skips reference sections and prioritizes earlier pages.
+   * Analyzes front matter chunks for bibliographic information.
+   * Uses ADR-0053 meta content classification when available:
+   * - Prioritizes chunks tagged as `is_front_matter` (copyright, title pages)
+   * - Skips ToC entries which contain noise
+   * - Falls back to page-based heuristic (pages 1-10) for untagged chunks
    *
    * @param chunks - Array of chunk data from document front matter
    * @returns Extracted metadata with confidence scores
@@ -223,18 +230,31 @@ export class ContentMetadataExtractor {
       return result;
     }
 
-    // Filter and sort chunks - prefer earlier pages, skip references
-    const frontMatter = chunks
+    // Filter chunks: skip references and ToC entries (ADR-0053)
+    // ToC entries match terms but provide no substantive metadata
+    const filtered = chunks
       .filter((c) => !c.is_reference)
-      .filter((c) => !c.page_number || c.page_number <= 10)
-      .sort((a, b) => (a.page_number || 0) - (b.page_number || 0));
+      .filter((c) => !c.is_toc);
+
+    // Separate front matter chunks (ADR-0053) from page-based fallback
+    const taggedFrontMatter = filtered.filter((c) => c.is_front_matter);
+    const untaggedEarlyPages = filtered.filter(
+      (c) => !c.is_front_matter && (!c.page_number || c.page_number <= 10)
+    );
+
+    // Prioritize tagged front matter, then early pages
+    // Sort each group by page number
+    const frontMatter = [
+      ...taggedFrontMatter.sort((a, b) => (a.page_number || 0) - (b.page_number || 0)),
+      ...untaggedEarlyPages.sort((a, b) => (a.page_number || 0) - (b.page_number || 0)),
+    ];
 
     if (frontMatter.length === 0) {
       return result;
     }
 
     // Combine front matter text for pattern matching
-    // Weight earlier pages more heavily by processing them first
+    // Tagged front matter comes first, giving it priority in extraction
     const combinedText = frontMatter.map((c) => c.text).join("\n\n");
 
     // Extract each field

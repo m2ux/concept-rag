@@ -55,6 +55,9 @@ interface ChunkRecord {
   text: string;
   page_number?: number;
   is_reference?: boolean;
+  is_front_matter?: boolean;  // ADR-0053: Copyright, title page, preface
+  is_toc?: boolean;           // ADR-0053: Table of contents entry
+  is_meta_content?: boolean;  // ADR-0053: Aggregate flag
 }
 
 function parseArgs(): BackfillOptions {
@@ -234,13 +237,24 @@ async function backfillMetadata(options: BackfillOptions): Promise<BackfillResul
   const results: BackfillResult[] = [];
 
   for (const doc of docsToProcess) {
-    // Get front matter chunks for this document
-    const docChunks = allChunks
+    // Get front matter chunks for this document (ADR-0053 aware)
+    // Filter: skip references and ToC entries
+    const filtered = allChunks
       .filter((c) => c.catalog_id === doc.id)
       .filter((c) => !c.is_reference)
-      .filter((c) => !c.page_number || c.page_number <= 10)
-      .sort((a, b) => (a.page_number || 0) - (b.page_number || 0))
-      .slice(0, 8);
+      .filter((c) => !c.is_toc);  // Skip ToC - contains noise
+
+    // Prioritize tagged front matter chunks, then early pages
+    const taggedFrontMatter = filtered.filter((c) => c.is_front_matter);
+    const untaggedEarlyPages = filtered.filter(
+      (c) => !c.is_front_matter && (!c.page_number || c.page_number <= 10)
+    );
+
+    // Combine: front matter first, then early pages, limit to 8
+    const docChunks = [
+      ...taggedFrontMatter.sort((a, b) => (a.page_number || 0) - (b.page_number || 0)),
+      ...untaggedEarlyPages.sort((a, b) => (a.page_number || 0) - (b.page_number || 0)),
+    ].slice(0, 8);
 
     if (docChunks.length === 0) {
       if (options.verbose) {
@@ -249,11 +263,14 @@ async function backfillMetadata(options: BackfillOptions): Promise<BackfillResul
       continue;
     }
 
-    // Convert to ChunkData
+    // Convert to ChunkData including ADR-0053 classification fields
     const chunkData: ChunkData[] = docChunks.map((c) => ({
       text: c.text,
       page_number: c.page_number,
       is_reference: c.is_reference,
+      is_front_matter: c.is_front_matter,
+      is_toc: c.is_toc,
+      is_meta_content: c.is_meta_content,
     }));
 
     // Extract metadata from content
