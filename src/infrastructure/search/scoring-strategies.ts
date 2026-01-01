@@ -499,3 +499,61 @@ export function getMatchedConcepts(
   }
 }
 
+/**
+ * Interface for objects with a hybrid score.
+ */
+export interface Scored {
+  hybridScore: number;
+}
+
+/**
+ * Filter results using gap detection (elbow method).
+ * 
+ * Identifies the "natural cluster" of high-scoring results by finding
+ * the largest score drop between consecutive results. Returns all
+ * results above the gap.
+ * 
+ * This approach:
+ * - Returns more results when scores are tightly clustered
+ * - Returns fewer results when there's a clear quality boundary
+ * - Adapts to each query's result distribution
+ * 
+ * @param sortedResults - Results sorted by hybridScore descending
+ * @returns Results in the high-scoring cluster (above the largest gap)
+ * 
+ * @example
+ * // Scores: [0.85, 0.82, 0.78, 0.75, 0.40, 0.38, 0.35]
+ * // Gaps:   [0.03, 0.04, 0.03, 0.35, 0.02, 0.03]
+ * // Largest gap: 0.35 at index 3
+ * // Returns: [0.85, 0.82, 0.78, 0.75] (first 4 results)
+ */
+export function filterByScoreGap<T extends Scored>(
+  sortedResults: T[]
+): T[] {
+  // Edge cases: 0 or 1 result - return as-is
+  if (sortedResults.length <= 1) {
+    return sortedResults;
+  }
+  
+  // Find the largest gap between consecutive scores
+  let maxGapIndex = 0;
+  let maxGap = 0;
+  
+  for (let i = 0; i < sortedResults.length - 1; i++) {
+    const gap = sortedResults[i].hybridScore - sortedResults[i + 1].hybridScore;
+    if (gap > maxGap) {
+      maxGap = gap;
+      maxGapIndex = i;
+    }
+  }
+  
+  // If no significant gap found (all scores similar), return all results
+  // A "significant" gap is one that's at least 0.01 (1% difference)
+  if (maxGap < 0.01) {
+    return sortedResults;
+  }
+  
+  // Return results up to and including the element before the gap
+  return sortedResults.slice(0, maxGapIndex + 1);
+}
+

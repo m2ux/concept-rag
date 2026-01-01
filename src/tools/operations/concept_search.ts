@@ -1,18 +1,13 @@
 import { BaseTool, ToolParams } from "../base/tool.js";
 import { ConceptSearchService, ConceptSearchResult, EnrichedChunk, SourceWithPages } from "../../domain/services/concept-search-service.js";
+import { Configuration } from "../../application/config/index.js";
 
 export interface ConceptSearchParams extends ToolParams {
   /** The concept to search for */
   concept: string;
   
-  /** Maximum sources to return (default: 20) */
-  limit?: number;
-  
   /** Optional source path filter */
   source_filter?: string;
-  
-  /** Show debug information */
-  debug?: boolean;
 }
 
 /**
@@ -49,10 +44,12 @@ DO NOT USE for:
 - Finding documents by title (use catalog_search instead)
 - Searching within a known document (use chunks_search instead)
 
-RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
+RETURNS: All matching content organized as Concept → Sources → Chunks:
 - Concept metadata: summary, synonyms, broader/narrower terms
-- Source documents with match_type: 'primary' (direct) or 'related' (via linked concept)
-- Chunks: text with page numbers and concept density ranking`;
+- All source documents with match_type: 'primary' (direct) or 'related' (via linked concept)
+- All chunks: text with page numbers and concept density ranking
+
+Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
 
   inputSchema = {
     type: "object" as const,
@@ -61,19 +58,9 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
         type: "string",
         description: "The concept to search for - use conceptual terms not exact phrases (e.g., 'innovation' not 'innovation process')",
       },
-      limit: {
-        type: "number",
-        description: "Maximum number of sources to return (default: 20)",
-        default: 20
-      },
       source_filter: {
         type: "string",
         description: "Optional: Filter results to documents containing this text in their source path"
-      },
-      debug: {
-        type: "boolean",
-        description: "Show debug information",
-        default: false
       }
     },
     required: ["concept"],
@@ -98,22 +85,21 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
       };
     }
     
-    const maxSources = params.limit || 20;
-    
     console.error(`🔍 Hierarchical concept search: "${params.concept}"`);
     
     try {
-      // Perform hierarchical search
+      // Perform hierarchical search - no limits, return all matching content
       const result = await this.conceptSearchService.search({
         concept: params.concept,
-        maxSources,
-        maxChunks: maxSources * 3, // ~3 chunks per source
-        chunksPerSource: 3,
+        maxSources: 1000,   // Effectively unlimited
+        maxChunks: 3000,    // Effectively unlimited (~3 per source)
+        chunksPerSource: 10,
         sourceFilter: params.source_filter
       });
       
       // Format for MCP response
-      const formatted = this.formatResult(result, params.debug);
+      const debugSearch = Configuration.getInstance().logging.debugSearch;
+      const formatted = this.formatResult(result, debugSearch);
       
       console.error(`✅ Found: ${result.totalDocuments} documents, ${result.chunks.length} chunks across ${result.sources.length} sources`);
       
@@ -195,10 +181,12 @@ RETURNS: Hierarchical results organized as Concept → Sources → Chunks:
         chunks_returned: result.chunks.length
       },
       
-      // Detailed hybrid search scores (always shown for debugging)
-      ...(result.scores ? {
-        scores: {
-          hybrid: result.scores.hybridScore.toFixed(3),
+      // Hybrid score always shown
+      ...(result.scores ? { score: result.scores.hybridScore.toFixed(3) } : {}),
+      
+      // Component breakdown only when debug enabled
+      ...(debug && result.scores ? {
+        score_components: {
           name: result.scores.nameScore.toFixed(3),
           vector: result.scores.vectorScore.toFixed(3),
           bm25: result.scores.bm25Score.toFixed(3),

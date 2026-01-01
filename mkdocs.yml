@@ -1,0 +1,148 @@
+# MkDocs Material Configuration
+# Documentation: https://squidfunk.github.io/mkdocs-material/
+
+site_name: Concept-RAG Documentation
+site_description: Conceptual RAG with LanceDB, WordNet, and multi-signal hybrid search for MCP
+site_author: Alex Komyagin
+site_url: https://m2ux.github.io/concept-rag/
+
+repo_name: m2ux/concept-rag
+repo_url: https://github.com/m2ux/concept-rag
+
+# Theme configuration
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    # Light mode
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+      toc_depth: 3
+
+# Navigation
+nav:
+  - Home: index.md
+
+  - How It Works: how-it-works.md
+
+  - Getting Started:
+    - Quick Start: getting-started.md
+    - Troubleshooting: troubleshooting.md
+
+  - Tool Selection: tool-selection-guide.md
+
+  - API Reference: api-reference.md
+
+  - Architecture:
+    - Overview: architecture/README.md
+    - Seeding Architecture: architecture/seeding-architecture.md
+    - BM25 Keywords: architecture/bm25-keywords.md
+    - WordNet Enrichment: architecture/wordnet-enrichment.md
+    - Database Schema: database-schema.md
+    - Stage Cache: stage-cache-structure.md
+
+  - ADRs:
+    - "ADR-0001: TypeScript Runtime": architecture/adr0001-typescript-nodejs-runtime.md
+    - "ADR-0002: LanceDB Storage": architecture/adr0002-lancedb-vector-storage.md
+    - "ADR-0003: MCP Protocol": architecture/adr0003-mcp-protocol.md
+    - "ADR-0004: RAG Architecture": architecture/adr0004-rag-architecture.md
+    - "ADR-0005: PDF Processing": architecture/adr0005-pdf-document-processing.md
+    - "ADR-0006: Hybrid Search": architecture/adr0006-hybrid-search-strategy.md
+    - "ADR-0007: Concept Extraction": architecture/adr0007-concept-extraction-llm.md
+    - "ADR-0008: WordNet Integration": architecture/adr0008-wordnet-integration.md
+    - "ADR-0009: Three-Table Architecture": architecture/adr0009-three-table-architecture.md
+    - "ADR-0010: Query Expansion": architecture/adr0010-query-expansion.md
+    - "ADR-0011: Multi-Model Strategy": architecture/adr0011-multi-model-strategy.md
+    - "ADR-0012: OCR Fallback": architecture/adr0012-ocr-fallback-tesseract.md
+    - "ADR-0013: Incremental Seeding": architecture/adr0013-incremental-seeding.md
+    - "ADR-0014: Multi-Pass Extraction": architecture/adr0014-multi-pass-extraction.md
+    - "ADR-0015: Formal Concept Model": architecture/adr0015-formal-concept-model.md
+    - "ADR-0016: Layered Architecture": architecture/adr0016-layered-architecture-refactoring.md
+    - "ADR-0017: Repository Pattern": architecture/adr0017-repository-pattern.md
+    - "ADR-0018: Dependency Injection": architecture/adr0018-dependency-injection-container.md
+    - "ADR-0019: Vitest Framework": architecture/adr0019-vitest-testing-framework.md
+    - "ADR-0020: TypeScript Strict Mode": architecture/adr0020-typescript-strict-mode.md
+    - "ADR-0021: Performance Optimization": architecture/adr0021-performance-optimization-vector-search.md
+    - "ADR-0022: HybridSearchService": architecture/adr0022-hybrid-search-service-extraction.md
+    - "ADR-0023: SQL Injection Prevention": architecture/adr0023-sql-injection-prevention.md
+    - "ADR-0024: Multi-Provider Embeddings": architecture/adr0024-multi-provider-embeddings.md
+    - "ADR-0025: Document Loader Factory": architecture/adr0025-document-loader-factory.md
+    - "ADR-0026: EPUB Support": architecture/adr0026-epub-format-support.md
+    - "ADR-0027: Hash-Based IDs": architecture/adr0027-hash-based-integer-ids.md
+    - "ADR-0028: Category Storage": architecture/adr0028-category-storage-strategy.md
+    - "ADR-0029: Category Search Tools": architecture/adr0029-category-search-tools.md
+    - "ADR-0030: Auto-Extracted Categories": architecture/adr0030-auto-extracted-categories.md
+    - "ADR-0031: Eight Tools Strategy": architecture/adr0031-eight-specialized-tools-strategy.md
+    - "ADR-0032: Tool Selection Guide": architecture/adr0032-tool-selection-guide.md
+    - "ADR-0033: BaseTool Abstraction": architecture/adr0033-basetool-abstraction.md
+    - "ADR-0034: Error Handling": architecture/adr0034-comprehensive-error-handling.md
+    - "ADR-0035: Test Suite Expansion": architecture/adr0035-test-suite-expansion.md
+    - "ADR-0036: Configuration Centralization": architecture/adr0036-configuration-centralization.md
+    - "ADR-0037: Functional Validation": architecture/adr0037-functional-validation-layer.md
+    - "ADR-0038: Dependency Rules": architecture/adr0038-dependency-rules-enforcement.md
+    - "ADR-0039: Observability": architecture/adr0039-observability-infrastructure.md
+    - "ADR-0040: Result/Option Types": architecture/adr0040-result-option-types.md
+    - "ADR-0041: Advanced Caching": architecture/adr0041-advanced-caching.md
+    - "ADR-0042: System Resilience": architecture/adr0042-system-resilience-patterns.md
+    - "ADR-0043: Schema Normalization": architecture/adr0043-schema-normalization.md
+    - "ADR-0044: Seeding Modularization": architecture/adr0044-seeding-script-modularization.md
+    - "ADR-0045: API Key Preflight": architecture/adr0045-api-key-preflight-check.md
+    - "ADR-0046: Document Classification": architecture/adr0046-document-type-classification.md
+    - "ADR-0047: Architecture Review": architecture/adr0047-architecture-review-dec-2025.md
+    - "ADR-0048: Stage Caching": architecture/adr0048-stage-caching.md
+    - "ADR-0049: Incremental Summaries": architecture/adr0049-incremental-category-summaries.md
+    - "ADR-0050: MkDocs Site": architecture/adr0050-mkdocs-material-documentation-site.md
+    - "ADR-0051: API Documentation": architecture/adr0051-api-documentation-consolidation.md
+    - "ADR-0052: Docs Restructure": architecture/adr0052-documentation-site-restructure.md
+    - "ADR-0053: Meta Content Detection": architecture/adr0053-meta-content-detection.md
+    - "ADR-0054: Debug Flag Deprecation": architecture/adr0054-deprecate-debug-input-schema.md
+
+  - FAQ: faq.md
+
+# Plugins
+plugins:
+  - search

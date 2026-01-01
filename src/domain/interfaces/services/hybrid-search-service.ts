@@ -104,6 +104,9 @@ export interface HybridSearchOptions {
   /** Exclude chunks with math extraction issues (chunks only) */
   excludeExtractionIssues?: boolean;
   
+  /** Exclude meta content (ToC, front matter, back matter) from results (chunks only) */
+  excludeMetaContent?: boolean;
+  
   /** Custom SQL-like filter expression */
   filter?: string;
 }

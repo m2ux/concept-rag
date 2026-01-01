@@ -24,7 +24,9 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:e2e:cache": "vitest run src/__tests__/e2e/cache-performance.e2e.test.ts",
-    "benchmark:cache": "tsx scripts/benchmark-cache.ts"
+    "benchmark:cache": "tsx scripts/benchmark-cache.ts",
+    "docs:serve": "mkdocs serve",
+    "docs:build": "mkdocs build"
   },
   "keywords": [
     "mcp",

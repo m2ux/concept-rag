@@ -15,7 +15,7 @@ A RAG MCP server that enables LLMs to interact with local PDF/EPUB documents thr
 ---
 ## 📝 Available Tools
 
-The server provides **10 specialized MCP tools** organized into four categories:
+The server provides **11 specialized MCP tools** organized into four categories:
 
 ### Document Discovery
 | Tool | Description | Example Query |
@@ -39,9 +39,28 @@ The server provides **10 specialized MCP tools** organized into four categories:
 | `concept_sources` | Get per-concept source lists (separate arrays) | `["TDD", "BDD"]` → sources for each |
 | `list_concepts_in_category` | Find concepts in a category | `"distributed systems"` |
 
-**📖 Full API documentation:** See [docs/api-reference.md](docs/api-reference.md) for complete parameter specs and hybrid scoring weights.
+### Agent Guidance
+| Tool | Description | Example Query |
+|------|-------------|---------------|
+| `get_guidance` | Get research rules and tool selection guidance | `topic: "rules"` or `"tool-selection"` |
 
-**For AI agents:** See [tool-selection-guide.md](docs/tool-selection-guide.md) for the decision tree.
+**📖 Full API documentation:** See [docs/api-reference.md](docs/api-reference.md) for complete JSON I/O schemas.
+
+**For AI agents:** See [docs/tool-selection-guide.md](docs/tool-selection-guide.md) for the decision tree and selection guidance.
+
+### Agent Integration
+
+To improve AI agent performance when using these tools, integrate the agent rules into your project:
+
+| Resource | Purpose |
+|----------|---------|
+| [prompts/agent-quick-rules.md](prompts/agent-quick-rules.md) | Essential rules for efficient tool use and answer synthesis |
+| [docs/tool-selection-guide.md](docs/tool-selection-guide.md) | Decision tree for selecting the right tool |
+
+**Recommended:** Include `agent-quick-rules.md` in your agent's system prompt or context to ensure:
+- Proper tool selection workflow (`catalog_search` → `chunks_search`)
+- Efficient stopping criteria (4-6 tool calls maximum)
+- Synthesized answers instead of search narration
 
 ## 🚀 Quick Start
 
@@ -228,9 +247,9 @@ All major technical decisions are documented in **[Architecture Decision Records
 
 ### Documentation
 
-- **[API Reference](docs/api-reference.md)** - Complete MCP tool documentation with parameters and scoring weights
+- **[API Reference](docs/api-reference.md)** - Complete MCP tool documentation with JSON I/O schemas
+- **[Tool Selection Guide](docs/tool-selection-guide.md)** - Decision tree and usage guidance for AI agents
 - **[Database Schema](docs/database-schema.md)** - Four-table normalized schema with derived fields
-- **[Tool Selection Guide](docs/tool-selection-guide.md)** - Decision tree for AI agents
 - **[Test Suite](src/__tests__/README.md)** - Comprehensive test documentation with links to all E2E, integration, unit, and property tests
 
 ## 💬 Support & Community

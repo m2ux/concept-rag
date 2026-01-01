@@ -27,7 +27,7 @@ describe('ConceptualBroadChunksSearchTool', () => {
   
   describe('execute', () => {
     it('should return formatted search results across all documents', async () => {
-      // SETUP
+      // SETUP - scores very close together (< 0.01 gap) so both are in same cluster
       const testResults = [
         createTestSearchResult({
           source: '/test/doc1.pdf',
@@ -37,10 +37,9 @@ describe('ConceptualBroadChunksSearchTool', () => {
         createTestSearchResult({
           source: '/test/doc2.pdf',
           text: 'Second chunk',
-          hybridScore: 0.85
+          hybridScore: 0.948  // Gap of 0.002 - below 0.01 threshold, so same cluster
         })
       ];
-      const originalSearch = chunkRepo.search.bind(chunkRepo);
       chunkRepo.search = async () => testResults;
       
       // EXERCISE
@@ -54,32 +53,39 @@ describe('ConceptualBroadChunksSearchTool', () => {
       
       const parsedContent = JSON.parse(result.content[0].text);
       expect(Array.isArray(parsedContent)).toBe(true);
-      expect(parsedContent).toHaveLength(2);
+      expect(parsedContent).toHaveLength(2);  // Both in same cluster
       expect(parsedContent[0].source).toBe('/test/doc1.pdf');
-      expect(parsedContent[0].scores).toBeDefined();
+      expect(parsedContent[0].score).toBeDefined();  // Hybrid score always shown
     });
     
-    it('should respect limit parameter (defaults to 10)', async () => {
-      // SETUP
-      const testResults = Array.from({ length: 15 }, (_, i) =>
-        createTestSearchResult({
-          id: 5000 + i,
-          source: `/test/doc${i}.pdf`,
-          text: `Test chunk ${i} about testing`
-        })
-      );
-      chunkRepo.search = async () => testResults.slice(0, 10); // Service limits to 10
+    it('should use gap detection to filter results (no fixed limit)', async () => {
+      // SETUP - create results with a clear score gap
+      // High cluster: 0.90, 0.88, 0.85, 0.82
+      // Gap: 0.42 (largest)
+      // Low cluster: 0.40, 0.38, 0.35
+      const testResults = [
+        createTestSearchResult({ id: 5000, source: '/test/doc0.pdf', text: 'Test 0', hybridScore: 0.90 }),
+        createTestSearchResult({ id: 5001, source: '/test/doc1.pdf', text: 'Test 1', hybridScore: 0.88 }),
+        createTestSearchResult({ id: 5002, source: '/test/doc2.pdf', text: 'Test 2', hybridScore: 0.85 }),
+        createTestSearchResult({ id: 5003, source: '/test/doc3.pdf', text: 'Test 3', hybridScore: 0.82 }),
+        createTestSearchResult({ id: 5004, source: '/test/doc4.pdf', text: 'Test 4', hybridScore: 0.40 }),
+        createTestSearchResult({ id: 5005, source: '/test/doc5.pdf', text: 'Test 5', hybridScore: 0.38 }),
+        createTestSearchResult({ id: 5006, source: '/test/doc6.pdf', text: 'Test 6', hybridScore: 0.35 })
+      ];
+      chunkRepo.search = async () => testResults;
       
       // EXERCISE
       const result = await tool.execute({ text: 'test' });
       
-      // VERIFY
+      // VERIFY - gap detection should return only high cluster (4 results)
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent.length).toBeLessThanOrEqual(10); // Default limit
+      expect(parsedContent.length).toBe(4);
+      expect(parsedContent[0].score).toBe('0.900');
+      expect(parsedContent[3].score).toBe('0.820');
     });
     
     it('should include score information', async () => {
-      // SETUP
+      // SETUP - single result (gap detection returns it)
       const testResults = [
         createTestSearchResult({
           source: '/test/doc.pdf',
@@ -89,29 +95,28 @@ describe('ConceptualBroadChunksSearchTool', () => {
           bm25Score: 0.75
         })
       ];
-      const originalSearch = chunkRepo.search.bind(chunkRepo);
       chunkRepo.search = async () => testResults;
       
       // EXERCISE
       const result = await tool.execute({ text: 'test' });
       
-      // VERIFY
+      // VERIFY - hybrid score always shown as 'score', components only in debug
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent[0].scores.hybrid).toBe('0.950');
-      expect(parsedContent[0].scores.vector).toBe('0.850');
-      expect(parsedContent[0].scores.bm25).toBe('0.750');
+      expect(parsedContent.length).toBe(1);
+      expect(parsedContent[0].score).toBe('0.950');
+      expect(parsedContent[0].score_components).toBeUndefined();  // Not in debug mode
     });
     
     it('should include expanded terms when debug is enabled', async () => {
-      // SETUP
+      // SETUP - single result (gap detection returns it)
       const testResults = [
         createTestSearchResult({
           source: '/test/doc.pdf',
           text: 'Test chunk',
+          hybridScore: 0.90,
           expandedTerms: ['test', 'testing', 'tests']
         })
       ];
-      const originalSearch = chunkRepo.search.bind(chunkRepo);
       chunkRepo.search = async () => testResults;
       
       // EXERCISE
@@ -119,6 +124,7 @@ describe('ConceptualBroadChunksSearchTool', () => {
       
       // VERIFY
       const parsedContent = JSON.parse(result.content[0].text);
+      expect(parsedContent.length).toBe(1);
       expect(parsedContent[0].expanded_terms).toBeDefined();
     });
     

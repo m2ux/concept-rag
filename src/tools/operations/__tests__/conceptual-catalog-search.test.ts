@@ -57,27 +57,32 @@ describe('ConceptualCatalogSearchTool', () => {
       expect(Array.isArray(parsedContent)).toBe(true);
       expect(parsedContent.length).toBeGreaterThan(0);
       expect(parsedContent[0].source).toBeDefined();
-      expect(parsedContent[0].scores).toBeDefined();
-      expect(parsedContent[0].scores.hybrid).toBeDefined();
+      expect(parsedContent[0].score).toBeDefined();  // Hybrid score always shown
     });
     
-    it('should respect limit parameter (defaults to 10)', async () => {
-      // SETUP
-      const testResults = Array.from({ length: 15 }, (_, i) =>
-        createTestSearchResult({
-          id: 7000 + i,
-          source: `/test/doc${i}.pdf`,
-          text: `Test document ${i} about testing`
-        })
-      );
+    it('should use gap detection to filter results (no fixed limit)', async () => {
+      // SETUP - create results with a clear score gap
+      // High cluster: 0.90, 0.87, 0.84
+      // Gap: 0.34 (largest)
+      // Low cluster: 0.50, 0.48, 0.45
+      const testResults = [
+        createTestSearchResult({ id: 7000, source: '/test/doc0.pdf', text: 'Test 0', hybridScore: 0.90 }),
+        createTestSearchResult({ id: 7001, source: '/test/doc1.pdf', text: 'Test 1', hybridScore: 0.87 }),
+        createTestSearchResult({ id: 7002, source: '/test/doc2.pdf', text: 'Test 2', hybridScore: 0.84 }),
+        createTestSearchResult({ id: 7003, source: '/test/doc3.pdf', text: 'Test 3', hybridScore: 0.50 }),
+        createTestSearchResult({ id: 7004, source: '/test/doc4.pdf', text: 'Test 4', hybridScore: 0.48 }),
+        createTestSearchResult({ id: 7005, source: '/test/doc5.pdf', text: 'Test 5', hybridScore: 0.45 })
+      ];
       testResults.forEach(result => catalogRepo.addDocument(result));
       
       // EXERCISE
       const result = await tool.execute({ text: 'test' });
       
-      // VERIFY
+      // VERIFY - gap detection should return high cluster (3 results)
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent).toHaveLength(10); // Default limit
+      expect(parsedContent.length).toBe(3);
+      expect(parsedContent[0].score).toBe('0.900');
+      expect(parsedContent[2].score).toBe('0.840');
     });
     
     it('should include debug information when debug is true', async () => {
@@ -111,7 +116,7 @@ describe('ConceptualCatalogSearchTool', () => {
       expect(parsedContent).toEqual([]);
     });
     
-    it('should format scores correctly', async () => {
+    it('should format score correctly', async () => {
       // SETUP
       const testResults = [
         createTestSearchResult({
@@ -127,11 +132,10 @@ describe('ConceptualCatalogSearchTool', () => {
       // EXERCISE
       const result = await tool.execute({ text: 'test' });
       
-      // VERIFY
+      // VERIFY - hybrid score always shown as 'score', components only in debug
       const parsedContent = JSON.parse(result.content[0].text);
-      expect(parsedContent[0].scores.hybrid).toBe('0.123');
-      expect(parsedContent[0].scores.vector).toBe('0.789');
-      expect(parsedContent[0].scores.bm25).toBe('0.346');
+      expect(parsedContent[0].score).toBe('0.123');
+      expect(parsedContent[0].score_components).toBeUndefined();  // Not in debug mode
     });
     
     it('should handle errors gracefully', async () => {

@@ -24,7 +24,24 @@ export class ListConceptsInCategoryTool extends BaseTool<ListConceptsInCategoryT
   }
   
   name = "list_concepts_in_category";
-  description = "Find all unique concepts appearing in documents of a specific category. Analyze the conceptual landscape of a domain.";
+  description = `Find all unique concepts appearing in documents of a specific category. Analyze the conceptual landscape of a domain.
+
+USE THIS TOOL WHEN:
+- User asks "what concepts are covered in [domain]?" or "what topics appear in [category]?"
+- Analyzing the conceptual landscape of a subject area
+- Discovering what ideas are discussed within a specific domain
+- Building a concept inventory for a category (e.g., "what concepts appear in software engineering books?")
+- Finding related concepts that span documents in the same domain
+
+DO NOT USE for:
+- Finding where a specific concept appears (use concept_search or source_concepts)
+- Getting concepts from a single document (use extract_concepts with the document)
+- Searching for content about a concept (use broad_chunks_search)
+- Discovering categories (use list_categories first)
+
+RETURNS: Category metadata, statistics (total documents, chunks, unique concepts), and list of concepts sorted by document count (how many documents mention each concept) or alphabetically. Includes concept weight/importance scores.
+
+COMMON WORKFLOW: Use list_categories to discover domains, then use this tool to understand what concepts are covered in that domain. For deeper exploration, use concept_search with specific concepts found.`;
   
   inputSchema = {
     type: "object" as const,

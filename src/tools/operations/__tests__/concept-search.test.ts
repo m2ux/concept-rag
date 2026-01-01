@@ -73,7 +73,7 @@ describe('ConceptSearchTool', () => {
       testChunks.forEach(chunk => chunkRepo.addChunk(chunk));
       
       // EXERCISE
-      const result = await tool.execute({ concept: 'innovation', limit: 10 });
+      const result = await tool.execute({ concept: 'innovation' });
       
       // VERIFY
       expect(result).toBeDefined();
@@ -91,7 +91,7 @@ describe('ConceptSearchTool', () => {
       // SETUP - No concepts added
       
       // EXERCISE
-      const result = await tool.execute({ concept: 'nonexistent', limit: 10 });
+      const result = await tool.execute({ concept: 'nonexistent' });
       
       // VERIFY - Should return empty result, not error
       expect(result.isError).toBe(false);
@@ -102,7 +102,7 @@ describe('ConceptSearchTool', () => {
     
     it('should handle empty concept parameter', async () => {
       // EXERCISE
-      const result = await tool.execute({ concept: '', limit: 10 });
+      const result = await tool.execute({ concept: '' });
       
       // VERIFY - Should return validation error
       expect(result.isError).toBe(true);
@@ -115,7 +115,7 @@ describe('ConceptSearchTool', () => {
   describe('validation', () => {
     it('should handle missing concept parameter gracefully', async () => {
       // EXERCISE
-      const result = await tool.execute({ concept: '', limit: 10 });
+      const result = await tool.execute({ concept: '' });
       
       // VERIFY - Should return validation error
       expect(result.isError).toBe(true);

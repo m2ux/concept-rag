@@ -3,11 +3,12 @@ import { ChunkSearchService } from "../../domain/services/index.js";
 import { InputValidator } from "../../domain/services/validation/index.js";
 import { isErr } from "../../domain/functional/index.js";
 import { SearchResult } from "../../domain/models/index.js";
+import { Configuration } from "../../application/config/index.js";
+import { filterByScoreGap } from "../../infrastructure/search/scoring-strategies.js";
 
 export interface ConceptualBroadChunksSearchParams extends ToolParams {
   text: string;
   limit?: number;
-  debug?: boolean;
 }
 
 /**
@@ -38,18 +39,15 @@ DO NOT USE for:
 - Searching within a single known document (use chunks_search instead)
 - Finding semantically-tagged concept discussions (use concept_search)
 
-RETURNS: Top 20 chunks ranked by hybrid scoring (35% vector, 35% BM25, 15% concept, 15% WordNet). May include false positives based on keyword matches.`;
+RETURNS: Chunks in the high-scoring cluster (adaptive count based on score gaps), ranked by hybrid scoring (35% vector, 35% BM25, 15% concept, 15% WordNet). May include false positives based on keyword matches.
+
+Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
   inputSchema = {
     type: "object" as const,
     properties: {
       text: {
         type: "string",
         description: "Search query - natural language questions, phrases, keywords, or technical terms. Can be multi-word queries.",
-      },
-      debug: {
-        type: "boolean",
-        description: "Show debug information (query expansion, score breakdown)",
-        default: false
       }
     },
     required: ["text"],
@@ -78,11 +76,12 @@ RETURNS: Top 20 chunks ranked by hybrid scoring (35% vector, 35% BM25, 15% conce
       };
     }
     
-    // Delegate to service (Result-based)
+    // Delegate to service with sufficient limit for gap detection
+    const debugSearch = Configuration.getInstance().logging.debugSearch;
     const result = await this.chunkSearchService.searchBroad({
       text: params.text,
-      limit: params.limit || 20,
-      debug: params.debug || false
+      limit: 30,  // Sufficient for gap detection while keeping performance
+      debug: debugSearch
     });
     
     // Handle Result type
@@ -110,21 +109,25 @@ RETURNS: Top 20 chunks ranked by hybrid scoring (35% vector, 35% BM25, 15% conce
       };
     }
     
-    // Format results for MCP response, filtering out zero/negative scores
+    // Filter by score > 0, then apply gap detection to find natural cluster
     // Note: Chunks use concept-aware scoring (35% vector, 35% BM25, 15% concept, 15% WordNet)
     // @ts-expect-error - Type narrowing limitation
-    const formattedResults = result.value
-      .filter((r: SearchResult) => r.hybridScore > 0)
-      .map((r: SearchResult) => ({
+    const positiveResults: SearchResult[] = result.value.filter((r: SearchResult) => r.hybridScore > 0);
+    const clusteredResults = filterByScoreGap(positiveResults) as SearchResult[];
+    
+    // Format results for MCP response
+    const formattedResults = clusteredResults.map((r) => ({
         text: r.text,
         source: r.source,
-        scores: {
-          hybrid: r.hybridScore.toFixed(3),
-          vector: r.vectorScore.toFixed(3),
-          bm25: r.bm25Score.toFixed(3),
-          concept: r.conceptScore.toFixed(3),
-          wordnet: r.wordnetScore.toFixed(3)
-        },
+        score: r.hybridScore.toFixed(3),  // Hybrid score always shown
+        ...(debugSearch && {
+          score_components: {  // Component breakdown only in debug mode
+            vector: r.vectorScore.toFixed(3),
+            bm25: r.bm25Score.toFixed(3),
+            concept: r.conceptScore.toFixed(3),
+            wordnet: r.wordnetScore.toFixed(3)
+          }
+        }),
         expanded_terms: r.expandedTerms
       }));
     

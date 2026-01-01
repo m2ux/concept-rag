@@ -62,6 +62,11 @@ export interface IntegrationChunkData {
   is_reference: boolean;         // True if chunk is from references/bibliography section
   has_extraction_issues: boolean; // True if chunk has garbled math or OCR issues
   has_math: boolean;             // True if chunk contains mathematical content
+  // Meta content classification fields (ADR-0053)
+  is_toc: boolean;               // True if chunk is from table of contents
+  is_front_matter: boolean;      // True if chunk is from front matter (copyright, preface, etc.)
+  is_back_matter: boolean;       // True if chunk is from back matter (index, glossary, etc.)
+  is_meta_content: boolean;      // Aggregate: is_toc OR is_front_matter OR is_back_matter
   [key: string]: unknown;
 }
 
@@ -157,7 +162,12 @@ export function createIntegrationTestChunk(overrides?: Partial<IntegrationChunkD
     // Content classification defaults (ADR-0046)
     is_reference: false,          // Most chunks are content, not references
     has_extraction_issues: false, // Test data has no extraction issues
-    has_math: false               // Default to no math content
+    has_math: false,              // Default to no math content
+    // Meta content classification defaults (ADR-0053)
+    is_toc: false,                // Default to content, not ToC
+    is_front_matter: false,       // Default to content, not front matter
+    is_back_matter: false,        // Default to content, not back matter
+    is_meta_content: false        // Default to content, not meta content
   };
   
   return { ...defaults, ...overrides };
