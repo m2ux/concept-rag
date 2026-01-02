@@ -19,8 +19,38 @@ export interface FilenameMetadata {
 }
 
 /**
+ * Known URL-encoded characters (underscore format).
+ * Only these specific encodings are decoded - arbitrary hex pairs are NOT decoded
+ * to avoid corrupting text like "foo_bar" (where _ba would incorrectly decode as 0xBA).
+ */
+const UNDERSCORE_ENCODINGS: Record<string, string> = {
+    '_20': ' ',   // space
+    '_2C': ',',   // comma
+    '_2F': '/',   // forward slash
+    '_3A': ':',   // colon
+    '_3B': ';',   // semicolon
+    '_26': '&',   // ampersand
+    '_27': "'",   // apostrophe
+    '_28': '(',   // opening parenthesis
+    '_29': ')',   // closing parenthesis
+    '_2B': '+',   // plus
+    '_3D': '=',   // equals
+    '_3F': '?',   // question mark
+    '_40': '@',   // at sign
+    '_23': '#',   // hash
+    '_25': '%',   // percent
+    '_5B': '[',   // opening bracket
+    '_5D': ']',   // closing bracket
+    '_7B': '{',   // opening brace
+    '_7D': '}',   // closing brace
+};
+
+/**
  * Decode URL-encoded characters in text.
  * Handles both standard percent encoding (%XX) and underscore encoding (_XX).
+ * 
+ * Only decodes known URL-encoded characters (whitelist approach) to avoid
+ * incorrectly decoding text like "foo_bar" where "_ba" might look like hex.
  * 
  * Common encodings:
  * - _20 or %20 = space
@@ -34,14 +64,11 @@ export interface FilenameMetadata {
  * - _27 or %27 = apostrophe (')
  */
 export function decodeUrlEncoding(text: string): string {
-    // First handle underscore-style encoding (_XX)
-    // Match _XX where XX is a valid hex pair
-    let decoded = text.replace(/_([0-9A-Fa-f]{2})/g, (match, hex) => {
-        try {
-            return String.fromCharCode(parseInt(hex, 16));
-        } catch {
-            return match; // Keep original if decode fails
-        }
+    // First handle underscore-style encoding (_XX) using whitelist
+    // Only decode known URL-encoded characters to avoid corrupting normal text
+    let decoded = text.replace(/_([0-9A-Fa-f]{2})/gi, (match) => {
+        const upper = match.toUpperCase();
+        return UNDERSCORE_ENCODINGS[upper] ?? match;
     });
     
     // Then handle standard percent encoding (%XX)
