@@ -58,6 +58,152 @@ export function getPdfPageCount(pdfPath: string): number {
 }
 
 /**
+ * PDF page dimensions.
+ */
+export interface PdfPageDimensions {
+  /** Page number (1-indexed) */
+  pageNumber: number;
+  /** Width in points (72 points = 1 inch) */
+  width: number;
+  /** Height in points */
+  height: number;
+}
+
+/**
+ * Get page dimensions for all pages in a PDF.
+ * 
+ * Uses pdfinfo to extract MediaBox dimensions.
+ * 
+ * @param pdfPath - Path to the PDF file
+ * @returns Array of page dimensions
+ */
+export function getPdfPageDimensions(pdfPath: string): PdfPageDimensions[] {
+  const dimensions: PdfPageDimensions[] = [];
+  
+  try {
+    // Use pdfinfo with -f and -l to get per-page info
+    const pageCount = getPdfPageCount(pdfPath);
+    
+    // Get page sizes using pdfinfo -f first -l last
+    const output = execSync(
+      `pdfinfo -f 1 -l ${pageCount} "${pdfPath}" 2>/dev/null | grep "Page.*size:"`,
+      { encoding: 'utf-8', timeout: 30000 }
+    );
+    
+    // Parse lines like "Page    1 size: 612 x 792 pts (letter)"
+    const lines = output.trim().split('\n');
+    for (const line of lines) {
+      const match = line.match(/Page\s+(\d+)\s+size:\s+([\d.]+)\s+x\s+([\d.]+)/);
+      if (match) {
+        dimensions.push({
+          pageNumber: parseInt(match[1], 10),
+          width: parseFloat(match[2]),
+          height: parseFloat(match[3])
+        });
+      }
+    }
+  } catch {
+    // Fallback: try to get just the first page size
+    try {
+      const output = execSync(
+        `pdfinfo "${pdfPath}" 2>/dev/null | grep "Page size:"`,
+        { encoding: 'utf-8', timeout: 10000 }
+      );
+      const match = output.match(/Page size:\s+([\d.]+)\s+x\s+([\d.]+)/);
+      if (match) {
+        const width = parseFloat(match[1]);
+        const height = parseFloat(match[2]);
+        const pageCount = getPdfPageCount(pdfPath);
+        // Assume all pages are same size
+        for (let i = 1; i <= pageCount; i++) {
+          dimensions.push({ pageNumber: i, width, height });
+        }
+      }
+    } catch {
+      // Ignore fallback errors
+    }
+  }
+  
+  return dimensions;
+}
+
+/**
+ * Result of page-size analysis.
+ */
+export interface PageSizeAnalysis {
+  /** Whether image should be skipped (too close to page size) */
+  shouldSkip: boolean;
+  /** Reason for skipping */
+  reason?: string;
+  /** Coverage percentage (0-1) of the page area */
+  areaCoverage: number;
+}
+
+/**
+ * Check if an image is likely a full page scan.
+ * 
+ * Compares image dimensions against page dimensions to detect
+ * page-sized images (common in OCR-scanned documents).
+ * 
+ * @param imageWidth - Image width in pixels
+ * @param imageHeight - Image height in pixels
+ * @param pageWidth - Page width in points
+ * @param pageHeight - Page height in points
+ * @param dpi - Assumed rendering DPI (default 150)
+ * @returns Analysis result
+ */
+export function analyzeImageVsPageSize(
+  imageWidth: number,
+  imageHeight: number,
+  pageWidth: number,
+  pageHeight: number,
+  dpi: number = 150
+): PageSizeAnalysis {
+  // Convert page dimensions from points to pixels at the given DPI
+  // 72 points = 1 inch
+  const pageWidthPx = (pageWidth / 72) * dpi;
+  const pageHeightPx = (pageHeight / 72) * dpi;
+  
+  // Calculate how much of the page this image covers
+  const widthRatio = imageWidth / pageWidthPx;
+  const heightRatio = imageHeight / pageHeightPx;
+  const areaCoverage = widthRatio * heightRatio;
+  
+  // Skip if image covers >70% of page (likely a page scan)
+  if (areaCoverage > 0.7) {
+    return {
+      shouldSkip: true,
+      reason: `Image covers ${(areaCoverage * 100).toFixed(0)}% of page (likely full-page scan)`,
+      areaCoverage
+    };
+  }
+  
+  // Skip if image dimensions match page dimensions closely
+  // (within 5% on both dimensions = likely the full page)
+  if (widthRatio > 0.95 && heightRatio > 0.95) {
+    return {
+      shouldSkip: true,
+      reason: 'Image matches page dimensions (full-page scan)',
+      areaCoverage
+    };
+  }
+  
+  // Skip horizontal strips that span the page width (headers/footers)
+  if (widthRatio > 0.9 && heightRatio < 0.15) {
+    return {
+      shouldSkip: true,
+      reason: 'Horizontal page-width strip (header/footer)',
+      areaCoverage
+    };
+  }
+  
+  return {
+    shouldSkip: false,
+    areaCoverage
+  };
+}
+
+/**
  * Render a PDF file's pages to PNG images.
  * 
  * Uses pdftoppm from poppler-utils for high-quality rendering.

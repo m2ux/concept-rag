@@ -165,6 +165,7 @@ async function main() {
 
   let totalVisuals = 0;
   let totalFiltered = 0;
+  let totalPreFiltered = 0;
   let totalErrors = 0;
 
   // Process each document
@@ -210,7 +211,10 @@ async function main() {
 
     // Report results
     console.log(`   📁 Folder: ${result.folderSlug}`);
-    console.log(`   ✅ Extracted: ${result.visuals.length} visuals, Filtered: ${result.imagesFiltered} non-semantic images`);
+    const filterSummary = result.imagesPreFiltered > 0 
+      ? `Pre-filtered: ${result.imagesPreFiltered} page-sized, LLM-filtered: ${result.imagesFiltered}`
+      : `Filtered: ${result.imagesFiltered} non-semantic`;
+    console.log(`   ✅ Extracted: ${result.visuals.length} visuals, ${filterSummary}`);
     
     if (result.errors.length > 0) {
       console.log(`   ⚠️  Errors: ${result.errors.length}`);
@@ -256,6 +260,7 @@ async function main() {
 
     totalVisuals += result.visuals.length;
     totalFiltered += result.imagesFiltered;
+    totalPreFiltered += result.imagesPreFiltered;
     totalErrors += result.errors.length;
   }
 
@@ -265,7 +270,10 @@ async function main() {
   console.log('📊 Summary:');
   console.log(`   Documents processed: ${catalogEntries.length}`);
   console.log(`   Visuals extracted: ${totalVisuals}`);
-  console.log(`   Non-semantic filtered: ${totalFiltered}`);
+  if (totalPreFiltered > 0) {
+    console.log(`   Page-sized images pre-filtered: ${totalPreFiltered} (no LLM call)`);
+  }
+  console.log(`   Non-semantic filtered by LLM: ${totalFiltered}`);
   if (totalErrors > 0) {
     console.log(`   Errors: ${totalErrors}`);
   }
