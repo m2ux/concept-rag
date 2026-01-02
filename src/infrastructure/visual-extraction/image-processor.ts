@@ -21,7 +21,7 @@ import type { BoundingBox } from './types.js';
 export interface ImageEmbeddedMetadata {
   title?: string;
   author?: string;
-  year?: number;
+  year?: number | string;
   pageNumber: number;
   imageIndex: number;
   catalogId: number;
@@ -184,7 +184,8 @@ export async function convertToGrayscale(
   const pngOptions: sharp.PngOptions = { compressionLevel: pngCompression };
   
   if (embeddedMetadata) {
-    const textChunks = buildPngTextChunks(embeddedMetadata);
+    // Build text chunks for reference (used in embedMetadataInPng)
+    void buildPngTextChunks(embeddedMetadata);
     // Sharp doesn't directly support tEXt chunks in png(), so we use withMetadata
     // and write a separate function for full metadata embedding
   }
@@ -235,14 +236,15 @@ export async function embedMetadataInPng(
 
   // Sharp's PNG support for metadata is limited
   // Use EXIF comment field which is preserved in PNG via iTXt/tEXt
-  exifData.exif = {
-    IFD0: {
-      ImageDescription: metadataLines,
-      Artist: metadata.author || undefined,
-      Software: 'concept-rag visual extractor',
-      Copyright: metadata.title ? `From: ${metadata.title}` : undefined,
-    }
+  // Build IFD0 with only defined values to satisfy TypeScript
+  const ifd0: Record<string, string> = {
+    ImageDescription: metadataLines,
+    Software: 'concept-rag visual extractor',
   };
+  if (metadata.author) ifd0.Artist = metadata.author;
+  if (metadata.title) ifd0.Copyright = `From: ${metadata.title}`;
+  
+  exifData.exif = { IFD0: ifd0 };
 
   // Write back with metadata
   await sharp(imageBuffer)

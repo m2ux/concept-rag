@@ -43,6 +43,7 @@ import { PaperDetector, detectDocumentType } from './src/infrastructure/document
 import { PaperMetadataExtractor, extractPaperMetadata } from './src/infrastructure/document-loaders/paper-metadata-extractor.js';
 import { ReferencesDetector, detectReferencesStart, ReferencesDetectionResult } from './src/infrastructure/document-loaders/references-detector.js';
 import { MathContentHandler } from './src/infrastructure/document-loaders/math-content-handler.js';
+import { extractContentMetadata, ChunkData, ExtractedMetadata } from './src/infrastructure/document-loaders/content-metadata-extractor.js';
 import { MetaContentDetector } from './src/infrastructure/document-loaders/meta-content-detector.js';
 
 // Shared embedding service instance for consistent embeddings
@@ -990,12 +991,17 @@ async function createLanceTableWithSimpleEmbeddings(
             // Parse metadata from filename using '--' delimiter format
             const fileMeta = parseFilenameMetadata(doc.metadata.source || '');
             
+            // Get content-based metadata fallback (extracted from document front matter)
+            const contentMeta = doc.metadata.contentMetadata as ExtractedMetadata | undefined;
+            
             baseData.origin_hash = '';  // Reserved: hash of original file before processing
             baseData.title = fileMeta.title || '';      // Document title from filename
-            baseData.author = fileMeta.author || '';    // Document author(s) from filename
-            baseData.year = fileMeta.year || 0;         // Publication year from filename
-            baseData.publisher = fileMeta.publisher || '';  // Publisher name from filename
-            baseData.isbn = fileMeta.isbn || '';        // ISBN from filename
+            
+            // Merge bibliographic fields: filename takes priority, content fills gaps
+            baseData.author = fileMeta.author || contentMeta?.author || '';
+            baseData.year = fileMeta.year || contentMeta?.year || 0;
+            baseData.publisher = fileMeta.publisher || contentMeta?.publisher || '';
+            baseData.isbn = fileMeta.isbn || '';        // ISBN from filename only (not extracted from content)
             
             // Research paper metadata fields - populate from paper detection if available
             const paperMeta = doc.metadata.paperMetadata;
@@ -1298,6 +1304,42 @@ Key Concepts: ${conceptNames.join(', ')}
 Categories: ${concepts.categories.join(', ')}
 `.trim();
         
+        // Get paper metadata from first page (shared across all pages)
+        const paperMetadata = docs[0]?.metadata?.paperMetadata;
+        
+        // Content-based metadata extraction for fallback when filename parsing is incomplete
+        // Extract from first few pages (front matter, copyright pages)
+        let contentMetadata: ExtractedMetadata | undefined;
+        const fileMeta = parseFilenameMetadata(source);
+        const isIncomplete = !fileMeta.author || fileMeta.year === 0;
+        
+        if (isIncomplete) {
+            // Prepare chunks for content extraction (first 8 pages)
+            const frontMatterDocs = docs
+                .filter(d => {
+                    const pageNum = d.metadata?.page_number ?? d.metadata?.loc?.pageNumber ?? 1;
+                    return pageNum <= 8;
+                })
+                .slice(0, 8);
+            
+            if (frontMatterDocs.length > 0) {
+                const chunkData: ChunkData[] = frontMatterDocs.map(d => ({
+                    text: d.pageContent,
+                    page_number: d.metadata?.page_number ?? d.metadata?.loc?.pageNumber ?? 1,
+                    is_reference: d.metadata?.is_reference ?? false,
+                }));
+                
+                try {
+                    contentMetadata = await extractContentMetadata(chunkData);
+                    if (contentMetadata.author || contentMetadata.year) {
+                        console.log(`  📝 Content-extracted: author="${contentMetadata.author || ''}", year=${contentMetadata.year || 0}`);
+                    }
+                } catch (e) {
+                    // Silently continue if extraction fails
+                }
+            }
+        }
+        
         const catalogRecord = new Document({ 
             pageContent: enrichedContent, 
             metadata: { 
@@ -1305,7 +1347,8 @@ Categories: ${concepts.categories.join(', ')}
                 hash,
                 ocr_processed: isOcrProcessed,
                 concepts: concepts,  // STORE STRUCTURED CONCEPTS
-                paperMetadata: paperMetadata  // PAPER DETECTION METADATA
+                paperMetadata: paperMetadata,  // PAPER DETECTION METADATA
+                contentMetadata: contentMetadata  // CONTENT-BASED METADATA FALLBACK
             } 
         });
         
@@ -1561,6 +1604,34 @@ Categories: ${cached.concepts!.categories.join(', ')}
         const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
         const paperMetadata = docs[0]?.metadata?.paperMetadata;
         
+        // Content-based metadata extraction for fallback when filename parsing is incomplete
+        let contentMetadata: ExtractedMetadata | undefined;
+        const fileMeta = parseFilenameMetadata(result.source);
+        const isIncomplete = !fileMeta.author || fileMeta.year === 0;
+        
+        if (isIncomplete) {
+            const frontMatterDocs = docs
+                .filter(d => {
+                    const pageNum = d.metadata?.page_number ?? d.metadata?.loc?.pageNumber ?? 1;
+                    return pageNum <= 8;
+                })
+                .slice(0, 8);
+            
+            if (frontMatterDocs.length > 0) {
+                const chunkData: ChunkData[] = frontMatterDocs.map(d => ({
+                    text: d.pageContent,
+                    page_number: d.metadata?.page_number ?? d.metadata?.loc?.pageNumber ?? 1,
+                    is_reference: d.metadata?.is_reference ?? false,
+                }));
+                
+                try {
+                    contentMetadata = await extractContentMetadata(chunkData);
+                } catch (e) {
+                    // Silently continue if extraction fails
+                }
+            }
+        }
+        
         // Cache the newly extracted results
         if (stageCache) {
             const conceptData = result.concepts as any;
@@ -1579,6 +1650,9 @@ Categories: ${cached.concepts!.categories.join(', ')}
                     title: paperMetadata.title,
                     author: paperMetadata.authors?.join(', '),
                     year: paperMetadata.year
+                } : contentMetadata ? {
+                    author: contentMetadata.author,
+                    year: contentMetadata.year
                 } : undefined
             };
             await stageCache.set(result.hash, cacheData);
@@ -1604,7 +1678,8 @@ Categories: ${result.concepts!.categories.join(', ')}
                 hash: result.hash,
                 ocr_processed: isOcrProcessed,
                 concepts: result.concepts,
-                paperMetadata: paperMetadata  // PAPER DETECTION METADATA
+                paperMetadata: paperMetadata,  // PAPER DETECTION METADATA
+                contentMetadata: contentMetadata  // CONTENT-BASED METADATA FALLBACK
             }
         });
         
@@ -1619,6 +1694,34 @@ Categories: ${result.concepts!.categories.join(', ')}
         const contentOverview = await generateContentOverview(docs);
         const isOcrProcessed = docs.some(doc => doc.metadata.ocr_processed);
         const paperMetadata = docs[0]?.metadata?.paperMetadata;
+        
+        // Content-based metadata extraction (same as successful docs)
+        let contentMetadata: ExtractedMetadata | undefined;
+        const fileMeta = parseFilenameMetadata(result.source);
+        const isIncomplete = !fileMeta.author || fileMeta.year === 0;
+        
+        if (isIncomplete) {
+            const frontMatterDocs = docs
+                .filter(d => {
+                    const pageNum = d.metadata?.page_number ?? d.metadata?.loc?.pageNumber ?? 1;
+                    return pageNum <= 8;
+                })
+                .slice(0, 8);
+            
+            if (frontMatterDocs.length > 0) {
+                const chunkData: ChunkData[] = frontMatterDocs.map(d => ({
+                    text: d.pageContent,
+                    page_number: d.metadata?.page_number ?? d.metadata?.loc?.pageNumber ?? 1,
+                    is_reference: d.metadata?.is_reference ?? false,
+                }));
+                
+                try {
+                    contentMetadata = await extractContentMetadata(chunkData);
+                } catch (e) {
+                    // Silently continue if extraction fails
+                }
+            }
+        }
         
         // Use empty concepts for failed documents
         const emptyConcepts = {
@@ -1640,7 +1743,8 @@ Categories: General
                 hash: result.hash,
                 ocr_processed: isOcrProcessed,
                 concepts: emptyConcepts,
-                paperMetadata: paperMetadata  // PAPER DETECTION METADATA
+                paperMetadata: paperMetadata,  // PAPER DETECTION METADATA
+                contentMetadata: contentMetadata  // CONTENT-BASED METADATA FALLBACK
             }
         });
         

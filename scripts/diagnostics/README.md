@@ -106,6 +106,51 @@ Detailed test database inspection checking for category-related fields. Validate
 
 ---
 
+## Metadata Analysis Scripts
+
+Scripts for analyzing bibliographic metadata coverage and quality.
+
+**Location**: [`scripts/diagnostics/`](.)
+
+### [`diagnose-metadata.ts`](./diagnose-metadata.ts)
+
+Analyze metadata coverage across the catalog, identifying documents with missing author, year, publisher, or ISBN.
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--dbpath` | `~/.concept_rag` | Database path |
+
+| Output | Description |
+|--------|-------------|
+| Field coverage | Percentage with author, year, publisher, ISBN |
+| Completeness distribution | Count by number of fields populated |
+| Missing examples | Sample documents missing each field |
+| Summary | Overall statistics |
+
+**Example output:**
+```
+=== Metadata Analysis Report ===
+Database: ~/.concept_rag
+Documents analyzed: 281
+
+Field Coverage:
+  title:     100%  (281/281)
+  author:    95%   (268/281) - 13 documents missing author
+  year:      96%   (270/281) - 11 documents missing year
+  publisher: 95%   (267/281) - 14 documents missing publisher
+  isbn:      43%   (122/281) - 159 documents missing ISBN
+
+Documents with complete metadata (5/5): 122/281 (43%)
+Documents with author AND year: 268/281 (95%)
+```
+
+**Usage:**
+```bash
+npx tsx scripts/diagnostics/diagnose-metadata.ts --dbpath ~/.concept_rag
+```
+
+---
+
 ## Catalog Inspection Scripts
 
 Scripts for examining document catalog entries and metadata.
@@ -380,6 +425,7 @@ Tests word filter logic for query expansion. Demonstrates substring vs whole-wor
 | Category | Scripts | Purpose |
 |----------|---------|---------|
 | Database Status | `_check_db`, `diagnose-db`, `check-db-status`, `inspect_test_db` | Verify connectivity and schema |
+| Metadata | `diagnose-metadata` | Analyze bibliographic metadata coverage |
 | Catalog | `check-catalog`, `check-catalog-fields`, `list-test-data` | Inspect document metadata |
 | Chunks | `check-chunks`, `check-titles`, `debug-chunks`, `debug-chunks2` | Analyze chunk distribution |
 | Concepts | `check-concept`, `check-doc-concepts`, `check-related-concepts`, `check-sw-arch` | Examine concept extraction |
