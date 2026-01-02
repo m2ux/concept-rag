@@ -114,7 +114,8 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
     
     // Format results for MCP response
     const formattedResults = clusteredResults.map((r) => ({
-        source: r.source,
+        catalog_id: r.catalogId,
+        title: r.catalogTitle || r.source || 'Untitled',
         summary: r.text,  // Full summary (not truncated)
         score: r.hybridScore.toFixed(3),  // Hybrid score always shown
         ...(debugSearch && {

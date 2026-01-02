@@ -136,8 +136,8 @@ export interface ConceptSearchParams {
   /** Maximum sources (default: 5) */
   maxSources?: number;
   
-  /** Optional source filter */
-  sourceFilter?: string;
+  /** Optional: Filter results to documents containing this text in their title */
+  titleFilter?: string;
 }
 
 /**
