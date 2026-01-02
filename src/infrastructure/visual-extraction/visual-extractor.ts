@@ -2,12 +2,13 @@
  * Visual Extractor
  * 
  * Orchestrates the visual extraction pipeline:
- * 1. Render PDF pages to images
- * 2. Send to Vision LLM for classification
- * 3. Extract and save semantic diagrams as grayscale
+ * 1. Analyze document type (native vs scanned)
+ * 2. Extract/render images
+ * 3. Classify using LOCAL model (no API cost)
+ * 4. Save semantic diagrams as grayscale
  * 
- * Only diagrams with semantic meaning are stored.
- * Photos, screenshots, and decorative images are filtered out.
+ * Classification is done locally using LayoutParser.
+ * Vision LLM is only used for description generation (separate step).
  */
 
 import * as fs from 'fs';
@@ -15,20 +16,25 @@ import * as path from 'path';
 import { 
   extractPdfImages, 
   cleanupExtractedImages, 
+  cleanupRenderedPages,
   isPdfImagesAvailable,
+  isPdfToolsAvailable,
   getPdfPageDimensions,
   analyzeImageVsPageSize,
+  renderPdfPages,
   type ExtractedImage,
   type PdfPageDimensions
 } from './pdf-page-renderer.js';
 import { convertToGrayscale, getImageMetadata, type ImageEmbeddedMetadata } from './image-processor.js';
-import { VisionLLMService, createVisionLLMService } from './vision-llm-service.js';
+import { classifyImage, detectRegions, isLocalClassifierAvailable } from './local-classifier.js';
+import { analyzeDocumentType, type DocumentType } from './document-analyzer.js';
+import { cropRegion } from './region-cropper.js';
 import type { ExtractedVisual, VisualExtractionConfig, VisualExtractionProgressCallback } from './types.js';
 import { DEFAULT_VISUAL_EXTRACTION_CONFIG } from './types.js';
 import type { VisualType } from '../../domain/models/visual.js';
 import { slugifyDocument, formatVisualFilename, type DocumentInfo } from '../utils/slugify.js';
 
-/** Batch size for parallel LLM classification */
+/** Batch size for parallel classification */
 const CLASSIFICATION_BATCH_SIZE = 5;
 
 /**
@@ -41,15 +47,17 @@ export interface VisualExtractionResult {
   sourcePath: string;
   /** Human-readable folder slug (e.g., "martin_clean-architecture_2017") */
   folderSlug: string;
+  /** Document type detected */
+  documentType: DocumentType;
   /** Extracted visuals */
   visuals: ExtractedVisual[];
   /** Pages processed */
   pagesProcessed: number;
   /** Pages skipped (no visuals) */
   pagesSkipped: number;
-  /** Images classified as non-semantic by LLM (not stored) */
+  /** Images classified as non-semantic (not stored) */
   imagesFiltered: number;
-  /** Images skipped by pre-filter (page-sized, no LLM call) */
+  /** Images skipped by pre-filter (page-sized, no classification call) */
   imagesPreFiltered: number;
   /** Errors encountered */
   errors: string[];
@@ -61,22 +69,24 @@ export interface VisualExtractionResult {
 export interface VisualExtractionOptions {
   /** Configuration overrides */
   config?: Partial<VisualExtractionConfig>;
-  /** API key for Vision LLM */
-  apiKey?: string;
-  /** Vision model to use */
-  visionModel?: string;
   /** Progress callback */
   onProgress?: VisualExtractionProgressCallback;
   /** Specific pages to process (1-indexed), or all if undefined */
   pages?: number[];
+  /** Force document type instead of auto-detecting */
+  forceDocumentType?: DocumentType;
+  /** Minimum confidence score for classification (0-1, default: 0.5) */
+  minClassificationScore?: number;
 }
 
 /**
  * Visual Extractor for extracting diagrams from PDF documents.
+ * 
+ * Uses local classification model for filtering (no API cost).
+ * Supports both native PDFs (embedded images) and scanned PDFs (page images).
  */
 export class VisualExtractor {
   private config: VisualExtractionConfig;
-  private visionService: VisionLLMService;
   private imagesDir: string;
 
   /**
@@ -89,19 +99,12 @@ export class VisualExtractor {
     dbPath: string,
     options: {
       config?: Partial<VisualExtractionConfig>;
-      apiKey?: string;
-      visionModel?: string;
     } = {}
   ) {
     this.config = {
       ...DEFAULT_VISUAL_EXTRACTION_CONFIG,
       ...options.config
     };
-
-    this.visionService = createVisionLLMService({
-      apiKey: options.apiKey,
-      model: options.visionModel
-    });
 
     this.imagesDir = path.join(dbPath, 'images');
     
@@ -114,9 +117,9 @@ export class VisualExtractor {
   /**
    * Extract visuals from a PDF document.
    * 
-   * Uses pdfimages to extract embedded images from the PDF,
-   * then applies a pre-filter to skip page-sized images (common in OCR scans),
-   * and finally classifies remaining images via Vision LLM.
+   * Automatically detects document type and uses appropriate strategy:
+   * - Native PDF: Extract embedded images → classify → save
+   * - Scanned PDF: Render pages → detect regions → crop → save
    * 
    * @param pdfPath - Path to the PDF file
    * @param catalogId - Catalog ID for the document
@@ -128,20 +131,19 @@ export class VisualExtractor {
     pdfPath: string,
     catalogId: number,
     documentInfo: DocumentInfo,
-    options: {
-      onProgress?: VisualExtractionProgressCallback;
-      pages?: number[];
-    } = {}
+    options: VisualExtractionOptions = {}
   ): Promise<VisualExtractionResult> {
-    const { onProgress } = options;
+    const { onProgress, forceDocumentType, minClassificationScore = 0.5 } = options;
     
     // Generate human-readable folder slug
     const folderSlug = slugifyDocument({ ...documentInfo, id: catalogId });
     
+    // Initialize result
     const result: VisualExtractionResult = {
       catalogId,
       sourcePath: pdfPath,
       folderSlug,
+      documentType: 'native',
       visuals: [],
       pagesProcessed: 0,
       pagesSkipped: 0,
@@ -150,34 +152,86 @@ export class VisualExtractor {
       errors: []
     };
 
-    // Verify pdfimages is available
+    // Verify PDF tools are available
     if (!isPdfImagesAvailable()) {
       result.errors.push('pdfimages not found. Install poppler-utils.');
       return result;
     }
 
-    // Create document-specific images directory with intuitive name
+    // Create document-specific images directory
     const catalogImagesDir = path.join(this.imagesDir, folderSlug);
     if (!fs.existsSync(catalogImagesDir)) {
       fs.mkdirSync(catalogImagesDir, { recursive: true });
     }
 
+    try {
+      // Step 0: Determine document type
+      if (onProgress) {
+        onProgress('extracting', 0, 1, 'Analyzing document type...');
+      }
+
+      let documentType: DocumentType;
+      if (forceDocumentType) {
+        documentType = forceDocumentType;
+      } else {
+        const analysis = await analyzeDocumentType(pdfPath);
+        documentType = analysis.type;
+      }
+      result.documentType = documentType;
+
+      if (onProgress) {
+        onProgress('extracting', 0, 1, `Document type: ${documentType}`);
+      }
+
+      // Route to appropriate extraction method
+      if (documentType === 'scanned') {
+        await this.extractFromScannedPdf(
+          pdfPath, catalogId, documentInfo, catalogImagesDir, result, 
+          { onProgress, minScore: minClassificationScore }
+        );
+      } else {
+        await this.extractFromNativePdf(
+          pdfPath, catalogId, documentInfo, catalogImagesDir, result,
+          { onProgress, minScore: minClassificationScore }
+        );
+      }
+
+    } catch (error: any) {
+      result.errors.push(`Extraction failed: ${error.message}`);
+    }
+
+    return result;
+  }
+
+  /**
+   * Extract visuals from a native PDF (embedded image objects).
+   * 
+   * Uses pdfimages to extract embedded images, pre-filters page-sized images,
+   * then classifies remaining images using local model.
+   */
+  private async extractFromNativePdf(
+    pdfPath: string,
+    catalogId: number,
+    documentInfo: DocumentInfo,
+    outputDir: string,
+    result: VisualExtractionResult,
+    options: { onProgress?: VisualExtractionProgressCallback; minScore: number }
+  ): Promise<void> {
+    const { onProgress, minScore } = options;
+    const folderSlug = result.folderSlug;
+
     let extractionResult;
     try {
-      // Step 0: Get PDF page dimensions for pre-filtering
-      if (onProgress) {
-        onProgress('extracting', 0, 1, 'Analyzing PDF structure...');
-      }
-      
+      // Get PDF page dimensions for pre-filtering
       const pageDimensions = getPdfPageDimensions(pdfPath);
       const pageDimMap = new Map<number, PdfPageDimensions>();
       for (const dim of pageDimensions) {
         pageDimMap.set(dim.pageNumber, dim);
       }
 
-      // Step 1: Extract embedded images from PDF
+      // Extract embedded images
       if (onProgress) {
-        onProgress('extracting', 0, 1, 'Extracting images from PDF...');
+        onProgress('extracting', 0, 1, 'Extracting embedded images...');
       }
 
       extractionResult = await extractPdfImages(pdfPath, {
@@ -189,14 +243,14 @@ export class VisualExtractor {
 
       if (totalImages === 0) {
         result.pagesSkipped = 1;
-        return result;
+        return;
       }
 
       if (onProgress) {
-        onProgress('extracting', 1, 1, `Found ${totalImages} images`);
+        onProgress('extracting', 1, 1, `Found ${totalImages} embedded images`);
       }
 
-      // Step 2: Pre-filter page-sized images (no LLM call needed)
+      // Pre-filter page-sized images
       const candidateImages: ExtractedImage[] = [];
       
       for (const img of extractionResult.images) {
@@ -221,10 +275,10 @@ export class VisualExtractor {
 
       if (onProgress && result.imagesPreFiltered > 0) {
         onProgress('extracting', 1, 1, 
-          `Pre-filtered ${result.imagesPreFiltered} page-sized images, ${candidateImages.length} candidates remain`);
+          `Pre-filtered ${result.imagesPreFiltered} page-sized, ${candidateImages.length} candidates`);
       }
 
-      // Step 3: Classify candidates in parallel batches
+      // Classify candidates using local model
       const totalCandidates = candidateImages.length;
       
       for (let batchStart = 0; batchStart < totalCandidates; batchStart += CLASSIFICATION_BATCH_SIZE) {
@@ -233,14 +287,14 @@ export class VisualExtractor {
 
         if (onProgress) {
           onProgress('classifying', batchStart + 1, totalCandidates, 
-            `Classifying images ${batchStart + 1}-${batchEnd} of ${totalCandidates}`);
+            `Classifying ${batchStart + 1}-${batchEnd} of ${totalCandidates}`);
         }
 
-        // Process batch in parallel
+        // Process batch in parallel using LOCAL classifier
         const batchResults = await Promise.all(
           batch.map(async (img) => {
             try {
-              const classification = await this.visionService.classifyImage(img.imagePath);
+              const classification = await classifyImage(img.imagePath, { minScore });
               return { img, classification, error: null };
             } catch (err: any) {
               return { img, classification: null, error: err.message };
@@ -255,62 +309,215 @@ export class VisualExtractor {
             continue;
           }
 
-          if (!classification || classification.type === 'skip') {
+          if (!classification || classification.skip) {
             result.imagesFiltered++;
             continue;
           }
 
-          // Save as grayscale with consistent naming and embedded metadata
-          const outputFilename = formatVisualFilename(img.pageNumber, img.imageIndex);
-          const outputPath = path.join(catalogImagesDir, outputFilename);
-
-          // Build metadata for embedding in PNG
-          const embeddedMetadata: ImageEmbeddedMetadata = {
-            title: documentInfo.title,
-            author: documentInfo.author,
-            year: documentInfo.year,
-            pageNumber: img.pageNumber,
-            imageIndex: img.imageIndex,
-            catalogId
-          };
-
-          try {
-            await convertToGrayscale(img.imagePath, outputPath, {
-              pngCompression: this.config.pngCompression,
-              maxWidth: 1200,  // Limit max width for storage
-              embeddedMetadata
-            });
-
-            const outputMetadata = await getImageMetadata(outputPath);
-
-            const extractedVisual: ExtractedVisual = {
-              pageNumber: img.pageNumber,
-              visualIndex: img.imageIndex,
-              type: classification.type as VisualType,
-              imagePath: path.join('images', folderSlug, outputFilename),
-              boundingBox: { x: 0, y: 0, width: 1, height: 1 },  // Full image
-              width: outputMetadata.width,
-              height: outputMetadata.height
-            };
-
-            result.visuals.push(extractedVisual);
-            result.pagesProcessed++;
-          } catch (saveError: any) {
-            result.errors.push(`Save p${img.pageNumber}_v${img.imageIndex}: ${saveError.message}`);
-          }
+          // Save as grayscale with embedded metadata
+          await this.saveExtractedImage(
+            img.imagePath,
+            img.pageNumber,
+            img.imageIndex,
+            classification.type as VisualType,
+            catalogId,
+            documentInfo,
+            outputDir,
+            folderSlug,
+            result
+          );
         }
       }
 
-    } catch (error: any) {
-      result.errors.push(`Extraction failed: ${error.message}`);
     } finally {
-      // Clean up extracted images from temp directory
+      // Clean up temp files
       if (extractionResult) {
         cleanupExtractedImages(extractionResult);
       }
     }
+  }
 
-    return result;
+  /**
+   * Extract visuals from a scanned PDF (pages stored as images).
+   * 
+   * Renders each page, detects diagram regions using local model,
+   * then crops and saves each detected region.
+   */
+  private async extractFromScannedPdf(
+    pdfPath: string,
+    catalogId: number,
+    documentInfo: DocumentInfo,
+    outputDir: string,
+    result: VisualExtractionResult,
+    options: { onProgress?: VisualExtractionProgressCallback; minScore: number }
+  ): Promise<void> {
+    const { onProgress, minScore } = options;
+    const folderSlug = result.folderSlug;
+
+    // Check if local classifier is available
+    if (!isLocalClassifierAvailable()) {
+      result.errors.push(
+        'Local classifier not available. Run: cd scripts/python && ./setup.sh'
+      );
+      return;
+    }
+
+    // Check if pdftoppm is available
+    if (!isPdfToolsAvailable()) {
+      result.errors.push('pdftoppm not found. Install poppler-utils.');
+      return;
+    }
+
+    let renderResult;
+    try {
+      // Render PDF pages to images
+      if (onProgress) {
+        onProgress('extracting', 0, 1, 'Rendering PDF pages...');
+      }
+
+      renderResult = await renderPdfPages(pdfPath, {
+        dpi: this.config.renderDpi || 150
+      });
+
+      const totalPages = renderResult.pageImages.length;
+
+      if (totalPages === 0) {
+        result.pagesSkipped = 1;
+        return;
+      }
+
+      if (onProgress) {
+        onProgress('extracting', 1, 1, `Rendered ${totalPages} pages`);
+      }
+
+      // Process each page
+      for (let i = 0; i < totalPages; i++) {
+        const pageImage = renderResult.pageImages[i];
+        const pageNumber = i + 1;
+
+        if (onProgress) {
+          onProgress('classifying', pageNumber, totalPages, 
+            `Detecting regions on page ${pageNumber}`);
+        }
+
+        try {
+          // Detect diagram regions in this page
+          const regions = await detectRegions(pageImage, { minScore });
+
+          if (regions.length === 0) {
+            result.pagesSkipped++;
+            continue;
+          }
+
+          // Crop and save each detected region
+          for (let j = 0; j < regions.length; j++) {
+            const region = regions[j];
+            const outputFilename = formatVisualFilename(pageNumber, j);
+            const outputPath = path.join(outputDir, outputFilename);
+
+            // Build embedded metadata
+            const embeddedMetadata: ImageEmbeddedMetadata = {
+              title: documentInfo.title,
+              author: documentInfo.author,
+              year: documentInfo.year,
+              pageNumber,
+              imageIndex: j,
+              catalogId
+            };
+
+            try {
+              const cropResult = await cropRegion(pageImage, region, {
+                outputPath,
+                grayscale: true,
+                maxWidth: 1200,
+                pngCompression: this.config.pngCompression,
+                embeddedMetadata
+              });
+
+              const extractedVisual: ExtractedVisual = {
+                pageNumber,
+                visualIndex: j,
+                type: region.type as VisualType,
+                imagePath: path.join('images', folderSlug, outputFilename),
+                boundingBox: region.bbox,
+                width: cropResult.width,
+                height: cropResult.height
+              };
+
+              result.visuals.push(extractedVisual);
+              result.pagesProcessed++;
+
+            } catch (cropError: any) {
+              result.errors.push(`Crop p${pageNumber}_v${j}: ${cropError.message}`);
+            }
+          }
+
+        } catch (detectError: any) {
+          result.errors.push(`Page ${pageNumber}: ${detectError.message}`);
+          result.pagesSkipped++;
+        }
+      }
+
+    } finally {
+      // Clean up rendered pages
+      if (renderResult) {
+        cleanupRenderedPages(renderResult);
+      }
+    }
+  }
+
+  /**
+   * Save an extracted image with grayscale conversion and metadata.
+   */
+  private async saveExtractedImage(
+    sourcePath: string,
+    pageNumber: number,
+    imageIndex: number,
+    visualType: VisualType,
+    catalogId: number,
+    documentInfo: DocumentInfo,
+    outputDir: string,
+    folderSlug: string,
+    result: VisualExtractionResult
+  ): Promise<void> {
+    const outputFilename = formatVisualFilename(pageNumber, imageIndex);
+    const outputPath = path.join(outputDir, outputFilename);
+
+    // Build embedded metadata
+    const embeddedMetadata: ImageEmbeddedMetadata = {
+      title: documentInfo.title,
+      author: documentInfo.author,
+      year: documentInfo.year,
+      pageNumber,
+      imageIndex,
+      catalogId
+    };
+
+    try {
+      await convertToGrayscale(sourcePath, outputPath, {
+        pngCompression: this.config.pngCompression,
+        maxWidth: 1200,
+        embeddedMetadata
+      });
+
+      const outputMetadata = await getImageMetadata(outputPath);
+
+      const extractedVisual: ExtractedVisual = {
+        pageNumber,
+        visualIndex: imageIndex,
+        type: visualType,
+        imagePath: path.join('images', folderSlug, outputFilename),
+        boundingBox: { x: 0, y: 0, width: 1, height: 1 },
+        width: outputMetadata.width,
+        height: outputMetadata.height
+      };
+
+      result.visuals.push(extractedVisual);
+      result.pagesProcessed++;
+
+    } catch (saveError: any) {
+      result.errors.push(`Save p${pageNumber}_v${imageIndex}: ${saveError.message}`);
+    }
   }
 
   /**
@@ -379,4 +586,3 @@ export class VisualExtractor {
       .map(dirent => dirent.name);
   }
 }
-

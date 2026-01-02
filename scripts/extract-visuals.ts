@@ -4,6 +4,7 @@
  * Extracts diagrams from PDF documents in the catalog and stores them
  * as grayscale images with metadata in the visuals table.
  * 
+ * Uses LOCAL classification model - no API key required for extraction!
  * Only diagrams with semantic meaning are stored:
  * - Flowcharts, UML, architecture diagrams
  * - Charts and graphs
@@ -23,12 +24,19 @@
  *   --dpi <n>          Rendering DPI (default: 150)
  *   --dry-run          Show what would be extracted without saving
  *   --resume           Skip documents that already have visuals in the database
+ *   --force-type <t>   Force document type: native, scanned, or mixed
+ *   --min-score <n>    Minimum classification score (0-1, default: 0.5)
  * 
  * Examples:
  *   npx tsx scripts/extract-visuals.ts
  *   npx tsx scripts/extract-visuals.ts --source "Clean Architecture"
  *   npx tsx scripts/extract-visuals.ts --catalog-id 12345678
  *   npx tsx scripts/extract-visuals.ts --limit 5 --dry-run
+ *   npx tsx scripts/extract-visuals.ts --force-type scanned
+ * 
+ * Prerequisites:
+ *   - poppler-utils (pdftoppm, pdfimages)
+ *   - Python 3.8+ with LayoutParser (run: cd scripts/python && ./setup.sh)
  */
 
 import * as lancedb from '@lancedb/lancedb';
@@ -38,9 +46,11 @@ import * as fs from 'fs';
 import minimist from 'minimist';
 import { VisualExtractor } from '../src/infrastructure/visual-extraction/visual-extractor.js';
 import { isPdfToolsAvailable } from '../src/infrastructure/visual-extraction/pdf-page-renderer.js';
+import { isLocalClassifierAvailable } from '../src/infrastructure/visual-extraction/local-classifier.js';
 import { hashToId } from '../src/infrastructure/utils/hash.js';
 import { serializeBoundingBox } from '../src/domain/models/visual.js';
 import { SimpleEmbeddingService } from '../src/infrastructure/embeddings/simple-embedding-service.js';
+import type { DocumentType } from '../src/infrastructure/visual-extraction/document-analyzer.js';
 
 // Parse command line arguments
 const args = minimist(process.argv.slice(2));
@@ -51,24 +61,28 @@ const limit = args.limit ? parseInt(args.limit, 10) : undefined;
 const renderDpi = args.dpi ? parseInt(args.dpi, 10) : 150;
 const dryRun = args['dry-run'] || false;
 const resumeMode = args.resume || false;
+const forceType = args['force-type'] as DocumentType | undefined;
+const minScore = args['min-score'] ? parseFloat(args['min-score']) : 0.5;
 
 async function main() {
-  console.log('🖼️  Visual Extraction');
-  console.log('=====================\n');
+  console.log('🖼️  Visual Extraction (Local Classification)');
+  console.log('=============================================\n');
 
   // Check prerequisites
   if (!isPdfToolsAvailable()) {
-    console.error('❌ pdftoppm not found. Install poppler-utils:');
+    console.error('❌ PDF tools not found. Install poppler-utils:');
     console.error('   Ubuntu/Debian: sudo apt install poppler-utils');
     console.error('   macOS: brew install poppler');
     process.exit(1);
   }
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) {
-    console.error('❌ OPENROUTER_API_KEY environment variable is required');
-    console.error('   Get an API key from https://openrouter.ai/');
-    process.exit(1);
+  // Check local classifier (warn but don't fail - native PDFs work without it)
+  const hasLocalClassifier = isLocalClassifierAvailable();
+  if (!hasLocalClassifier) {
+    console.log('⚠️  Local classifier not available (scanned PDFs may not work)');
+    console.log('   To enable: cd scripts/python && ./setup.sh\n');
+  } else {
+    console.log('✅ Local classifier available (no API key needed)\n');
   }
 
   // Verify database exists
@@ -158,7 +172,6 @@ async function main() {
 
   // Create extractor and embedding service
   const extractor = new VisualExtractor(dbPath, {
-    apiKey,
     config: { renderDpi }
   });
   const embeddingService = new SimpleEmbeddingService();
@@ -167,6 +180,8 @@ async function main() {
   let totalFiltered = 0;
   let totalPreFiltered = 0;
   let totalErrors = 0;
+  let nativeCount = 0;
+  let scannedCount = 0;
 
   // Process each document
   for (let i = 0; i < catalogEntries.length; i++) {
@@ -198,6 +213,8 @@ async function main() {
 
     // Extract visuals
     const result = await extractor.extractFromPdf(source, catalogId, documentInfo, {
+      forceDocumentType: forceType,
+      minClassificationScore: minScore,
       onProgress: (stage, current, total, message) => {
         const stageIcon = stage === 'rendering' ? '📷' :
                          stage === 'classifying' ? '🔍' :
@@ -209,10 +226,17 @@ async function main() {
     // Clear progress line
     process.stdout.write('\r' + ' '.repeat(80) + '\r');
 
+    // Track document types
+    if (result.documentType === 'scanned') {
+      scannedCount++;
+    } else {
+      nativeCount++;
+    }
+
     // Report results
-    console.log(`   📁 Folder: ${result.folderSlug}`);
+    console.log(`   📁 Folder: ${result.folderSlug} (${result.documentType})`);
     const filterSummary = result.imagesPreFiltered > 0 
-      ? `Pre-filtered: ${result.imagesPreFiltered} page-sized, LLM-filtered: ${result.imagesFiltered}`
+      ? `Pre-filtered: ${result.imagesPreFiltered} page-sized, Classified: ${result.imagesFiltered} skip`
       : `Filtered: ${result.imagesFiltered} non-semantic`;
     console.log(`   ✅ Extracted: ${result.visuals.length} visuals, ${filterSummary}`);
     
@@ -265,15 +289,17 @@ async function main() {
   }
 
   // Final summary
-  console.log('\n=====================');
+  console.log('\n=============================================');
   console.log('✅ Extraction complete!\n');
   console.log('📊 Summary:');
   console.log(`   Documents processed: ${catalogEntries.length}`);
+  console.log(`   Document types: ${nativeCount} native, ${scannedCount} scanned`);
   console.log(`   Visuals extracted: ${totalVisuals}`);
   if (totalPreFiltered > 0) {
-    console.log(`   Page-sized images pre-filtered: ${totalPreFiltered} (no LLM call)`);
+    console.log(`   Page-sized images pre-filtered: ${totalPreFiltered}`);
   }
-  console.log(`   Non-semantic filtered by LLM: ${totalFiltered}`);
+  console.log(`   Non-semantic filtered: ${totalFiltered}`);
+  console.log(`   API calls made: 0 (local classification)`);
   if (totalErrors > 0) {
     console.log(`   Errors: ${totalErrors}`);
   }
@@ -284,6 +310,7 @@ async function main() {
 
   console.log('\n🎯 Next steps:');
   console.log('   Run describe-visuals.ts to generate semantic descriptions');
+  console.log('   (This step requires OPENROUTER_API_KEY)');
 }
 
 main().catch(err => {
@@ -294,4 +321,3 @@ main().catch(err => {
   }
   process.exit(1);
 });
-
