@@ -185,15 +185,27 @@ export class VisualExtractor {
 
       // Route to appropriate extraction method
       if (documentType === 'scanned') {
-        await this.extractFromScannedPdf(
-          pdfPath, catalogId, documentInfo, catalogImagesDir, result, 
-          { onProgress, minScore: minClassificationScore }
-        );
+        // Skip extraction for scanned documents - OCR text detection is unreliable
+        if (onProgress) {
+          onProgress('extracting', 1, 1, 'Skipping scanned document');
+        }
+        result.pagesSkipped = 1;
       } else {
         await this.extractFromNativePdf(
           pdfPath, catalogId, documentInfo, catalogImagesDir, result,
           { onProgress, minScore: minClassificationScore }
         );
+
+        // If ALL images were page-sized (pre-filtered), this is likely a scanned PDF
+        // packaged as native - skip it rather than attempting region detection
+        if (result.imagesPreFiltered > 0 && 
+            result.visuals.length === 0 && 
+            result.imagesFiltered === 0) {
+          if (onProgress) {
+            onProgress('extracting', 1, 1, 'Skipping (all images page-sized, likely scanned)');
+          }
+          result.documentType = 'scanned';
+        }
       }
 
     } catch (error: any) {
