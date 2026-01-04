@@ -13,7 +13,10 @@
  */
 
 // Main extractor
-export { VisualExtractor, type VisualExtractionResult, type VisualExtractionOptions } from './visual-extractor.js';
+export { VisualExtractor, type VisualExtractionResult, type VisualExtractionOptions, type DocumentFormat } from './visual-extractor.js';
+
+// EPUB image extractor
+export { EpubImageExtractor, type EpubImage, type EpubImageExtractionResult, type EpubExtractionOptions } from './epub-image-extractor.js';
 
 // Local classifier (no API cost)
 export { classifyImage, detectRegions, isLocalClassifierAvailable, type ClassificationResult, type DetectedRegion, type ClassifierOptions } from './local-classifier.js';

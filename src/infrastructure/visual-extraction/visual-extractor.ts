@@ -29,10 +29,14 @@ import { convertToGrayscale, getImageMetadata, type ImageEmbeddedMetadata } from
 import { classifyImage, detectRegions, isLocalClassifierAvailable } from './local-classifier.js';
 import { analyzeDocumentType, type DocumentType } from './document-analyzer.js';
 import { cropRegion } from './region-cropper.js';
+import { EpubImageExtractor, type EpubImage } from './epub-image-extractor.js';
 import type { ExtractedVisual, VisualExtractionConfig, VisualExtractionProgressCallback } from './types.js';
 import { DEFAULT_VISUAL_EXTRACTION_CONFIG } from './types.js';
 import type { VisualType } from '../../domain/models/visual.js';
 import { slugifyDocument, formatVisualFilename, type DocumentInfo } from '../utils/slugify.js';
+
+/** Supported document formats for visual extraction */
+export type DocumentFormat = 'pdf' | 'epub';
 
 /** Batch size for parallel classification */
 const CLASSIFICATION_BATCH_SIZE = 5;
@@ -43,21 +47,23 @@ const CLASSIFICATION_BATCH_SIZE = 5;
 export interface VisualExtractionResult {
   /** Catalog ID of the source document */
   catalogId: number;
-  /** Path to source PDF */
+  /** Path to source document */
   sourcePath: string;
   /** Human-readable folder slug (e.g., "martin_clean-architecture_2017") */
   folderSlug: string;
-  /** Document type detected */
+  /** Document format (pdf or epub) */
+  documentFormat: DocumentFormat;
+  /** Document type detected (for PDFs: native/scanned, for EPUBs: always 'native') */
   documentType: DocumentType;
   /** Extracted visuals */
   visuals: ExtractedVisual[];
-  /** Pages processed */
+  /** Pages/chapters processed */
   pagesProcessed: number;
-  /** Pages skipped (no visuals) */
+  /** Pages/chapters skipped (no visuals) */
   pagesSkipped: number;
   /** Images classified as non-semantic (not stored) */
   imagesFiltered: number;
-  /** Images skipped by pre-filter (page-sized, no classification call) */
+  /** Images skipped by pre-filter (page-sized for PDF, cover/decorative for EPUB) */
   imagesPreFiltered: number;
   /** Errors encountered */
   errors: string[];
@@ -143,6 +149,7 @@ export class VisualExtractor {
       catalogId,
       sourcePath: pdfPath,
       folderSlug,
+      documentFormat: 'pdf',
       documentType: 'native',
       visuals: [],
       pagesProcessed: 0,
@@ -596,5 +603,235 @@ export class VisualExtractor {
     return fs.readdirSync(this.imagesDir, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name);
+  }
+
+  /**
+   * Extract visuals from a document (auto-detects format).
+   * 
+   * Routes to appropriate extraction method based on file extension.
+   * 
+   * @param filePath - Path to the document file (PDF or EPUB)
+   * @param catalogId - Catalog ID for the document
+   * @param documentInfo - Document metadata for folder naming
+   * @param options - Extraction options
+   * @returns Extraction result
+   */
+  async extract(
+    filePath: string,
+    catalogId: number,
+    documentInfo: DocumentInfo,
+    options: VisualExtractionOptions = {}
+  ): Promise<VisualExtractionResult> {
+    const ext = path.extname(filePath).toLowerCase();
+    
+    if (ext === '.pdf') {
+      return this.extractFromPdf(filePath, catalogId, documentInfo, options);
+    } else if (ext === '.epub') {
+      return this.extractFromEpub(filePath, catalogId, documentInfo, options);
+    } else {
+      throw new Error(`Unsupported document format: ${ext}. Supported formats: .pdf, .epub`);
+    }
+  }
+
+  /**
+   * Extract visuals from an EPUB document.
+   * 
+   * Extracts images from EPUB, classifies them using local model,
+   * and saves semantic diagrams as grayscale images.
+   * 
+   * @param epubPath - Path to the EPUB file
+   * @param catalogId - Catalog ID for the document
+   * @param documentInfo - Document metadata for folder naming
+   * @param options - Extraction options
+   * @returns Extraction result
+   */
+  async extractFromEpub(
+    epubPath: string,
+    catalogId: number,
+    documentInfo: DocumentInfo,
+    options: VisualExtractionOptions = {}
+  ): Promise<VisualExtractionResult> {
+    const { onProgress, minClassificationScore = 0.5 } = options;
+    
+    // Generate human-readable folder slug
+    const folderSlug = slugifyDocument({ ...documentInfo, id: catalogId });
+    
+    // Initialize result
+    const result: VisualExtractionResult = {
+      catalogId,
+      sourcePath: epubPath,
+      folderSlug,
+      documentFormat: 'epub',
+      documentType: 'native',  // EPUBs are always "native"
+      visuals: [],
+      pagesProcessed: 0,
+      pagesSkipped: 0,
+      imagesFiltered: 0,
+      imagesPreFiltered: 0,
+      errors: []
+    };
+
+    // Create document-specific images directory
+    const catalogImagesDir = path.join(this.imagesDir, folderSlug);
+    if (!fs.existsSync(catalogImagesDir)) {
+      fs.mkdirSync(catalogImagesDir, { recursive: true });
+    }
+
+    const epubExtractor = new EpubImageExtractor();
+    let extractionResult;
+
+    try {
+      // Step 1: Extract images from EPUB
+      if (onProgress) {
+        onProgress('extracting', 0, 1, 'Extracting images from EPUB...');
+      }
+
+      extractionResult = await epubExtractor.extract(epubPath, {
+        minWidth: this.config.minWidth,
+        minHeight: this.config.minHeight
+      });
+
+      // Track pre-filtered images
+      result.imagesPreFiltered = 
+        extractionResult.skipped.cover + 
+        extractionResult.skipped.tooSmall + 
+        extractionResult.skipped.decorative +
+        extractionResult.skipped.unsupportedFormat;
+
+      const totalImages = extractionResult.extractedImages.length;
+
+      if (totalImages === 0) {
+        if (onProgress) {
+          onProgress('extracting', 1, 1, 'No candidate images found');
+        }
+        result.pagesSkipped = 1;
+        return result;
+      }
+
+      if (onProgress) {
+        onProgress('extracting', 1, 1, 
+          `Found ${totalImages} candidate images (${result.imagesPreFiltered} pre-filtered)`);
+      }
+
+      // Step 2: Classify candidates using local model
+      for (let batchStart = 0; batchStart < totalImages; batchStart += CLASSIFICATION_BATCH_SIZE) {
+        const batchEnd = Math.min(batchStart + CLASSIFICATION_BATCH_SIZE, totalImages);
+        const batch = extractionResult.extractedImages.slice(batchStart, batchEnd);
+
+        if (onProgress) {
+          onProgress('classifying', batchStart + 1, totalImages, 
+            `Classifying ${batchStart + 1}-${batchEnd} of ${totalImages}`);
+        }
+
+        // Process batch in parallel using LOCAL classifier
+        const batchResults = await Promise.all(
+          batch.map(async (img) => {
+            try {
+              const classification = await classifyImage(img.tempPath, { minScore: minClassificationScore });
+              return { img, classification, error: null };
+            } catch (err: any) {
+              return { img, classification: null, error: err.message };
+            }
+          })
+        );
+
+        // Process batch results
+        for (const { img, classification, error } of batchResults) {
+          if (error) {
+            result.errors.push(`Image ${img.manifestId}: ${error}`);
+            continue;
+          }
+
+          if (!classification || classification.skip) {
+            result.imagesFiltered++;
+            continue;
+          }
+
+          // Save as grayscale with embedded metadata
+          await this.saveEpubImage(
+            img,
+            classification.type as VisualType,
+            catalogId,
+            documentInfo,
+            catalogImagesDir,
+            folderSlug,
+            result
+          );
+        }
+      }
+
+      // Add extraction errors
+      if (extractionResult.errors.length > 0) {
+        result.errors.push(...extractionResult.errors);
+      }
+
+    } catch (error: any) {
+      result.errors.push(`EPUB extraction failed: ${error.message}`);
+    } finally {
+      // Clean up temp files
+      if (extractionResult) {
+        epubExtractor.cleanup(extractionResult);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Save an extracted EPUB image with grayscale conversion and metadata.
+   */
+  private async saveEpubImage(
+    epubImage: EpubImage,
+    visualType: VisualType,
+    catalogId: number,
+    documentInfo: DocumentInfo,
+    outputDir: string,
+    folderSlug: string,
+    result: VisualExtractionResult
+  ): Promise<void> {
+    // Use chapter index for naming (since EPUBs don't have pages)
+    // Add 1 to make it 1-indexed like PDF pages
+    const chapterNum = epubImage.chapterIndex >= 0 ? epubImage.chapterIndex + 1 : 0;
+    const outputFilename = formatVisualFilename(chapterNum, epubImage.imageIndex);
+    const outputPath = path.join(outputDir, outputFilename);
+
+    // Build embedded metadata
+    const embeddedMetadata: ImageEmbeddedMetadata = {
+      title: documentInfo.title,
+      author: documentInfo.author,
+      year: documentInfo.year,
+      pageNumber: chapterNum,  // Use chapter as "page"
+      imageIndex: epubImage.imageIndex,
+      catalogId,
+      source: epubImage.href
+    };
+
+    try {
+      await convertToGrayscale(epubImage.tempPath, outputPath, {
+        pngCompression: this.config.pngCompression,
+        maxWidth: 1200,
+        embeddedMetadata
+      });
+
+      const outputMetadata = await getImageMetadata(outputPath);
+
+      const extractedVisual: ExtractedVisual = {
+        pageNumber: chapterNum,  // Store chapter as page number for compatibility
+        chapterIndex: epubImage.chapterIndex >= 0 ? epubImage.chapterIndex : undefined,
+        chapterTitle: epubImage.chapterTitle,
+        visualIndex: epubImage.imageIndex,
+        type: visualType,
+        imagePath: path.join('images', folderSlug, outputFilename),
+        boundingBox: { x: 0, y: 0, width: 1, height: 1 },
+        width: outputMetadata.width,
+        height: outputMetadata.height
+      };
+
+      result.visuals.push(extractedVisual);
+      result.pagesProcessed++;
+
+    } catch (saveError: any) {
+      result.errors.push(`Save ${epubImage.manifestId}: ${saveError.message}`);
+    }
   }
 }

@@ -50,9 +50,13 @@ export interface PageDetectionResult {
  * Result of extracting a visual region.
  */
 export interface ExtractedVisual {
-  /** Page number (1-indexed) */
+  /** Page number (1-indexed) for PDFs, or 0 for EPUBs */
   pageNumber: number;
-  /** Index of this visual on the page (0-indexed) */
+  /** Chapter index (0-indexed) for EPUBs, undefined for PDFs */
+  chapterIndex?: number;
+  /** Chapter title for EPUBs */
+  chapterTitle?: string;
+  /** Index of this visual on the page/chapter (0-indexed) */
   visualIndex: number;
   /** Classification of the visual */
   type: VisualType;

@@ -1,7 +1,7 @@
 /**
  * Extract Visuals Script
  * 
- * Extracts diagrams from PDF documents in the catalog and stores them
+ * Extracts diagrams from PDF and EPUB documents in the catalog and stores them
  * as grayscale images with metadata in the visuals table.
  * 
  * Uses LOCAL classification model - no API key required for extraction!
@@ -13,6 +13,10 @@
  * 
  * Photos, screenshots, and decorative images are filtered out.
  * 
+ * Supported formats:
+ *   - PDF: Native and scanned documents
+ *   - EPUB: Electronic book format with embedded images
+ * 
  * Usage:
  *   npx tsx scripts/extract-visuals.ts [options]
  * 
@@ -21,21 +25,22 @@
  *   --source <name>    Extract from specific document (partial match on title)
  *   --catalog-id <id>  Extract from specific catalog ID
  *   --limit <n>        Limit number of documents to process
- *   --dpi <n>          Rendering DPI (default: 150)
+ *   --dpi <n>          Rendering DPI for PDFs (default: 150)
  *   --dry-run          Show what would be extracted without saving
  *   --resume           Skip documents that already have visuals in the database
- *   --force-type <t>   Force document type: native, scanned, or mixed
+ *   --force-type <t>   Force document type: native, scanned, or mixed (PDF only)
  *   --min-score <n>    Minimum classification score (0-1, default: 0.5)
  * 
  * Examples:
  *   npx tsx scripts/extract-visuals.ts
  *   npx tsx scripts/extract-visuals.ts --source "Clean Architecture"
+ *   npx tsx scripts/extract-visuals.ts --source "Design It"  # EPUB
  *   npx tsx scripts/extract-visuals.ts --catalog-id 12345678
  *   npx tsx scripts/extract-visuals.ts --limit 5 --dry-run
  *   npx tsx scripts/extract-visuals.ts --force-type scanned
  * 
  * Prerequisites:
- *   - poppler-utils (pdftoppm, pdfimages)
+ *   - poppler-utils (pdftoppm, pdfimages) - for PDF processing
  *   - Python 3.8+ with LayoutParser (run: cd scripts/python && ./setup.sh)
  */
 
@@ -182,6 +187,7 @@ async function main() {
   let totalErrors = 0;
   let nativeCount = 0;
   let scannedCount = 0;
+  let epubCount = 0;
 
   // Process each document
   for (let i = 0; i < catalogEntries.length; i++) {
@@ -192,9 +198,12 @@ async function main() {
 
     console.log(`\n[${i + 1}/${catalogEntries.length}] 📄 ${title}`);
     
-    // Check if source file exists and is a PDF
-    if (!source || !source.toLowerCase().endsWith('.pdf')) {
-      console.log('   ⏭️  Skipping (not a PDF)');
+    // Check if source file exists and is a supported format (PDF or EPUB)
+    const ext = source ? source.toLowerCase().slice(source.lastIndexOf('.')) : '';
+    const supportedFormats = ['.pdf', '.epub'];
+    
+    if (!source || !supportedFormats.includes(ext)) {
+      console.log(`   ⏭️  Skipping (unsupported format: ${ext || 'no extension'})`);
       continue;
     }
 
@@ -202,6 +211,10 @@ async function main() {
       console.log(`   ⚠️  Source file not found: ${source}`);
       continue;
     }
+
+    // For PDF-only checks
+    const isPdf = ext === '.pdf';
+    const isEpub = ext === '.epub';
 
     // Build document info for intuitive folder naming
     const documentInfo = {
@@ -211,9 +224,9 @@ async function main() {
       id: catalogId
     };
 
-    // Extract visuals
-    const result = await extractor.extractFromPdf(source, catalogId, documentInfo, {
-      forceDocumentType: forceType,
+    // Extract visuals using unified extract() method
+    const result = await extractor.extract(source, catalogId, documentInfo, {
+      forceDocumentType: isPdf ? forceType : undefined,  // Force type only applies to PDFs
       minClassificationScore: minScore,
       onProgress: (stage, current, total, message) => {
         const stageIcon = stage === 'rendering' ? '📷' :
@@ -227,14 +240,17 @@ async function main() {
     process.stdout.write('\r' + ' '.repeat(80) + '\r');
 
     // Track document types
-    if (result.documentType === 'scanned') {
+    if (result.documentFormat === 'epub') {
+      epubCount++;
+    } else if (result.documentType === 'scanned') {
       scannedCount++;
     } else {
       nativeCount++;
     }
 
     // Report results
-    console.log(`   📁 Folder: ${result.folderSlug} (${result.documentType})`);
+    const formatLabel = result.documentFormat === 'epub' ? 'epub' : result.documentType;
+    console.log(`   📁 Folder: ${result.folderSlug} (${formatLabel})`);
     const filterSummary = result.imagesPreFiltered > 0 
       ? `Pre-filtered: ${result.imagesPreFiltered} page-sized, Classified: ${result.imagesFiltered} skip`
       : `Filtered: ${result.imagesFiltered} non-semantic`;
@@ -293,7 +309,7 @@ async function main() {
   console.log('✅ Extraction complete!\n');
   console.log('📊 Summary:');
   console.log(`   Documents processed: ${catalogEntries.length}`);
-  console.log(`   Document types: ${nativeCount} native, ${scannedCount} scanned`);
+  console.log(`   Formats: ${nativeCount} PDF native, ${scannedCount} PDF scanned, ${epubCount} EPUB`);
   console.log(`   Visuals extracted: ${totalVisuals}`);
   if (totalPreFiltered > 0) {
     console.log(`   Page-sized images pre-filtered: ${totalPreFiltered}`);
