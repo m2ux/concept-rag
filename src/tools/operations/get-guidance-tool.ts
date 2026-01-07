@@ -8,6 +8,11 @@
 import { BaseTool, ToolParams } from '../base/tool.js';
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const PROJECT_ROOT = path.resolve(__dirname, '../../../');
 
 export interface GetGuidanceParams extends ToolParams {
   topic?: 'rules' | 'tool-selection' | 'all';
@@ -50,7 +55,7 @@ RECOMMENDED: Call with topic='rules' at the start of each session to ensure high
     
     try {
       if (topic === 'rules' || topic === 'all') {
-        const rulesPath = path.resolve(process.cwd(), 'prompts/get-guidance.md');
+        const rulesPath = path.resolve(PROJECT_ROOT, 'prompts/get-guidance.md');
         if (fs.existsSync(rulesPath)) {
           const rules = fs.readFileSync(rulesPath, 'utf-8');
           results.push('# Agent Research Rules\n\n' + rules);
@@ -60,7 +65,7 @@ RECOMMENDED: Call with topic='rules' at the start of each session to ensure high
       }
       
       if (topic === 'tool-selection' || topic === 'all') {
-        const guidePath = path.resolve(process.cwd(), 'docs/tool-selection-guide.md');
+        const guidePath = path.resolve(PROJECT_ROOT, 'docs/tool-selection-guide.md');
         if (fs.existsSync(guidePath)) {
           const guide = fs.readFileSync(guidePath, 'utf-8');
           results.push('# Tool Selection Guide\n\n' + guide);
