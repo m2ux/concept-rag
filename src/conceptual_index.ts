@@ -11,6 +11,11 @@ import { ApplicationContainer } from "./application/container.js";
 import * as defaults from './config.js';
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const PROJECT_ROOT = path.resolve(__dirname, '../');
 
 /**
  * MCP Resources Configuration
@@ -81,7 +86,7 @@ async function main() {
     const availableResources = RESOURCES.filter(resource => {
       try {
         // Resolve path relative to package root
-        const fullPath = path.resolve(process.cwd(), resource.filePath);
+        const fullPath = path.resolve(PROJECT_ROOT, resource.filePath);
         return fs.existsSync(fullPath);
       } catch {
         return false;
@@ -108,7 +113,7 @@ async function main() {
     }
 
     // Read the file
-    const fullPath = path.resolve(process.cwd(), resource.filePath);
+    const fullPath = path.resolve(PROJECT_ROOT, resource.filePath);
     if (!fs.existsSync(fullPath)) {
       throw new Error(`Resource file not found: ${resource.filePath}`);
     }
