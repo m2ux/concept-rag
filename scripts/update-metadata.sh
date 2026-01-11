@@ -13,18 +13,18 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
 cd "$REPO_ROOT"
 
-echo "Updating metadata submodule to latest HEAD..."
+echo "Updating private-metadata submodule to latest HEAD..."
 
-if ! git submodule update --remote metadata 2>&1; then
+if ! git submodule update --remote private-metadata 2>&1; then
     echo ""
     echo "Error: Failed to update metadata submodule"
     echo "This is expected if you don't have access to the private repository."
     exit 1
 fi
 
-git add metadata
+git add private-metadata
 
-NEW_COMMIT=$(cd metadata && git rev-parse --short HEAD)
+NEW_COMMIT=$(cd private-metadata && git rev-parse --short HEAD)
 
 echo ""
 echo "Updated metadata to $NEW_COMMIT"

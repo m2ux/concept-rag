@@ -27,7 +27,7 @@ engineering (this branch)
 │   ├── reviews/              # Code and architecture reviews
 │   └── templates/            # Reusable templates
 ├── workflows/                # Submodule → m2ux/agent-workflows (public)
-└── metadata/                 # Submodule → m2ux/ai-metadata (private)
+└── private-metadata/         # Submodule → m2ux/ai-metadata (private)
 ```
 
 ## Submodules
@@ -37,7 +37,7 @@ This branch includes two submodules:
 | Submodule | Repository | Visibility | Strategy |
 |-----------|------------|------------|----------|
 | `workflows/` | [m2ux/agent-workflows](https://github.com/m2ux/agent-workflows) | Public | Pinned to version tag |
-| `metadata/` | m2ux/ai-metadata | Private | Tracks `master` branch |
+| `private-metadata/` | m2ux/ai-metadata | Private | Tracks `master` branch |
 
 ### Cloning with Submodules
 
@@ -49,23 +49,20 @@ git clone --recurse-submodules https://github.com/m2ux/concept-rag.git -b engine
 git submodule update --init --recursive
 ```
 
-**Note:** The `metadata/` submodule requires access to the private repo. Non-collaborators can still use `workflows/`.
+**Note:** The `private-metadata/` submodule requires access to the private repo. Non-collaborators can still use `workflows/`.
 
 ### Updating Submodules
 
+Use the provided scripts:
+
 ```bash
 # Update workflows to a specific version
-cd workflows
-git fetch --tags
-git checkout v0.2.0
-cd ..
-git add workflows
+./scripts/update-workflows.sh v0.2.0
 git commit -m "chore: update workflows to v0.2.0"
 
-# Update metadata to latest HEAD
-git submodule update --remote metadata
-git add metadata
-git commit -m "chore: update metadata to latest"
+# Update private-metadata to latest HEAD (author only)
+./scripts/update-metadata.sh
+git commit -m "chore: update private-metadata to latest"
 ```
 
 ## Accessing This Branch
