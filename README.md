@@ -42,11 +42,11 @@ For parallel access to engineering and code:
 cd /path/to/concept-rag
 
 # Add a linked worktree for the engineering branch
-git worktree add ../concept-rag-engineering engineering
+git worktree add ../concept-rag_engineering engineering
 
 # Now you have two directories:
 # - concept-rag/          (main/feature branches - code)
-# - concept-rag-engineering/ (engineering branch - docs)
+# - concept-rag_engineering/ (engineering branch - docs)
 ```
 
 ### Switching Branches (Alternative)

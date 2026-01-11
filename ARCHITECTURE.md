@@ -41,11 +41,11 @@ git push -u origin engineering
 
 ```bash
 # From main checkout
-git worktree add ../concept-rag-engineering engineering
+git worktree add ../concept-rag_engineering engineering
 
 # Result:
 # project/          → main/feature branches (code)
-# project-engineering/ → engineering branch (docs)
+# project_engineering/ → engineering branch (docs)
 ```
 
 **Example (this repository):**
@@ -56,7 +56,7 @@ concept-rag/                      # Main checkout
 ├── docs/
 └── .git/
 
-concept-rag-engineering/             # Worktree → engineering branch
+concept-rag_engineering/             # Worktree → engineering branch
 ├── README.md
 ├── AGENTS.md
 ├── ARCHITECTURE.md
@@ -86,7 +86,7 @@ For projects where you cannot or should not add branches (e.g., external open-so
 
 ```bash
 # Create a dedicated engineering repository
-mkdir project-engineering && cd project-engineering
+mkdir project_engineering && cd project_engineering
 git init
 
 # Create orphan branch for the project
@@ -126,8 +126,8 @@ git clone git@github.com:you/my-engineering.git
 cd my-engineering
 
 # Add worktrees for each project's engineering branch
-git worktree add ../concept-rag-engineering engineering external-project
-git worktree add ../concept-rag-engineering engineering another-project
+git worktree add ../concept-rag_engineering engineering external-project
+git worktree add ../concept-rag_engineering engineering another-project
 ```
 
 **GitHub URLs:**
@@ -169,7 +169,7 @@ engineering branch (or orphan branch in engineering repo)
 | Planning location | Same repo, `engineering` branch | Separate repo, project-specific branch |
 | GitHub URL | `repo/tree/engineering` | `engineering-repo/tree/project-name` |
 | Access control | Inherits from main repo | Independent repo permissions |
-| Worktree setup | `git worktree add ../concept-rag-engineering engineering` | Clone + worktree per project |
+| Worktree setup | `git worktree add ../concept-rag_engineering engineering` | Clone + worktree per project |
 | CI/CD integration | Same repo, easy | Cross-repo, requires setup |
 | Best for | Projects you own | External contributions |
 
@@ -247,7 +247,7 @@ git checkout feat/new-feature
 # ... make code changes ...
 
 # Terminal 2: Updating engineering docs
-cd ~/projects/concept-rag-engineering
+cd ~/projects/concept-rag_engineering
 # ... update specs, create ADR ...
 git commit -m "docs(adr): add ADR for new feature"
 git push
