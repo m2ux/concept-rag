@@ -2918,10 +2918,10 @@
 <strong>Deciders:</strong> Engineering Team<br />
 <strong>Technical Story:</strong> OCR Evaluation (October 21, 2025)</p>
 <p><strong>Sources:</strong>
-- Planning: .ai/planning/2025-10-21-ocr-evaluation/</p>
+- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-21-ocr-evaluation/">2025-10-21-ocr-evaluation</a></p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
 <p>pdf-parse [ADR-0005] handles text-based PDFs well but cannot extract text from scanned documents (images only) [Limitation: pdf-parse]. When processing document collections, encountering scanned PDFs caused extraction failures and those documents were skipped, creating gaps in the knowledge base.</p>
-<p><strong>The Core Problem:</strong> How to handle scanned/image-based PDFs to achieve high document processing success rate (~95%+) without breaking the bank? [Planning: <code>.ai/planning/2025-10-21-ocr-evaluation/README.md</code>]</p>
+<p><strong>The Core Problem:</strong> How to handle scanned/image-based PDFs to achieve high document processing success rate (~95%+) without breaking the bank? [Planning: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-10-21-ocr-evaluation/README.md">README.md</a>]</p>
 <p><strong>Decision Drivers:</strong>
 * ~5-10% of PDFs are scanned or have image-based pages [Estimate: from corpus analysis]
 * Need OCR capability for completeness [Requirement: comprehensive indexing]
@@ -3017,7 +3017,7 @@
 - <strong>Cost:</strong> $0 for OCR (all local processing) [Benefit: zero marginal cost]
 - <strong>Documents processed:</strong> 165+ successfully [Source: production stats]
 - <strong>OCR usage:</strong> ~5-10% of documents require OCR fallback [Estimate: from processing logs]</p>
-<p><strong>Alternative Evaluation:</strong> [Source: <code>.ai/planning/2025-10-21-ocr-evaluation/DEEPSEEK_OCR_EVALUATION.md</code>]
+<p><strong>Alternative Evaluation:</strong> [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-10-21-ocr-evaluation/DEEPSEEK_OCR_EVALUATION.md">DEEPSEEK_OCR_EVALUATION.md</a>]
 - DeepSeek-OCR evaluated October 21, 2025
 - Rejected due to infrastructure complexity and GPU requirements [Planning: evaluation, lines 201-222]
 - Tesseract's simplicity and zero cost preferred for fallback use case [Decision: stick with Tesseract]</p>
@@ -3135,7 +3135,7 @@
 <strong>Attribution:</strong>
 - Planning docs: October 21, 2024
 - DeepSeek alternative evaluated and rejected</p>
-<p><strong>Traceability:</strong> .ai/planning/2025-10-21-ocr-evaluation/</p>
+<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-21-ocr-evaluation/">2025-10-21-ocr-evaluation</a></p>
 
 
 

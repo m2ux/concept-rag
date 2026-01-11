@@ -2940,11 +2940,11 @@
 <strong>Deciders:</strong> concept-rag Engineering Team<br />
 <strong>Technical Story:</strong> Category Search Feature &amp; Integer ID Optimization (November 19, 2025)</p>
 <p><strong>Sources:</strong>
-- Planning: .ai/planning/2025-11-19-category-search-feature/, .ai/planning/2025-11-19-integer-id-optimization/
+- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/">2025-11-19-category-search-feature</a>, <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-integer-id-optimization/">2025-11-19-integer-id-optimization</a>
 - Git Commits: 3f982223203cb0875b43a903c1cc0235f64aa7d0, 604738ada93979e5e99cee958495c22a43787a03 (November 18, 2024)</p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
-<p>Concepts and categories were referenced using string names throughout the database (e.g., <code>concepts: ["software architecture", "testing"]</code>), resulting in massive storage overhead [Problem: string duplication]. With 37,267 concepts across 165 documents and 100,000 chunks, storing full concept names repeatedly consumed 699 MB [Source: <code>.ai/planning/2025-11-19-category-search-feature/IMPLEMENTATION-COMPLETE.md</code>, line 91].</p>
-<p><strong>The Core Problem:</strong> How to reduce storage from string names to integer IDs while maintaining perfect stability across database rebuilds? [Planning: <code>.ai/planning/2025-11-19-integer-id-optimization/</code>]</p>
+<p>Concepts and categories were referenced using string names throughout the database (e.g., <code>concepts: ["software architecture", "testing"]</code>), resulting in massive storage overhead [Problem: string duplication]. With 37,267 concepts across 165 documents and 100,000 chunks, storing full concept names repeatedly consumed 699 MB [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-19-category-search-feature/IMPLEMENTATION-COMPLETE.md">IMPLEMENTATION-COMPLETE.md</a>, line 91].</p>
+<p><strong>The Core Problem:</strong> How to reduce storage from string names to integer IDs while maintaining perfect stability across database rebuilds? [Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-integer-id-optimization/">planning</a>]</p>
 <p><strong>Decision Drivers:</strong>
 * Storage optimization (699 MB database too large) [Problem: size]
 * String duplication (37K concepts × 100K chunks) [Issue: repetition]
@@ -3198,7 +3198,7 @@
 - Planning docs: November 18-19, 2024
 - Git commits: 3f982223, 604738ad
 - Metrics from: IMPLEMENTATION-COMPLETE.md lines 84-92</p>
-<p><strong>Traceability:</strong> .ai/planning/2025-11-19-category-search-feature/, .ai/planning/2025-11-19-integer-id-optimization/</p>
+<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/">2025-11-19-category-search-feature</a>, <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-integer-id-optimization/">2025-11-19-integer-id-optimization</a></p>
 
 
 

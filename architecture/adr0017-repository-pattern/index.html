@@ -2921,9 +2921,9 @@
 - Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
 <p>Tools directly accessed LanceDB tables via global imports [Problem: ADR-0016], creating tight coupling and making unit testing impossible [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md">01-architecture-review-analysis.md</a>, lines 59-79]. Business logic was mixed with database queries, and there was no abstraction layer for data access [Issues: lines 196-200].</p>
-<p><strong>The Core Problem:</strong> How to abstract database access to enable testing, reduce coupling, and follow the Dependency Inversion Principle? [Planning: <code>02-implementation-plan.md</code>, line 28]</p>
+<p><strong>The Core Problem:</strong> How to abstract database access to enable testing, reduce coupling, and follow the Dependency Inversion Principle? [Planning: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/02-implementation-plan.md">02-implementation-plan.md</a>, line 28]</p>
 <p><strong>Decision Drivers:</strong>
-* Enable unit testing with mock/fake implementations [Source: <code>03-testing-strategy.md</code>]
+* Enable unit testing with mock/fake implementations [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/03-testing-strategy.md">03-testing-strategy.md</a>]
 * Eliminate tight coupling to LanceDB [Goal: framework independence]
 * Separate business logic from infrastructure [Principle: separation of concerns]
 * Industry pattern (Repository Pattern from DDD) [Source: Knowledge Base: "Domain-Driven Design"]
@@ -2939,7 +2939,7 @@
 <h2 id="decision-outcome">Decision Outcome<a class="headerlink" href="#decision-outcome" title="Permanent link">&para;</a></h2>
 <p><strong>Chosen option:</strong> "Fine-Grained Repositories (Option 1)", because it provides clear responsibility boundaries, enables focused testing, and follows single responsibility principle.</p>
 <h3 id="repository-interfaces">Repository Interfaces<a class="headerlink" href="#repository-interfaces" title="Permanent link">&para;</a></h3>
-<p><strong>Defined in Domain Layer:</strong> [Source: <code>02-implementation-plan.md</code>, lines 183-424]</p>
+<p><strong>Defined in Domain Layer:</strong> [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/02-implementation-plan.md">02-implementation-plan.md</a>, lines 183-424]</p>
 <p><strong>IChunkRepository:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kd">interface</span><span class="w"> </span><span class="nx">IChunkRepository</span><span class="w"> </span><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nx">searchByVector</span><span class="p">(</span><span class="nx">embedding</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">[],</span><span class="w"> </span><span class="nx">limit</span><span class="o">:</span><span class="w"> </span><span class="kt">number</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="nx">Chunk</span><span class="p">[]</span><span class="o">&gt;</span><span class="p">;</span>
@@ -2967,11 +2967,11 @@
 </code></pre></div>
 [Source: <code>src/domain/interfaces/repositories/catalog-repository.ts</code>]</p>
 <h3 id="design-decisions">Design Decisions<a class="headerlink" href="#design-decisions" title="Permanent link">&para;</a></h3>
-<p><strong>1. Method-Per-Query API:</strong> [Source: <code>02-implementation-plan.md</code>, line 23]
+<p><strong>1. Method-Per-Query API:</strong> [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/02-implementation-plan.md">02-implementation-plan.md</a>, line 23]
 - Explicit methods like <code>searchByVector()</code>, <code>findByName()</code>
 - Type-safe parameters and return types
 - Self-documenting interface</p>
-<p><strong>2. Domain Models:</strong> [Source: <code>02-implementation-plan.md</code>, lines 86-155]
+<p><strong>2. Domain Models:</strong> [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/02-implementation-plan.md">02-implementation-plan.md</a>, lines 86-155]
 - <code>Chunk</code>, <code>Concept</code>, <code>SearchResult</code> types in domain layer
 - Framework-independent types
 - No LanceDB types in interfaces</p>
@@ -2981,7 +2981,7 @@
 - Clean boundary between layers</p>
 <h3 id="consequences">Consequences<a class="headerlink" href="#consequences" title="Permanent link">&para;</a></h3>
 <p><strong>Positive:</strong>
-* <strong>Testability:</strong> Can inject fake repositories [Benefit: <code>03-testing-strategy.md</code>]
+* <strong>Testability:</strong> Can inject fake repositories [Benefit: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/03-testing-strategy.md">03-testing-strategy.md</a>]
 * <strong>32 unit tests added:</strong> Using mock repositories [Result: <code>PR-DESCRIPTION.md</code>, line 66]
 * <strong>Decoupling:</strong> Tools don't depend on LanceDB [Benefit: independence]
 * <strong>Swappable:</strong> Can change database without touching domain [Flexibility: future-proof]
@@ -3002,7 +3002,7 @@
 - <strong>5 integration tests:</strong> Test real repository implementations<br />
 - <strong>100% passing:</strong> All tests pass with repository pattern
 - <strong>Mock repositories:</strong> Implemented in <code>src/__tests__/test-helpers/mock-repositories.ts</code></p>
-<p><strong>Implementation Verified:</strong> [Source: <code>06-complete-summary.md</code>, infrastructure layer]
+<p><strong>Implementation Verified:</strong> [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/06-complete-summary.md">06-complete-summary.md</a>, infrastructure layer]
 - <code>src/infrastructure/lancedb/chunks-repository.ts</code> - Implements IChunkRepository
 - <code>src/infrastructure/lancedb/concepts-repository.ts</code> - Implements IConceptRepository
 - <code>src/infrastructure/lancedb/catalog-repository.ts</code> - Implements ICatalogRepository</p>
@@ -3151,7 +3151,7 @@
 <p><strong>Confidence Level:</strong> HIGH
 <strong>Attribution:</strong>
 - Planning docs: November 14, 2024
-- Design documented in: 02-implementation-plan.md lines 28-424</p>
+- Design documented in: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/02-implementation-plan.md">02-implementation-plan.md</a> lines 28-424</p>
 <p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
 
 

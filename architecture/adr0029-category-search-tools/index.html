@@ -2901,11 +2901,11 @@
 <strong>Deciders:</strong> concept-rag Engineering Team<br />
 <strong>Technical Story:</strong> Category Search Feature (November 19, 2025)</p>
 <p><strong>Sources:</strong>
-- Planning: .ai/planning/2025-11-19-category-search-feature/
+- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/">2025-11-19-category-search-feature</a>
 - Git Commits: d4ce00a4e6417a1d966eb97f624175cf6800baa3, f6e7c371de6d631905468c55e540210893336a13 (November 18-19, 2024)</p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
 <p>Users had 46 auto-extracted categories [ADR-0030] but no way to browse documents by category [Gap: missing functionality]. Existing tools were text-search focused (catalog_search, concept_search) but not category-focused [Limitation: no domain browsing]. Users needed domain-based navigation ("show me all distributed systems books") [Use case: category browsing].</p>
-<p><strong>The Core Problem:</strong> How to enable users to discover and browse documents by domain/category? [Planning: <code>.ai/planning/2025-11-19-category-search-feature/05-category-search-tool.md</code>]</p>
+<p><strong>The Core Problem:</strong> How to enable users to discover and browse documents by domain/category? [Planning: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-19-category-search-feature/05-category-search-tool.md">05-category-search-tool.md</a>]</p>
 <p><strong>Decision Drivers:</strong>
 * 46 categories exist but not accessible [Gap: unused data]
 * Domain-based browsing needed [Use case: "browse by topic"]
@@ -2923,7 +2923,7 @@
 <h2 id="decision-outcome">Decision Outcome<a class="headerlink" href="#decision-outcome" title="Permanent link">&para;</a></h2>
 <p><strong>Chosen option:</strong> "Three Specialized Tools (Option 1)", because it follows the project's pattern of specialized tools optimized for specific use cases [Philosophy: ADR-0031], provides clear interfaces for each operation, and enables AI agents to select the right tool for their intent.</p>
 <h3 id="three-tools-implemented">Three Tools Implemented<a class="headerlink" href="#three-tools-implemented" title="Permanent link">&para;</a></h3>
-<p><strong>Tool 1: category_search</strong> [Source: <code>.ai/planning/2025-11-19-category-search-feature/IMPLEMENTATION-COMPLETE.md</code>, line 67]
+<p><strong>Tool 1: category_search</strong> [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-19-category-search-feature/IMPLEMENTATION-COMPLETE.md">IMPLEMENTATION-COMPLETE.md</a>, line 67]
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nx">name</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;category_search&quot;</span><span class="p">,</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nx">description</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Find documents by category. Browse documents in a specific domain.&quot;</span><span class="p">,</span>
@@ -3089,7 +3089,7 @@ Each tool has detailed description guiding AI agent usage:
 - Planning docs: November 18-19, 2024
 - Git commits: d4ce00a4, f6e7c371
 - Testing: IMPLEMENTATION-COMPLETE.md lines 32-38</p>
-<p><strong>Traceability:</strong> .ai/planning/2025-11-19-category-search-feature/</p>
+<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/">2025-11-19-category-search-feature</a></p>
 
 
 
