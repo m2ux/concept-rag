@@ -29,7 +29,7 @@ engineering (this branch)
 │   └── templates/            # Reusable templates
 ├── agent/                    # Agent-related submodules
 │   ├── workflows/            # Submodule → m2ux/agent-workflows (public)
-│   └── metadata/             # Submodule → m2ux/ai-metadata (private)
+│   └── metadata/             # Submodule (private)
 └── scripts/                  # Utility scripts
     ├── update-workflows.sh   # Update workflows to specific version
     └── update-metadata.sh    # Update metadata to latest
