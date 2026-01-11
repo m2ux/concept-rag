@@ -6,14 +6,14 @@ This branch contains engineering artifacts for the concept-rag project. It maint
 
 | Resource | Description |
 |----------|-------------|
-| [ADRs](artifacts/adr/) | Architecture Decision Records |
-| [Work Package Plans](artifacts/specs/) | Feature/enhancement specifications |
-| [Reviews](artifacts/reviews/) | Code and architecture reviews |
-| [Templates](artifacts/templates/) | Reusable documentation templates |
-| [Workflows](workflows/) | Reusable agent workflows (submodule) |
-| [Scripts](scripts/) | Utility scripts for submodule management |
-| [Agent Guidelines](AGENTS.md) | AI agent behavior rules |
-| [Architecture](ARCHITECTURE.md) | Guide for in-repo vs external engineering |
+| [ADRs](./artifacts/adr/) | Architecture Decision Records |
+| [Work Package Plans](./artifacts/specs/) | Feature/enhancement specifications |
+| [Reviews](./artifacts/reviews/) | Code and architecture reviews |
+| [Templates](./artifacts/templates/) | Reusable documentation templates |
+| [Workflows](https://github.com/m2ux/agent-workflows) | Reusable agent workflows (submodule) |
+| [Scripts](./scripts/) | Utility scripts for submodule management |
+| [Agent Guidelines](./AGENTS.md) | AI agent behavior rules |
+| [Architecture](./ARCHITECTURE.md) | Guide for in-repo vs external engineering |
 
 ## Structure
 
