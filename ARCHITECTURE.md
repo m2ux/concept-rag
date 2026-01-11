@@ -205,7 +205,7 @@ engineering/
 │   ├── reviews/          # Code reviews
 │   └── templates/        # Project-specific templates
 ├── workflows/            # Submodule → github.com/m2ux/agent-workflows (public)
-└── private-metadata/     # Submodule → github.com/m2ux/ai-metadata (private)
+└── agent-metadata/     # Submodule → github.com/m2ux/ai-metadata (private)
 ```
 
 **Setting up submodules:**
@@ -213,7 +213,7 @@ engineering/
 ```bash
 # In engineering branch worktree
 git submodule add https://github.com/m2ux/agent-workflows.git workflows
-git submodule add https://github.com/m2ux/ai-metadata.git private-metadata
+git submodule add https://github.com/m2ux/ai-metadata.git agent-metadata
 git commit -m "chore: add workflow and private submodules"
 ```
 

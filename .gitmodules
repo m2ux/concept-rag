@@ -1,7 +1,7 @@
 [submodule "workflows"]
 	path = workflows
 	url = https://github.com/m2ux/agent-workflows.git
-[submodule "private-metadata"]
-	path = private-metadata
+[submodule "agent-metadata"]
+	path = agent-metadata
 	url = https://github.com/m2ux/ai-metadata.git
 	branch = master
