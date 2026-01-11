@@ -16,7 +16,7 @@ This branch contains engineering artifacts for the concept-rag project. It maint
 ## Structure
 
 ```
-planning (this branch)
+engineering (this branch)
 ├── README.md                 # This file
 ├── AGENTS.md                 # AI agent guidelines
 ├── PLANNING-ARCHITECTURE.md  # Documentation of planning scenarios
@@ -31,7 +31,7 @@ planning (this branch)
 
 ### Quick View (GitHub)
 
-Browse directly at: `https://github.com/m2ux/concept-rag/tree/planning`
+Browse directly at: `https://github.com/m2ux/concept-rag/tree/engineering`
 
 ### Local Access via Worktree (Recommended)
 
@@ -41,27 +41,27 @@ For parallel access to planning and code:
 # From your main concept-rag checkout
 cd /path/to/concept-rag
 
-# Add a linked worktree for the planning branch
-git worktree add ../concept-rag-planning planning
+# Add a linked worktree for the engineering branch
+git worktree add ../concept-rag-engineering engineering
 
 # Now you have two directories:
 # - concept-rag/          (main/feature branches - code)
-# - concept-rag-planning/ (planning branch - docs)
+# - concept-rag-engineering/ (engineering branch - docs)
 ```
 
 ### Switching Branches (Alternative)
 
 ```bash
-git checkout planning    # View planning docs
+git checkout engineering    # View planning docs
 git checkout main        # Return to code
 ```
 
 ## Contributing
 
 1. Use the worktree approach for parallel editing
-2. Commit planning artifacts to the `planning` branch
+2. Commit planning artifacts to the `engineering` branch
 3. Keep code changes on `main` or feature branches
-4. Never merge `planning` into `main` (they have no common ancestor)
+4. Never merge `engineering` into `main` (they have no common ancestor)
 
 ## Content Guidelines
 

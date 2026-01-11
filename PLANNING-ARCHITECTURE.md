@@ -25,7 +25,7 @@ For projects where you control the repository structure.
 
 ```bash
 # From the project repository
-git checkout --orphan planning
+git checkout --orphan engineering
 git rm -rf .
 
 # Create structure
@@ -33,19 +33,19 @@ mkdir -p public/adr public/specs public/reviews public/templates
 
 # Add content and commit
 git add .
-git commit -m "docs: initialize planning branch"
-git push -u origin planning
+git commit -m "docs: initialize engineering branch"
+git push -u origin engineering
 ```
 
 **Access via worktree:**
 
 ```bash
 # From main checkout
-git worktree add ../project-planning planning
+git worktree add ../concept-rag-engineering engineering
 
 # Result:
 # project/          → main/feature branches (code)
-# project-planning/ → planning branch (docs)
+# project-planning/ → engineering branch (docs)
 ```
 
 **Example (this repository):**
@@ -56,7 +56,7 @@ concept-rag/                      # Main checkout
 ├── docs/
 └── .git/
 
-concept-rag-planning/             # Worktree → planning branch
+concept-rag-engineering/             # Worktree → engineering branch
 ├── README.md
 ├── AGENTS.md
 ├── PLANNING-ARCHITECTURE.md
@@ -69,7 +69,7 @@ concept-rag-planning/             # Worktree → planning branch
 
 **GitHub URLs:**
 - Code: `https://github.com/owner/repo/tree/main`
-- Planning: `https://github.com/owner/repo/tree/planning`
+- Planning: `https://github.com/owner/repo/tree/engineering`
 
 ---
 
@@ -125,9 +125,9 @@ git push -u origin project-name
 git clone git@github.com:you/my-planning.git
 cd my-planning
 
-# Add worktrees for each project's planning branch
-git worktree add ../external-project-planning external-project
-git worktree add ../another-project-planning another-project
+# Add worktrees for each project's engineering branch
+git worktree add ../concept-rag-engineering engineering external-project
+git worktree add ../concept-rag-engineering engineering another-project
 ```
 
 **GitHub URLs:**
@@ -141,7 +141,7 @@ git worktree add ../another-project-planning another-project
 Both scenarios use the same directory structure:
 
 ```
-planning branch (or orphan branch in planning repo)
+engineering branch (or orphan branch in planning repo)
 ├── README.md                 # Navigation guide
 ├── AGENTS.md                 # AI agent guidelines (optional)
 ├── PLANNING-ARCHITECTURE.md  # This document (optional)
@@ -166,10 +166,10 @@ planning branch (or orphan branch in planning repo)
 
 | Aspect | Scenario A (In-Repo) | Scenario B (External) |
 |--------|---------------------|----------------------|
-| Planning location | Same repo, `planning` branch | Separate repo, project-specific branch |
-| GitHub URL | `repo/tree/planning` | `planning-repo/tree/project-name` |
+| Planning location | Same repo, `engineering` branch | Separate repo, project-specific branch |
+| GitHub URL | `repo/tree/engineering` | `planning-repo/tree/project-name` |
 | Access control | Inherits from main repo | Independent repo permissions |
-| Worktree setup | `git worktree add ../proj-planning planning` | Clone + worktree per project |
+| Worktree setup | `git worktree add ../concept-rag-engineering engineering` | Clone + worktree per project |
 | CI/CD integration | Same repo, easy | Cross-repo, requires setup |
 | Best for | Projects you own | External contributions |
 
@@ -177,14 +177,14 @@ planning branch (or orphan branch in planning repo)
 
 ### Content Guidelines
 
-**Include in planning branch:**
+**Include in engineering branch:**
 - ✅ Architecture Decision Records (ADRs)
 - ✅ Work package plans and specifications
 - ✅ Code and architecture reviews
 - ✅ Agent guidelines and templates
 - ✅ Roadmaps and design documents
 
-**Exclude from planning branch:**
+**Exclude from engineering branch:**
 - ❌ Chat history or raw AI conversation logs
 - ❌ References to other private projects
 - ❌ Sensitive paths, credentials, or API keys
