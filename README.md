@@ -11,6 +11,7 @@ This branch contains engineering artifacts for the concept-rag project. It maint
 | [Reviews](artifacts/reviews/) | Code and architecture reviews |
 | [Templates](artifacts/templates/) | Reusable documentation templates |
 | [Workflows](workflows/) | Reusable agent workflows (submodule) |
+| [Scripts](scripts/) | Utility scripts for submodule management |
 | [Agent Guidelines](AGENTS.md) | AI agent behavior rules |
 | [Architecture](ARCHITECTURE.md) | Guide for in-repo vs external engineering |
 
@@ -27,7 +28,10 @@ engineering (this branch)
 │   ├── reviews/              # Code and architecture reviews
 │   └── templates/            # Reusable templates
 ├── workflows/                # Submodule → m2ux/agent-workflows (public)
-└── private-metadata/         # Submodule → m2ux/ai-metadata (private)
+├── private-metadata/         # Submodule → m2ux/ai-metadata (private)
+└── scripts/                  # Utility scripts
+    ├── update-workflows.sh   # Update workflows to specific version
+    └── update-metadata.sh    # Update private-metadata to latest
 ```
 
 ## Submodules
