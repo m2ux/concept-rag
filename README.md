@@ -2,6 +2,17 @@
 
 This branch contains engineering artifacts for the concept-rag project. It maintains **separate history** from the code (`main` branch) to keep code commits clean while preserving full planning context.
 
+## Quick Links
+
+| Resource | Description |
+|----------|-------------|
+| [ADRs](public/adr/) | 56 Architecture Decision Records |
+| [Work Package Plans](public/specs/) | 62 feature/enhancement specifications |
+| [Reviews](public/reviews/) | Code and architecture reviews |
+| [Templates](public/templates/) | Reusable documentation templates |
+| [Agent Guidelines](AGENTS.md) | AI agent behavior rules |
+| [Planning Architecture](PLANNING-ARCHITECTURE.md) | Guide for in-repo vs external planning |
+
 ## Structure
 
 ```
@@ -10,8 +21,8 @@ planning (this branch)
 ├── AGENTS.md                 # AI agent guidelines
 ├── PLANNING-ARCHITECTURE.md  # Documentation of planning scenarios
 └── public/
-    ├── adr/                  # Architecture Decision Records
-    ├── specs/                # Work package plans and specifications
+    ├── adr/                  # Architecture Decision Records (56 files)
+    ├── specs/                # Work package plans (62 folders)
     ├── reviews/              # Code and architecture reviews
     └── templates/            # Reusable templates
 ```

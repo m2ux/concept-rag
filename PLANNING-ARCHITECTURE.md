@@ -1,0 +1,237 @@
+# Planning Architecture Guide
+
+This document describes the architecture for managing engineering artifacts (ADRs, work package plans, reviews) alongside code repositories using Git orphan branches.
+
+## Overview
+
+Engineering artifacts should be:
+- **Version-controlled** — Full history of planning decisions
+- **Co-located** — Accessible from the same repository as code (when possible)
+- **Separated** — Planning history distinct from code history
+- **Accessible** — Browsable via GitHub and locally via worktrees
+
+## Two Planning Scenarios
+
+### Scenario A: In-Repo Planning (Projects You Control)
+
+For projects where you control the repository structure.
+
+**When to use:**
+- You own or maintain the repository
+- You can create new branches
+- You want planning docs at the same GitHub URL as code
+
+**Setup:**
+
+```bash
+# From the project repository
+git checkout --orphan planning
+git rm -rf .
+
+# Create structure
+mkdir -p public/adr public/specs public/reviews public/templates
+
+# Add content and commit
+git add .
+git commit -m "docs: initialize planning branch"
+git push -u origin planning
+```
+
+**Access via worktree:**
+
+```bash
+# From main checkout
+git worktree add ../project-planning planning
+
+# Result:
+# project/          → main/feature branches (code)
+# project-planning/ → planning branch (docs)
+```
+
+**Example (this repository):**
+
+```
+concept-rag/                      # Main checkout
+├── src/
+├── docs/
+└── .git/
+
+concept-rag-planning/             # Worktree → planning branch
+├── README.md
+├── AGENTS.md
+├── PLANNING-ARCHITECTURE.md
+└── public/
+    ├── adr/                      # Architecture Decision Records
+    ├── specs/                    # Work package plans
+    ├── reviews/                  # Code reviews
+    └── templates/                # Reusable templates
+```
+
+**GitHub URLs:**
+- Code: `https://github.com/owner/repo/tree/main`
+- Planning: `https://github.com/owner/repo/tree/planning`
+
+---
+
+### Scenario B: External Planning Repository (Projects You Contribute To)
+
+For projects where you cannot or should not add branches (e.g., external open-source projects, client repositories).
+
+**When to use:**
+- You contribute to but don't control the repository
+- The project has strict branch policies
+- You want to keep planning separate from the main project
+
+**Setup:**
+
+```bash
+# Create a dedicated planning repository
+mkdir project-planning && cd project-planning
+git init
+
+# Create orphan branch for the project
+git checkout --orphan project-name
+mkdir -p public/adr public/specs public/reviews
+
+# Add content and commit
+git add .
+git commit -m "docs: initialize planning for project-name"
+git push -u origin project-name
+```
+
+**Structure:**
+
+```
+~/projects/
+├── external-project/             # Main project (external repo)
+│   ├── src/
+│   └── .git/
+│
+└── my-planning/                  # Your planning repository
+    ├── .git/
+    ├── external-project/         # Orphan branch for this project
+    │   └── public/
+    │       ├── adr/
+    │       ├── specs/
+    │       └── reviews/
+    └── another-project/          # Orphan branch for another project
+        └── public/
+```
+
+**Access via worktree:**
+
+```bash
+# Clone planning repo
+git clone git@github.com:you/my-planning.git
+cd my-planning
+
+# Add worktrees for each project's planning branch
+git worktree add ../external-project-planning external-project
+git worktree add ../another-project-planning another-project
+```
+
+**GitHub URLs:**
+- Code: `https://github.com/org/external-project`
+- Planning: `https://github.com/you/my-planning/tree/external-project`
+
+---
+
+## Directory Structure
+
+Both scenarios use the same directory structure:
+
+```
+planning branch (or orphan branch in planning repo)
+├── README.md                 # Navigation guide
+├── AGENTS.md                 # AI agent guidelines (optional)
+├── PLANNING-ARCHITECTURE.md  # This document (optional)
+└── public/
+    ├── adr/                  # Architecture Decision Records
+    │   ├── README.md
+    │   ├── adr0001-*.md
+    │   └── ...
+    ├── specs/                # Work package plans
+    │   ├── YYYY-MM-DD-feature-name/
+    │   │   ├── START-HERE.md
+    │   │   ├── README.md
+    │   │   └── 01-work-package-plan.md
+    │   └── ...
+    ├── reviews/              # Code and architecture reviews
+    │   └── *.md
+    └── templates/            # Reusable templates
+        └── *.md
+```
+
+## Workflow Comparison
+
+| Aspect | Scenario A (In-Repo) | Scenario B (External) |
+|--------|---------------------|----------------------|
+| Planning location | Same repo, `planning` branch | Separate repo, project-specific branch |
+| GitHub URL | `repo/tree/planning` | `planning-repo/tree/project-name` |
+| Access control | Inherits from main repo | Independent repo permissions |
+| Worktree setup | `git worktree add ../proj-planning planning` | Clone + worktree per project |
+| CI/CD integration | Same repo, easy | Cross-repo, requires setup |
+| Best for | Projects you own | External contributions |
+
+## Best Practices
+
+### Content Guidelines
+
+**Include in planning branch:**
+- ✅ Architecture Decision Records (ADRs)
+- ✅ Work package plans and specifications
+- ✅ Code and architecture reviews
+- ✅ Agent guidelines and templates
+- ✅ Roadmaps and design documents
+
+**Exclude from planning branch:**
+- ❌ Chat history or raw AI conversation logs
+- ❌ References to other private projects
+- ❌ Sensitive paths, credentials, or API keys
+- ❌ Source code (belongs on main branch)
+
+### Path Hygiene
+
+When migrating content, sanitize paths:
+
+| Original | Replacement |
+|----------|-------------|
+| `/home/user/projects/repo` | `.` or relative path |
+| `/home/user/.config` | `~/.config` |
+| Absolute paths to ebooks | `~/Documents/...` |
+| Other project names | `[other-project]` or generic name |
+
+### Parallel Editing
+
+Use git worktrees for simultaneous access:
+
+```bash
+# Terminal 1: Working on code (feature branch)
+cd ~/projects/concept-rag
+git checkout feat/new-feature
+# ... make code changes ...
+
+# Terminal 2: Updating planning docs
+cd ~/projects/concept-rag-planning
+# ... update specs, create ADR ...
+git commit -m "docs(adr): add ADR for new feature"
+git push
+```
+
+## Migration Checklist
+
+- [ ] Create orphan branch (or dedicated planning repo)
+- [ ] Set up directory structure (`public/adr/`, `public/specs/`, etc.)
+- [ ] Migrate ADRs
+- [ ] Migrate work package plans (filter chat history first)
+- [ ] Migrate reviews and templates
+- [ ] Sanitize paths (remove absolute/sensitive paths)
+- [ ] Set up git worktree for parallel access
+- [ ] Push to remote
+- [ ] Update README with navigation
+
+## Future Enhancements
+
+- **Private submodule**: For chat history and sensitive research (Phase 2)
+- **Prompts submodule**: For version-controlled prompt templates (Phase 3)
+- **CI/CD integration**: Automated documentation publishing
