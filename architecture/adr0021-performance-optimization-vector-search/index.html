@@ -2918,9 +2918,9 @@
 <strong>Deciders:</strong> Engineering Team<br />
 <strong>Technical Story:</strong> Architecture Refactoring - Critical Performance Fix (November 14, 2025)</p>
 <p><strong>Sources:</strong>
-- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
+- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
-<p>Concept search loaded ALL chunks from database (~10K+ chunks) and filtered in memory, taking 8-12 seconds and using ~5GB memory [Problem: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md">01-architecture-review-analysis.md</a>, lines 178-194]. This O(n) algorithm was discovered during architecture review and was the MOST CRITICAL issue to fix.</p>
+<p>Concept search loaded ALL chunks from database (~10K+ chunks) and filtered in memory, taking 8-12 seconds and using ~5GB memory [Problem: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md">01-architecture-review-analysis.md</a>, lines 178-194]. This O(n) algorithm was discovered during architecture review and was the MOST CRITICAL issue to fix.</p>
 <p><strong>The Code Problem:</strong> [Source: <code>01-architecture-review-analysis.md</code>, lines 178-194]
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// Load ALL chunks and filter in memory</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kd">const</span><span class="w"> </span><span class="nx">totalCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">chunksTable</span><span class="p">.</span><span class="nx">countRows</span><span class="p">();</span><span class="w">  </span><span class="c1">// e.g., 100,000</span>
@@ -3132,7 +3132,7 @@
 - Planning docs: November 14, 2024
 - Performance metrics: PR-DESCRIPTION.md lines 19-25
 - Problem identified: 01-architecture-review-analysis.md lines 178-194</p>
-<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
+<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
 
 
 

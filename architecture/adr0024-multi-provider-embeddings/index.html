@@ -2918,11 +2918,11 @@
 <strong>Deciders:</strong> concept-rag Engineering Team<br />
 <strong>Technical Story:</strong> Alternative Embedding Providers (November 15, 2025)</p>
 <p><strong>Sources:</strong>
-- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-15-alternative-embedding-providers/">2025-11-15-alternative-embedding-providers</a>
+- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/">2025-11-15-alternative-embedding-providers</a>
 - Git Commit: b05192e178dad86e7960b86b10699314272c8913 (November 15, 2024)</p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
 <p>The system used simple hash-based embeddings (local, zero cost) but lacked true semantic understanding [Limitation: hash embeddings]. For production semantic search quality, real transformer-based embeddings needed [Requirement: quality improvement], but users needed choice between cost (free local) vs. quality (API) and different providers for flexibility [Use case: options].</p>
-<p><strong>The Core Problem:</strong> How to support multiple embedding providers (OpenAI, Voyage AI, Ollama, local) with configuration-based switching? [Planning: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-15-alternative-embedding-providers/01-implementation-plan.md">01-implementation-plan.md</a>]</p>
+<p><strong>The Core Problem:</strong> How to support multiple embedding providers (OpenAI, Voyage AI, Ollama, local) with configuration-based switching? [Planning: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/01-implementation-plan.md">01-implementation-plan.md</a>]</p>
 <p><strong>Decision Drivers:</strong>
 * User choice: cost vs. quality trade-off [Requirement: flexibility]
 * Avoid vendor lock-in [Risk: single provider dependency]
@@ -2987,7 +2987,7 @@
 * <strong>Factory pattern:</strong> Standard design pattern [Architecture: conventional]
 * <strong>Environment-based:</strong> Configuration via env vars [Deployment: 12-factor app]</p>
 <h3 id="confirmation">Confirmation<a class="headerlink" href="#confirmation" title="Permanent link">&para;</a></h3>
-<p><strong>Implementation Status:</strong> [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-15-alternative-embedding-providers/README.md">README.md</a>]
+<p><strong>Implementation Status:</strong> [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/README.md">README.md</a>]
 - Planning complete November 15, 2025
 - Implementation in progress
 - Feature branch created</p>
@@ -3108,7 +3108,7 @@
 <strong>Attribution:</strong>
 - Planning docs: November 15, 2024
 - Git commit: b05192e1</p>
-<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-15-alternative-embedding-providers/">2025-11-15-alternative-embedding-providers</a></p>
+<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/">2025-11-15-alternative-embedding-providers</a></p>
 
 
 

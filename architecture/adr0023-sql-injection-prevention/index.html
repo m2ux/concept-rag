@@ -2929,9 +2929,9 @@
 <strong>Deciders:</strong> Engineering Team<br />
 <strong>Technical Story:</strong> Architecture Refactoring - Security Fix (November 14, 2025)</p>
 <p><strong>Sources:</strong>
-- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
+- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
-<p>During architecture review, SQL injection vulnerability discovered in concept search WHERE clauses [Security Issue: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md">01-architecture-review-analysis.md</a>, SQL injection section]. User input was directly interpolated into SQL queries without proper escaping [Problem: string concatenation in WHERE clauses].</p>
+<p>During architecture review, SQL injection vulnerability discovered in concept search WHERE clauses [Security Issue: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md">01-architecture-review-analysis.md</a>, SQL injection section]. User input was directly interpolated into SQL queries without proper escaping [Problem: string concatenation in WHERE clauses].</p>
 <p><strong>Vulnerable Code Example:</strong> [Source: Pre-refactoring <code>concept_search.ts</code>]
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// VULNERABLE: Direct string interpolation</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kd">const</span><span class="w"> </span><span class="nx">results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">conceptTable</span>
@@ -3139,7 +3139,7 @@
 - Planning docs: November 14, 2024
 - Security fix documented: PR-DESCRIPTION.md lines 47-49
 - Investigation: 10-parameterized-sql-investigation.md</p>
-<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
+<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
 
 
 

@@ -2940,10 +2940,10 @@
 <strong>Deciders:</strong> Engineering Team<br />
 <strong>Technical Story:</strong> Seeding and Enrichment Improvements (November 12, 2025)</p>
 <p><strong>Sources:</strong>
-- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-12-seeding-and-enrichment-guides/">2025-11-12-seeding-and-enrichment-guides</a></p>
+- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-12-seeding-and-enrichment-guides/">2025-11-12-seeding-and-enrichment-guides</a></p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
 <p>Initial seeding processed all documents from scratch every time, requiring hours of processing and API costs for re-indexing unchanged documents [Problem: inefficient re-processing]. For a personal knowledge base that grows incrementally (adding new books/papers), full re-seeding was impractical. The system needed to detect which documents were already processed and skip them, while still handling updates and gaps.</p>
-<p><strong>The Core Problem:</strong> How to efficiently add new documents or fix gaps without reprocessing the entire corpus? [Planning: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-12-seeding-and-enrichment-guides/INCREMENTAL_SEEDING_GUIDE.md">INCREMENTAL_SEEDING_GUIDE.md</a>]</p>
+<p><strong>The Core Problem:</strong> How to efficiently add new documents or fix gaps without reprocessing the entire corpus? [Planning: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-12-seeding-and-enrichment-guides/INCREMENTAL_SEEDING_GUIDE.md">INCREMENTAL_SEEDING_GUIDE.md</a>]</p>
 <p><strong>Discovery:</strong> During investigation, found 57 of 122 documents had catalog entries but NO chunks (incomplete processing) [Source: <code>INCREMENTAL_SEEDING_GUIDE.md</code>, lines 5-11]</p>
 <p><strong>Decision Drivers:</strong>
 * Adding new documents shouldn't reprocess existing ones [Efficiency: time and cost]
@@ -3175,7 +3175,7 @@
 <strong>Attribution:</strong>
 - Planning docs: November 12, 2024
 - Metrics from: INCREMENTAL_SEEDING_GUIDE.md lines 5, 128-145</p>
-<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-12-seeding-and-enrichment-guides/">2025-11-12-seeding-and-enrichment-guides</a></p>
+<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-12-seeding-and-enrichment-guides/">2025-11-12-seeding-and-enrichment-guides</a></p>
 
 
 

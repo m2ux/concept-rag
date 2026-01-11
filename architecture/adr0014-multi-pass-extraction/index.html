@@ -2907,7 +2907,7 @@
 <strong>Deciders:</strong> Engineering Team<br />
 <strong>Technical Story:</strong> Document Processing Improvements (November 12, 2025)</p>
 <p><strong>Sources:</strong>
-- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-12-document-processing-improvements/">2025-11-12-document-processing-improvements</a>
+- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-12-document-processing-improvements/">2025-11-12-document-processing-improvements</a>
 - Git Commit: 82212a34ccbcea86a42a87535cb8c63315769165 (October 15, 2024)</p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
 <p>Some documents in the corpus are very large (&gt;100,000 tokens) [Observation: large technical books]. LLMs have context window limits, and Claude Sonnet 4.5's context window, while large, would incur significant costs for processing entire books in a single API call [Constraint: token limits and costs]. Additionally, single-pass extraction on very large documents might miss concepts or produce lower-quality results due to attention dilution [Problem: quality degradation].</p>
@@ -2929,7 +2929,7 @@
 <h2 id="decision-outcome">Decision Outcome<a class="headerlink" href="#decision-outcome" title="Permanent link">&para;</a></h2>
 <p><strong>Chosen option:</strong> "Multi-Pass Extraction (Option 1)"</p>
 <h3 id="implementation">Implementation<a class="headerlink" href="#implementation" title="Permanent link">&para;</a></h3>
-<p><strong>Strategy:</strong> [Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-12-document-processing-improvements/">planning</a>; README states "Large Document Support"]</p>
+<p><strong>Strategy:</strong> [Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-12-document-processing-improvements/">planning</a>; README states "Large Document Support"]</p>
 <p><strong>Thresholds:</strong> [Implementation logic]
 - <strong>&lt;100k tokens:</strong> Single-pass extraction
 - <strong>&gt;100k tokens:</strong> Multi-pass extraction (chunks of ~50k tokens each)</p>
@@ -3094,7 +3094,7 @@
 <strong>Attribution:</strong>
 - Planning docs: November 12, 2024
 - Git commit: 82212a34cc</p>
-<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-12-document-processing-improvements/">2025-11-12-document-processing-improvements</a></p>
+<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-12-document-processing-improvements/">2025-11-12-document-processing-improvements</a></p>
 
 
 

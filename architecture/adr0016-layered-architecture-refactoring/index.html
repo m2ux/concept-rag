@@ -2918,9 +2918,9 @@
 <strong>Deciders:</strong> Engineering Team<br />
 <strong>Technical Story:</strong> Architecture Refactoring (November 14, 2025)</p>
 <p><strong>Sources:</strong>
-- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
+- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
-<p>The codebase had functional architecture but relied on global mutable state via module-level <code>export let</code> declarations for database connections [Problem: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md">01-architecture-review-analysis.md</a>, lines 28-48]. Tools directly imported database tables creating hidden dependencies, race conditions, and making testing impossible without real databases [Issues: lines 42-48]. The architecture review identified 6 critical issues requiring refactoring.</p>
+<p>The codebase had functional architecture but relied on global mutable state via module-level <code>export let</code> declarations for database connections [Problem: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md">01-architecture-review-analysis.md</a>, lines 28-48]. Tools directly imported database tables creating hidden dependencies, race conditions, and making testing impossible without real databases [Issues: lines 42-48]. The architecture review identified 6 critical issues requiring refactoring.</p>
 <p><strong>The Core Problems:</strong> [Source: <code>01-architecture-review-analysis.md</code>, lines 11-21]
 1. ❌ Global mutable state via module-level exports
 2. ❌ No dependency injection - direct imports
@@ -3166,7 +3166,7 @@
 <strong>Attribution:</strong>
 - Planning docs: November 14, 2024
 - Metrics from: PR-DESCRIPTION.md lines 19-25, 63-69</p>
-<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
+<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
 
 
 

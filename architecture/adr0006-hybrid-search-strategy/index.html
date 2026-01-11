@@ -2912,9 +2912,9 @@
 <strong>Deciders:</strong> Engineering Team<br />
 <strong>Technical Story:</strong> Hybrid Search Implementation (October 13, 2025)</p>
 <p><strong>Sources:</strong>
-- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-hybrid-search-implementation/">2025-10-13-hybrid-search-implementation</a></p>
+- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-10-13-hybrid-search-implementation/">2025-10-13-hybrid-search-implementation</a></p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
-<p>The initial vector-only search implementation was missing documents when users searched for books by title [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-10-13-hybrid-search-implementation/SUMMARY.md">SUMMARY.md</a>, lines 56-66]. For example, searching for "Distributed Systems" found only 2 of 4 books with those terms in their titles. The vector embeddings alone didn't give sufficient weight to exact title matches, causing relevant documents to rank poorly or be missed entirely.</p>
+<p>The initial vector-only search implementation was missing documents when users searched for books by title [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-10-13-hybrid-search-implementation/SUMMARY.md">SUMMARY.md</a>, lines 56-66]. For example, searching for "Distributed Systems" found only 2 of 4 books with those terms in their titles. The vector embeddings alone didn't give sufficient weight to exact title matches, causing relevant documents to rank poorly or be missed entirely.</p>
 <p><strong>The Core Problem:</strong> Pure vector search using simple word-hash embeddings doesn't reliably find documents when query terms appear in the title [Planning: <code>SUMMARY.md</code>, lines 32-39].</p>
 <p><strong>Decision Drivers:</strong>
 * Title-based searches failing (found 2/4 books) [Source: <code>SUMMARY.md</code>, lines 56-66]
@@ -3097,7 +3097,7 @@
 - Planning docs: Explicit decision documented October 13, 2024
 - Metrics validated: 2/4 → 4/4 books found (SUMMARY.md lines 56-88)
 - Test results documented in planning folder</p>
-<p><strong>Traceability:</strong> Every metric traces to planning documents in <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-hybrid-search-implementation/">2025-10-13-hybrid-search-implementation</a></p>
+<p><strong>Traceability:</strong> Every metric traces to planning documents in <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-10-13-hybrid-search-implementation/">2025-10-13-hybrid-search-implementation</a></p>
 
 
 
