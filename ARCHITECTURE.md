@@ -175,6 +175,66 @@ engineering branch (or orphan branch in engineering repo)
 
 ## Best Practices
 
+### Content Guidelines
+
+**Direct content (stored in engineering branch):**
+- ✅ Architecture Decision Records (ADRs)
+- ✅ Work package plans and specifications
+- ✅ Code and architecture reviews
+- ✅ Project-specific templates
+- ✅ Roadmaps and design documents
+
+**Via submodules (referenced from engineering branch):**
+- 📦 Agent workflows/prompts → submodule to public `agent-workflows` repo
+- 📦 AI chat history/logs → submodule to private repo
+
+**Exclude entirely:**
+- ❌ References to other private projects
+- ❌ Sensitive paths, credentials, or API keys
+- ❌ Source code (belongs on main branch)
+
+### Submodule Structure
+
+The engineering branch uses submodules for shared and private content:
+
+```
+engineering/
+├── public/
+│   ├── adr/              # Direct: project-specific ADRs
+│   ├── specs/            # Direct: work package plans
+│   └── reviews/          # Direct: code reviews
+├── workflows/            # Submodule → github.com/m2ux/agent-workflows (public)
+└── private/              # Submodule → private history repo
+```
+
+**Setting up submodules:**
+
+```bash
+# In engineering branch worktree
+git submodule add https://github.com/m2ux/agent-workflows.git workflows
+git submodule add <private-repo-url> private
+git commit -m "chore: add workflow and private submodules"
+```
+
+**Cloning with submodules:**
+
+```bash
+git clone --recurse-submodules <repo-url>
+# Or after clone:
+git submodule update --init --recursive
+```
+
+### Path Hygiene
+
+When migrating content, sanitize paths:
+
+| Original | Replacement |
+|----------|-------------|
+| `/home/user/projects/repo` | `.` or relative path |
+| `/home/user/.config` | `~/.config` |
+| Absolute paths to ebooks | `~/Documents/...` |
+| Other project names | `[other-project]` or generic name |
+
 ### Parallel Editing
 
 Use git worktrees for simultaneous access:
