@@ -29,7 +29,7 @@ git checkout --orphan engineering
 git rm -rf .
 
 # Create structure
-mkdir -p artifacts/adr artifacts/specs artifacts/reviews artifacts/templates
+mkdir -p artifacts/adr artifacts/planning artifacts/reviews artifacts/templates
 
 # Add content and commit
 git add .
@@ -91,7 +91,7 @@ git init
 
 # Create orphan branch for the project
 git checkout --orphan project-name
-mkdir -p artifacts/adr artifacts/specs artifacts/reviews
+mkdir -p artifacts/adr artifacts/planning artifacts/reviews
 
 # Add content and commit
 git add .

@@ -7,7 +7,7 @@ This branch contains engineering artifacts for the concept-rag project. It maint
 | Resource | Description |
 |----------|-------------|
 | [ADRs](./artifacts/adr/) | Architecture Decision Records |
-| [Work Package Plans](./artifacts/specs/) | Feature/enhancement specifications |
+| [Work Package Plans](./artifacts/planning/) | Feature/enhancement specifications |
 | [Reviews](./artifacts/reviews/) | Code and architecture reviews |
 | [Templates](./artifacts/templates/) | Reusable documentation templates |
 | [Workflows](https://github.com/m2ux/agent-workflows) | Reusable agent workflows (submodule) |
