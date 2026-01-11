@@ -4,3 +4,4 @@
 [submodule "metadata"]
 	path = metadata
 	url = https://github.com/m2ux/ai-metadata.git
+	branch = master
