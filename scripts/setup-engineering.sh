@@ -7,7 +7,7 @@
 # Structure after running:
 #   concept-rag/
 #   ├── src/                          # Code (main branch)
-#   └── engineering/                  # Engineering docs (from engineering branch)
+#   └── .engineering/                 # Engineering docs (from engineering branch)
 #       ├── artifacts/
 #       ├── agent/
 #       │   ├── workflows/            # Public (m2ux/agent-workflows)
@@ -27,7 +27,7 @@ echo "=== Setting up engineering resources ==="
 echo ""
 
 # --- Engineering branch content ---
-ENGINEERING_DIR="$REPO_ROOT/engineering"
+ENGINEERING_DIR="$REPO_ROOT/.engineering"
 
 if [ -d "$ENGINEERING_DIR" ]; then
     echo "Engineering directory already exists. Updating..."
@@ -40,7 +40,7 @@ else
         https://github.com/m2ux/concept-rag.git "$ENGINEERING_DIR"
 fi
 
-echo "✓ Engineering docs available at: engineering/"
+echo "✓ Engineering docs available at: .engineering/"
 echo ""
 
 # --- Initialize submodules within engineering ---
@@ -64,7 +64,7 @@ else
     cd "$ENGINEERING_DIR"
 fi
 
-echo "✓ Agent workflows available at: engineering/agent/workflows/"
+echo "✓ Agent workflows available at: .engineering/agent/workflows/"
 echo ""
 
 # Agent metadata (private - optional)
@@ -86,7 +86,7 @@ else
         git checkout concept-rag_metadata 2>/dev/null || true
         cd "$ENGINEERING_DIR"
         
-        echo "✓ Agent metadata available at: engineering/agent/metadata/"
+        echo "✓ Agent metadata available at: .engineering/agent/metadata/"
     else
         echo "⚠ Agent metadata skipped (private repo - access denied)"
         echo "  This is expected for non-collaborators."
@@ -99,10 +99,10 @@ echo ""
 echo "=== Setup complete ==="
 echo ""
 echo "Structure:"
-echo "  engineering/                - Engineering docs, ADRs, specs"
-echo "  engineering/agent/workflows - Reusable agent workflows"
+echo "  .engineering/                - Engineering docs, ADRs, specs"
+echo "  .engineering/agent/workflows - Reusable agent workflows"
 if [ -d "$METADATA_DIR" ] && [ "$(ls -A "$METADATA_DIR" 2>/dev/null)" ]; then
-    echo "  engineering/agent/metadata  - Private agent metadata"
+    echo "  .engineering/agent/metadata  - Private agent metadata"
 fi
 echo ""
-echo "Note: The engineering/ folder is gitignored and won't affect your commits."
+echo "Note: The .engineering/ folder is gitignored and won't affect your commits."
