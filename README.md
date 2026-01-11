@@ -27,7 +27,7 @@ engineering (this branch)
 │   ├── specs/                # Work package plans (62 folders)
 │   ├── reviews/              # Code and architecture reviews
 │   └── templates/            # Reusable templates
-├── workflows/                # Submodule → m2ux/agent-workflows (public)
+├── agent-workflows/                # Submodule → m2ux/agent-workflows (public)
 ├── agent-metadata/         # Submodule → m2ux/ai-metadata (private)
 └── scripts/                  # Utility scripts
     ├── update-workflows.sh   # Update workflows to specific version
@@ -40,7 +40,7 @@ This branch includes two submodules:
 
 | Submodule | Repository | Visibility | Strategy |
 |-----------|------------|------------|----------|
-| `workflows/` | [m2ux/agent-workflows](https://github.com/m2ux/agent-workflows) | Public | Pinned to version tag |
+| `agent-workflows/` | [m2ux/agent-workflows](https://github.com/m2ux/agent-workflows) | Public | Pinned to version tag |
 | `agent-metadata/` | m2ux/ai-metadata | Private | Tracks `master` branch |
 
 ### Cloning with Submodules
@@ -53,7 +53,7 @@ git clone --recurse-submodules https://github.com/m2ux/concept-rag.git -b engine
 git submodule update --init --recursive
 ```
 
-**Note:** The `agent-metadata/` submodule requires access to the private repo. Non-collaborators can still use `workflows/`.
+**Note:** The `agent-metadata/` submodule requires access to the private repo. Non-collaborators can still use `agent-workflows/`.
 
 ### Updating Submodules
 
