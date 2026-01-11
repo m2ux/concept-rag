@@ -6,10 +6,10 @@ This branch contains engineering artifacts for the concept-rag project. It maint
 
 | Resource | Description |
 |----------|-------------|
-| [ADRs](public/adr/) | 56 Architecture Decision Records |
-| [Work Package Plans](public/specs/) | 62 feature/enhancement specifications |
-| [Reviews](public/reviews/) | Code and architecture reviews |
-| [Templates](public/templates/) | Reusable documentation templates |
+| [ADRs](artifacts/adr/) | 56 Architecture Decision Records |
+| [Work Package Plans](artifacts/specs/) | 62 feature/enhancement specifications |
+| [Reviews](artifacts/reviews/) | Code and architecture reviews |
+| [Templates](artifacts/templates/) | Reusable documentation templates |
 | [Agent Guidelines](AGENTS.md) | AI agent behavior rules |
 | [Architecture](ARCHITECTURE.md) | Guide for in-repo vs external engineering |
 
@@ -19,8 +19,8 @@ This branch contains engineering artifacts for the concept-rag project. It maint
 engineering (this branch)
 ├── README.md                 # This file
 ├── AGENTS.md                 # AI agent guidelines
-├── ARCHITECTURE.md  # Documentation of engineering scenarios
-└── public/
+├── ARCHITECTURE.md           # Documentation of engineering scenarios
+└── artifacts/                # Output artifacts from engineering process
     ├── adr/                  # Architecture Decision Records (56 files)
     ├── specs/                # Work package plans (62 folders)
     ├── reviews/              # Code and architecture reviews

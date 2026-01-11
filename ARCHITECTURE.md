@@ -29,7 +29,7 @@ git checkout --orphan engineering
 git rm -rf .
 
 # Create structure
-mkdir -p public/adr public/specs public/reviews public/templates
+mkdir -p artifacts/adr artifacts/specs artifacts/reviews artifacts/templates
 
 # Add content and commit
 git add .
@@ -59,8 +59,8 @@ concept-rag/                      # Main checkout
 concept-rag-engineering/             # Worktree → engineering branch
 ├── README.md
 ├── AGENTS.md
-├── PLANNING-ARCHITECTURE.md
-└── public/
+├── ARCHITECTURE.md
+└── artifacts/
     ├── adr/                      # Architecture Decision Records
     ├── specs/                    # Work package plans
     ├── reviews/                  # Code reviews
@@ -91,7 +91,7 @@ git init
 
 # Create orphan branch for the project
 git checkout --orphan project-name
-mkdir -p public/adr public/specs public/reviews
+mkdir -p artifacts/adr artifacts/specs artifacts/reviews
 
 # Add content and commit
 git add .
@@ -110,12 +110,12 @@ git push -u origin project-name
 └── my-engineering/                  # Your engineering repository
     ├── .git/
     ├── external-project/         # Orphan branch for this project
-    │   └── public/
+    │   └── artifacts/
     │       ├── adr/
     │       ├── specs/
     │       └── reviews/
     └── another-project/          # Orphan branch for another project
-        └── public/
+        └── artifacts/
 ```
 
 **Access via worktree:**
@@ -144,8 +144,8 @@ Both scenarios use the same directory structure:
 engineering branch (or orphan branch in engineering repo)
 ├── README.md                 # Navigation guide
 ├── AGENTS.md                 # AI agent guidelines (optional)
-├── PLANNING-ARCHITECTURE.md  # This document (optional)
-└── public/
+├── ARCHITECTURE.md           # This document (optional)
+└── artifacts/                # Output artifacts from engineering process
     ├── adr/                  # Architecture Decision Records
     │   ├── README.md
     │   ├── adr0001-*.md
@@ -193,16 +193,17 @@ engineering branch (or orphan branch in engineering repo)
 - ❌ Sensitive paths, credentials, or API keys
 - ❌ Source code (belongs on main branch)
 
-### Submodule Structure
+### Directory Structure
 
-The engineering branch uses submodules for shared and private content:
+The engineering branch organizes content as follows:
 
 ```
 engineering/
-├── public/
-│   ├── adr/              # Direct: project-specific ADRs
-│   ├── specs/            # Direct: work package plans
-│   └── reviews/          # Direct: code reviews
+├── artifacts/            # Output artifacts from engineering process
+│   ├── adr/              # Architecture Decision Records
+│   ├── specs/            # Work package plans
+│   ├── reviews/          # Code reviews
+│   └── templates/        # Project-specific templates
 ├── workflows/            # Submodule → github.com/m2ux/agent-workflows (public)
 └── private/              # Submodule → private history repo
 ```
