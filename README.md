@@ -101,22 +101,6 @@ git checkout main        # Return to code
 3. Keep code changes on `main` or feature branches
 4. Never merge `engineering` into `main` (they have no common ancestor)
 
-## Content Guidelines
-
-### What Belongs Here
-
-- ✅ Architecture Decision Records (ADRs)
-- ✅ Work package plans and specifications
-- ✅ Code and architecture reviews
-- ✅ Agent guidelines and templates
-
-### What Does NOT Belong Here
-
-- ❌ Chat history or AI conversation logs
-- ❌ References to other private projects
-- ❌ Sensitive paths or credentials
-- ❌ Source code (belongs on `main`)
-
 ---
 
 **Note:** This is an orphan branch with no commit history overlap with `main`. This is intentional to keep engineering history separate from code history.
