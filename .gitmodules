@@ -1,0 +1,3 @@
+[submodule "workflows"]
+	path = workflows
+	url = https://github.com/m2ux/agent-workflows.git
