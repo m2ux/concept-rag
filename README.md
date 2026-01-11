@@ -6,10 +6,11 @@ This branch contains engineering artifacts for the concept-rag project. It maint
 
 | Resource | Description |
 |----------|-------------|
-| [ADRs](artifacts/adr/) | 56 Architecture Decision Records |
-| [Work Package Plans](artifacts/specs/) | 62 feature/enhancement specifications |
+| [ADRs](artifacts/adr/) | Architecture Decision Records |
+| [Work Package Plans](artifacts/specs/) | Feature/enhancement specifications |
 | [Reviews](artifacts/reviews/) | Code and architecture reviews |
 | [Templates](artifacts/templates/) | Reusable documentation templates |
+| [Workflows](workflows/) | Reusable agent workflows (submodule) |
 | [Agent Guidelines](AGENTS.md) | AI agent behavior rules |
 | [Architecture](ARCHITECTURE.md) | Guide for in-repo vs external engineering |
 
@@ -20,11 +21,51 @@ engineering (this branch)
 ├── README.md                 # This file
 ├── AGENTS.md                 # AI agent guidelines
 ├── ARCHITECTURE.md           # Documentation of engineering scenarios
-└── artifacts/                # Output artifacts from engineering process
-    ├── adr/                  # Architecture Decision Records (56 files)
-    ├── specs/                # Work package plans (62 folders)
-    ├── reviews/              # Code and architecture reviews
-    └── templates/            # Reusable templates
+├── artifacts/                # Output artifacts from engineering process
+│   ├── adr/                  # Architecture Decision Records (56 files)
+│   ├── specs/                # Work package plans (62 folders)
+│   ├── reviews/              # Code and architecture reviews
+│   └── templates/            # Reusable templates
+├── workflows/                # Submodule → m2ux/agent-workflows (public)
+└── metadata/                 # Submodule → m2ux/ai-metadata (private)
+```
+
+## Submodules
+
+This branch includes two submodules:
+
+| Submodule | Repository | Visibility | Strategy |
+|-----------|------------|------------|----------|
+| `workflows/` | [m2ux/agent-workflows](https://github.com/m2ux/agent-workflows) | Public | Pinned to version tag |
+| `metadata/` | m2ux/ai-metadata | Private | Tracks `master` branch |
+
+### Cloning with Submodules
+
+```bash
+# Clone and initialize submodules
+git clone --recurse-submodules https://github.com/m2ux/concept-rag.git -b engineering
+
+# Or after cloning
+git submodule update --init --recursive
+```
+
+**Note:** The `metadata/` submodule requires access to the private repo. Non-collaborators can still use `workflows/`.
+
+### Updating Submodules
+
+```bash
+# Update workflows to a specific version
+cd workflows
+git fetch --tags
+git checkout v0.2.0
+cd ..
+git add workflows
+git commit -m "chore: update workflows to v0.2.0"
+
+# Update metadata to latest HEAD
+git submodule update --remote metadata
+git add metadata
+git commit -m "chore: update metadata to latest"
 ```
 
 ## Accessing This Branch
