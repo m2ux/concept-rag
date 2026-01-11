@@ -1,4 +1,4 @@
-# Engineering Documentation
+# Engineering
 
 This branch contains engineering artifacts for the concept-rag project. It maintains **separate history** from the code (`main` branch) to keep code commits clean while preserving full engineering context.
 
