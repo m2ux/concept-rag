@@ -1,6 +1,6 @@
-# Planning & Design Documentation
+# Engineering Documentation
 
-This branch contains engineering artifacts for the concept-rag project. It maintains **separate history** from the code (`main` branch) to keep code commits clean while preserving full planning context.
+This branch contains engineering artifacts for the concept-rag project. It maintains **separate history** from the code (`main` branch) to keep code commits clean while preserving full engineering context.
 
 ## Quick Links
 
@@ -11,7 +11,7 @@ This branch contains engineering artifacts for the concept-rag project. It maint
 | [Reviews](public/reviews/) | Code and architecture reviews |
 | [Templates](public/templates/) | Reusable documentation templates |
 | [Agent Guidelines](AGENTS.md) | AI agent behavior rules |
-| [Planning Architecture](PLANNING-ARCHITECTURE.md) | Guide for in-repo vs external planning |
+| [Engineering Architecture](ENGINEERING-ARCHITECTURE.md) | Guide for in-repo vs external engineering |
 
 ## Structure
 
@@ -19,7 +19,7 @@ This branch contains engineering artifacts for the concept-rag project. It maint
 engineering (this branch)
 ├── README.md                 # This file
 ├── AGENTS.md                 # AI agent guidelines
-├── PLANNING-ARCHITECTURE.md  # Documentation of planning scenarios
+├── ENGINEERING-ARCHITECTURE.md  # Documentation of engineering scenarios
 └── public/
     ├── adr/                  # Architecture Decision Records (56 files)
     ├── specs/                # Work package plans (62 folders)
@@ -35,7 +35,7 @@ Browse directly at: `https://github.com/m2ux/concept-rag/tree/engineering`
 
 ### Local Access via Worktree (Recommended)
 
-For parallel access to planning and code:
+For parallel access to engineering and code:
 
 ```bash
 # From your main concept-rag checkout
@@ -52,14 +52,14 @@ git worktree add ../concept-rag-engineering engineering
 ### Switching Branches (Alternative)
 
 ```bash
-git checkout engineering    # View planning docs
+git checkout engineering    # View engineering docs
 git checkout main        # Return to code
 ```
 
 ## Contributing
 
 1. Use the worktree approach for parallel editing
-2. Commit planning artifacts to the `engineering` branch
+2. Commit engineering artifacts to the `engineering` branch
 3. Keep code changes on `main` or feature branches
 4. Never merge `engineering` into `main` (they have no common ancestor)
 
@@ -81,4 +81,4 @@ git checkout main        # Return to code
 
 ---
 
-**Note:** This is an orphan branch with no commit history overlap with `main`. This is intentional to keep planning history separate from code history.
+**Note:** This is an orphan branch with no commit history overlap with `main`. This is intentional to keep engineering history separate from code history.
