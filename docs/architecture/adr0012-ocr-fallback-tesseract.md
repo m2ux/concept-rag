@@ -6,13 +6,13 @@
 **Technical Story:** OCR Evaluation (October 21, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-10-21-ocr-evaluation/
+- Planning: [2025-10-21-ocr-evaluation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-21-ocr-evaluation/)
 
 ## Context and Problem Statement
 
 pdf-parse [ADR-0005] handles text-based PDFs well but cannot extract text from scanned documents (images only) [Limitation: pdf-parse]. When processing document collections, encountering scanned PDFs caused extraction failures and those documents were skipped, creating gaps in the knowledge base.
 
-**The Core Problem:** How to handle scanned/image-based PDFs to achieve high document processing success rate (~95%+) without breaking the bank? [Planning: `.ai/planning/2025-10-21-ocr-evaluation/README.md`]
+**The Core Problem:** How to handle scanned/image-based PDFs to achieve high document processing success rate (~95%+) without breaking the bank? [Planning: [README.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-10-21-ocr-evaluation/README.md)]
 
 **Decision Drivers:**
 * ~5-10% of PDFs are scanned or have image-based pages [Estimate: from corpus analysis]
@@ -125,7 +125,7 @@ brew install poppler tesseract
 - **Documents processed:** 165+ successfully [Source: production stats]
 - **OCR usage:** ~5-10% of documents require OCR fallback [Estimate: from processing logs]
 
-**Alternative Evaluation:** [Source: `.ai/planning/2025-10-21-ocr-evaluation/DEEPSEEK_OCR_EVALUATION.md`]
+**Alternative Evaluation:** [Source: [DEEPSEEK_OCR_EVALUATION.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-10-21-ocr-evaluation/DEEPSEEK_OCR_EVALUATION.md)]
 - DeepSeek-OCR evaluated October 21, 2025
 - Rejected due to infrastructure complexity and GPU requirements [Planning: evaluation, lines 201-222]
 - Tesseract's simplicity and zero cost preferred for fallback use case [Decision: stick with Tesseract]
@@ -279,7 +279,7 @@ DEBUG_OCR=1 npx tsx hybrid_fast_seed.ts --dbpath ~/.concept_rag --filesdir ~/doc
 - Planning docs: October 21, 2024
 - DeepSeek alternative evaluated and rejected
 
-**Traceability:** .ai/planning/2025-10-21-ocr-evaluation/
+**Traceability:** [2025-10-21-ocr-evaluation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-21-ocr-evaluation/)
 
 
 

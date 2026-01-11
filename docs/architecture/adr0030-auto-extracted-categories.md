@@ -6,7 +6,7 @@
 **Technical Story:** Category Search Feature (November 19, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-19-category-search-feature/
+- Planning: [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/)
 - Git Commits: 55ccee3c07e9a72c36a7b9330e3d899c426b6804, 449e52bb75cdbc8f65d381bc8e3bf7d6745169da (November 19, 2024)
 
 ## Context and Problem Statement
@@ -72,7 +72,7 @@ for (const category of allCategories) {
 
 ### 46 Categories Discovered
 
-**Top Categories:** [Source: `.ai/planning/2025-11-19-category-search-feature/IMPLEMENTATION-COMPLETE.md`, lines 94-107]
+**Top Categories:** [Source: [IMPLEMENTATION-COMPLETE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-19-category-search-feature/IMPLEMENTATION-COMPLETE.md), lines 94-107]
 
 | Category | Documents | Chunks |
 |----------|-----------|---------|
@@ -300,6 +300,6 @@ docs.forEach(doc => {
 - Git commits: 55ccee3c, 449e52bb
 - Documented in: IMPLEMENTATION-COMPLETE.md lines 84-107
 
-**Traceability:** .ai/planning/2025-11-19-category-search-feature/
+**Traceability:** [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/)
 
 

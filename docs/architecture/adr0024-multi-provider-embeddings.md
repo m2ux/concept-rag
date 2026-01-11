@@ -6,14 +6,14 @@
 **Technical Story:** Alternative Embedding Providers (November 15, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-15-alternative-embedding-providers/
+- Planning: [2025-11-15-alternative-embedding-providers](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-15-alternative-embedding-providers/)
 - Git Commit: b05192e178dad86e7960b86b10699314272c8913 (November 15, 2024)
 
 ## Context and Problem Statement
 
 The system used simple hash-based embeddings (local, zero cost) but lacked true semantic understanding [Limitation: hash embeddings]. For production semantic search quality, real transformer-based embeddings needed [Requirement: quality improvement], but users needed choice between cost (free local) vs. quality (API) and different providers for flexibility [Use case: options].
 
-**The Core Problem:** How to support multiple embedding providers (OpenAI, Voyage AI, Ollama, local) with configuration-based switching? [Planning: `.ai/planning/2025-11-15-alternative-embedding-providers/01-implementation-plan.md`]
+**The Core Problem:** How to support multiple embedding providers (OpenAI, Voyage AI, Ollama, local) with configuration-based switching? [Planning: [01-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-15-alternative-embedding-providers/01-implementation-plan.md)]
 
 **Decision Drivers:**
 * User choice: cost vs. quality trade-off [Requirement: flexibility]
@@ -94,7 +94,7 @@ container.register('EmbeddingProvider', {
 
 ### Confirmation
 
-**Implementation Status:** [Source: `.ai/planning/2025-11-15-alternative-embedding-providers/README.md`]
+**Implementation Status:** [Source: [README.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-15-alternative-embedding-providers/README.md)]
 - Planning complete November 15, 2025
 - Implementation in progress
 - Feature branch created
@@ -253,6 +253,6 @@ OLLAMA_MODEL=nomic-embed-text
 - Planning docs: November 15, 2024
 - Git commit: b05192e1
 
-**Traceability:** .ai/planning/2025-11-15-alternative-embedding-providers/
+**Traceability:** [2025-11-15-alternative-embedding-providers](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-15-alternative-embedding-providers/)
 
 

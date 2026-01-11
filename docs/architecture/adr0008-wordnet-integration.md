@@ -6,7 +6,7 @@
 **Technical Story:** Conceptual Search Implementation (October 13, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-10-13-conceptual-search-implementation/
+- Planning: [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-conceptual-search-implementation/)
 
 ## Context and Problem Statement
 
@@ -305,7 +305,7 @@ async function getWordNetSynonyms(word: string): Promise<string[]> {
 - Planning docs: October 13, 2024
 - Metrics from: IMPLEMENTATION_COMPLETE.md lines 21-25, 133-136, 148-152
 
-**Traceability:** .ai/planning/2025-10-13-conceptual-search-implementation/
+**Traceability:** [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-conceptual-search-implementation/)
 
 
 

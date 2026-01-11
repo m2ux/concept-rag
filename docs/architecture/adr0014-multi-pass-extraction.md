@@ -6,7 +6,7 @@
 **Technical Story:** Document Processing Improvements (November 12, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-12-document-processing-improvements/
+- Planning: [2025-11-12-document-processing-improvements](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-12-document-processing-improvements/)
 - Git Commit: 82212a34ccbcea86a42a87535cb8c63315769165 (October 15, 2024)
 
 ## Context and Problem Statement
@@ -36,7 +36,7 @@ Some documents in the corpus are very large (>100,000 tokens) [Observation: larg
 
 ### Implementation
 
-**Strategy:** [Planning: `.ai/planning/2025-11-12-document-processing-improvements/`; README states "Large Document Support"]
+**Strategy:** [Planning: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-12-document-processing-improvements/); README states "Large Document Support"]
 
 **Thresholds:** [Implementation logic]
 - **<100k tokens:** Single-pass extraction
@@ -244,6 +244,6 @@ function mergeConceptSets(sets: ConceptMetadata[]): ConceptMetadata {
 - Planning docs: November 12, 2024
 - Git commit: 82212a34cc
 
-**Traceability:** .ai/planning/2025-11-12-document-processing-improvements/
+**Traceability:** [2025-11-12-document-processing-improvements](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-12-document-processing-improvements/)
 
 

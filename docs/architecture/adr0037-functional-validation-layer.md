@@ -619,7 +619,7 @@ interface AsyncValidationRule<T> {
 
 ### Implementation Artifacts
 
-1. **Planning Document**: `.ai/planning/2025-11-22-architecture-refinement/03-validation-layer.md`
+1. **Planning Document**: [03-validation-layer.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-architecture-refinement/03-validation-layer.md)
 2. **Implementation**: `src/domain/validation/validation.ts`
 3. **Common Validations**: `src/domain/validation/common-validations.ts`
 
@@ -678,7 +678,7 @@ The implementation took only 20 minutes but provides a powerful, extensible vali
 ---
 
 **References**:
-- Implementation: `.ai/planning/2025-11-22-architecture-refinement/03-validation-layer.md`
+- Implementation: [03-validation-layer.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-architecture-refinement/03-validation-layer.md)
 - Validation Module: `src/domain/validation/`
 - Time Investment: ~20 minutes
 - Breaking Changes: None (additive)

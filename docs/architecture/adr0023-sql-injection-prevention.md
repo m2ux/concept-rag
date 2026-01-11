@@ -6,11 +6,11 @@
 **Technical Story:** Architecture Refactoring - Security Fix (November 14, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-14-architecture-refactoring/
+- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
 
 ## Context and Problem Statement
 
-During architecture review, SQL injection vulnerability discovered in concept search WHERE clauses [Security Issue: `.ai/planning/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md`, SQL injection section]. User input was directly interpolated into SQL queries without proper escaping [Problem: string concatenation in WHERE clauses].
+During architecture review, SQL injection vulnerability discovered in concept search WHERE clauses [Security Issue: [01-architecture-review-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md), SQL injection section]. User input was directly interpolated into SQL queries without proper escaping [Problem: string concatenation in WHERE clauses].
 
 **Vulnerable Code Example:** [Source: Pre-refactoring `concept_search.ts`]
 ```typescript
@@ -280,7 +280,7 @@ describe('escapeSql', () => {
 - Security fix documented: PR-DESCRIPTION.md lines 47-49
 - Investigation: 10-parameterized-sql-investigation.md
 
-**Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
+**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
 
 
 

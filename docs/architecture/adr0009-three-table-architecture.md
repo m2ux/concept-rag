@@ -6,7 +6,7 @@
 **Technical Story:** Conceptual Search Implementation (October 13, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-10-13-conceptual-search-implementation/
+- Planning: [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-conceptual-search-implementation/)
 
 ## Context and Problem Statement
 
@@ -312,7 +312,7 @@ const chunks = await chunksTable
 - Planning docs: October 13, 2024
 - Documented in: IMPLEMENTATION_COMPLETE.md lines 47-50, 105-112
 
-**Traceability:** .ai/planning/2025-10-13-conceptual-search-implementation/
+**Traceability:** [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-conceptual-search-implementation/)
 
 
 

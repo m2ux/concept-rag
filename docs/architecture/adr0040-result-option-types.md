@@ -751,10 +751,10 @@ return fold(result,
 ## References
 
 ### Documentation
-- Planning: `.ai/planning/2025-11-23-result-option-types/04-result-types-plan.md`
-- Completion: `.ai/planning/2025-11-23-result-option-types/RESULT-TYPES-COMPLETION.md`
-- Adoption: `.ai/planning/2025-11-23-result-option-types/RESULT-ADOPTION-OPPORTUNITIES.md`
-- Library comparison: `.ai/planning/2025-11-23-result-option-types/LIBRARY-COMPARISON-ANALYSIS.md`
+- Planning: [04-result-types-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-23-result-option-types/04-result-types-plan.md)
+- Completion: [RESULT-TYPES-COMPLETION.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-23-result-option-types/RESULT-TYPES-COMPLETION.md)
+- Adoption: [RESULT-ADOPTION-OPPORTUNITIES.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-23-result-option-types/RESULT-ADOPTION-OPPORTUNITIES.md)
+- Library comparison: [LIBRARY-COMPARISON-ANALYSIS.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-23-result-option-types/LIBRARY-COMPARISON-ANALYSIS.md)
 
 ### Related Code
 - `src/domain/functional/result.ts`

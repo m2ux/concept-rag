@@ -6,14 +6,14 @@
 **Technical Story:** Category Search Feature & Integer ID Optimization (November 19, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-19-category-search-feature/, .ai/planning/2025-11-19-integer-id-optimization/
+- Planning: [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/), [2025-11-19-integer-id-optimization](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-integer-id-optimization/)
 - Git Commits: 3f982223203cb0875b43a903c1cc0235f64aa7d0, 604738ada93979e5e99cee958495c22a43787a03 (November 18, 2024)
 
 ## Context and Problem Statement
 
-Concepts and categories were referenced using string names throughout the database (e.g., `concepts: ["software architecture", "testing"]`), resulting in massive storage overhead [Problem: string duplication]. With 37,267 concepts across 165 documents and 100,000 chunks, storing full concept names repeatedly consumed 699 MB [Source: `.ai/planning/2025-11-19-category-search-feature/IMPLEMENTATION-COMPLETE.md`, line 91].
+Concepts and categories were referenced using string names throughout the database (e.g., `concepts: ["software architecture", "testing"]`), resulting in massive storage overhead [Problem: string duplication]. With 37,267 concepts across 165 documents and 100,000 chunks, storing full concept names repeatedly consumed 699 MB [Source: [IMPLEMENTATION-COMPLETE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-19-category-search-feature/IMPLEMENTATION-COMPLETE.md), line 91].
 
-**The Core Problem:** How to reduce storage from string names to integer IDs while maintaining perfect stability across database rebuilds? [Planning: `.ai/planning/2025-11-19-integer-id-optimization/`]
+**The Core Problem:** How to reduce storage from string names to integer IDs while maintaining perfect stability across database rebuilds? [Planning: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-integer-id-optimization/)]
 
 **Decision Drivers:**
 * Storage optimization (699 MB database too large) [Problem: size]
@@ -310,6 +310,6 @@ class CategoryIdCache {
 - Git commits: 3f982223, 604738ad
 - Metrics from: IMPLEMENTATION-COMPLETE.md lines 84-92
 
-**Traceability:** .ai/planning/2025-11-19-category-search-feature/, .ai/planning/2025-11-19-integer-id-optimization/
+**Traceability:** [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/), [2025-11-19-integer-id-optimization](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-integer-id-optimization/)
 
 

@@ -6,7 +6,7 @@
 **Technical Story:** Tool Proliferation through Specialization
 
 **Sources:**
-- Planning: .ai/planning/2025-11-13-tool-documentation-enhancement/, .ai/planning/2025-11-19-category-search-feature/
+- Planning: [2025-11-13-tool-documentation-enhancement](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-13-tool-documentation-enhancement/), [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/)
 
 ## Context and Problem Statement
 
@@ -19,7 +19,7 @@ The system started with 2 basic tools (catalog_search, chunks_search) [Initial: 
 * AI agents benefit from clear tool purposes [UX: explicit intent]
 * Specialization enables optimization [Performance: focused algorithms]
 * MCP protocol supports multiple tools easily [Context: no tool limit]
-* Tool proliferation observed in investigation [Discovery: `.ai/planning/2025-11-13-tool-documentation-enhancement/`]
+* Tool proliferation observed in investigation [Discovery: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-13-tool-documentation-enhancement/)]
 
 ## Alternative Options
 
@@ -70,7 +70,7 @@ The system started with 2 basic tools (catalog_search, chunks_search) [Initial: 
 
 ### Investigation Evidence
 
-**"innovation" Search Comparison:** [Source: `.ai/planning/2025-11-13-tool-documentation-enhancement/README.md`, lines 14-22]
+**"innovation" Search Comparison:** [Source: [README.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-13-tool-documentation-enhancement/README.md), lines 14-22]
 - **concept_search**: 10/10 results relevant (100% precision)
 - **broad_chunks_search**: 0/10 results relevant (0% precision)
 - **Overlap**: 0% - No common chunks
@@ -248,7 +248,7 @@ Are they asking questions/phrases? → broad_chunks_search
 - Planning docs: November 13, 2024 (tool documentation), November 19, 2024 (category tools)
 - Investigation: tool-documentation-enhancement/README.md lines 14-22
 
-**Traceability:** .ai/planning/2025-11-13-tool-documentation-enhancement/, .ai/planning/2025-11-19-category-search-feature/
+**Traceability:** [2025-11-13-tool-documentation-enhancement](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-13-tool-documentation-enhancement/), [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/)
 
 
 

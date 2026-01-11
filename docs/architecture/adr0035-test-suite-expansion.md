@@ -226,8 +226,8 @@ src/
 - `src/__tests__/mocks/` - Mock implementations
 
 **Documentation**:
-- `.ai/planning/2025-11-22-test-coverage-updates/COVERAGE-BASELINE.md`
-- `.ai/planning/2025-11-22-test-coverage-updates/PR_TESTING_IMPROVEMENTS.md`
+- [COVERAGE-BASELINE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-test-coverage-updates/COVERAGE-BASELINE.md)
+- [PR_TESTING_IMPROVEMENTS.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-test-coverage-updates/PR_TESTING_IMPROVEMENTS.md)
 
 ## Consequences
 
@@ -382,9 +382,9 @@ src/
 
 ### Implementation Artifacts
 
-1. **Planning Document**: `.ai/planning/2025-11-20-knowledge-base-recommendations/02-testing-coverage-plan.md`
-2. **Coverage Baseline**: `.ai/planning/2025-11-22-test-coverage-updates/COVERAGE-BASELINE.md`
-3. **Implementation Summary**: `.ai/planning/2025-11-22-test-coverage-updates/PR_TESTING_IMPROVEMENTS.md`
+1. **Planning Document**: [02-testing-coverage-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-20-knowledge-base-recommendations/02-testing-coverage-plan.md)
+2. **Coverage Baseline**: [COVERAGE-BASELINE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-test-coverage-updates/COVERAGE-BASELINE.md)
+3. **Implementation Summary**: [PR_TESTING_IMPROVEMENTS.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-test-coverage-updates/PR_TESTING_IMPROVEMENTS.md)
 4. **Pull Request**: #11 - Test Suite Updates
 
 ### Commit History
@@ -463,7 +463,7 @@ Note: As of 2025-11-23, there are 5 intermittent test failures in query expansio
 ---
 
 **References**:
-- Implementation: `.ai/planning/2025-11-22-test-coverage-updates/`
+- Implementation: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-22-test-coverage-updates/)
 - Pull Request: #11
 - Test Count: 690+ tests (690 passing, 5 intermittent timeouts)
 - Coverage: 76.51% statements, 68.87% branches

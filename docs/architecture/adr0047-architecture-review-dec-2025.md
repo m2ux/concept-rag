@@ -83,7 +83,7 @@ Provide default implementations:
 
 ## References
 
-- Planning documents: `.ai/planning/2025-12-08-architecture-review/`
+- Planning documents: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-12-08-architecture-review/)
 - Previous architecture refactoring: ADR-0035 to ADR-0046
 - PR #37: Architecture Review December 2025
 

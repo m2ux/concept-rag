@@ -292,7 +292,7 @@ export const EMBEDDING_DIMENSIONS = config.embeddings.dimensions;
 ### Files Modified
 
 - `src/config.ts` - Deprecated, kept for backward compatibility
-- `.ai/planning/2025-11-22-architecture-refinement/IMPLEMENTATION-COMPLETE.md` - Documentation
+- [IMPLEMENTATION-COMPLETE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-architecture-refinement/IMPLEMENTATION-COMPLETE.md) - Documentation
 
 ### Configuration Sections Implemented
 
@@ -504,8 +504,8 @@ export const config = {
 
 ### Implementation Artifacts
 
-1. **Planning Document**: `.ai/planning/2025-11-20-knowledge-base-recommendations/03-architecture-refinement-plan.md`
-2. **Implementation Summary**: `.ai/planning/2025-11-22-architecture-refinement/IMPLEMENTATION-COMPLETE.md`
+1. **Planning Document**: [03-architecture-refinement-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-20-knowledge-base-recommendations/03-architecture-refinement-plan.md)
+2. **Implementation Summary**: [IMPLEMENTATION-COMPLETE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-architecture-refinement/IMPLEMENTATION-COMPLETE.md)
 3. **Configuration Types**: `src/application/config/types.ts`
 4. **Configuration Service**: `src/application/config/configuration.ts`
 
@@ -569,7 +569,7 @@ The implementation took only 30 minutes but provides substantial long-term benef
 ---
 
 **References**:
-- Implementation: `.ai/planning/2025-11-22-architecture-refinement/`
+- Implementation: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-22-architecture-refinement/)
 - Configuration Service: `src/application/config/configuration.ts`
 - Time Investment: ~30 minutes
 - Breaking Changes: None (backward compatible)

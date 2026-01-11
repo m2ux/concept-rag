@@ -6,13 +6,13 @@
 **Technical Story:** Architecture Refactoring - Enhancement #4 (November 14, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-14-architecture-refactoring/
+- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
 
 ## Context and Problem Statement
 
 TypeScript was already in use [ADR-0001] but with lenient compiler settings [Problem: weak type checking]. After the architecture refactoring [ADR-0016], the codebase was well-structured enough to enable strict mode for maximum type safety [Opportunity: enforce strictness].
 
-**The Core Problem:** Should we enable all TypeScript strict compiler options to catch more errors at compile-time? [Planning: `.ai/planning/2025-11-14-architecture-refactoring/11-typescript-strict-mode-plan.md`]
+**The Core Problem:** Should we enable all TypeScript strict compiler options to catch more errors at compile-time? [Planning: [11-typescript-strict-mode-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/11-typescript-strict-mode-plan.md)]
 
 **Decision Drivers:**
 * Catch more errors at compile-time [Benefit: error prevention]
@@ -248,7 +248,7 @@ return concept.category;  // OK: undefined handled
 - Planning docs: November 14, 2024
 - Documented in: 12-typescript-strict-mode-complete.md
 
-**Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
+**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
 
 
 

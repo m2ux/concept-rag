@@ -6,13 +6,13 @@
 **Technical Story:** Seeding and Enrichment Improvements (November 12, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-12-seeding-and-enrichment-guides/
+- Planning: [2025-11-12-seeding-and-enrichment-guides](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-12-seeding-and-enrichment-guides/)
 
 ## Context and Problem Statement
 
 Initial seeding processed all documents from scratch every time, requiring hours of processing and API costs for re-indexing unchanged documents [Problem: inefficient re-processing]. For a personal knowledge base that grows incrementally (adding new books/papers), full re-seeding was impractical. The system needed to detect which documents were already processed and skip them, while still handling updates and gaps.
 
-**The Core Problem:** How to efficiently add new documents or fix gaps without reprocessing the entire corpus? [Planning: `.ai/planning/2025-11-12-seeding-and-enrichment-guides/INCREMENTAL_SEEDING_GUIDE.md`]
+**The Core Problem:** How to efficiently add new documents or fix gaps without reprocessing the entire corpus? [Planning: [INCREMENTAL_SEEDING_GUIDE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-12-seeding-and-enrichment-guides/INCREMENTAL_SEEDING_GUIDE.md)]
 
 **Discovery:** During investigation, found 57 of 122 documents had catalog entries but NO chunks (incomplete processing) [Source: `INCREMENTAL_SEEDING_GUIDE.md`, lines 5-11]
 
@@ -307,7 +307,7 @@ npx tsx hybrid_fast_seed.ts \
 - Planning docs: November 12, 2024
 - Metrics from: INCREMENTAL_SEEDING_GUIDE.md lines 5, 128-145
 
-**Traceability:** .ai/planning/2025-11-12-seeding-and-enrichment-guides/
+**Traceability:** [2025-11-12-seeding-and-enrichment-guides](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-12-seeding-and-enrichment-guides/)
 
 
 

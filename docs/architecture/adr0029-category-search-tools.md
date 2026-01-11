@@ -6,14 +6,14 @@
 **Technical Story:** Category Search Feature (November 19, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-19-category-search-feature/
+- Planning: [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/)
 - Git Commits: d4ce00a4e6417a1d966eb97f624175cf6800baa3, f6e7c371de6d631905468c55e540210893336a13 (November 18-19, 2024)
 
 ## Context and Problem Statement
 
 Users had 46 auto-extracted categories [ADR-0030] but no way to browse documents by category [Gap: missing functionality]. Existing tools were text-search focused (catalog_search, concept_search) but not category-focused [Limitation: no domain browsing]. Users needed domain-based navigation ("show me all distributed systems books") [Use case: category browsing].
 
-**The Core Problem:** How to enable users to discover and browse documents by domain/category? [Planning: `.ai/planning/2025-11-19-category-search-feature/05-category-search-tool.md`]
+**The Core Problem:** How to enable users to discover and browse documents by domain/category? [Planning: [05-category-search-tool.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-19-category-search-feature/05-category-search-tool.md)]
 
 **Decision Drivers:**
 * 46 categories exist but not accessible [Gap: unused data]
@@ -36,7 +36,7 @@ Users had 46 auto-extracted categories [ADR-0030] but no way to browse documents
 
 ### Three Tools Implemented
 
-**Tool 1: category_search** [Source: `.ai/planning/2025-11-19-category-search-feature/IMPLEMENTATION-COMPLETE.md`, line 67]
+**Tool 1: category_search** [Source: [IMPLEMENTATION-COMPLETE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-19-category-search-feature/IMPLEMENTATION-COMPLETE.md), line 67]
 ```typescript
 {
   name: "category_search",
@@ -254,6 +254,6 @@ Each tool has detailed description guiding AI agent usage:
 - Git commits: d4ce00a4, f6e7c371
 - Testing: IMPLEMENTATION-COMPLETE.md lines 32-38
 
-**Traceability:** .ai/planning/2025-11-19-category-search-feature/
+**Traceability:** [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/)
 
 

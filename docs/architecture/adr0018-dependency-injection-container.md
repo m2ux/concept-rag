@@ -6,11 +6,11 @@
 **Technical Story:** Architecture Refactoring - Phase 2 (November 14, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-14-architecture-
+- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
 
 With repository interfaces defined [ADR-0017], tools needed a way to receive dependencies without creating them directly or importing globals [Problem: tight coupling]. The system needed dependency wiring that was simple, type-safe, and didn't require heavy DI frameworks.
 
-**The Core Problem:** How to wire dependencies together (repositories, services, tools) in a maintainable, testable way? [Planning: `.ai/planning/2025-11-14-architecture-refactoring/02-implementation-plan.md`, Phase 2]
+**The Core Problem:** How to wire dependencies together (repositories, services, tools) in a maintainable, testable way? [Planning: [02-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/02-implementation-plan.md), Phase 2]
 
 **Decision Drivers:**
 * Constructor injection pattern chosen [Pattern: explicit dependencies]
@@ -283,7 +283,7 @@ const tool = new ConceptSearchTool(
 - Planning docs: November 14, 2024
 - Phase 2 documented in: 02-implementation-plan.md
 
-**Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
+**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
 
 
 

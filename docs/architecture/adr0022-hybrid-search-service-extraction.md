@@ -6,11 +6,11 @@
 **Technical Story:** Architecture Refactoring - Enhancement #2 (November 14, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-14-architecture-refactoring/
+- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
 
 ## Context and Problem Statement
 
-After the main architecture refactoring [ADR-0016], hybrid search scoring logic was duplicated across three repositories (chunks, catalog, concepts) [Problem: duplication]. Each repository independently calculated vector scores, BM25 scores, title scores, concept scores, and WordNet scores using copied code [Source: `.ai/planning/2025-11-14-architecture-refactoring/08-hybrid-search-service-plan.md`, Current State Analysis].
+After the main architecture refactoring [ADR-0016], hybrid search scoring logic was duplicated across three repositories (chunks, catalog, concepts) [Problem: duplication]. Each repository independently calculated vector scores, BM25 scores, title scores, concept scores, and WordNet scores using copied code [Source: [08-hybrid-search-service-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/08-hybrid-search-service-plan.md), Current State Analysis].
 
 **The Core Problem:** How to eliminate duplication of hybrid search scoring logic across repositories while maintaining type safety and testability? [Planning: `08-hybrid-search-service-plan.md`]
 
@@ -282,7 +282,7 @@ describe('HybridSearchService', () => {
 - Planning docs: November 14, 2024
 - Documented in: 08-hybrid-search-service-plan.md, 09-hybrid-search-service-complete.md
 
-**Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
+**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
 
 
 

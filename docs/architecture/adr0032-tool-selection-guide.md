@@ -6,11 +6,11 @@
 **Technical Story:** Tool Documentation Enhancement (November 13, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-13-tool-documentation-enhancement/
+- Planning: [2025-11-13-tool-documentation-enhancement](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-13-tool-documentation-enhancement/)
 
 ## Context and Problem Statement
 
-With 5 tools (later 8) serving different use cases [ADR-0031], AI agents struggled to select the appropriate tool [Problem: tool confusion]. Investigation revealed dramatic differences: concept_search returned 100% relevant results while broad_chunks_search returned 0% relevant for the same query ("innovation") with 0% overlap [Evidence: `.ai/planning/2025-11-13-tool-documentation-enhancement/README.md`, lines 17-20].
+With 5 tools (later 8) serving different use cases [ADR-0031], AI agents struggled to select the appropriate tool [Problem: tool confusion]. Investigation revealed dramatic differences: concept_search returned 100% relevant results while broad_chunks_search returned 0% relevant for the same query ("innovation") with 0% overlap [Evidence: [README.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-13-tool-documentation-enhancement/README.md), lines 17-20].
 
 **The Core Problem:** How to help AI agents (and humans) select the optimal tool for their query intent? [Planning: tool-documentation-enhancement]
 
@@ -280,7 +280,7 @@ for the complete decision tree.
 - Planning docs: November 13, 2024
 - Investigation documented: tool-documentation-enhancement/README.md lines 14-22
 
-**Traceability:** .ai/planning/2025-11-13-tool-documentation-enhancement/
+**Traceability:** [2025-11-13-tool-documentation-enhancement](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-13-tool-documentation-enhancement/)
 
 
 

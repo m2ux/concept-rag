@@ -4,7 +4,7 @@
 **Status:** Accepted  
 
 **Sources:**
-- Work Package Plan: .ai/planning/2025-12-03-modularize-hybrid-fast-seed.md
+- Work Package Plan: [2025-12-03-modularize-hybrid-fast-seed](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-12-03-modularize-hybrid-fast-seed/)
 
 ## Context and Problem Statement
 
