@@ -324,4 +324,3 @@ test_db/
 AGENTS.md
 # Engineering resources (cloned via scripts/setup-engineering.sh)
 engineering/
-agent/

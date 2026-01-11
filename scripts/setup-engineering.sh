@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
 # Setup engineering documentation and agent resources in the current checkout
 #
-# This script clones the engineering branch content and agent submodules
-# into the current concept-rag checkout, making everything accessible
-# from a single directory.
+# This script clones the engineering branch content and initializes its
+# submodules, making everything accessible from a single directory.
 #
 # Structure after running:
 #   concept-rag/
-#   ├── src/                    # Code (main branch)
-#   ├── engineering/            # Engineering docs (from engineering branch)
-#   │   ├── artifacts/
-#   │   ├── scripts/
-#   │   └── ...
-#   └── agent/                  # Agent resources (submodules)
-#       ├── workflows/          # Public (m2ux/agent-workflows)
-#       └── metadata/           # Private (m2ux/ai-metadata) - optional
+#   ├── src/                          # Code (main branch)
+#   └── engineering/                  # Engineering docs (from engineering branch)
+#       ├── artifacts/
+#       ├── agent/
+#       │   ├── workflows/            # Public (m2ux/agent-workflows)
+#       │   └── metadata/             # Private (m2ux/ai-metadata) - optional
+#       └── scripts/
 #
 # Usage: ./scripts/setup-engineering.sh
 
@@ -45,61 +43,66 @@ fi
 echo "✓ Engineering docs available at: engineering/"
 echo ""
 
-# --- Agent workflows (public) ---
-WORKFLOWS_DIR="$REPO_ROOT/agent/workflows"
+# --- Initialize submodules within engineering ---
+cd "$ENGINEERING_DIR"
 
-if [ -d "$WORKFLOWS_DIR" ]; then
-    echo "Agent workflows already exists. Updating..."
+# Agent workflows (public)
+WORKFLOWS_DIR="$ENGINEERING_DIR/agent/workflows"
+
+if [ -d "$WORKFLOWS_DIR" ] && [ "$(ls -A "$WORKFLOWS_DIR" 2>/dev/null)" ]; then
+    echo "Agent workflows already initialized. Updating..."
     cd "$WORKFLOWS_DIR"
     git fetch --tags
-    git checkout v0.1.0 2>/dev/null || git pull origin main
-    cd "$REPO_ROOT"
+    git checkout v0.1.0 2>/dev/null || echo "  (already at v0.1.0)"
+    cd "$ENGINEERING_DIR"
 else
-    echo "Cloning agent-workflows..."
-    mkdir -p "$REPO_ROOT/agent"
-    git clone https://github.com/m2ux/agent-workflows.git "$WORKFLOWS_DIR"
+    echo "Initializing agent/workflows submodule..."
+    git submodule update --init agent/workflows
     cd "$WORKFLOWS_DIR"
+    git fetch --tags
     git checkout v0.1.0
-    cd "$REPO_ROOT"
+    cd "$ENGINEERING_DIR"
 fi
 
-echo "✓ Agent workflows available at: agent/workflows/"
+echo "✓ Agent workflows available at: engineering/agent/workflows/"
 echo ""
 
-# --- Agent metadata (private - optional) ---
-METADATA_DIR="$REPO_ROOT/agent/metadata"
+# Agent metadata (private - optional)
+METADATA_DIR="$ENGINEERING_DIR/agent/metadata"
 
-if [ -d "$METADATA_DIR" ]; then
-    echo "Agent metadata already exists. Updating..."
+if [ -d "$METADATA_DIR" ] && [ "$(ls -A "$METADATA_DIR" 2>/dev/null)" ]; then
+    echo "Agent metadata already initialized. Updating..."
     cd "$METADATA_DIR"
     git pull origin concept-rag_metadata 2>/dev/null || echo "  (update skipped - may not have access)"
-    cd "$REPO_ROOT"
+    cd "$ENGINEERING_DIR"
 else
-    echo "Attempting to clone agent-metadata (private repo)..."
-    if git clone --single-branch --branch concept-rag_metadata \
-        https://github.com/m2ux/ai-metadata.git "$METADATA_DIR" 2>/dev/null; then
+    echo "Attempting to initialize agent/metadata submodule (private repo)..."
+    if git submodule update --init agent/metadata 2>/dev/null; then
         
         # Setup sparse checkout for just this project's content
         cd "$METADATA_DIR"
         git sparse-checkout init --cone
         git sparse-checkout set projects/concept-rag
-        cd "$REPO_ROOT"
+        git checkout concept-rag_metadata 2>/dev/null || true
+        cd "$ENGINEERING_DIR"
         
-        echo "✓ Agent metadata available at: agent/metadata/"
+        echo "✓ Agent metadata available at: engineering/agent/metadata/"
     else
         echo "⚠ Agent metadata skipped (private repo - access denied)"
         echo "  This is expected for non-collaborators."
     fi
 fi
 
+cd "$REPO_ROOT"
+
 echo ""
 echo "=== Setup complete ==="
 echo ""
 echo "Structure:"
-echo "  engineering/     - Engineering docs, ADRs, specs"
-echo "  agent/workflows/ - Reusable agent workflows"
-if [ -d "$METADATA_DIR" ]; then
-    echo "  agent/metadata/  - Private agent metadata"
+echo "  engineering/                - Engineering docs, ADRs, specs"
+echo "  engineering/agent/workflows - Reusable agent workflows"
+if [ -d "$METADATA_DIR" ] && [ "$(ls -A "$METADATA_DIR" 2>/dev/null)" ]; then
+    echo "  engineering/agent/metadata  - Private agent metadata"
 fi
 echo ""
-echo "Note: These folders are gitignored and won't affect your commits."
+echo "Note: The engineering/ folder is gitignored and won't affect your commits."
