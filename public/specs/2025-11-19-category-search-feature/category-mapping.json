@@ -1,0 +1,65 @@
+{
+  "categories": [
+    {
+      "id": 10104704,
+      "category": "algebra and number theory",
+      "documentCount": 0,
+      "chunkCount": 0,
+      "conceptCount": 0,
+      "sources": []
+    },
+    {
+      "id": 4008866122,
+      "category": "applied mechanics and geophysics",
+      "documentCount": 0,
+      "chunkCount": 0,
+      "conceptCount": 0,
+      "sources": []
+    },
+    {
+      "id": 1850398897,
+      "category": "control theory and decision making",
+      "documentCount": 0,
+      "chunkCount": 0,
+      "conceptCount": 0,
+      "sources": []
+    },
+    {
+      "id": 1517221597,
+      "category": "dynamical systems and attractors",
+      "documentCount": 0,
+      "chunkCount": 0,
+      "conceptCount": 0,
+      "sources": []
+    },
+    {
+      "id": 876898337,
+      "category": "dynamical systems and control",
+      "documentCount": 0,
+      "chunkCount": 0,
+      "conceptCount": 0,
+      "sources": []
+    },
+    {
+      "id": 3160257624,
+      "category": "mathematical physics",
+      "documentCount": 0,
+      "chunkCount": 0,
+      "conceptCount": 0,
+      "sources": []
+    },
+    {
+      "id": 3151452087,
+      "category": "numerical analysis and scientific computing",
+      "documentCount": 0,
+      "chunkCount": 0,
+      "conceptCount": 0,
+      "sources": []
+    }
+  ],
+  "generated_at": "2025-11-20T07:40:26.781Z",
+  "total_categories": 7,
+  "database_path": "~/.concept_rag",
+  "collision_count": 0,
+  "hash_algorithm": "FNV-1a"
+}
