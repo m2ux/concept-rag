@@ -1,4 +1,4 @@
-# Engineering Architecture Guide
+# Architecture Guide
 
 This document describes the architecture for managing engineering artifacts (ADRs, work package plans, reviews) alongside code repositories using Git orphan branches.
 
