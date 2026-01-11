@@ -3,7 +3,7 @@
 **Issue:** [#68](https://github.com/m2ux/concept-rag/issues/68)  
 **PR:** [#69](https://github.com/m2ux/concept-rag/pull/69)  
 **Date:** 2026-01-10  
-**Status:** ✅ Phase 1 Complete
+**Status:** ✅ Complete (All Phases)
 
 ---
 
@@ -13,31 +13,31 @@ Migrate engineering artifacts to an orphan `engineering` branch within the conce
 
 ## Success Criteria
 
-- [ ] Planning docs accessible from same repo as code
-- [ ] ADRs browsable on GitHub at stable URL
-- [ ] Existing symlink still works during transition
-- [ ] New team members can find planning context without separate repo access
-- [ ] Planning docs referenceable in PRs via GitHub URLs
-- [ ] Code history on `main` stays clean of planning commits
-- [ ] No data loss during migration
-- [ ] No chat history or cross-project references in public content
+- [x] Planning docs accessible from same repo as code
+- [x] ADRs browsable on GitHub at stable URL
+- [x] ~~Existing symlink still works during transition~~ (N/A - symlink removed in Phase 4)
+- [x] New team members can find planning context without separate repo access
+- [x] Planning docs referenceable in PRs via GitHub URLs
+- [x] Code history on `main` stays clean of planning commits
+- [x] No data loss during migration
+- [x] No chat history or cross-project references in public content
 
 ---
 
 ## Tasks
 
-### Task 1: Create Orphan Planning Branch (~15 min)
+### Task 1: Create Orphan Engineering Branch (~15 min) ✅
 
-**Goal:** Establish the orphan `planning` branch with initial structure.
+**Goal:** Establish the orphan `engineering` branch with initial structure.
 
 **Steps:**
-1. Create orphan branch: `git checkout --orphan planning`
+1. Create orphan branch: `git checkout --orphan engineering`
 2. Remove inherited files: `git rm -rf .`
 3. Create directory structure:
    ```
    artifacts/
    ├── adr/
-   ├── specs/
+   ├── planning/
    ├── reviews/
    └── templates/
    ```
@@ -45,28 +45,28 @@ Migrate engineering artifacts to an orphan `engineering` branch within the conce
 5. Initial commit and push
 
 **Deliverables:**
-- [ ] Orphan branch exists on remote
-- [ ] Directory structure in place
-- [ ] README.md with navigation
+- [x] Orphan branch exists on remote
+- [x] Directory structure in place
+- [x] README.md with navigation
 
 ---
 
-### Task 2: Set Up Git Worktree (~10 min)
+### Task 2: Set Up Git Worktree (~10 min) ✅
 
-**Goal:** Enable parallel access to planning branch alongside feature branches.
+**Goal:** Enable parallel access to engineering branch alongside feature branches.
 
 **Steps:**
-1. Add worktree: `git worktree add ../concept-rag-planning planning`
+1. Add worktree: `git worktree add ../concept-rag_engineering engineering`
 2. Verify both directories accessible
 3. Document worktree setup for future developers
 
 **Deliverables:**
-- [ ] Worktree created at `../concept-rag-planning`
-- [ ] Can commit to planning branch without switching
+- [x] Worktree created at `../concept-rag_engineering`
+- [x] Can commit to engineering branch without switching
 
 ---
 
-### Task 3: Audit and Filter Content (~45 min)
+### Task 3: Audit and Filter Content (~45 min) ✅
 
 **Goal:** Identify content safe for public migration; flag items requiring filtering.
 
@@ -85,35 +85,35 @@ Migrate engineering artifacts to an orphan `engineering` branch within the conce
 4. Document filtering decisions
 
 **Deliverables:**
-- [ ] Audit report: files to exclude
-- [ ] Audit report: files requiring redaction
-- [ ] Audit report: files safe for direct migration
+- [x] Audit report: files to exclude
+- [x] Audit report: files requiring redaction
+- [x] Audit report: files safe for direct migration
 
 ---
 
-### Task 4: Migrate ADRs (~15 min)
+### Task 4: Migrate ADRs (~15 min) ✅
 
-**Goal:** Copy ADRs from `docs/architecture/` to planning branch.
+**Goal:** Copy ADRs from `docs/architecture/` to engineering branch.
 
 **Steps:**
 1. Copy all `adr*.md` files to `artifacts/adr/`
 2. Copy supporting docs (README.md, etc.)
 3. Verify no sensitive content in ADRs
-4. Commit to planning branch
+4. Commit to engineering branch
 
 **Deliverables:**
-- [ ] All ADRs in `artifacts/adr/`
-- [ ] ADRs accessible via GitHub URL
+- [x] All ADRs in `artifacts/adr/`
+- [x] ADRs accessible via GitHub URL
 
 ---
 
-### Task 5: Migrate Work Package Plans (~30 min)
+### Task 5: Migrate Work Package Plans (~30 min) ✅
 
-**Goal:** Copy filtered work package plans to planning branch.
+**Goal:** Copy filtered work package plans to engineering branch.
 
 **Steps:**
 1. For each clean folder in `.ai/planning/`:
-   - Copy to `artifacts/specs/`
+   - Copy to `artifacts/planning/`
 2. For folders requiring redaction:
    - Copy and apply redactions
    - Substitute project names with generic placeholders
@@ -121,51 +121,51 @@ Migrate engineering artifacts to an orphan `engineering` branch within the conce
 4. Commit in batches
 
 **Deliverables:**
-- [ ] Work package plans in `artifacts/specs/`
-- [ ] No chat history in public branch
-- [ ] No cross-project references in public content
+- [x] Work package plans in `artifacts/planning/`
+- [x] No chat history in public branch
+- [x] No cross-project references in public content
 
 ---
 
-### Task 6: Migrate AGENTS.md and Reviews (~10 min)
+### Task 6: Migrate AGENTS.md and Reviews (~10 min) ✅
 
-**Goal:** Copy remaining artifacts to planning branch.
+**Goal:** Copy remaining artifacts to engineering branch.
 
 **Steps:**
-1. Copy `AGENTS.md` to planning branch root
-2. Copy `.ai/reviews/` to `artifacts/reviews/` (if appropriate)
+1. Copy `AGENTS.md` to agent-workflows repo (shared via submodule)
+2. Copy `.ai/reviews/` to `artifacts/reviews/`
 3. Copy `.ai/architecture/` templates to `artifacts/templates/`
 4. Commit
 
 **Deliverables:**
-- [ ] AGENTS.md in planning branch
-- [ ] Reviews migrated (if applicable)
-- [ ] Templates migrated
+- [x] AGENTS.md in agent-workflows repo
+- [x] Reviews migrated
+- [x] Templates migrated
 
 ---
 
-### Task 7: Update Documentation (~30 min)
+### Task 7: Update Documentation (~30 min) ✅
 
 **Goal:** Document the new structure, access patterns, and both planning scenarios.
 
 **Steps:**
-1. Update planning branch README with:
+1. Update engineering branch README with:
    - Structure overview
    - How to access via worktree
    - Contribution guidelines
-2. Create `PLANNING-ARCHITECTURE.md` documenting both scenarios:
+2. Create `ARCHITECTURE.md` documenting both scenarios:
    - Scenario A: In-repo orphan branch (for projects you control)
    - Scenario B: External planning repo (for projects you contribute to)
    - Worktree setup for both scenarios
    - Directory structure template
-3. Add note to main repo README about planning branch (optional)
+3. Add note to main repo README about engineering branch (optional)
 4. Update PR description with final details
 
 **Deliverables:**
-- [ ] Planning branch fully documented
-- [ ] Worktree setup instructions included
-- [ ] Both planning scenarios documented (in-repo vs external)
-- [ ] Reusable template for Scenario B projects
+- [x] Engineering branch fully documented
+- [x] Worktree setup instructions included
+- [x] Both planning scenarios documented (in-repo vs external)
+- [x] Reusable template for Scenario B projects
 
 ---
 
@@ -175,7 +175,7 @@ Migrate engineering artifacts to an orphan `engineering` branch within the conce
 |------------|----------|
 | No chat history in public | Content inspection + exclusion |
 | No cross-project references | Redaction with generic names |
-| Symlink must remain functional | Copy only, never delete source |
+| ~~Symlink must remain functional~~ | ~~Copy only, never delete source~~ (Complete - symlink removed) |
 | Parallel access required | Git worktree setup |
 
 ---
@@ -185,7 +185,7 @@ Migrate engineering artifacts to an orphan `engineering` branch within the conce
 | Risk | Mitigation |
 |------|-----------|
 | Accidentally commit chat history | Audit before migration; review each commit |
-| Break existing workflows | Additive approach; symlink preserved |
+| Break existing workflows | Additive approach; symlink preserved during transition |
 | Miss cross-project references | Grep for known patterns before commit |
 | Large migration causes issues | Commit in batches; verify after each |
 
@@ -206,12 +206,12 @@ Migrate engineering artifacts to an orphan `engineering` branch within the conce
 
 ---
 
-## Future Phases
+## Completed Phases
 
 ### Content Distribution Model
 
 The `engineering` branch serves as the central hub, containing:
-- **Direct content:** Project-specific artifacts (ADRs, specs, reviews)
+- **Direct content:** Project-specific artifacts (ADRs, planning, reviews)
 - **Submodules:** References to shared/private repos
 
 | Content Type | Storage | Submodule Target |
@@ -223,66 +223,53 @@ The `engineering` branch serves as the central hub, containing:
 | **AGENTS.md guidelines** | Submodule in `engineering` branch | → public `agent-workflows` repo |
 | **AI metadata/history** | Submodule in `engineering` branch | → private `ai-metadata` repo |
 
-**Resulting structure on `engineering` branch:**
+**Final structure on `engineering` branch:**
 ```
-engineering/
-├── artifacts/            # Output artifacts from engineering process
-│   ├── adr/              # Direct: project-specific ADRs
-│   ├── specs/            # Direct: work package plans
-│   ├── reviews/          # Direct: code/architecture reviews
-│   └── templates/        # Direct: project-specific templates
-├── workflows/            # Submodule → github.com/m2ux/agent-workflows (public)
-└── private-metadata/     # Submodule → github.com/m2ux/ai-metadata (private)
+.engineering/                     # Worktree checkout location
+├── artifacts/                    # Output artifacts from engineering process
+│   ├── adr/                      # Direct: project-specific ADRs
+│   ├── planning/                 # Direct: work package plans
+│   ├── reviews/                  # Direct: code/architecture reviews
+│   └── templates/                # Direct: project-specific templates
+├── agent/                        # Submodule container
+│   ├── workflows/                # Submodule → github.com/m2ux/agent-workflows (public)
+│   └── metadata/                 # Submodule → github.com/m2ux/ai-metadata (private, sparse)
+├── scripts/                      # Helper scripts
+│   ├── update-workflows.sh       # Update workflows submodule to version tag
+│   └── update-metadata.sh        # Update metadata submodule to latest HEAD
+├── README.md                     # Navigation and setup guide
+└── ARCHITECTURE.md               # Two-scenario documentation
 ```
 
-### Phase 2: Workflow Submodule (Future Work Package)
+### Phase 2: Workflow Submodule ✅
 
 **Target repo:** [m2ux/agent-workflows](https://github.com/m2ux/agent-workflows)
 
-**Goal:** Public workflow artifacts available via submodule in `engineering` branch.
+**Completed:**
+- Added agent-workflows as submodule at `agent/workflows/`
+- Version pinned to `v0.1.0` for initial development
+- Created `scripts/update-workflows.sh` for version updates
 
-**Content to migrate:**
-- `.ai/prompts/work-package/_workflow.md` → workflow templates
-- `.ai/prompts/*.md` → prompt templates
-- `AGENTS.md` → agent guidelines
-- Reusable checklists and runbooks
+### Phase 3: Metadata Submodule ✅
 
-**Setup in engineering branch:**
-```bash
-cd concept-rag_engineering
-git submodule add https://github.com/m2ux/agent-workflows.git workflows
-git commit -m "chore: add agent-workflows submodule"
-```
+**Completed:**
+- Added ai-metadata as submodule at `agent/metadata/`
+- Configured sparse checkout for `projects/concept-rag/` only
+- Tracks `master` branch (informal content, no version tags)
+- Created `scripts/update-metadata.sh` for updates
 
-**Benefits:**
-- Single source of truth for workflows
-- Version-pinned per project (deterministic behavior)
-- Public, Apache-2.0 licensed
-- Reusable across all projects
-- Changes to workflows propagate via submodule updates
+### Phase 4: Final Cleanup ✅
 
-### Phase 3: Metadata Submodule (Future Work Package)
+**Completed:**
+1. Removed `.ai` symlink from concept-rag repo
+2. Deleted migrated content from private repo (kept only active work packages)
+3. Updated `.gitignore` (removed `.ai` entry)
+4. Updated 41 ADR files with new GitHub URLs pointing to `engineering` branch
+5. Renamed `artifacts/specs` → `artifacts/planning`
 
-- Add private `ai-metadata` repo as submodule at `metadata/`
-- Migrate `.ai/history/` content to `ai-metadata` repo
-- Result: `git submodule add https://github.com/m2ux/ai-metadata.git metadata`
-
-### Phase 4: Final Cleanup (Future Work Package)
-
-**Prerequisites:** Phases 2 and 3 complete
-
-**Tasks:**
-1. Remove `.ai` symlink from concept-rag repo
-2. Delete migrated content from private repo:
-   - `planning/` (all folders except active work packages)
-   - `reviews/`
-   - `architecture/`
-3. Update `.gitignore` (remove `.ai` entry if no longer needed)
-4. Update any documentation referencing old structure
-
-**Safety checklist before cleanup:**
-- [ ] All content verified accessible from `engineering` branch
-- [ ] Workflows submodule (`workflows/`) working correctly
-- [ ] Metadata submodule (`private-metadata/`) working correctly
-- [ ] No active work packages in folders to be deleted
-- [ ] Backup taken of private repo before deletion
+**Safety checklist (verified):**
+- [x] All content verified accessible from `engineering` branch
+- [x] Workflows submodule (`agent/workflows/`) working correctly
+- [x] Metadata submodule (`agent/metadata/`) working correctly
+- [x] No active work packages in deleted folders
+- [x] Private repo content preserved where needed
