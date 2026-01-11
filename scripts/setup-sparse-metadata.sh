@@ -34,9 +34,9 @@ git sparse-checkout init --cone
 echo "Configuring sparse paths..."
 git sparse-checkout set projects/concept-rag
 
-# Checkout the concept-rag_metadata branch
-echo "Checking out concept-rag_metadata branch..."
-git checkout concept-rag_metadata
+# Checkout the master branch
+echo "Checking out master branch..."
+git checkout master
 
 echo ""
 echo "Sparse checkout complete!"

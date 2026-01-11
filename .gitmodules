@@ -4,4 +4,4 @@
 [submodule "agent/metadata"]
 	path = agent/metadata
 	url = https://github.com/m2ux/ai-metadata.git
-	branch = concept-rag_metadata
+	branch = master
