@@ -6,11 +6,11 @@
 **Technical Story:** Architecture Refactoring - Critical Performance Fix (November 14, 2025)
 
 **Sources:**
-- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
+- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/)
 
 ## Context and Problem Statement
 
-Concept search loaded ALL chunks from database (~10K+ chunks) and filtered in memory, taking 8-12 seconds and using ~5GB memory [Problem: [01-architecture-review-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md), lines 178-194]. This O(n) algorithm was discovered during architecture review and was the MOST CRITICAL issue to fix.
+Concept search loaded ALL chunks from database (~10K+ chunks) and filtered in memory, taking 8-12 seconds and using ~5GB memory [Problem: [01-architecture-review-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md), lines 178-194]. This O(n) algorithm was discovered during architecture review and was the MOST CRITICAL issue to fix.
 
 **The Code Problem:** [Source: `01-architecture-review-analysis.md`, lines 178-194]
 ```typescript
@@ -249,7 +249,7 @@ If concept not found in concepts table:
 - Performance metrics: PR-DESCRIPTION.md lines 19-25
 - Problem identified: 01-architecture-review-analysis.md lines 178-194
 
-**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
+**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/)
 
 
 

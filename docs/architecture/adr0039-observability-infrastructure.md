@@ -494,8 +494,8 @@ Integrate with log aggregation services:
 ## References
 
 ### Documentation
-- Implementation: [03-observability-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/observability-infrastructure/03-observability-plan.md)
-- Summary: [IMPLEMENTATION-SUMMARY-OBSERVABILITY.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/observability-infrastructure/IMPLEMENTATION-SUMMARY-OBSERVABILITY.md)
+- Implementation: [03-observability-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/observability-infrastructure/03-observability-plan.md)
+- Summary: [IMPLEMENTATION-SUMMARY-OBSERVABILITY.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/observability-infrastructure/IMPLEMENTATION-SUMMARY-OBSERVABILITY.md)
 
 ### Related Code
 - `src/infrastructure/observability/logger.ts`

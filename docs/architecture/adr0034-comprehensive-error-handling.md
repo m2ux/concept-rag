@@ -366,10 +366,10 @@ async findByName(name: string): Promise<Either<DatabaseError, Concept>>
 
 ### Implementation Artifacts
 
-1. **Planning Document**: [04-error-handling-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-20-knowledge-base-recommendations/04-error-handling-plan.md)
-2. **Implementation Summary**: [IMPLEMENTATION-SUMMARY.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-error-handling-implementation/IMPLEMENTATION-SUMMARY.md)
+1. **Planning Document**: [04-error-handling-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-20-knowledge-base-recommendations/04-error-handling-plan.md)
+2. **Implementation Summary**: [IMPLEMENTATION-SUMMARY.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-22-error-handling-implementation/IMPLEMENTATION-SUMMARY.md)
 3. **Pull Request**: #12 - https://github.com/m2ux/concept-rag/pull/12
-4. **Test Results**: [TEST-RESULTS.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-error-handling-implementation/TEST-RESULTS.md)
+4. **Test Results**: [TEST-RESULTS.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-22-error-handling-implementation/TEST-RESULTS.md)
 
 ### Commit History
 
@@ -435,7 +435,7 @@ The error hierarchy strikes a balance between simplicity and expressiveness, pro
 ---
 
 **References**:
-- Implementation: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-22-error-handling-implementation/)
+- Implementation: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-22-error-handling-implementation/)
 - Pull Request: #12
 - Test Coverage: 100% for error classes, 90.62% for validation service
 

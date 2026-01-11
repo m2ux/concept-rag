@@ -4,7 +4,7 @@
 **Status:** Accepted
 
 **Sources:**
-- Work Package Plan: [2025-12-05-api-key-preflight-check](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-12-05-api-key-preflight-check/)
+- Work Package Plan: [2025-12-05-api-key-preflight-check](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-12-05-api-key-preflight-check/)
 
 ## Context and Problem Statement
 

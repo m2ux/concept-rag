@@ -6,7 +6,7 @@
 **Technical Story:** Conceptual Search Implementation (October 13, 2025)
 
 **Sources:**
-- Planning: [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-conceptual-search-implementation/)
+- Planning: [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/)
 
 ## Context and Problem Statement
 
@@ -261,7 +261,7 @@ for (const doc of documents) {
 - Planning docs: October 13, 2024
 - Cost breakdown: Conceptual Search README lines 46-48
 
-**Traceability:** [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-conceptual-search-implementation/)
+**Traceability:** [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/)
 
 
 

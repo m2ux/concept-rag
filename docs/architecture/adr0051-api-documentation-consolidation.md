@@ -114,4 +114,4 @@ Does NOT contain:
 
 ## References
 
-- Planning: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-12-14-api-documentation-consolidation/)
+- Planning: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-12-14-api-documentation-consolidation/)

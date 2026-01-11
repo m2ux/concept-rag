@@ -808,8 +808,8 @@ embeddingCache.clear();
 ## References
 
 ### Documentation
-- Planning: [05-caching-strategy-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-24-advanced-caching/05-caching-strategy-plan.md)
-- Completion: [CACHING-IMPLEMENTATION-COMPLETE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-24-advanced-caching/CACHING-IMPLEMENTATION-COMPLETE.md)
+- Planning: [05-caching-strategy-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-24-advanced-caching/05-caching-strategy-plan.md)
+- Completion: [CACHING-IMPLEMENTATION-COMPLETE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-24-advanced-caching/CACHING-IMPLEMENTATION-COMPLETE.md)
 
 ### Related Code
 - `src/infrastructure/cache/lru-cache.ts`

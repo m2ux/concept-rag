@@ -149,7 +149,7 @@ module.exports = {
 - `.dependency-cruiser.cjs` - Dependency rules and validation config
 
 **Documentation**:
-- [02-dependency-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-architecture-refinement/02-dependency-analysis.md)
+- [02-dependency-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md)
 
 ### Files Modified
 
@@ -357,9 +357,9 @@ describe('Architecture', () => {
 
 ### Implementation Artifacts
 
-1. **Planning Document**: [02-dependency-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-architecture-refinement/02-dependency-analysis.md)
+1. **Planning Document**: [02-dependency-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md)
 2. **Configuration**: `.dependency-cruiser.cjs`
-3. **Implementation Summary**: [IMPLEMENTATION-COMPLETE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-architecture-refinement/IMPLEMENTATION-COMPLETE.md)
+3. **Implementation Summary**: [IMPLEMENTATION-COMPLETE.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-22-architecture-refinement/IMPLEMENTATION-COMPLETE.md)
 
 ### Code Statistics
 
@@ -434,7 +434,7 @@ The implementation took only 25 minutes but provides substantial foundation for 
 ---
 
 **References**:
-- Implementation: [02-dependency-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-22-architecture-refinement/02-dependency-analysis.md)
+- Implementation: [02-dependency-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md)
 - Configuration: `.dependency-cruiser.cjs`
 - Core Rules: 3 (domain independence, infrastructure-to-tools, no circular dependencies)
 - Validation Time: ~5 seconds

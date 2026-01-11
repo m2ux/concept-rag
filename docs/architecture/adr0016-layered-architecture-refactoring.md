@@ -6,11 +6,11 @@
 **Technical Story:** Architecture Refactoring (November 14, 2025)
 
 **Sources:**
-- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
+- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/)
 
 ## Context and Problem Statement
 
-The codebase had functional architecture but relied on global mutable state via module-level `export let` declarations for database connections [Problem: [01-architecture-review-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md), lines 28-48]. Tools directly imported database tables creating hidden dependencies, race conditions, and making testing impossible without real databases [Issues: lines 42-48]. The architecture review identified 6 critical issues requiring refactoring.
+The codebase had functional architecture but relied on global mutable state via module-level `export let` declarations for database connections [Problem: [01-architecture-review-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md), lines 28-48]. Tools directly imported database tables creating hidden dependencies, race conditions, and making testing impossible without real databases [Issues: lines 42-48]. The architecture review identified 6 critical issues requiring refactoring.
 
 **The Core Problems:** [Source: `01-architecture-review-analysis.md`, lines 11-21]
 1. ❌ Global mutable state via module-level exports
@@ -278,7 +278,7 @@ Simpler three-layer (Presentation/Business/Data).
 - Planning docs: November 14, 2024
 - Metrics from: PR-DESCRIPTION.md lines 19-25, 63-69
 
-**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
+**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/)
 
 
 

@@ -6,14 +6,14 @@
 **Technical Story:** Ebook Format Support (November 15, 2025)
 
 **Sources:**
-- Planning: [2025-11-15-ebook-format-support](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-15-ebook-format-support/)
+- Planning: [2025-11-15-ebook-format-support](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-15-ebook-format-support/)
 - Git Commit: 3ff26f4b61be602038de0d0019ff4028e6d2185a (November 15, 2024)
 
 ## Context and Problem Statement
 
 The system only supported PDF files [ADR-0005], limiting usability for users with ebook collections [Limitation: single format]. EPUB is a popular ebook format, especially for fiction and Project Gutenberg content [Context: ebook ecosystem]. Users wanted to index EPUB files alongside PDFs in their knowledge base.
 
-**The Core Problem:** How to add EPUB support while maintaining the same concept extraction and search quality as PDFs? [Planning: [01-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-15-ebook-format-support/01-implementation-plan.md)]
+**The Core Problem:** How to add EPUB support while maintaining the same concept extraction and search quality as PDFs? [Planning: [01-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-15-ebook-format-support/01-implementation-plan.md)]
 
 **Decision Drivers:**
 * User request for EPUB support [Requirement: ebook format]
@@ -302,6 +302,6 @@ All from Project Gutenberg (public domain)
 - Git commit: 3ff26f4b
 - Testing: 02-implementation-complete.md lines 76-141
 
-**Traceability:** [2025-11-15-ebook-format-support](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-15-ebook-format-support/)
+**Traceability:** [2025-11-15-ebook-format-support](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-15-ebook-format-support/)
 
 

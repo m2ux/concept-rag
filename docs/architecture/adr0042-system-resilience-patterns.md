@@ -6,7 +6,7 @@
 **Technical Story:** Implement resilience patterns to protect against external dependency failures and prevent cascade failures.
 
 **Sources:**
-- Planning: [IMPLEMENTATION-PLAN.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-25-resilience-patterns/IMPLEMENTATION-PLAN.md)
+- Planning: [IMPLEMENTATION-PLAN.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-25-resilience-patterns/IMPLEMENTATION-PLAN.md)
 - Implementation: Multiple commits in feat/system-resilience-patterns branch
 - Related ADR: ADR-0034 (Retry Strategies)
 
@@ -397,7 +397,7 @@ Each pattern provides detailed metrics:
 - [Release It! by Michael T. Nygard](https://pragprog.com/titles/mnee2/release-it-second-edition/) - Stability patterns book
 
 ### Planning Documents
-- Feature Plan: [IMPLEMENTATION-PLAN.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-25-resilience-patterns/IMPLEMENTATION-PLAN.md)
+- Feature Plan: [IMPLEMENTATION-PLAN.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-25-resilience-patterns/IMPLEMENTATION-PLAN.md)
 
 ---
 
@@ -407,4 +407,4 @@ Each pattern provides detailed metrics:
 - Implementation: 2025-11-25
 - Branch: feat/system-resilience-patterns
 
-**Traceability:** [2025-11-25-resilience-patterns](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-25-resilience-patterns/)
+**Traceability:** [2025-11-25-resilience-patterns](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-25-resilience-patterns/)

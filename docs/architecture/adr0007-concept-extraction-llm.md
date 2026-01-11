@@ -6,13 +6,13 @@
 **Technical Story:** Conceptual Search Implementation (October 13, 2025)
 
 **Sources:**
-- Planning: [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-conceptual-search-implementation/)
+- Planning: [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/)
 
 ## Context and Problem Statement
 
 The hybrid search (vector + BM25 + title) provided good results for keyword and title matching [See: ADR-0006], but lacked semantic understanding of document *concepts*. Users searching for abstract ideas like "innovation strategies" or "consensus algorithms" couldn't reliably find relevant documents unless those exact terms appeared in the text [Inferred: from solution design]. The system needed to understand and index the conceptual content of documents, not just their keywords.
 
-**The Core Problem:** How to extract, represent, and index abstract concepts from technical documents to enable concept-based search? [Planning: [IMPLEMENTATION_PLAN.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-10-13-conceptual-search-implementation/IMPLEMENTATION_PLAN.md)]
+**The Core Problem:** How to extract, represent, and index abstract concepts from technical documents to enable concept-based search? [Planning: [IMPLEMENTATION_PLAN.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/IMPLEMENTATION_PLAN.md)]
 
 **Decision Drivers:**
 * Need for concept-level search (not just keywords) [Planning: conceptual-search README]
@@ -37,7 +37,7 @@ The hybrid search (vector + BM25 + title) provided good results for keyword and 
 
 **LLM Choice:** Claude Sonnet 4.5 via OpenRouter [Source: `IMPLEMENTATION_COMPLETE.md`, line 13]
 
-**Cost:** ~$0.041 per document [Source: [README.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-10-13-conceptual-search-implementation/README.md), line 47]
+**Cost:** ~$0.041 per document [Source: [README.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/README.md), line 47]
 
 **Extraction Model:**
 ```typescript
@@ -289,7 +289,7 @@ concepts_table:
 - Metrics: 2x improvement in concept matching (IMPLEMENTATION_COMPLETE.md lines 148-152)
 - Cost: $0.041/doc documented in planning
 
-**Traceability:** Every metric traces to [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-conceptual-search-implementation/) folder
+**Traceability:** Every metric traces to [2025-10-13-conceptual-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/) folder
 
 
 

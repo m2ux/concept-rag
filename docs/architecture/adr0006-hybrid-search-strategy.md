@@ -6,11 +6,11 @@
 **Technical Story:** Hybrid Search Implementation (October 13, 2025)
 
 **Sources:**
-- Planning: [2025-10-13-hybrid-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-hybrid-search-implementation/)
+- Planning: [2025-10-13-hybrid-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-10-13-hybrid-search-implementation/)
 
 ## Context and Problem Statement
 
-The initial vector-only search implementation was missing documents when users searched for books by title [Source: [SUMMARY.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-10-13-hybrid-search-implementation/SUMMARY.md), lines 56-66]. For example, searching for "Distributed Systems" found only 2 of 4 books with those terms in their titles. The vector embeddings alone didn't give sufficient weight to exact title matches, causing relevant documents to rank poorly or be missed entirely.
+The initial vector-only search implementation was missing documents when users searched for books by title [Source: [SUMMARY.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-10-13-hybrid-search-implementation/SUMMARY.md), lines 56-66]. For example, searching for "Distributed Systems" found only 2 of 4 books with those terms in their titles. The vector embeddings alone didn't give sufficient weight to exact title matches, causing relevant documents to rank poorly or be missed entirely.
 
 **The Core Problem:** Pure vector search using simple word-hash embeddings doesn't reliably find documents when query terms appear in the title [Planning: `SUMMARY.md`, lines 32-39].
 
@@ -245,7 +245,7 @@ This implementation became the foundation for later enhancements:
 - Metrics validated: 2/4 → 4/4 books found (SUMMARY.md lines 56-88)
 - Test results documented in planning folder
 
-**Traceability:** Every metric traces to planning documents in [2025-10-13-hybrid-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-10-13-hybrid-search-implementation/)
+**Traceability:** Every metric traces to planning documents in [2025-10-13-hybrid-search-implementation](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-10-13-hybrid-search-implementation/)
 
 
 

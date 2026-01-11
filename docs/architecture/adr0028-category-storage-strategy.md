@@ -6,12 +6,12 @@
 **Technical Story:** Category Search Feature - Design Correction (November 19, 2025)
 
 **Sources:**
-- Planning: [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/)
+- Planning: [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-19-category-search-feature/)
 - Git Commits: 3a59541d3ae93ec7e4055fe17b17eef6752f1d42, 55ccee3c07e9a72c36a7b9330e3d899c426b6804 (November 19, 2024)
 
 ## Context and Problem Statement
 
-During category feature planning, the initial design placed `category_id` field on concepts table [Initial wrong design: [FINAL-DESIGN-SUMMARY.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-19-category-search-feature/FINAL-DESIGN-SUMMARY.md), lines 95-101]. This was architecturally incorrect because concepts are cross-domain entities (e.g., "testing" appears in software engineering, embedded systems, etc.) [Problem: concepts span categories].
+During category feature planning, the initial design placed `category_id` field on concepts table [Initial wrong design: [FINAL-DESIGN-SUMMARY.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-19-category-search-feature/FINAL-DESIGN-SUMMARY.md), lines 95-101]. This was architecturally incorrect because concepts are cross-domain entities (e.g., "testing" appears in software engineering, embedded systems, etc.) [Problem: concepts span categories].
 
 **The Core Problem:** Should categories be a property of concepts or documents? [Planning: `FINAL-DESIGN-SUMMARY.md`, design correction]
 
@@ -286,6 +286,6 @@ await catalogTable.add({
 - Git commits: 3a59541d, 55ccee3c
 - Design documented: FINAL-DESIGN-SUMMARY.md lines 7-48
 
-**Traceability:** [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-19-category-search-feature/)
+**Traceability:** [2025-11-19-category-search-feature](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-19-category-search-feature/)
 
 

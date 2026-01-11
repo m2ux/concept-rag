@@ -6,16 +6,16 @@
 **Technical Story:** Architecture Refactoring - Phase 1 (November 14, 2025)
 
 **Sources:**
-- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
+- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/)
 
 ## Context and Problem Statement
 
-Tools directly accessed LanceDB tables via global imports [Problem: ADR-0016], creating tight coupling and making unit testing impossible [Source: [01-architecture-review-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md), lines 59-79]. Business logic was mixed with database queries, and there was no abstraction layer for data access [Issues: lines 196-200].
+Tools directly accessed LanceDB tables via global imports [Problem: ADR-0016], creating tight coupling and making unit testing impossible [Source: [01-architecture-review-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md), lines 59-79]. Business logic was mixed with database queries, and there was no abstraction layer for data access [Issues: lines 196-200].
 
-**The Core Problem:** How to abstract database access to enable testing, reduce coupling, and follow the Dependency Inversion Principle? [Planning: [02-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/02-implementation-plan.md), line 28]
+**The Core Problem:** How to abstract database access to enable testing, reduce coupling, and follow the Dependency Inversion Principle? [Planning: [02-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/02-implementation-plan.md), line 28]
 
 **Decision Drivers:**
-* Enable unit testing with mock/fake implementations [Source: [03-testing-strategy.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/03-testing-strategy.md)]
+* Enable unit testing with mock/fake implementations [Source: [03-testing-strategy.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/03-testing-strategy.md)]
 * Eliminate tight coupling to LanceDB [Goal: framework independence]
 * Separate business logic from infrastructure [Principle: separation of concerns]
 * Industry pattern (Repository Pattern from DDD) [Source: Knowledge Base: "Domain-Driven Design"]
@@ -35,7 +35,7 @@ Tools directly accessed LanceDB tables via global imports [Problem: ADR-0016], c
 
 ### Repository Interfaces
 
-**Defined in Domain Layer:** [Source: [02-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/02-implementation-plan.md), lines 183-424]
+**Defined in Domain Layer:** [Source: [02-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/02-implementation-plan.md), lines 183-424]
 
 **IChunkRepository:**
 ```typescript
@@ -71,12 +71,12 @@ interface ICatalogRepository {
 
 ### Design Decisions
 
-**1. Method-Per-Query API:** [Source: [02-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/02-implementation-plan.md), line 23]
+**1. Method-Per-Query API:** [Source: [02-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/02-implementation-plan.md), line 23]
 - Explicit methods like `searchByVector()`, `findByName()`
 - Type-safe parameters and return types
 - Self-documenting interface
 
-**2. Domain Models:** [Source: [02-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/02-implementation-plan.md), lines 86-155]
+**2. Domain Models:** [Source: [02-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/02-implementation-plan.md), lines 86-155]
 - `Chunk`, `Concept`, `SearchResult` types in domain layer
 - Framework-independent types
 - No LanceDB types in interfaces
@@ -89,7 +89,7 @@ interface ICatalogRepository {
 ### Consequences
 
 **Positive:**
-* **Testability:** Can inject fake repositories [Benefit: [03-testing-strategy.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/03-testing-strategy.md)]
+* **Testability:** Can inject fake repositories [Benefit: [03-testing-strategy.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/03-testing-strategy.md)]
 * **32 unit tests added:** Using mock repositories [Result: `PR-DESCRIPTION.md`, line 66]
 * **Decoupling:** Tools don't depend on LanceDB [Benefit: independence]
 * **Swappable:** Can change database without touching domain [Flexibility: future-proof]
@@ -115,7 +115,7 @@ interface ICatalogRepository {
 - **100% passing:** All tests pass with repository pattern
 - **Mock repositories:** Implemented in `src/__tests__/test-helpers/mock-repositories.ts`
 
-**Implementation Verified:** [Source: [06-complete-summary.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/06-complete-summary.md), infrastructure layer]
+**Implementation Verified:** [Source: [06-complete-summary.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/06-complete-summary.md), infrastructure layer]
 - `src/infrastructure/lancedb/chunks-repository.ts` - Implements IChunkRepository
 - `src/infrastructure/lancedb/concepts-repository.ts` - Implements IConceptRepository
 - `src/infrastructure/lancedb/catalog-repository.ts` - Implements ICatalogRepository
@@ -300,9 +300,9 @@ export class FakeChunkRepository implements IChunkRepository {
 **Confidence Level:** HIGH
 **Attribution:**
 - Planning docs: November 14, 2024
-- Design documented in: [02-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/02-implementation-plan.md) lines 28-424
+- Design documented in: [02-implementation-plan.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/02-implementation-plan.md) lines 28-424
 
-**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
+**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/)
 
 
 

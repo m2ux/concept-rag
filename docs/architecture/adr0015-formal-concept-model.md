@@ -6,13 +6,13 @@
 **Technical Story:** Concept Extraction Enhancement (November 13, 2025)
 
 **Sources:**
-- Planning: [2025-11-13-concept-extraction-enhancement](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-13-concept-extraction-enhancement/)
+- Planning: [2025-11-13-concept-extraction-enhancement](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-13-concept-extraction-enhancement/)
 
 ## Context and Problem Statement
 
 While concept extraction was working (since October 13) [ADR-0007], there was no formal definition of what constitutes a "concept" in the system [Gap: definition missing]. This led to potential inconsistencies in extraction quality, unclear inclusion/exclusion criteria, and difficulty evaluating whether extracted concepts met quality standards [Problem: no evaluation criteria].
 
-**The Core Problem:** What exactly IS a concept in the concept-RAG system, and how do we ensure all LLM agents extract concepts consistently? [Planning: [FORMAL_CONCEPT_DEFINITION.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-13-concept-extraction-enhancement/FORMAL_CONCEPT_DEFINITION.md)]
+**The Core Problem:** What exactly IS a concept in the concept-RAG system, and how do we ensure all LLM agents extract concepts consistently? [Planning: [FORMAL_CONCEPT_DEFINITION.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-13-concept-extraction-enhancement/FORMAL_CONCEPT_DEFINITION.md)]
 
 **Decision Drivers:**
 * Need consistent extraction across different LLM calls [Requirement: consistency]
@@ -266,7 +266,7 @@ EXTRACTION GUIDELINES:
 - Planning docs: November 13, 2024
 - Documented in: FORMAL_CONCEPT_DEFINITION.md
 
-**Traceability:** [2025-11-13-concept-extraction-enhancement](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-13-concept-extraction-enhancement/)
+**Traceability:** [2025-11-13-concept-extraction-enhancement](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-13-concept-extraction-enhancement/)
 
 
 

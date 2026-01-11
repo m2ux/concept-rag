@@ -6,11 +6,11 @@
 **Technical Story:** Ebook Format Support (November 15, 2025)
 
 **Sources:**
-- Planning: [2025-11-15-ebook-format-support](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-15-ebook-format-support/)
+- Planning: [2025-11-15-ebook-format-support](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-15-ebook-format-support/)
 
 ## Context and Problem Statement
 
-The system only supported PDF files hardcoded in `findPdfFilesRecursively()` [Source: [02-implementation-complete.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-15-ebook-format-support/02-implementation-complete.md), lines 54-55]. Adding EPUB support required a clean abstraction for document loading to avoid format-specific code scattered throughout the seeding script [Problem: extensibility].
+The system only supported PDF files hardcoded in `findPdfFilesRecursively()` [Source: [02-implementation-complete.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-15-ebook-format-support/02-implementation-complete.md), lines 54-55]. Adding EPUB support required a clean abstraction for document loading to avoid format-specific code scattered throughout the seeding script [Problem: extensibility].
 
 **The Core Problem:** How to support multiple document formats (PDF, EPUB, potentially MOBI, DOCX) without cluttering the seeding pipeline with format-specific logic? [Planning: `01-implementation-plan.md`, Target Architecture]
 
@@ -279,7 +279,7 @@ class PDFDocumentLoader implements IDocumentLoader {
 - Planning docs: November 15, 2024
 - Documented in: 01-implementation-plan.md, 02-implementation-complete.md lines 19-30
 
-**Traceability:** [2025-11-15-ebook-format-support](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-15-ebook-format-support/)
+**Traceability:** [2025-11-15-ebook-format-support](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-15-ebook-format-support/)
 
 
 

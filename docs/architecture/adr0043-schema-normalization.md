@@ -80,7 +80,7 @@ Schema validation script checks:
 
 ## References
 
-- Planning documents: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-26-schema-normalization/)
+- Planning documents: [planning](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-26-schema-normalization/)
 - Migration script: `scripts/migrate_to_normalized_schema.ts`
 - Validation script: `scripts/validate_normalized_schema.ts`
 - Domain models: `src/domain/models/`

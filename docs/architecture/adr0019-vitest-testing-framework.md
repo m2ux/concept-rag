@@ -6,13 +6,13 @@
 **Technical Story:** Architecture Refactoring - Testing Infrastructure (November 14, 2025)
 
 **Sources:**
-- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
+- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/)
 
 ## Context and Problem Statement
 
 The architecture refactoring [ADR-0016, ADR-0017, ADR-0018] enabled testability, but a testing framework was needed to write and run tests. The codebase is TypeScript with ESM modules, requiring a modern test framework with good TypeScript support and fast execution.
 
-**The Core Problem:** Which testing framework to use for TypeScript/ESM codebase with focus on speed and developer experience? [Planning: [03-testing-strategy.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/03-testing-strategy.md)]
+**The Core Problem:** Which testing framework to use for TypeScript/ESM codebase with focus on speed and developer experience? [Planning: [03-testing-strategy.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/planning/2025-11-14-architecture-refactoring/03-testing-strategy.md)]
 
 **Decision Drivers:**
 * TypeScript ESM support required [Requirement: module system]
@@ -297,7 +297,7 @@ npm run test:coverage   # Generate coverage report
 - Testing strategy: 03-testing-strategy.md
 - Test results: 05-testing-infrastructure-complete.md lines 108-126
 
-**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
+**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/planning/2025-11-14-architecture-refactoring/)
 
 
 
