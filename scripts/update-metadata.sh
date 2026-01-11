@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Update the agent/metadata submodule to the latest HEAD
+# Update the agent/metadata submodule to the latest HEAD of concept-rag_metadata branch
 #
 # Note: This script requires access to the private ai-metadata repository.
 # It will fail for non-collaborators.
