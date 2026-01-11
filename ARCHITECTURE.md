@@ -175,32 +175,6 @@ engineering branch (or orphan branch in engineering repo)
 
 ## Best Practices
 
-### Content Guidelines
-
-**Include in engineering branch:**
-- ✅ Architecture Decision Records (ADRs)
-- ✅ Work package plans and specifications
-- ✅ Code and architecture reviews
-- ✅ Agent guidelines and templates
-- ✅ Roadmaps and design documents
-
-**Exclude from engineering branch:**
-- ❌ Chat history or raw AI conversation logs
-- ❌ References to other private projects
-- ❌ Sensitive paths, credentials, or API keys
-- ❌ Source code (belongs on main branch)
-
-### Path Hygiene
-
-When migrating content, sanitize paths:
-
-| Original | Replacement |
-|----------|-------------|
-| `/home/user/projects/repo` | `.` or relative path |
-| `/home/user/.config` | `~/.config` |
-| Absolute paths to ebooks | `~/Documents/...` |
-| Other project names | `[other-project]` or generic name |
-
 ### Parallel Editing
 
 Use git worktrees for simultaneous access:
@@ -217,21 +191,3 @@ cd ~/projects/concept-rag-engineering
 git commit -m "docs(adr): add ADR for new feature"
 git push
 ```
-
-## Migration Checklist
-
-- [ ] Create orphan branch (or dedicated engineering repo)
-- [ ] Set up directory structure (`public/adr/`, `public/specs/`, etc.)
-- [ ] Migrate ADRs
-- [ ] Migrate work package plans (filter chat history first)
-- [ ] Migrate reviews and templates
-- [ ] Sanitize paths (remove absolute/sensitive paths)
-- [ ] Set up git worktree for parallel access
-- [ ] Push to remote
-- [ ] Update README with navigation
-
-## Future Enhancements
-
-- **Private submodule**: For chat history and sensitive research (Phase 2)
-- **Prompts submodule**: For version-controlled prompt templates (Phase 3)
-- **CI/CD integration**: Automated documentation publishing
