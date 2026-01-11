@@ -83,7 +83,7 @@ else
         cd "$METADATA_DIR"
         git sparse-checkout init --cone
         git sparse-checkout set projects/concept-rag
-        git checkout concept-rag_metadata 2>/dev/null || true
+        git checkout master 2>/dev/null || true
         cd "$ENGINEERING_DIR"
         
         echo "✓ Agent metadata available at: .engineering/agent/metadata/"
