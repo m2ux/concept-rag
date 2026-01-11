@@ -186,7 +186,7 @@ engineering branch (or orphan branch in engineering repo)
 
 **Via submodules (referenced from engineering branch):**
 - 📦 Agent workflows/prompts → submodule to public `agent-workflows` repo
-- 📦 AI chat history/logs → submodule to private repo
+- 📦 AI metadata/history → submodule to private `ai-metadata` repo
 
 **Exclude entirely:**
 - ❌ References to other private projects
@@ -205,7 +205,7 @@ engineering/
 │   ├── reviews/          # Code reviews
 │   └── templates/        # Project-specific templates
 ├── workflows/            # Submodule → github.com/m2ux/agent-workflows (public)
-└── private/              # Submodule → private history repo
+└── metadata/             # Submodule → github.com/m2ux/ai-metadata (private)
 ```
 
 **Setting up submodules:**
@@ -213,7 +213,7 @@ engineering/
 ```bash
 # In engineering branch worktree
 git submodule add https://github.com/m2ux/agent-workflows.git workflows
-git submodule add <private-repo-url> private
+git submodule add https://github.com/m2ux/ai-metadata.git metadata
 git commit -m "chore: add workflow and private submodules"
 ```
 
