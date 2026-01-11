@@ -6,11 +6,11 @@
 **Technical Story:** Architecture Refactoring - Phase 1 (November 14, 2025)
 
 **Sources:**
-- Planning: .ai/planning/2025-11-14-architecture-refactoring/
+- Planning: [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
 
 ## Context and Problem Statement
 
-Tools directly accessed LanceDB tables via global imports [Problem: ADR-0016], creating tight coupling and making unit testing impossible [Source: `.ai/planning/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md`, lines 59-79]. Business logic was mixed with database queries, and there was no abstraction layer for data access [Issues: lines 196-200].
+Tools directly accessed LanceDB tables via global imports [Problem: ADR-0016], creating tight coupling and making unit testing impossible [Source: [01-architecture-review-analysis.md](https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md), lines 59-79]. Business logic was mixed with database queries, and there was no abstraction layer for data access [Issues: lines 196-200].
 
 **The Core Problem:** How to abstract database access to enable testing, reduce coupling, and follow the Dependency Inversion Principle? [Planning: `02-implementation-plan.md`, line 28]
 
@@ -302,7 +302,7 @@ export class FakeChunkRepository implements IChunkRepository {
 - Planning docs: November 14, 2024
 - Design documented in: 02-implementation-plan.md lines 28-424
 
-**Traceability:** .ai/planning/2025-11-14-architecture-refactoring/
+**Traceability:** [2025-11-14-architecture-refactoring](https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/)
 
 
 
