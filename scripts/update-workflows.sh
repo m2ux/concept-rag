@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Update the agent-workflows submodule to a specific version tag
+# Update the agent/workflows submodule to a specific version tag
 #
-# Usage: ./scripts/update-agent-workflows.sh v0.2.0
+# Usage: ./scripts/update-workflows.sh v0.2.0
 
 set -e
 
@@ -12,7 +12,7 @@ if [ -z "$VERSION" ]; then
     echo "Example: $0 v0.2.0"
     echo ""
     echo "Available tags:"
-    cd "$(dirname "$0")/../agent-workflows"
+    cd "$(dirname "$0")/../agent/workflows"
     git fetch --tags --quiet
     git tag -l 'v*' | sort -V
     exit 1
@@ -21,7 +21,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 
-cd "$REPO_ROOT/agent-workflows"
+cd "$REPO_ROOT/agent/workflows"
 
 echo "Fetching tags..."
 git fetch --tags --quiet
@@ -38,9 +38,9 @@ echo "Checking out $VERSION..."
 git checkout "$VERSION" --quiet
 
 cd "$REPO_ROOT"
-git add agent-workflows
+git add agent/workflows
 
 echo ""
-echo "Updated agent-workflows to $VERSION"
+echo "Updated agent/workflows to $VERSION"
 echo "Run the following to commit:"
-echo "  git commit -m \"chore: update agent-workflows to $VERSION\""
+echo "  git commit -m \"chore: update workflows to $VERSION\""

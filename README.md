@@ -23,25 +23,26 @@ engineering (this branch)
 ├── AGENTS.md                 # AI agent guidelines
 ├── ARCHITECTURE.md           # Documentation of engineering scenarios
 ├── artifacts/                # Output artifacts from engineering process
-│   ├── adr/                  # Architecture Decision Records (56 files)
-│   ├── specs/                # Work package plans (62 folders)
+│   ├── adr/                  # Architecture Decision Records
+│   ├── specs/                # Work package plans
 │   ├── reviews/              # Code and architecture reviews
 │   └── templates/            # Reusable templates
-├── agent-workflows/                # Submodule → m2ux/agent-workflows (public)
-├── agent-metadata/         # Submodule → m2ux/ai-metadata (private)
+├── agent/                    # Agent-related submodules
+│   ├── workflows/            # Submodule → m2ux/agent-workflows (public)
+│   └── metadata/             # Submodule → m2ux/ai-metadata (private)
 └── scripts/                  # Utility scripts
     ├── update-workflows.sh   # Update workflows to specific version
-    └── update-metadata.sh    # Update agent-metadata to latest
+    └── update-metadata.sh    # Update metadata to latest
 ```
 
 ## Submodules
 
-This branch includes two submodules:
+This branch includes two submodules under `agent/`:
 
 | Submodule | Repository | Visibility | Strategy |
 |-----------|------------|------------|----------|
-| `agent-workflows/` | [m2ux/agent-workflows](https://github.com/m2ux/agent-workflows) | Public | Pinned to version tag |
-| `agent-metadata/` | m2ux/ai-metadata | Private | Tracks `master` branch |
+| `agent/workflows/` | [m2ux/agent-workflows](https://github.com/m2ux/agent-workflows) | Public | Pinned to version tag |
+| `agent/metadata/` | m2ux/ai-metadata | Private | Tracks `master` branch |
 
 ### Cloning with Submodules
 
@@ -53,7 +54,7 @@ git clone --recurse-submodules https://github.com/m2ux/concept-rag.git -b engine
 git submodule update --init --recursive
 ```
 
-**Note:** The `agent-metadata/` submodule requires access to the private repo. Non-collaborators can still use `agent-workflows/`.
+**Note:** The `agent/metadata/` submodule requires access to the private repo. Non-collaborators can still use `agent/workflows/`.
 
 ### Updating Submodules
 
@@ -64,9 +65,9 @@ Use the provided scripts:
 ./scripts/update-workflows.sh v0.2.0
 git commit -m "chore: update workflows to v0.2.0"
 
-# Update agent-metadata to latest HEAD (author only)
+# Update metadata to latest HEAD (author only)
 ./scripts/update-metadata.sh
-git commit -m "chore: update agent-metadata to latest"
+git commit -m "chore: update metadata to latest"
 ```
 
 ## Accessing This Branch
