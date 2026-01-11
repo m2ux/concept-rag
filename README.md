@@ -31,8 +31,9 @@ engineering (this branch)
 │   ├── workflows/            # Submodule → m2ux/agent-workflows (public)
 │   └── metadata/             # Submodule (private)
 └── scripts/                  # Utility scripts
-    ├── update-workflows.sh   # Update workflows to specific version
-    └── update-metadata.sh    # Update metadata to latest
+    ├── update-workflows.sh       # Update workflows to specific version
+    ├── update-metadata.sh        # Update metadata to latest
+    └── setup-sparse-metadata.sh  # Sparse checkout for metadata (author only)
 ```
 
 ## Submodules
