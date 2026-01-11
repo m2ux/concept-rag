@@ -2918,9 +2918,9 @@
 <strong>Deciders:</strong> Engineering Team<br />
 <strong>Technical Story:</strong> Architecture Refactoring - Phase 1 (November 14, 2025)</p>
 <p><strong>Sources:</strong>
-- Planning: .ai/planning/2025-11-14-architecture-refactoring/</p>
+- Planning: <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
 <h2 id="context-and-problem-statement">Context and Problem Statement<a class="headerlink" href="#context-and-problem-statement" title="Permanent link">&para;</a></h2>
-<p>Tools directly accessed LanceDB tables via global imports [Problem: ADR-0016], creating tight coupling and making unit testing impossible [Source: <code>.ai/planning/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md</code>, lines 59-79]. Business logic was mixed with database queries, and there was no abstraction layer for data access [Issues: lines 196-200].</p>
+<p>Tools directly accessed LanceDB tables via global imports [Problem: ADR-0016], creating tight coupling and making unit testing impossible [Source: <a href="https://github.com/m2ux/concept-rag/blob/engineering/artifacts/specs/2025-11-14-architecture-refactoring/01-architecture-review-analysis.md">01-architecture-review-analysis.md</a>, lines 59-79]. Business logic was mixed with database queries, and there was no abstraction layer for data access [Issues: lines 196-200].</p>
 <p><strong>The Core Problem:</strong> How to abstract database access to enable testing, reduce coupling, and follow the Dependency Inversion Principle? [Planning: <code>02-implementation-plan.md</code>, line 28]</p>
 <p><strong>Decision Drivers:</strong>
 * Enable unit testing with mock/fake implementations [Source: <code>03-testing-strategy.md</code>]
@@ -3152,7 +3152,7 @@
 <strong>Attribution:</strong>
 - Planning docs: November 14, 2024
 - Design documented in: 02-implementation-plan.md lines 28-424</p>
-<p><strong>Traceability:</strong> .ai/planning/2025-11-14-architecture-refactoring/</p>
+<p><strong>Traceability:</strong> <a href="https://github.com/m2ux/concept-rag/tree/engineering/artifacts/specs/2025-11-14-architecture-refactoring/">2025-11-14-architecture-refactoring</a></p>
 
 
 
