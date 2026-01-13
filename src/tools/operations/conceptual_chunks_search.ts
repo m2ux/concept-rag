@@ -8,7 +8,7 @@ import { Configuration } from "../../application/config/index.js";
 
 export interface ConceptualChunksSearchParams extends ToolParams {
   text: string;
-  source: string;
+  catalog_id: number;
 }
 
 /**
@@ -26,11 +26,11 @@ export class ConceptualChunksSearchTool extends BaseTool<ConceptualChunksSearchP
   }
   
   name = "chunks_search";
-  description = `Search for specific information within a single known document. Uses hybrid search with concept and synonym expansion, filtered to one source.
+  description = `Search for specific information within a single known document. Uses hybrid search with concept and synonym expansion.
 
 USE THIS TOOL WHEN:
 - You know which document contains the information you need
-- Searching within a specific source identified from catalog_search results
+- Searching within a specific document identified from catalog_search results
 - Focused analysis of one document's content
 - Need to find specific passages or sections within a known document
 
@@ -38,11 +38,10 @@ DO NOT USE for:
 - Finding which documents to search (use catalog_search first)
 - Searching across multiple documents (use broad_chunks_search)
 - Tracking a concept across your entire library (use concept_chunks)
-- When you don't know the document source path
 
-RETURNS: Top 5 chunks from the specified document, ranked by hybrid score with concept and WordNet expansion. Requires exact source path match.
+RETURNS: Top chunks from the specified document, ranked by hybrid score with concept and WordNet expansion.
 
-NOTE: Source path must match exactly. First use catalog_search to identify the correct document path, then use that path in the 'source' parameter.
+NOTE: First use catalog_search to find the document and get its catalog_id.
 
 Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
   inputSchema = {
@@ -52,30 +51,26 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
         type: "string",
         description: "Search query - natural language, keywords, phrases, or technical terms to find within the document",
       },
-      source: {
-        type: "string",
-        description: "REQUIRED: Full file path of the source document (e.g., '/home/user/Documents/ebooks/Philosophy/Book Title.pdf'). Use catalog_search first to find the exact path.",
+      catalog_id: {
+        type: "number",
+        description: "REQUIRED: Document ID from catalog_search results",
       }
     },
-    required: ["text", "source"],
+    required: ["text", "catalog_id"],
   };
 
   async execute(params: ConceptualChunksSearchParams) {
     // Validate input
-    try {
-      this.validator.validateChunksSearch(params);
-    } catch (error: any) {
-      console.error(`❌ Validation failed: ${error.message}`);
+    if (!params.text || params.text.trim() === '') {
       return {
         isError: true,
         content: [{
           type: "text" as const,
           text: JSON.stringify({
             error: {
-              code: error.code || 'VALIDATION_ERROR',
-              message: error.message,
-              field: error.field,
-              context: error.context
+              code: 'VALIDATION_ERROR',
+              message: 'Search text is required',
+              field: 'text'
             },
             timestamp: new Date().toISOString()
           })
@@ -83,8 +78,25 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
       };
     }
     
-    // Resolve source path to catalog ID at the tool boundary
-    const catalogOpt = await this.catalogRepo.findBySource(params.source);
+    if (!params.catalog_id || typeof params.catalog_id !== 'number') {
+      return {
+        isError: true,
+        content: [{
+          type: "text" as const,
+          text: JSON.stringify({
+            error: {
+              code: 'VALIDATION_ERROR',
+              message: 'catalog_id is required and must be a number',
+              field: 'catalog_id'
+            },
+            timestamp: new Date().toISOString()
+          })
+        }]
+      };
+    }
+    
+    // Verify catalog exists
+    const catalogOpt = await this.catalogRepo.findById(params.catalog_id);
     if (!isSome(catalogOpt)) {
       return {
         content: [{
@@ -92,7 +104,7 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
           text: JSON.stringify({
             error: {
               type: 'not_found',
-              message: `Document not found: ${params.source}`
+              message: `Document not found with catalog_id: ${params.catalog_id}`
             },
             timestamp: new Date().toISOString()
           })
@@ -101,10 +113,10 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
       };
     }
     
-    // Delegate to service with catalog ID (normalized)
+    // Delegate to service with catalog ID
     const debugSearch = Configuration.getInstance().logging.debugSearch;
     const result = await this.chunkSearchService.searchByCatalogId({
-      catalogId: catalogOpt.value.id,
+      catalogId: params.catalog_id,
       limit: 20,
       debug: debugSearch
     });
@@ -134,9 +146,8 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
       };
     }
     
-    // Format results for MCP response - use direct fields
-    // Include source from catalog entry for backward compatibility
-    const catalogSource = catalogOpt.value.source || '';
+    // Format results for MCP response
+    const catalogTitle = catalogOpt.value.catalogTitle || 'Untitled';
     
     // @ts-expect-error - Type narrowing limitation
     const formattedResults = result.value.map((r: Chunk) => {
@@ -146,9 +157,8 @@ Debug output can be enabled via DEBUG_SEARCH=true environment variable.`;
         : [];
       
       return {
+        title: r.catalogTitle || catalogTitle,
         text: r.text,
-        source: catalogSource,  // From catalog lookup
-        title: r.catalogTitle || '',
         concepts: conceptNames,
         concept_ids: r.conceptIds || [],
       };

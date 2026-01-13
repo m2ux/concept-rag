@@ -1,0 +1,26 @@
+Analyze this image from a technical document.
+
+Classify it as ONE of:
+- diagram: flowcharts, UML, architecture diagrams, state machines, sequence diagrams, dependency graphs
+- flowchart: process flows, decision trees, workflow diagrams
+- chart: bar charts, line graphs, pie charts, scatter plots, histograms
+- table: structured tabular data, matrices
+- figure: technical illustrations with labels, annotated diagrams
+- skip: photographs, screenshots, decorative images, logos, icons, cover images, AND any of the following:
+
+MUST classify as "skip":
+- Scanned pages or page fragments containing mostly text
+- Images that are primarily text with only small graphical elements
+- Horizontal or vertical strips/slices of pages
+- Images with extreme aspect ratios (very wide and short, or very tall and narrow)
+- Low quality or blurry scans
+- Pages from OCR-scanned documents
+
+IMPORTANT: Only classify as diagram/flowchart/chart/table/figure if:
+1. The image has clear semantic technical meaning
+2. The PRIMARY content is the diagram/chart, not surrounding text
+3. The image appears to be an intentional figure, not a page scan artifact
+
+Respond with ONLY a JSON object:
+{"type": "<type>", "confidence": <0-1>, "reason": "<brief reason>"}
+
