@@ -27,12 +27,10 @@ engineering (this branch)
 │   ├── specs/                # Work package plans
 │   ├── reviews/              # Code and architecture reviews
 │   └── templates/            # Reusable templates
-├── agent/                    # Agent-related submodules
-│   ├── resources/            # Submodule → m2ux/agent-resources (public)
-│   └── metadata/             # Submodule (private)
-└── scripts/                  # Utility scripts
-    ├── update-resources.sh   # Update resources to specific version
-    └── update-metadata.sh    # Update metadata to latest (includes sparse checkout)
+└── agent/                    # Agent-related submodules
+    ├── resources/            # Submodule → m2ux/agent-resources (public)
+    │   └── scripts/          # Update scripts (included in submodule)
+    └── metadata/             # Submodule (private)
 ```
 
 ## Submodules
@@ -58,15 +56,15 @@ git submodule update --init --recursive
 
 ### Updating Submodules
 
-Use the provided scripts:
+Use the scripts included in the resources submodule:
 
 ```bash
 # Update resources to a specific version
-./scripts/update-resources.sh v0.2.0
-git commit -m "chore: update resources to v0.2.0"
+./agent/resources/scripts/update-resources.sh v0.3.0
+git commit -m "chore: update resources to v0.3.0"
 
 # Update metadata to latest HEAD (author only)
-./scripts/update-metadata.sh
+./agent/resources/scripts/update-metadata.sh
 git commit -m "chore: update metadata to latest"
 ```
 
