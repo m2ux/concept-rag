@@ -10,7 +10,7 @@ This branch contains engineering artifacts for the concept-rag project. It maint
 | [Work Package Plans](./artifacts/planning/) | Feature/enhancement specifications |
 | [Reviews](./artifacts/reviews/) | Code and architecture reviews |
 | [Templates](./artifacts/templates/) | Reusable documentation templates |
-| [Workflows](https://github.com/m2ux/agent-workflows) | Reusable agent workflows (submodule) |
+| [Resources](https://github.com/m2ux/agent-resources) | Reusable agent resources (submodule) |
 | [Scripts](./scripts/) | Utility scripts for submodule management |
 | [Agent Guidelines](./AGENTS.md) | AI agent behavior rules |
 | [Architecture](./ARCHITECTURE.md) | Guide for in-repo vs external engineering |
@@ -28,10 +28,10 @@ engineering (this branch)
 │   ├── reviews/              # Code and architecture reviews
 │   └── templates/            # Reusable templates
 ├── agent/                    # Agent-related submodules
-│   ├── workflows/            # Submodule → m2ux/agent-workflows (public)
+│   ├── resources/            # Submodule → m2ux/agent-resources (public)
 │   └── metadata/             # Submodule (private)
 └── scripts/                  # Utility scripts
-    ├── update-workflows.sh   # Update workflows to specific version
+    ├── update-resources.sh   # Update resources to specific version
     └── update-metadata.sh    # Update metadata to latest (includes sparse checkout)
 ```
 
@@ -41,7 +41,7 @@ This branch includes two submodules under `agent/`:
 
 | Submodule | Repository | Visibility | Strategy |
 |-----------|------------|------------|----------|
-| `agent/workflows/` | [m2ux/agent-workflows](https://github.com/m2ux/agent-workflows) | Public | Pinned to version tag |
+| `agent/resources/` | [m2ux/agent-resources](https://github.com/m2ux/agent-resources) | Public | Pinned to version tag |
 | `agent/metadata/` | m2ux/ai-metadata | Private | Tracks `master` branch |
 
 ### Cloning with Submodules
@@ -54,16 +54,16 @@ git clone --recurse-submodules https://github.com/m2ux/concept-rag.git -b engine
 git submodule update --init --recursive
 ```
 
-**Note:** The `agent/metadata/` submodule requires access to the private repo. Non-collaborators can still use `agent/workflows/`.
+**Note:** The `agent/metadata/` submodule requires access to the private repo. Non-collaborators can still use `agent/resources/`.
 
 ### Updating Submodules
 
 Use the provided scripts:
 
 ```bash
-# Update workflows to a specific version
-./scripts/update-workflows.sh v0.2.0
-git commit -m "chore: update workflows to v0.2.0"
+# Update resources to a specific version
+./scripts/update-resources.sh v0.2.0
+git commit -m "chore: update resources to v0.2.0"
 
 # Update metadata to latest HEAD (author only)
 ./scripts/update-metadata.sh

@@ -185,7 +185,7 @@ engineering branch (or orphan branch in engineering repo)
 - ✅ Roadmaps and design documents
 
 **Via submodules (referenced from engineering branch):**
-- 📦 Agent workflows/prompts → `agent/workflows/` submodule (public)
+- 📦 Agent workflows/prompts → `agent/resources/` submodule (public)
 - 📦 AI metadata/history → `agent/metadata/` submodule (private)
 
 **Exclude entirely:**
@@ -205,7 +205,7 @@ engineering/
 │   ├── reviews/          # Code reviews
 │   └── templates/        # Project-specific templates
 └── agent/                # Agent-related submodules
-    ├── workflows/        # Submodule → github.com/m2ux/agent-workflows (public)
+    ├── resources/        # Submodule → github.com/m2ux/agent-resources (public)
     └── metadata/         # Submodule → github.com/m2ux/ai-metadata (private)
 ```
 
@@ -213,7 +213,7 @@ engineering/
 
 ```bash
 # In engineering branch worktree
-git submodule add https://github.com/m2ux/agent-workflows.git agent/workflows
+git submodule add https://github.com/m2ux/agent-resources.git agent/resources
 git submodule add https://github.com/m2ux/ai-metadata.git agent/metadata
 git commit -m "chore: add workflow and private submodules"
 ```
