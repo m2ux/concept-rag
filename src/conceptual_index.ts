@@ -24,6 +24,14 @@ const PROJECT_ROOT = path.resolve(__dirname, '../');
  * Unlike tools, resources are read-only and don't execute any logic.
  */
 const RESOURCES = [
+  // Agent guidance resource
+  {
+    uri: 'concept-rag://guidance',
+    name: 'Agent Research Rules',
+    description: 'Research rules: synthesis, stop conditions, answer templates, tool selection, citations.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/guidance.md',
+  },
   // Intent resources (problem domain - user goals)
   {
     uri: 'concept-rag://intents',
@@ -46,6 +54,41 @@ const RESOURCES = [
     mimeType: 'text/markdown',
     filePath: 'prompts/intents/know-my-library.md',
   },
+  {
+    uri: 'concept-rag://intents/explore-concept',
+    name: 'Intent: Explore a Concept',
+    description: 'Intent for tracking where a concept appears across the library.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/intents/explore-concept.md',
+  },
+  {
+    uri: 'concept-rag://intents/analyze-document',
+    name: 'Intent: Analyze a Document',
+    description: 'Intent for extracting and analyzing concepts from a specific document.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/intents/analyze-document.md',
+  },
+  {
+    uri: 'concept-rag://intents/explore-category',
+    name: 'Intent: Explore a Category',
+    description: 'Intent for understanding what concepts appear in a domain/category.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/intents/explore-category.md',
+  },
+  {
+    uri: 'concept-rag://intents/identify-patterns',
+    name: 'Intent: Identify Patterns',
+    description: 'Intent for identifying design patterns applicable to a problem.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/intents/identify-patterns.md',
+  },
+  {
+    uri: 'concept-rag://intents/identify-best-practices',
+    name: 'Intent: Identify Best Practices',
+    description: 'Intent for identifying best practices and anti-patterns.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/intents/identify-best-practices.md',
+  },
   // Skill resources (solution domain - capabilities)
   {
     uri: 'concept-rag://skills',
@@ -67,6 +110,41 @@ const RESOURCES = [
     description: 'Skill for browsing and inventorying library content using list_categories and category_search.',
     mimeType: 'text/markdown',
     filePath: 'prompts/skills/library-discovery.md',
+  },
+  {
+    uri: 'concept-rag://skills/concept-exploration',
+    name: 'Skill: Concept Exploration',
+    description: 'Skill for tracking where a concept appears using concept_search and source_concepts.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/skills/concept-exploration.md',
+  },
+  {
+    uri: 'concept-rag://skills/document-analysis',
+    name: 'Skill: Document Analysis',
+    description: 'Skill for extracting concepts from a document using catalog_search and extract_concepts.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/skills/document-analysis.md',
+  },
+  {
+    uri: 'concept-rag://skills/category-exploration',
+    name: 'Skill: Category Exploration',
+    description: 'Skill for understanding domain concepts using category_search and list_concepts_in_category.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/skills/category-exploration.md',
+  },
+  {
+    uri: 'concept-rag://skills/pattern-research',
+    name: 'Skill: Pattern Research',
+    description: 'Skill for finding design patterns using concept_search, source_concepts, and chunks_search.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/skills/pattern-research.md',
+  },
+  {
+    uri: 'concept-rag://skills/practice-research',
+    name: 'Skill: Practice Research',
+    description: 'Skill for discovering best practices using broad_chunks_search, catalog_search, and chunks_search.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/skills/practice-research.md',
   },
 ];
 

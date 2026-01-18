@@ -79,8 +79,9 @@ const TOOL_SELECTION_PATTERNS: Array<{
 
 /**
  * Tools that are always valid (should not be penalized)
+ * Note: get_guidance tool has been removed; agents now use skills resources
  */
-const ALWAYS_VALID_TOOLS = ['get_guidance'];
+const ALWAYS_VALID_TOOLS: string[] = [];
 
 /**
  * Recommended tool workflows (get_guidance can always prefix these)
