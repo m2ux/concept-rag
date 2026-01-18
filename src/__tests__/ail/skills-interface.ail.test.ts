@@ -198,8 +198,11 @@ describe('AIL Skills Interface Tests', () => {
   // Check if test database exists
   const testDbExists = fs.existsSync(config.databasePath);
   
+  // Skip all tests if prerequisites not met
+  const shouldSkip = SKIP_AIL || !testDbExists;
+  
   beforeAll(async () => {
-    if (SKIP_AIL || !testDbExists) {
+    if (shouldSkip) {
       return;
     }
     
@@ -214,70 +217,147 @@ describe('AIL Skills Interface Tests', () => {
     }
   });
   
-  describe('Intent → Skill → Tool Workflow', () => {
-    it.skipIf(SKIP_AIL || !testDbExists)(
-      'should have skills context available',
-      () => {
-        const context = loadSkillsContext();
-        expect(context).toContain('Intent Index');
-        expect(context).toContain('Skill Index');
-        expect(context).toContain('understand-topic');
-        expect(context).toContain('deep-research');
-      }
-    );
-    
-    // Generate test for each scenario
-    SKILLS_SCENARIOS.forEach((scenario) => {
-      it.skipIf(SKIP_AIL || !testDbExists)(
-        `${scenario.name}`,
-        async () => {
-          const result = await runner.runScenario(scenario);
-          
-          // Verify tool selection aligns with expected skill workflow
-          const toolsUsed = result.toolCalls.map(tc => tc.tool);
-          const uniqueTools = [...new Set(toolsUsed)];
-          
-          // At least one expected tool should be used
-          const expectedToolUsed = scenario.expectedTools.some(
-            expected => uniqueTools.includes(expected)
-          );
-          expect(expectedToolUsed).toBe(true);
-          
-          // Should not exceed max tool calls
-          expect(result.toolCalls.length).toBeLessThanOrEqual(scenario.maxToolCalls);
-          
-          // Should complete successfully
-          expect(result.success).toBe(true);
-        },
-        { timeout: 120000 }
-      );
+  describe('Skills Context Validation', () => {
+    it('should have skills context available', () => {
+      const context = loadSkillsContext();
+      expect(context).toContain('Intent Index');
+      expect(context).toContain('Skill Index');
+      expect(context).toContain('understand-topic');
+      expect(context).toContain('deep-research');
     });
   });
   
-  describe('Tool Selection Efficiency', () => {
-    it.skipIf(SKIP_AIL || !testDbExists)(
-      'should use fewer tool calls with skills guidance',
-      async () => {
-        // This test compares tool call efficiency
-        // Skills interface should reduce unnecessary tool exploration
-        
-        const scenario = SKILLS_SCENARIOS[0]; // understand-topic
-        const result = await runner.runScenario(scenario);
-        
-        // With proper skills guidance, should complete efficiently
-        expect(result.toolCalls.length).toBeLessThanOrEqual(scenario.maxToolCalls);
-        
-        // Should not repeat the same tool call with same args
-        const toolCallSignatures = result.toolCalls.map(
-          tc => `${tc.tool}:${JSON.stringify(tc.args)}`
-        );
-        const uniqueSignatures = new Set(toolCallSignatures);
-        
-        // Allow some repetition for refinement, but not excessive
-        const repetitionRatio = uniqueSignatures.size / toolCallSignatures.length;
-        expect(repetitionRatio).toBeGreaterThan(0.5);
-      },
-      { timeout: 120000 }
-    );
+  describe.skipIf(shouldSkip)('Intent → Skill → Tool Workflow', () => {
+    
+    it('should follow understand-topic → deep-research workflow', async () => {
+      const scenario = SKILLS_SCENARIOS.find(s => s.id === 'skills-understand-topic')!;
+      const result = await runner.runScenario(scenario);
+      
+      const toolsUsed = result.toolCalls.map(tc => tc.tool);
+      const uniqueTools = [...new Set(toolsUsed)];
+      
+      // Should use expected tools from deep-research skill
+      const expectedToolUsed = scenario.expectedTools.some(t => uniqueTools.includes(t));
+      expect(expectedToolUsed).toBe(true);
+      expect(result.toolCalls.length).toBeLessThanOrEqual(scenario.maxToolCalls);
+      expect(result.success).toBe(true);
+      
+      console.log(`✓ understand-topic: ${result.toolCalls.length} tool calls, tools: ${uniqueTools.join(', ')}`);
+    }, 120000);
+    
+    it('should follow know-my-library → library-discovery workflow', async () => {
+      const scenario = SKILLS_SCENARIOS.find(s => s.id === 'skills-know-library')!;
+      const result = await runner.runScenario(scenario);
+      
+      const toolsUsed = result.toolCalls.map(tc => tc.tool);
+      const uniqueTools = [...new Set(toolsUsed)];
+      
+      const expectedToolUsed = scenario.expectedTools.some(t => uniqueTools.includes(t));
+      expect(expectedToolUsed).toBe(true);
+      expect(result.toolCalls.length).toBeLessThanOrEqual(scenario.maxToolCalls);
+      expect(result.success).toBe(true);
+      
+      console.log(`✓ know-my-library: ${result.toolCalls.length} tool calls, tools: ${uniqueTools.join(', ')}`);
+    }, 120000);
+    
+    it('should follow explore-concept → concept-exploration workflow', async () => {
+      const scenario = SKILLS_SCENARIOS.find(s => s.id === 'skills-explore-concept')!;
+      const result = await runner.runScenario(scenario);
+      
+      const toolsUsed = result.toolCalls.map(tc => tc.tool);
+      const uniqueTools = [...new Set(toolsUsed)];
+      
+      const expectedToolUsed = scenario.expectedTools.some(t => uniqueTools.includes(t));
+      expect(expectedToolUsed).toBe(true);
+      expect(result.toolCalls.length).toBeLessThanOrEqual(scenario.maxToolCalls);
+      expect(result.success).toBe(true);
+      
+      console.log(`✓ explore-concept: ${result.toolCalls.length} tool calls, tools: ${uniqueTools.join(', ')}`);
+    }, 120000);
+    
+    it('should follow analyze-document → document-analysis workflow', async () => {
+      const scenario = SKILLS_SCENARIOS.find(s => s.id === 'skills-analyze-document')!;
+      const result = await runner.runScenario(scenario);
+      
+      const toolsUsed = result.toolCalls.map(tc => tc.tool);
+      const uniqueTools = [...new Set(toolsUsed)];
+      
+      const expectedToolUsed = scenario.expectedTools.some(t => uniqueTools.includes(t));
+      expect(expectedToolUsed).toBe(true);
+      expect(result.toolCalls.length).toBeLessThanOrEqual(scenario.maxToolCalls);
+      expect(result.success).toBe(true);
+      
+      console.log(`✓ analyze-document: ${result.toolCalls.length} tool calls, tools: ${uniqueTools.join(', ')}`);
+    }, 120000);
+    
+    it('should follow explore-category → category-exploration workflow', async () => {
+      const scenario = SKILLS_SCENARIOS.find(s => s.id === 'skills-explore-category')!;
+      const result = await runner.runScenario(scenario);
+      
+      const toolsUsed = result.toolCalls.map(tc => tc.tool);
+      const uniqueTools = [...new Set(toolsUsed)];
+      
+      const expectedToolUsed = scenario.expectedTools.some(t => uniqueTools.includes(t));
+      expect(expectedToolUsed).toBe(true);
+      expect(result.toolCalls.length).toBeLessThanOrEqual(scenario.maxToolCalls);
+      expect(result.success).toBe(true);
+      
+      console.log(`✓ explore-category: ${result.toolCalls.length} tool calls, tools: ${uniqueTools.join(', ')}`);
+    }, 120000);
+    
+    it('should follow identify-patterns → pattern-research workflow', async () => {
+      const scenario = SKILLS_SCENARIOS.find(s => s.id === 'skills-identify-patterns')!;
+      const result = await runner.runScenario(scenario);
+      
+      const toolsUsed = result.toolCalls.map(tc => tc.tool);
+      const uniqueTools = [...new Set(toolsUsed)];
+      
+      const expectedToolUsed = scenario.expectedTools.some(t => uniqueTools.includes(t));
+      expect(expectedToolUsed).toBe(true);
+      expect(result.toolCalls.length).toBeLessThanOrEqual(scenario.maxToolCalls);
+      expect(result.success).toBe(true);
+      
+      console.log(`✓ identify-patterns: ${result.toolCalls.length} tool calls, tools: ${uniqueTools.join(', ')}`);
+    }, 120000);
+    
+    it('should follow identify-best-practices → practice-research workflow', async () => {
+      const scenario = SKILLS_SCENARIOS.find(s => s.id === 'skills-identify-practices')!;
+      const result = await runner.runScenario(scenario);
+      
+      const toolsUsed = result.toolCalls.map(tc => tc.tool);
+      const uniqueTools = [...new Set(toolsUsed)];
+      
+      const expectedToolUsed = scenario.expectedTools.some(t => uniqueTools.includes(t));
+      expect(expectedToolUsed).toBe(true);
+      expect(result.toolCalls.length).toBeLessThanOrEqual(scenario.maxToolCalls);
+      expect(result.success).toBe(true);
+      
+      console.log(`✓ identify-best-practices: ${result.toolCalls.length} tool calls, tools: ${uniqueTools.join(', ')}`);
+    }, 120000);
+  });
+  
+  describe.skipIf(shouldSkip)('Tool Selection Efficiency', () => {
+    it('should use fewer tool calls with skills guidance', async () => {
+      // This test compares tool call efficiency
+      // Skills interface should reduce unnecessary tool exploration
+      
+      const scenario = SKILLS_SCENARIOS[0]; // understand-topic
+      const result = await runner.runScenario(scenario);
+      
+      // With proper skills guidance, should complete efficiently
+      expect(result.toolCalls.length).toBeLessThanOrEqual(scenario.maxToolCalls);
+      
+      // Should not repeat the same tool call with same args
+      const toolCallSignatures = result.toolCalls.map(
+        tc => `${tc.tool}:${JSON.stringify(tc.args)}`
+      );
+      const uniqueSignatures = new Set(toolCallSignatures);
+      
+      // Allow some repetition for refinement, but not excessive
+      const repetitionRatio = uniqueSignatures.size / toolCallSignatures.length;
+      expect(repetitionRatio).toBeGreaterThan(0.5);
+      
+      console.log(`Tool efficiency: ${uniqueSignatures.size}/${toolCallSignatures.length} unique calls (${(repetitionRatio * 100).toFixed(0)}%)`);
+    }, 120000);
   });
 });
