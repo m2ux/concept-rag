@@ -371,14 +371,14 @@ async findByConceptName(concept: string, limit: number): Promise<Chunk[]> {
 
 ## Appendix: Investigation Scripts
 
-All investigation scripts are in `.ai/planning/2025-11-17-empty-chunk-investigation/`:
+All investigation scripts are in `.engineering/artifacts/planning/2025-11-17-empty-chunk-investigation/`:
 
 1. `investigate_empty_chunks.ts` - Initial investigation
 2. `check_catalog.ts` - Verify catalog vs chunks consistency
 3. `check_chunk_enrichment.ts` - Verify chunk concept enrichment
 4. `test_search_logic.ts` - Step-by-step search algorithm testing
 
-Run with: `npx tsx .ai/planning/2025-11-17-empty-chunk-investigation/<script>.ts`
+Run with: `npx tsx .engineering/artifacts/planning/2025-11-17-empty-chunk-investigation/<script>.ts`
 
 ---
 

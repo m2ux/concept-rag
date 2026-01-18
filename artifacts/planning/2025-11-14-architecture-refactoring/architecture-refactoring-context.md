@@ -236,7 +236,7 @@ npx @modelcontextprotocol/inspector dist/conceptual_index.js ~/.concept_rag
 ## ADDITIONAL CONTEXT
 
 See:
-- `.ai/reviews/2025-11-14-concept-rag-architecture-review-analysis.md` - Full analysis
+- `.engineering/artifacts/reviews/2025-11-14-concept-rag-architecture-review-analysis.md` - Full analysis
 - Khalil Stemmler's book (in knowledge base) - TypeScript DI patterns
 - Mark Seemann's book (in knowledge base) - Practical DI heuristics
 - Node.js Design Patterns book (in knowledge base) - Node-specific patterns

@@ -382,7 +382,7 @@ All from Project Gutenberg (public domain).
 2. `src/infrastructure/document-loaders/document-loader-factory.ts` (115 lines)
 3. `src/infrastructure/document-loaders/pdf-loader.ts` (91 lines)
 4. `src/infrastructure/document-loaders/epub-loader.ts` (250 lines)
-5. `.ai/planning/2025-11-15-ebook-format-support/` (planning docs)
+5. `.engineering/artifacts/planning/2025-11-15-ebook-format-support/` (planning docs)
 
 ### Modified (2 files)
 1. `hybrid_fast_seed.ts` (~30 lines changed)

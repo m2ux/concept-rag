@@ -21,7 +21,7 @@ This folder contains the planning and execution documentation for implementing c
 ## Source Plan
 
 This implementation follows the detailed plan from:
-`../.ai/planning/2025-11-20-knowledge-base-recommendations/04-error-handling-plan.md`
+`../.engineering/artifacts/planning/2025-11-20-knowledge-base-recommendations/04-error-handling-plan.md`
 
 ## What Was Implemented
 

@@ -115,7 +115,7 @@ npx tsx scripts/test_math_symbol_extraction.ts
 
 ## Related Documentation
 
-- **Investigation:** `.ai/planning/2025-11-25-mathematical-symbols-investigation/`
+- **Investigation:** `.engineering/artifacts/planning/2025-11-25-mathematical-symbols-investigation/`
 - **Tests:** `src/infrastructure/document-loaders/__tests__/mathematical-symbols.test.ts`
 - **Integration Tests:** `src/__tests__/integration/mathematical-symbols-integration.test.ts`
 - **ADR-0005:** PDF Document Processing with pdf-parse

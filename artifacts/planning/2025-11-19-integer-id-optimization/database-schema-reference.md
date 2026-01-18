@@ -605,7 +605,7 @@ npx tsx -e "
 - Troubleshooting: `TROUBLESHOOTING.md`
 - FAQ: `FAQ.md` section "Technical Details"
 - Domain models: `src/domain/models/`
-- Integer ID optimization planning: `.ai/planning/2025-11-19-integer-id-optimization/`
+- Integer ID optimization planning: `.engineering/artifacts/planning/2025-11-19-integer-id-optimization/`
 
 ---
 

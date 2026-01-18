@@ -89,7 +89,7 @@ Project: [project] (if upstream)
 - 1 Master Index (README.md)
 - 1 Template (template.md)
 
-**15 files in .ai/planning/2025-11-20-adr-creation/:**
+**15 files in .engineering/artifacts/planning/2025-11-20-adr-creation/:**
 - Complete planning documentation
 - Git analysis documents
 - Completion summaries

@@ -117,7 +117,7 @@ loaderFactory.registerLoader(new EPUBDocumentLoader());
 
 ### Created:
 - `src/infrastructure/embeddings/embedding-provider-factory.ts`
-- `.ai/planning/2025-11-22-architecture-refinement/04-factory-patterns.md`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/04-factory-patterns.md`
 
 ### Modified:
 - `src/infrastructure/embeddings/index.ts` (added exports)

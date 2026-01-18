@@ -351,7 +351,7 @@ Per the implementation selection matrix:
 6. `src/infrastructure/observability/__tests__/trace-id.test.ts`
 7. `src/infrastructure/observability/__tests__/instrumentation.test.ts`
 8. `docs/architecture/adr0039-observability-infrastructure.md`
-9. `.ai/planning/2025-11-23-integrated-roadmap/IMPLEMENTATION-SUMMARY-OBSERVABILITY.md` (this file)
+9. `.engineering/artifacts/planning/2025-11-23-integrated-roadmap/IMPLEMENTATION-SUMMARY-OBSERVABILITY.md` (this file)
 
 ### Modified Files (1)
 

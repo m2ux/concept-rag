@@ -44,15 +44,15 @@
 11. ⏳ **adr0011-multi-model-strategy.md**
 
 **Available Planning Docs:**
-- `.ai/planning/2025-10-13-conceptual-search-implementation/IMPLEMENTATION_PLAN.md`
-- `.ai/planning/2025-10-13-hybrid-search-implementation/README.md`
-- `.ai/planning/2025-10-13-concept-taxonomy-implementation/README.md`
+- `.engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/IMPLEMENTATION_PLAN.md`
+- `.engineering/artifacts/planning/2025-10-13-hybrid-search-implementation/README.md`
+- `.engineering/artifacts/planning/2025-10-13-concept-taxonomy-implementation/README.md`
 
 ## 📋 Remaining Phases
 
 ### Phase 2: Robustness (Oct 21)
 - **ADRs:** 1 (adr0012 - OCR Fallback)
-- **Source:** `.ai/planning/2025-10-21-ocr-evaluation/`
+- **Source:** `.engineering/artifacts/planning/2025-10-21-ocr-evaluation/`
 
 ### Phase 3: Search Refinement (Nov 12-13)
 - **ADRs:** 3 (adr0013-0015)
@@ -60,7 +60,7 @@
 
 ### Phase 4: Architecture Refactoring (Nov 14)
 - **ADRs:** 8 (adr0016-0023)  
-- **Source:** `.ai/planning/2025-11-14-architecture-refactoring/` ⭐ EXCELLENT
+- **Source:** `.engineering/artifacts/planning/2025-11-14-architecture-refactoring/` ⭐ EXCELLENT
 - **Note:** This is the REFACTORING, not initial architecture
 
 ### Phase 5: Multi-Provider & Formats (Nov 15)
@@ -69,7 +69,7 @@
 
 ### Phase 6: Category System (Nov 19)
 - **ADRs:** 4 (adr0027-0030)
-- **Source:** `.ai/planning/2025-11-19-category-search-feature/` ⭐ EXCELLENT
+- **Source:** `.engineering/artifacts/planning/2025-11-19-category-search-feature/` ⭐ EXCELLENT
 
 ### Phase 7: Tool Architecture (Various)
 - **ADRs:** 3+ (adr0031-0033+)

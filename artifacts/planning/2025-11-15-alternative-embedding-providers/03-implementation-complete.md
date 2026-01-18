@@ -163,7 +163,7 @@ Factory method that instantiates the correct embedding service based on configur
 **Lines Added**: ~60 lines of clear, actionable documentation
 
 #### Configuration Guide
-**File**: `.ai/planning/2025-11-15-alternative-embedding-providers/02-configuration-guide.md`
+**File**: `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/02-configuration-guide.md`
 
 **Comprehensive 400+ line guide including**:
 - Detailed provider comparison table
@@ -176,7 +176,7 @@ Factory method that instantiates the correct embedding service based on configur
 - When to use local vs. cloud
 
 #### Implementation Plan
-**File**: `.ai/planning/2025-11-15-alternative-embedding-providers/01-implementation-plan.md`
+**File**: `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/01-implementation-plan.md`
 
 **Contents**:
 - Task breakdown and timeline
@@ -193,10 +193,10 @@ Factory method that instantiates the correct embedding service based on configur
 1. `src/infrastructure/embeddings/openai-embedding-service.ts` (117 lines)
 2. `src/infrastructure/embeddings/openrouter-embedding-service.ts` (140 lines)
 3. `src/infrastructure/embeddings/huggingface-embedding-service.ts` (235 lines)
-4. `.ai/planning/2025-11-15-alternative-embedding-providers/README.md`
-5. `.ai/planning/2025-11-15-alternative-embedding-providers/01-implementation-plan.md`
-6. `.ai/planning/2025-11-15-alternative-embedding-providers/02-configuration-guide.md`
-7. `.ai/planning/2025-11-15-alternative-embedding-providers/03-implementation-complete.md` (this file)
+4. `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/README.md`
+5. `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/01-implementation-plan.md`
+6. `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/02-configuration-guide.md`
+7. `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/03-implementation-complete.md` (this file)
 
 **Modified** (4 files):
 1. `src/config.ts` - Added embedding configuration (49 lines)

@@ -200,7 +200,7 @@ Implements: EPUB support for ebook indexing
 - **Development Time**: ~8 hours (planning, implementation, testing)
 - **Branch**: `feature/ebook-format-support`
 - **Commit**: `3ff26f4` - "feat: add EPUB document format support"
-- **Planning Docs**: `.ai/planning/2025-11-15-ebook-format-support/`
+- **Planning Docs**: `.engineering/artifacts/planning/2025-11-15-ebook-format-support/`
 
 ## Questions for Reviewers
 

@@ -367,9 +367,9 @@ The `arch_update` branch can be merged to `main` after:
 
 ## References
 
-- [Architecture Review Document](.ai/reviews/2025-11-14-concept-rag-architecture-review-analysis.md)
-- [Implementation Plan](.ai/planning/2025-11-14-architecture-refactoring-implementation-plan.md)
-- [Context File](.ai/contexts/architecture-refactoring-context.md)
+- [Architecture Review Document](.engineering/artifacts/reviews/2025-11-14-concept-rag-architecture-review-analysis.md)
+- [Implementation Plan](.engineering/artifacts/planning/2025-11-14-architecture-refactoring-implementation-plan.md)
+- [Context File](.engineering/artifacts/planning/architecture-refactoring-context.md)
 
 **Knowledge Base Sources**:
 - "Code That Fits in Your Head" (Mark Seemann) - Composition Root pattern

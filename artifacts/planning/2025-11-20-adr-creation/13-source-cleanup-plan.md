@@ -17,7 +17,7 @@
 
 ✅ **Valid Sources:**
 - Git commits (commit hash, message, date)
-- Planning documents (.ai/planning/*)
+- Planning documents (.engineering/artifacts/planning/*)
 - Chat histories/summaries (if exist)
 
 ## Strategy

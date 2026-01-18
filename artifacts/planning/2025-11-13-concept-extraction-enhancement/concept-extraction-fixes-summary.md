@@ -31,7 +31,7 @@ Enhanced JSON sanitization and error handling in `ConceptExtractor`:
 - `src/concepts/concept_extractor.ts`
 
 ### Documentation
-- See: `.ai/planning/concept-extraction-json-error-fix.md`
+- See: `.engineering/artifacts/planning/concept-extraction-json-error-fix.md`
 
 ---
 
@@ -82,7 +82,7 @@ Skip PDF loading and reconstruct documents from existing chunks:
 - `hybrid_fast_seed.ts`
 
 ### Documentation
-- See: `.ai/planning/rescan-ocr-prevention-fix.md`
+- See: `.engineering/artifacts/planning/rescan-ocr-prevention-fix.md`
 
 ---
 
@@ -179,9 +179,9 @@ The system now automatically:
 - `hybrid_fast_seed.ts` - Document loading with OCR prevention
 
 ### Documentation
-- `.ai/planning/concept-extraction-json-error-fix.md` - Detailed JSON fix
-- `.ai/planning/rescan-ocr-prevention-fix.md` - Detailed OCR prevention fix
-- `.ai/planning/concept-extraction-fixes-summary.md` - This file
+- `.engineering/artifacts/planning/concept-extraction-json-error-fix.md` - Detailed JSON fix
+- `.engineering/artifacts/planning/rescan-ocr-prevention-fix.md` - Detailed OCR prevention fix
+- `.engineering/artifacts/planning/concept-extraction-fixes-summary.md` - This file
 
 ### Debug Outputs
 - `/tmp/concept_extraction_error_*.txt` - JSON parsing failures (when they occur)

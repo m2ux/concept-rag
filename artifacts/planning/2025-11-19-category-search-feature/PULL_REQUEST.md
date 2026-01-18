@@ -88,7 +88,7 @@ Updated:
 - `tool-selection-guide.md` - Added category tools to decision tree
 - `USAGE.md` - Detailed usage examples
 - `README.md` - Feature highlights updated
-- `.ai/planning/2025-11-19-category-search-feature/` - Complete planning docs
+- `.engineering/artifacts/planning/2025-11-19-category-search-feature/` - Complete planning docs
 
 ## Deployment
 

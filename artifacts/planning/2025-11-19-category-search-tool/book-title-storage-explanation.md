@@ -103,7 +103,7 @@ The design choice to use the file path as the source of truth has several advant
 ## Related Code
 
 - **Schema definition**: `hybrid_fast_seed.ts` lines 988-1009 (`createLanceTableWithSimpleEmbeddings`)
-- **Title extraction**: `.ai/planning/2025-11-19-category-search-tool/generate_category_report.ts` lines 63-65
+- **Title extraction**: `.engineering/artifacts/planning/2025-11-19-category-search-tool/generate_category_report.ts` lines 63-65
 - **Catalog repository**: `src/infrastructure/lancedb/repositories/lancedb-catalog-repository.ts`
 - **Hybrid search with title matching**: `src/domain/services/hybrid-search-service.ts`
 

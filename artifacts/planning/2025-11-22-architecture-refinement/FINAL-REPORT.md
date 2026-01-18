@@ -89,7 +89,7 @@ Duration:    132.69s
 - `.dependency-cruiser.cjs`
 
 **Documentation** (10 files):
-- `.ai/planning/2025-11-22-architecture-refinement/` (complete suite)
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/` (complete suite)
 
 ### Modified (6 files)
 
@@ -98,7 +98,7 @@ Duration:    132.69s
 - `src/infrastructure/cache/category-id-cache.ts`
 - `src/infrastructure/embeddings/index.ts`
 - `src/application/config/configuration.ts` (parseFloat fix)
-- `.ai/planning/2025-11-20-knowledge-base-recommendations/03-architecture-refinement-plan.md`
+- `.engineering/artifacts/planning/2025-11-20-knowledge-base-recommendations/03-architecture-refinement-plan.md`
 
 ## Quality Metrics
 
@@ -230,7 +230,7 @@ npx madge --circular src/
 ## Knowledge Transfer
 
 ### Documentation Location
-`.ai/planning/2025-11-22-architecture-refinement/`
+`.engineering/artifacts/planning/2025-11-22-architecture-refinement/`
 
 **Key Documents**:
 1. `README.md` - Quick overview

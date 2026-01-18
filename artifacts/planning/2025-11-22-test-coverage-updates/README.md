@@ -61,7 +61,7 @@ Complete summary of test suite improvements implemented:
 ## Related Documentation
 
 ### In Main Project
-- **Test Suite Review:** `.ai/reviews/concept-rag-test-suite-review-2025-11-22-updated.md`
+- **Test Suite Review:** `.engineering/artifacts/reviews/concept-rag-test-suite-review-2025-11-22-updated.md`
 - **Test Files:** `src/__tests__/` and `test/`
 - **Coverage Reports:** `coverage/` (generated)
 
@@ -101,7 +101,7 @@ Complete summary of test suite improvements implemented:
 ## Contact
 
 For questions about test coverage or these documents, refer to:
-- Test suite review in `.ai/reviews/`
+- Test suite review in `.engineering/artifacts/reviews/`
 - CONTRIBUTING.md for testing guidelines
 - Project maintainers for clarification
 

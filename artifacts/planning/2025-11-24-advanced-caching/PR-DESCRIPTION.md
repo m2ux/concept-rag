@@ -86,7 +86,7 @@ npm run test:e2e:cache       # Comprehensive (30+ min)
 - `src/infrastructure/cache/__tests__/embedding-cache.test.ts` (469 lines)
 - `src/__tests__/e2e/cache-performance.e2e.test.ts` (374 lines)
 - `scripts/benchmark-cache.ts` (144 lines)
-- `.ai/planning/.../CACHE-PERFORMANCE-TESTING.md` (418 lines)
+- `.engineering/artifacts/planning/.../CACHE-PERFORMANCE-TESTING.md` (418 lines)
 
 **Modified Files (3):**
 - `src/application/container.ts` (+18 lines)
@@ -97,8 +97,8 @@ npm run test:e2e:cache       # Comprehensive (30+ min)
 
 ## Documentation
 
-- [CACHING-IMPLEMENTATION-COMPLETE.md](../.ai/planning/2025-11-23-integrated-roadmap/CACHING-IMPLEMENTATION-COMPLETE.md) - Implementation summary
-- [CACHE-PERFORMANCE-TESTING.md](../.ai/planning/2025-11-23-integrated-roadmap/CACHE-PERFORMANCE-TESTING.md) - Testing guide
+- [CACHING-IMPLEMENTATION-COMPLETE.md](../.engineering/artifacts/planning/2025-11-23-integrated-roadmap/CACHING-IMPLEMENTATION-COMPLETE.md) - Implementation summary
+- [CACHE-PERFORMANCE-TESTING.md](../.engineering/artifacts/planning/2025-11-23-integrated-roadmap/CACHE-PERFORMANCE-TESTING.md) - Testing guide
 - Inline JSDoc for all public APIs
 
 ## Future Work
@@ -120,7 +120,7 @@ No special deployment steps required:
 
 ## Related
 
-- Based on: [05-caching-strategy-plan.md](../.ai/planning/2025-11-23-integrated-roadmap/05-caching-strategy-plan.md)
+- Based on: [05-caching-strategy-plan.md](../.engineering/artifacts/planning/2025-11-23-integrated-roadmap/05-caching-strategy-plan.md)
 - Implements: Phase 3 of integrated roadmap
 - Closes: #[issue-number-if-any]
 

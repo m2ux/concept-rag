@@ -795,7 +795,7 @@ process.exit(success ? 0 : 1);
 
 ### 6.1 Update Schema Documentation
 
-**File:** `.ai/planning/database-schema.md`
+**File:** `.engineering/artifacts/planning/database-schema.md`
 
 Update to reflect normalized schema.
 

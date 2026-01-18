@@ -139,7 +139,7 @@ ADR describes discriminated union type, actual implementation uses class-based a
 .dependency-cruiser.cjs (3 rules)
 
 # ✅ Planning docs
-.ai/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md
+.engineering/artifacts/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md
 ```
 
 **What Was NOT Implemented**:
@@ -183,10 +183,10 @@ ls: cannot access '.husky/': No such file or directory
    - ~100 lines changed
 
 ### Created Files (4)
-1. `.ai/planning/2025-11-23-adr-accuracy-review/README.md`
-2. `.ai/planning/2025-11-23-adr-accuracy-review/REVIEW-FINDINGS.md`
-3. `.ai/planning/2025-11-23-adr-accuracy-review/ADR0038-CORRECTIONS.md`
-4. `.ai/planning/2025-11-23-adr-accuracy-review/IMPLEMENTATION-SUMMARY.md` (this file)
+1. `.engineering/artifacts/planning/2025-11-23-adr-accuracy-review/README.md`
+2. `.engineering/artifacts/planning/2025-11-23-adr-accuracy-review/REVIEW-FINDINGS.md`
+3. `.engineering/artifacts/planning/2025-11-23-adr-accuracy-review/ADR0038-CORRECTIONS.md`
+4. `.engineering/artifacts/planning/2025-11-23-adr-accuracy-review/IMPLEMENTATION-SUMMARY.md` (this file)
 
 ## Quality Metrics
 

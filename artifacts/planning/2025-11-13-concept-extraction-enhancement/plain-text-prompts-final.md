@@ -230,9 +230,9 @@ To run after TRIZ repair:
 ## Related Documentation
 
 - **User Guide**: `prompts/README.md`
-- **Technical Analysis**: `.ai/planning/concept-extraction-prompt-review.md`
-- **Previous Refactoring**: `.ai/planning/prompt-refactoring-implementation.md`
-- **Root Cause**: `.ai/planning/concept-search-triz-analysis.md`
+- **Technical Analysis**: `.engineering/artifacts/planning/concept-extraction-prompt-review.md`
+- **Previous Refactoring**: `.engineering/artifacts/planning/prompt-refactoring-implementation.md`
+- **Root Cause**: `.engineering/artifacts/planning/concept-search-triz-analysis.md`
 
 ## Summary
 

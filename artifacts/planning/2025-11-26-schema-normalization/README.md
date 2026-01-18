@@ -103,14 +103,14 @@ These scripts should be tested on the sample-docs test database before applying 
 - Schema validation passes
 
 ### Phase 6: Documentation ✅
-- Updated `.ai/planning/database-schema.md`
+- Updated `.engineering/artifacts/planning/database-schema.md`
 - Created `docs/architecture/adr0043-schema-normalization.md`
 - Updated this README
 
 ## Related Documents
 
-- `.ai/planning/database-schema.md` - Current schema documentation
-- `.ai/planning/2025-11-19-integer-id-optimization/` - Previous ID optimization
+- `.engineering/artifacts/planning/database-schema.md` - Current schema documentation
+- `.engineering/artifacts/planning/2025-11-19-integer-id-optimization/` - Previous ID optimization
 - `docs/architecture/adr0027-hash-based-integer-ids.md` - Hash ID decision
 - `docs/architecture/adr0009-three-table-architecture.md` - Table architecture
 
@@ -231,14 +231,14 @@ These scripts should be tested on the sample-docs test database before applying 
 - Schema validation passes
 
 ### Phase 6: Documentation ✅
-- Updated `.ai/planning/database-schema.md`
+- Updated `.engineering/artifacts/planning/database-schema.md`
 - Created `docs/architecture/adr0043-schema-normalization.md`
 - Updated this README
 
 ## Related Documents
 
-- `.ai/planning/database-schema.md` - Current schema documentation
-- `.ai/planning/2025-11-19-integer-id-optimization/` - Previous ID optimization
+- `.engineering/artifacts/planning/database-schema.md` - Current schema documentation
+- `.engineering/artifacts/planning/2025-11-19-integer-id-optimization/` - Previous ID optimization
 - `docs/architecture/adr0027-hash-based-integer-ids.md` - Hash ID decision
 - `docs/architecture/adr0009-three-table-architecture.md` - Table architecture
 
@@ -359,14 +359,14 @@ These scripts should be tested on the sample-docs test database before applying 
 - Schema validation passes
 
 ### Phase 6: Documentation ✅
-- Updated `.ai/planning/database-schema.md`
+- Updated `.engineering/artifacts/planning/database-schema.md`
 - Created `docs/architecture/adr0043-schema-normalization.md`
 - Updated this README
 
 ## Related Documents
 
-- `.ai/planning/database-schema.md` - Current schema documentation
-- `.ai/planning/2025-11-19-integer-id-optimization/` - Previous ID optimization
+- `.engineering/artifacts/planning/database-schema.md` - Current schema documentation
+- `.engineering/artifacts/planning/2025-11-19-integer-id-optimization/` - Previous ID optimization
 - `docs/architecture/adr0027-hash-based-integer-ids.md` - Hash ID decision
 - `docs/architecture/adr0009-three-table-architecture.md` - Table architecture
 

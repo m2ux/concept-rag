@@ -29,7 +29,7 @@
 ## References
 
 ### Planning Documents
-- [Doc Title](.ai/planning/YYYY-MM-DD-folder/file.md)
+- [Doc Title](.engineering/artifacts/planning/YYYY-MM-DD-folder/file.md)
 
 ### Git Commit (if applicable)
 - Commit: [hash]

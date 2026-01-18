@@ -137,12 +137,12 @@ Created comprehensive guides:
 13. `test/conceptual_search_test.ts`
 
 ### Documentation (6)
-14. `.ai/CONCEPTUAL_SEARCH_RECOMMENDATIONS.md`
-15. `.ai/WORDNET_INTEGRATION_ANALYSIS.md`
-16. `.ai/IMPLEMENTATION_PLAN.md`
-17. `.ai/CONCEPTUAL_SEARCH_USAGE.md`
-18. `.ai/IMPLEMENTATION_COMPLETE.md`
-19. `.ai/CLEANUP_SUMMARY.md`
+14. `.engineering/artifacts/planning/2025-11-13-search-improvements/CONCEPTUAL_SEARCH_RECOMMENDATIONS.md`
+15. `.engineering/artifacts/planning/2025-11-13-search-improvements/WORDNET_INTEGRATION_ANALYSIS.md`
+16. `.engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/IMPLEMENTATION_PLAN.md`
+17. `.engineering/artifacts/planning/2025-11-13-search-improvements/CONCEPTUAL_SEARCH_USAGE.md`
+18. `.engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/IMPLEMENTATION_COMPLETE.md`
+19. `.engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/CLEANUP_SUMMARY.md`
 
 ## 🔧 Files Modified (6)
 

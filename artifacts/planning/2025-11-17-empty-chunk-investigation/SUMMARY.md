@@ -94,7 +94,7 @@ const matches = allChunks.filter(chunk =>
 
 ## Files
 
-All investigation materials in: `.ai/planning/2025-11-17-empty-chunk-investigation/`
+All investigation materials in: `.engineering/artifacts/planning/2025-11-17-empty-chunk-investigation/`
 
 - `INVESTIGATION_REPORT.md` - Full detailed analysis
 - `investigate_empty_chunks.ts` - Initial investigation

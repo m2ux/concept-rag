@@ -145,7 +145,7 @@ New code can choose between:
 
 - `src/domain/validation/validation.ts` - Core validation types and rules
 - `src/domain/validation/index.ts` - Module exports
-- `.ai/planning/2025-11-22-architecture-refinement/03-validation-layer.md` - This document
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/03-validation-layer.md` - This document
 
 ## Next Steps (Future Enhancements)
 

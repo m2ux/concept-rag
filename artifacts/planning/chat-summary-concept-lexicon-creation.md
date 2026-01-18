@@ -57,7 +57,7 @@ Based on codebase analysis, 13 categories were selected:
 - Document Sources section with 197 numbered source books
 - Executive summary explaining category selection methodology
 
-### `./.ai/prompts/concept-discovery-workflow.md`
+### `./.engineering/artifacts/templates/concept-discovery-workflow.md`
 - Documents the workflow for concept discovery
 - Rationale for category and concept selection
 - Organization, documentation, and maintenance guidelines

@@ -149,7 +149,7 @@ This session completed the implementation of WordNet integration enhancements ba
 - Updated `src/concepts/query_expander.ts` - Inject `ContextAwareStrategy`
 - Updated `src/infrastructure/search/conceptual-hybrid-search-service.ts` - Dynamic weights
 - Fixed `src/tools/operations/conceptual_broad_chunks_search.ts` - Added missing `limit` param
-- Created `.ai/planning/2025-12-03-wordnet-enhancement/wp-summary.md`
+- Created `.engineering/artifacts/planning/2025-12-03-wordnet-enhancement/wp-summary.md`
 
 **Commits:**
 - `e73427b` - fix(tools): add missing limit parameter to ConceptualBroadChunksSearchParams
@@ -247,7 +247,7 @@ Detailed Breakdown:
 - `scripts/run-mcp-regression.ts` (224 lines)
 
 **Documentation:**
-- `.ai/planning/2025-12-03-wordnet-enhancement/wp-summary.md`
+- `.engineering/artifacts/planning/2025-12-03-wordnet-enhancement/wp-summary.md`
 
 ### Modified Files (5)
 
@@ -500,12 +500,12 @@ Lines Added: ~3,200
 ## References
 
 ### Work Package Documents
-- **Planning:** `.ai/planning/2025-11-29-unified-search/wordnet-enhancement-wp.md`
-- **Summary:** `.ai/planning/2025-12-03-wordnet-enhancement/wp-summary.md`
-- **This Session:** `.ai/planning/2025-12-03-wordnet-enhancement-session.md`
+- **Planning:** `.engineering/artifacts/planning/2025-11-29-unified-search/wordnet-enhancement-wp.md`
+- **Summary:** `.engineering/artifacts/planning/2025-12-03-wordnet-enhancement/wp-summary.md`
+- **This Session:** `.engineering/artifacts/planning/2025-12-03-wordnet-enhancement-session.md`
 
 ### Test Reports
-- **Previous:** `.ai/planning/2025-11-29-unified-search/mcp-tool-test-report.md`
+- **Previous:** `.engineering/artifacts/planning/2025-11-29-unified-search/mcp-tool-test-report.md`
 - **Validation:** `scripts/validate-wordnet-enhancement.ts`
 - **Regression:** `scripts/run-mcp-regression.ts`
 

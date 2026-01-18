@@ -43,7 +43,7 @@
 ## Key Files
 
 **Must Review**:
-- `.ai/planning/2025-11-22-architecture-refinement/IMPLEMENTATION-COMPLETE.md` - Full details
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/IMPLEMENTATION-COMPLETE.md` - Full details
 - `src/application/config/configuration.ts` - New configuration service
 - `src/domain/interfaces/caches/` - Cache interfaces
 - `src/domain/validation/validation.ts` - Validation framework
@@ -93,7 +93,7 @@ All improvements are:
 ## Documentation
 
 Complete planning docs in:
-`.ai/planning/2025-11-22-architecture-refinement/`
+`.engineering/artifacts/planning/2025-11-22-architecture-refinement/`
 
 - `00-implementation-kickoff.md`
 - `01-interface-audit.md`

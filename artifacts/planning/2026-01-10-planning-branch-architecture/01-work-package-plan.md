@@ -76,12 +76,12 @@ Migrate engineering artifacts to an orphan `engineering` branch within the conce
 3. **Sensitive content:** API keys, credentials, internal URLs
 
 **Steps:**
-1. Scan `.ai/planning/` for chat-style content
+1. Scan `.engineering/artifacts/planning/` for chat-style content
 2. Create list of files requiring:
    - Exclusion (chat history → stays in private repo)
    - Redaction (cross-project refs → substitute generic names)
    - Direct migration (clean files)
-3. Scan `.ai/reviews/` with same criteria
+3. Scan `.engineering/artifacts/reviews/` with same criteria
 4. Document filtering decisions
 
 **Deliverables:**
@@ -112,7 +112,7 @@ Migrate engineering artifacts to an orphan `engineering` branch within the conce
 **Goal:** Copy filtered work package plans to engineering branch.
 
 **Steps:**
-1. For each clean folder in `.ai/planning/`:
+1. For each clean folder in `.engineering/artifacts/planning/`:
    - Copy to `artifacts/planning/`
 2. For folders requiring redaction:
    - Copy and apply redactions
@@ -133,8 +133,8 @@ Migrate engineering artifacts to an orphan `engineering` branch within the conce
 
 **Steps:**
 1. Copy `AGENTS.md` to agent-workflows repo (shared via submodule)
-2. Copy `.ai/reviews/` to `artifacts/reviews/`
-3. Copy `.ai/architecture/` templates to `artifacts/templates/`
+2. Copy `.engineering/artifacts/reviews/` to `artifacts/reviews/`
+3. Copy `.engineering/artifacts/templates/` templates to `artifacts/templates/`
 4. Commit
 
 **Deliverables:**

@@ -192,8 +192,8 @@ From investigation analysis (`2025-11-13-search-method-comparison-innovation-con
 
 ### Created:
 1. `tool-selection-guide.md` - Comprehensive decision guide (5,800+ words)
-2. `.ai/investigations/2025-11-13-search-method-comparison-innovation-concept.md` - Analysis
-3. `.ai/completed/2025-11-13-tool-documentation-enhancement-summary.md` - This document
+2. `.engineering/artifacts/planning/2025-11-13-search-method-comparison-innovation-concept.md` - Analysis
+3. `.engineering/artifacts/planning/2025-11-13-tool-documentation-enhancement-summary.md` - This document
 
 ### Modified:
 1. `src/tools/operations/concept_search.ts` - Enhanced description
@@ -224,10 +224,10 @@ concept-rag/
 │   ├── conceptual_catalog_search.ts       # USE WHEN / DO NOT USE embedded
 │   ├── conceptual_chunks_search.ts        # USE WHEN / DO NOT USE embedded
 │   └── document_concepts_extract.ts       # USE WHEN / DO NOT USE embedded
-└── .ai/
-    ├── investigations/
+└── .engineering/artifacts/planning/
+    ├── 2025-11-13-search-improvements/
     │   └── 2025-11-13-search-method-comparison-*.md  # Empirical analysis
-    └── completed/
+    └── 2025-11-13-tool-documentation-enhancement/
         └── 2025-11-13-tool-documentation-*.md        # This summary
 ```
 

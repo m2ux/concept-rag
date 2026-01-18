@@ -35,7 +35,7 @@ npx tsx -e "
 
 **Outputs**:
 - Backup location: `~/.concept_rag.backup.YYYYMMDD`
-- Row counts saved to: `.ai/planning/2025-11-19-integer-id-optimization/pre-migration-state.json`
+- Row counts saved to: `.engineering/artifacts/planning/2025-11-19-integer-id-optimization/pre-migration-state.json`
 
 #### 0.2 Create Stable ID Mapping
 
@@ -64,7 +64,7 @@ for (const row of results) {
 }
 
 await Bun.write(
-  '.ai/planning/2025-11-19-integer-id-optimization/concept-id-mapping.json',
+  '.engineering/artifacts/planning/2025-11-19-integer-id-optimization/concept-id-mapping.json',
   JSON.stringify(mapping, null, 2)
 );
 

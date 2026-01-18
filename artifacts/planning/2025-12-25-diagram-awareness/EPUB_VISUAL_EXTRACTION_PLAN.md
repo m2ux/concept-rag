@@ -472,7 +472,7 @@ Create test EPUBs with:
 
 #### Task 5.1: Update Planning Documents
 **Effort:** 30 minutes  
-**Deliverable:** Updated docs in `.ai/planning/2025-12-25-diagram-awareness/`
+**Deliverable:** Updated docs in `.engineering/artifacts/planning/2025-12-25-diagram-awareness/`
 
 Update:
 - `README.md` - Add EPUB support note

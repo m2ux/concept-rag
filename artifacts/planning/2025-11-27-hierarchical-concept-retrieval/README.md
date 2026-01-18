@@ -108,7 +108,7 @@ The following prototype scripts have been created and tested:
 
 ## Related Documents
 
-- `.ai/planning/2025-11-26-schema-normalization/` - Current schema normalization
+- `.engineering/artifacts/planning/2025-11-26-schema-normalization/` - Current schema normalization
 - `docs/architecture/adr0009-three-table-architecture.md` - Original table architecture
 - `docs/architecture/adr0043-schema-normalization.md` - Recent normalization changes
 - `docs/database-schema.md` - Current schema specification

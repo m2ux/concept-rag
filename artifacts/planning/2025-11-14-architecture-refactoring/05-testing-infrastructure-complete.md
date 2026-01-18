@@ -440,7 +440,7 @@ npm test field-parsers
 ## Documentation Created
 
 ### Files
-1. **Testing Strategy** (`.ai/planning/2025-11-14-testing-strategy.md`)
+1. **Testing Strategy** (`.engineering/artifacts/planning/2025-11-14-testing-strategy.md`)
    - Comprehensive testing approach
    - Knowledge base references
    - Testing patterns and principles
@@ -450,7 +450,7 @@ npm test field-parsers
    - Examples and patterns
    - Design pattern explanations
 
-3. **This Summary** (`.ai/summaries/2025-11-14-testing-infrastructure-complete.md`)
+3. **This Summary** (`.engineering/artifacts/planning/2025-11-14-testing-infrastructure-complete.md`)
    - What was implemented
    - Results achieved
    - Future directions
@@ -516,10 +516,10 @@ npm test field-parsers
 5. **"Introduction to Software Design and Architecture With TypeScript"** (Stemmler)
 
 ### Related Documents
-- [Testing Strategy](.ai/planning/2025-11-14-testing-strategy.md)
+- [Testing Strategy](.engineering/artifacts/planning/2025-11-14-testing-strategy.md)
 - [Test Helpers README](../src/__tests__/test-helpers/README.md)
-- [Architecture Review](.ai/reviews/2025-11-14-concept-rag-architecture-review-analysis.md)
-- [Architecture Refactoring Summary](.ai/summaries/2025-11-14-architecture-refactoring-complete.md)
+- [Architecture Review](.engineering/artifacts/reviews/2025-11-14-concept-rag-architecture-review-analysis.md)
+- [Architecture Refactoring Summary](.engineering/artifacts/planning/2025-11-14-architecture-refactoring-complete.md)
 
 ---
 

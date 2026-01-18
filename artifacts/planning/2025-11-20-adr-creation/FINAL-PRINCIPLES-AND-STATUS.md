@@ -43,7 +43,7 @@
    - Code as shown in commit diff
 
 2. **Planning Documents**
-   - `.ai/planning/` folders
+   - `.engineering/artifacts/planning/` folders
    - Planning markdown files
 
 3. **Chat Histories/Summaries**

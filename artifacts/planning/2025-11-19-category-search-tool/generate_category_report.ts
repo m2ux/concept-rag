@@ -80,7 +80,7 @@ async function main() {
         }
     }
     
-    const outputPath = path.join(process.cwd(), '.ai/planning/2025-11-19-category-search-tool/2025-11-19-software-engineering-report.md');
+    const outputPath = path.join(process.cwd(), '.engineering/artifacts/planning/2025-11-19-category-search-tool/2025-11-19-software-engineering-report.md');
     fs.writeFileSync(outputPath, md);
     
     console.log(`Report generated at: ${outputPath}`);

@@ -310,7 +310,7 @@ async search(collection: SearchableCollection, queryText: string, ...): Promise<
 
 ## References
 
-- **Implementation History:** `.ai/history/2025-11-25_09-02Z-create-feature-plan-with-justifications.md`
+- **Implementation History:** `.engineering/artifacts/history/2025-11-25_09-02Z-create-feature-plan-with-justifications.md`
 - **Architecture Decision:** `docs/architecture/adr0042-system-resilience-patterns.md`
 - **Implementation Code:** `src/infrastructure/resilience/`
 - **Test Coverage:** `src/infrastructure/resilience/__tests__/`, `src/__tests__/e2e/`

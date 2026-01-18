@@ -865,7 +865,7 @@ async function generateMapping() {
   }
   
   await Bun.write(
-    '.ai/planning/2025-11-19-integer-id-optimization/concept-id-mapping.json',
+    '.engineering/artifacts/planning/2025-11-19-integer-id-optimization/concept-id-mapping.json',
     JSON.stringify(mapping, null, 2)
   );
   

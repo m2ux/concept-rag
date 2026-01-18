@@ -281,8 +281,8 @@ Simply edit the strings in `prompts.config.ts` - no code changes needed!
 
 - **Implementation**: `src/concepts/prompts.config.ts`
 - **Consumer**: `src/concepts/concept_extractor.ts`
-- **Analysis**: `.ai/planning/concept-extraction-prompt-review.md`
-- **Root Cause**: `.ai/planning/concept-search-triz-analysis.md`
+- **Analysis**: `.engineering/artifacts/planning/concept-extraction-prompt-review.md`
+- **Root Cause**: `.engineering/artifacts/planning/concept-search-triz-analysis.md`
 
 ## Summary
 

@@ -23,9 +23,9 @@
 ### Phase 1: Search Enhancement (October 13, 2025)
 
 **Evidence:** 
-- `.ai/planning/2025-10-13-hybrid-search-implementation/`
-- `.ai/planning/2025-10-13-conceptual-search-implementation/`
-- `.ai/planning/2025-10-13-concept-taxonomy-implementation/`
+- `.engineering/artifacts/planning/2025-10-13-hybrid-search-implementation/`
+- `.engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/`
+- `.engineering/artifacts/planning/2025-10-13-concept-taxonomy-implementation/`
 
 **Decisions Made:**
 6. **Hybrid Search Strategy** - Multi-signal ranking (vector + BM25 + title)
@@ -45,7 +45,7 @@
 
 ### Phase 2: Robustness (October 21, 2025)
 
-**Evidence:** `.ai/planning/2025-10-21-ocr-evaluation/`
+**Evidence:** `.engineering/artifacts/planning/2025-10-21-ocr-evaluation/`
 
 **Decisions Made:**
 12. **OCR Fallback Strategy** - Tesseract OCR for scanned documents
@@ -54,7 +54,7 @@
 
 ### Phase 3: MCP & Tools (October/November 2025)
 
-**Evidence:** `.ai/planning/2025-11-11-mcp-fixes/`
+**Evidence:** `.engineering/artifacts/planning/2025-11-11-mcp-fixes/`
 
 **Decisions Made:**
 13. **MCP Tool Structure** - BaseTool abstraction
@@ -65,10 +65,10 @@
 ### Phase 4: Search Refinement (November 12-13, 2025)
 
 **Evidence:**
-- `.ai/planning/2025-11-12-document-processing-improvements/`
-- `.ai/planning/2025-11-13-search-improvements/`
-- `.ai/planning/2025-11-13-concept-extraction-enhancement/`
-- `.ai/planning/2025-11-13-metadata-filtering/`
+- `.engineering/artifacts/planning/2025-11-12-document-processing-improvements/`
+- `.engineering/artifacts/planning/2025-11-13-search-improvements/`
+- `.engineering/artifacts/planning/2025-11-13-concept-extraction-enhancement/`
+- `.engineering/artifacts/planning/2025-11-13-metadata-filtering/`
 
 **Decisions Made:**
 15. **Document Processing Pipeline** - Multi-pass extraction for large documents
@@ -80,7 +80,7 @@
 
 ### Phase 5: Architecture Refactoring (November 14, 2025)
 
-**Evidence:** `.ai/planning/2025-11-14-architecture-refactoring/`
+**Evidence:** `.engineering/artifacts/planning/2025-11-14-architecture-refactoring/`
 
 **Major Refactoring - NOT initial decisions!**
 
@@ -100,9 +100,9 @@
 ### Phase 6: Feature Additions (November 15, 2025)
 
 **Evidence:**
-- `.ai/planning/2025-11-15-alternative-embedding-providers/`
-- `.ai/planning/2025-11-15-ebook-format-support/`
-- `.ai/planning/2025-11-15-architecture-review/`
+- `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/`
+- `.engineering/artifacts/planning/2025-11-15-ebook-format-support/`
+- `.engineering/artifacts/planning/2025-11-15-architecture-review/`
 
 **Decisions Made:**
 28. **Multi-Provider Embeddings** - OpenAI, Voyage AI, Ollama support
@@ -114,9 +114,9 @@
 ### Phase 7: Optimization & Categories (November 19, 2025)
 
 **Evidence:**
-- `.ai/planning/2025-11-19-integer-id-optimization/`
-- `.ai/planning/2025-11-19-category-search-feature/`
-- `.ai/planning/2025-11-19-category-search-tool/`
+- `.engineering/artifacts/planning/2025-11-19-integer-id-optimization/`
+- `.engineering/artifacts/planning/2025-11-19-category-search-feature/`
+- `.engineering/artifacts/planning/2025-11-19-category-search-tool/`
 
 **Decisions Made:**
 31. **Hash-Based Integer IDs** - FNV-1a for deterministic IDs (54% storage reduction)
@@ -129,9 +129,9 @@
 ### Phase 8: Documentation (November 2025)
 
 **Evidence:**
-- `.ai/planning/2025-11-13-tool-documentation-enhancement/`
-- `.ai/planning/2025-11-17-documentation-refactoring/`
-- `.ai/planning/2025-11-13-documentation-security/`
+- `.engineering/artifacts/planning/2025-11-13-tool-documentation-enhancement/`
+- `.engineering/artifacts/planning/2025-11-17-documentation-refactoring/`
+- `.engineering/artifacts/planning/2025-11-13-documentation-security/`
 
 **Decisions Made:**
 35. **Tool Selection Guide** - AI agent decision tree

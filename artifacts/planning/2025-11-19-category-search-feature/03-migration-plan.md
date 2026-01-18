@@ -32,7 +32,7 @@ npx tsx -e "
     const table = await db.openTable(name);
     console.log(\`\${name}: \${await table.countRows()} rows\`);
   }
-" > .ai/planning/2025-11-19-category-search-feature/pre-migration-state.txt
+" > .engineering/artifacts/planning/2025-11-19-category-search-feature/pre-migration-state.txt
 ```
 
 **Outputs**:
@@ -130,7 +130,7 @@ async function extractCategories() {
   
   // Save mapping
   fs.writeFileSync(
-    '.ai/planning/2025-11-19-category-search-feature/category-mapping.json',
+    '.engineering/artifacts/planning/2025-11-19-category-search-feature/category-mapping.json',
     JSON.stringify(categoryMapping, null, 2)
   );
   
@@ -151,12 +151,12 @@ npx tsx scripts/extract_categories.ts
 **Validation**:
 ```bash
 # Verify uniqueness
-jq '.categories | length' .ai/planning/2025-11-19-category-search-feature/category-mapping.json
-jq '.total_categories' .ai/planning/2025-11-19-category-search-feature/category-mapping.json
+jq '.categories | length' .engineering/artifacts/planning/2025-11-19-category-search-feature/category-mapping.json
+jq '.total_categories' .engineering/artifacts/planning/2025-11-19-category-search-feature/category-mapping.json
 # Should match
 
 # Check for duplicates
-jq '.categories[].category' .ai/planning/2025-11-19-category-search-feature/category-mapping.json | sort | uniq -d
+jq '.categories[].category' .engineering/artifacts/planning/2025-11-19-category-search-feature/category-mapping.json | sort | uniq -d
 # Should be empty
 ```
 
@@ -564,7 +564,7 @@ async function generateTestReport() {
   // ... (aggregate from previous test runs)
   
   // Write report
-  const reportPath = '.ai/planning/2025-11-19-category-search-feature/test-results.json';
+  const reportPath = '.engineering/artifacts/planning/2025-11-19-category-search-feature/test-results.json';
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
   
   // Generate markdown summary
@@ -601,7 +601,7 @@ ${report.schemaValidation.passed && report.categoryDerivation.passed && report.t
   : '⚠️  **ISSUES FOUND** - Review failures before proceeding'}
 `;
   
-  const summaryPath = '.ai/planning/2025-11-19-category-search-feature/test-results-summary.md';
+  const summaryPath = '.engineering/artifacts/planning/2025-11-19-category-search-feature/test-results-summary.md';
   fs.writeFileSync(summaryPath, summary);
   
   console.log('\n📊 TEST REPORT GENERATED');
@@ -621,7 +621,7 @@ ${report.schemaValidation.passed && report.categoryDerivation.passed && report.t
 npx tsx scripts/run_all_tests.ts
 
 # Display summary
-cat .ai/planning/2025-11-19-category-search-feature/test-results-summary.md
+cat .engineering/artifacts/planning/2025-11-19-category-search-feature/test-results-summary.md
 ```
 
 **Display to user**:
@@ -950,7 +950,7 @@ async function createCategoriesTable() {
   const db = await connect('~/.concept_rag');
   
   // Load category mapping from Phase 0
-  const mappingFile = '.ai/planning/2025-11-19-category-search-feature/category-mapping.json';
+  const mappingFile = '.engineering/artifacts/planning/2025-11-19-category-search-feature/category-mapping.json';
   const mapping = JSON.parse(fs.readFileSync(mappingFile, 'utf-8'));
   
   const embedder = await createEmbedder();

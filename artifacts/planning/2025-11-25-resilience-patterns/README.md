@@ -55,7 +55,7 @@
 
 ## 📖 Workflow Reference
 
-**Implementation workflow:** `../../.ai/prompts/feature-_workflow.md`
+**Implementation workflow:** `../../.engineering/artifacts/templates/feature-_workflow.md`
 
 **Key steps:**
 1. Create feature branch (`feat/system-resilience`)
@@ -92,7 +92,7 @@
 - Original: `../2025-11-23-integrated-roadmap/06-resilience-patterns-plan.md`
 
 **Workflow:**
-- Implementation: `../../.ai/prompts/feature-_workflow.md`
+- Implementation: `../../.engineering/artifacts/templates/feature-_workflow.md`
 
 **Related ADRs:**
 - ADR-0034: Retry Strategies (existing)

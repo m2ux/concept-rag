@@ -179,5 +179,5 @@ npm run seed -- --dir ~/Documents/ebooks
 
 - `scripts/check_triz_concepts.ts` - TRIZ chunk analysis
 - `scripts/check_triz_catalog.ts` - TRIZ catalog analysis
-- `.ai/planning/concept-search-triz-analysis.md` - This document
+- `.engineering/artifacts/planning/concept-search-triz-analysis.md` - This document
 

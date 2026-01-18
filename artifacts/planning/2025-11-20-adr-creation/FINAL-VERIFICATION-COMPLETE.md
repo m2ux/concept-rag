@@ -11,7 +11,7 @@
 ### 1. Source Restrictions ✅
 **ALL 33 ADRs now contain ONLY:**
 - ✅ Git commits (hash, date, message)
-- ✅ Planning documents (.ai/planning/*)
+- ✅ Planning documents (.engineering/artifacts/planning/*)
 - ✅ Chat histories (if exist)
 - ✅ Related decisions (cross-references)
 
@@ -95,7 +95,7 @@
 - 1 Master Index
 - 1 Template (with source guidance)
 
-**19 files in .ai/planning/2025-11-20-adr-creation/:**
+**19 files in .engineering/artifacts/planning/2025-11-20-adr-creation/:**
 - Complete planning & analysis
 - Cleanup tracking
 - Final verification

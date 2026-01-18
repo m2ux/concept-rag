@@ -254,10 +254,10 @@ ls: cannot access '.husky/': No such file or directory
 - `./docs/architecture/adr0038-dependency-rules-enforcement.md`
 
 **Created**:
-- `./.ai/planning/2025-11-23-adr-accuracy-review/README.md`
-- `./.ai/planning/2025-11-23-adr-accuracy-review/REVIEW-FINDINGS.md`
-- `./.ai/planning/2025-11-23-adr-accuracy-review/ADR0038-CORRECTIONS.md`
-- `./.ai/planning/2025-11-23-adr-accuracy-review/IMPLEMENTATION-SUMMARY.md`
+- `./.engineering/artifacts/planning/2025-11-23-adr-accuracy-review/README.md`
+- `./.engineering/artifacts/planning/2025-11-23-adr-accuracy-review/REVIEW-FINDINGS.md`
+- `./.engineering/artifacts/planning/2025-11-23-adr-accuracy-review/ADR0038-CORRECTIONS.md`
+- `./.engineering/artifacts/planning/2025-11-23-adr-accuracy-review/IMPLEMENTATION-SUMMARY.md`
 
 ---
 

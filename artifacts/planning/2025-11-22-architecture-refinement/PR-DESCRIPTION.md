@@ -74,7 +74,7 @@ Duration:    132.69s
 ## Documentation
 
 - 5 comprehensive ADRs in `docs/architecture/`
-- Complete implementation docs in `.ai/planning/2025-11-22-architecture-refinement/`
+- Complete implementation docs in `.engineering/artifacts/planning/2025-11-22-architecture-refinement/`
 - Inline JSDoc for all new components
 
 ## Benefits

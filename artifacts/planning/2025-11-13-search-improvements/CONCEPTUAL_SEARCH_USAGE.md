@@ -393,9 +393,9 @@ python3 -c "import nltk; nltk.download('wordnet'); nltk.download('omw-1.4')"
 
 ## 📚 Additional Resources
 
-- [IMPROVING_SEARCH.md](.ai/IMPROVING_SEARCH.md) - Original improvement recommendations
-- [WORDNET_INTEGRATION_ANALYSIS.md](.ai/WORDNET_INTEGRATION_ANALYSIS.md) - WordNet analysis
-- [IMPLEMENTATION_PLAN.md](.ai/IMPLEMENTATION_PLAN.md) - Full implementation details
+- [IMPROVING_SEARCH.md](./IMPROVING_SEARCH.md) - Original improvement recommendations
+- [WORDNET_INTEGRATION_ANALYSIS.md](./WORDNET_INTEGRATION_ANALYSIS.md) - WordNet analysis
+- [IMPLEMENTATION_PLAN.md](../2025-10-13-conceptual-search-implementation/IMPLEMENTATION_PLAN.md) - Full implementation details
 - [Open English WordNet](https://github.com/globalwordnet/english-wordnet) - WordNet resource
 
 ## 💬 Feedback

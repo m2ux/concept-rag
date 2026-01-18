@@ -9,7 +9,7 @@ Comprehensive test suite enhancements adding **534 tests** across **36 test file
 **Review Date:** 2025-11-22  
 **Test Files Analyzed:** 32 files  
 **Overall Quality:** 4.5/5 ⭐  
-**Report:** `.ai/reviews/concept-rag-test-suite-review-2025-11-22-updated.md`
+**Report:** `.engineering/artifacts/reviews/concept-rag-test-suite-review-2025-11-22-updated.md`
 
 **Key Findings:**
 - Excellent test pyramid balance (3.8:1 unit:integration ratio)
@@ -174,7 +174,7 @@ Enhanced from 5 to **21 comprehensive E2E tests**:
 
 ## Related Documents
 
-- **Test Suite Review:** `.ai/reviews/concept-rag-test-suite-review-2025-11-22-updated.md`
+- **Test Suite Review:** `.engineering/artifacts/reviews/concept-rag-test-suite-review-2025-11-22-updated.md`
 - **Testing Coverage Plan:** `02-testing-coverage-plan.md` (this folder)
 - **Coverage Baseline:** `COVERAGE-BASELINE.md` (this folder)
 - **Implementation Plan:** `00-IMPLEMENTATION-PLAN.md` (this folder)

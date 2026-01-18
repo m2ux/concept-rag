@@ -91,7 +91,7 @@ No verbose explanations.
 ## 📁 Final Deliverables
 
 **35 files:** docs/architecture/decisions/
-**17 files:** .ai/planning/2025-11-20-adr-creation/
+**17 files:** .engineering/artifacts/planning/2025-11-20-adr-creation/
 
 **Total:** 52 files, ~86,000 words
 

@@ -93,8 +93,8 @@ While the current implementation is complete, future enhancements could include:
 - **Primary File**: `./AGENTS.md`
 - **Implementation**: `./src/concepts/concept_extractor.ts`
 - **Related Docs**: 
-  - `.ai/planning/CONCEPT_TAXONOMY_GUIDE.md`
-  - `.ai/planning/CONCEPT_EXTRACTION_SUMMARY.md`
+  - `.engineering/artifacts/planning/CONCEPT_TAXONOMY_GUIDE.md`
+  - `.engineering/artifacts/planning/CONCEPT_EXTRACTION_SUMMARY.md`
   - `README.md` (Architecture section)
 
 

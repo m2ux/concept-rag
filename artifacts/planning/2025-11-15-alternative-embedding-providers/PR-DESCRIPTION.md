@@ -267,7 +267,7 @@ Added comprehensive "Embedding Providers (Optional)" section with:
 
 ### 2. Configuration Guide
 
-**File**: `.ai/planning/2025-11-15-alternative-embedding-providers/02-configuration-guide.md` (400+ lines)
+**File**: `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/02-configuration-guide.md` (400+ lines)
 
 Complete guide including:
 - Provider comparison table
@@ -366,10 +366,10 @@ Duration: 155ms
 - `src/infrastructure/embeddings/openai-embedding-service.ts` (117 lines)
 - `src/infrastructure/embeddings/openrouter-embedding-service.ts` (140 lines)
 - `src/infrastructure/embeddings/huggingface-embedding-service.ts` (235 lines)
-- `.ai/planning/2025-11-15-alternative-embedding-providers/README.md`
-- `.ai/planning/2025-11-15-alternative-embedding-providers/01-implementation-plan.md`
-- `.ai/planning/2025-11-15-alternative-embedding-providers/02-configuration-guide.md`
-- `.ai/planning/2025-11-15-alternative-embedding-providers/03-implementation-complete.md`
+- `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/README.md`
+- `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/01-implementation-plan.md`
+- `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/02-configuration-guide.md`
+- `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/03-implementation-complete.md`
 
 **Modified** (6 files):
 - `src/config.ts` (+49 lines) - Embedding provider configuration
@@ -451,7 +451,7 @@ Duration: 155ms
 
 ## Related Issues
 
-- Addresses: Optional Enhancement #6 from `.ai/planning/2025-11-14-architecture-refactoring/07-optional-enhancements-roadmap.md`
+- Addresses: Optional Enhancement #6 from `.engineering/artifacts/planning/2025-11-14-architecture-refactoring/07-optional-enhancements-roadmap.md`
 
 ## Checklist
 

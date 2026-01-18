@@ -23,7 +23,7 @@
 - ✅ README.md - Master index (33 ADRs organized by phase)
 - ✅ template.md - ADR template for future use
 
-### 11 Files in `.ai/planning/2025-11-20-adr-creation/`
+### 11 Files in `.engineering/artifacts/planning/2025-11-20-adr-creation/`
 
 **Planning & Analysis:**
 1. ✅ README.md - Overview
@@ -177,7 +177,7 @@
 **Example: adr0021 Performance**
 1. Fact: "80x-240x faster"
 2. Citation: `[Source: PR-DESCRIPTION.md, line 21]`
-3. Navigate: `.ai/planning/2025-11-14-architecture-refactoring/PR-DESCRIPTION.md`
+3. Navigate: `.engineering/artifacts/planning/2025-11-14-architecture-refactoring/PR-DESCRIPTION.md`
 4. Line 21: `| **Concept Search** | 8-12s | 50-100ms | **80x-240x faster** ⚡ |`
 5. ✅ Verified!
 
@@ -279,7 +279,7 @@
 ### Information Sources Used
 
 **Primary:**
-- 24 planning folders (.ai/planning/)
+- 24 planning folders (.engineering/artifacts/planning/)
 - Git commit history (.git/logs/)
 - Code structure (src/)
 
@@ -343,7 +343,7 @@
 
 **For New ADRs:**
 - Template: `docs/architecture/decisions/template.md`
-- Citation standards: `.ai/planning/2025-11-20-adr-creation/04-citation-standards.md`
+- Citation standards: `.engineering/artifacts/planning/2025-11-20-adr-creation/04-citation-standards.md`
 - Follow established quality standards
 
 **For Verification:**

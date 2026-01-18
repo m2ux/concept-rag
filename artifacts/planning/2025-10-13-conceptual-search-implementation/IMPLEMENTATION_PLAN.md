@@ -1265,7 +1265,7 @@ async function runTests() {
 
 Create usage documentation with examples
 
-**File:** `.ai/CONCEPTUAL_SEARCH_USAGE.md`
+**File:** `.engineering/artifacts/planning/2025-11-13-search-improvements/CONCEPTUAL_SEARCH_USAGE.md`
 ```markdown
 # Using Conceptual Search
 

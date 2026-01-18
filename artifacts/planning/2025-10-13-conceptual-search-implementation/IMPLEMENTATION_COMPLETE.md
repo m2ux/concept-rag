@@ -84,12 +84,14 @@ tsconfig.json                            ✅ Updated for new modules
 
 ### Documentation (5)
 ```
-.ai/
-├── CONCEPTUAL_SEARCH_RECOMMENDATIONS.md ✅ Strategy document
-├── WORDNET_INTEGRATION_ANALYSIS.md      ✅ WordNet analysis
-├── IMPLEMENTATION_PLAN.md               ✅ Detailed plan
-├── CONCEPTUAL_SEARCH_USAGE.md           ✅ Usage guide
-└── IMPLEMENTATION_COMPLETE.md           ✅ This summary
+.engineering/artifacts/planning/
+├── 2025-11-13-search-improvements/
+│   ├── CONCEPTUAL_SEARCH_RECOMMENDATIONS.md ✅ Strategy document
+│   ├── WORDNET_INTEGRATION_ANALYSIS.md      ✅ WordNet analysis
+│   └── CONCEPTUAL_SEARCH_USAGE.md           ✅ Usage guide
+└── 2025-10-13-conceptual-search-implementation/
+    ├── IMPLEMENTATION_PLAN.md               ✅ Detailed plan
+    └── IMPLEMENTATION_COMPLETE.md           ✅ This summary
 ```
 
 ## 🏗️ Architecture
@@ -242,22 +244,22 @@ npx tsx test/conceptual_search_test.ts
 
 All documentation is complete:
 
-1. **[CONCEPTUAL_SEARCH_RECOMMENDATIONS.md](.ai/CONCEPTUAL_SEARCH_RECOMMENDATIONS.md)**
+1. **[CONCEPTUAL_SEARCH_RECOMMENDATIONS.md](../2025-11-13-search-improvements/CONCEPTUAL_SEARCH_RECOMMENDATIONS.md)**
    - Strategy and architecture
    - Layer-by-layer approach
    - Code examples
 
-2. **[WORDNET_INTEGRATION_ANALYSIS.md](.ai/WORDNET_INTEGRATION_ANALYSIS.md)**
+2. **[WORDNET_INTEGRATION_ANALYSIS.md](../2025-11-13-search-improvements/WORDNET_INTEGRATION_ANALYSIS.md)**
    - WordNet value assessment
    - Hybrid strategy rationale
    - Implementation details
 
-3. **[IMPLEMENTATION_PLAN.md](.ai/IMPLEMENTATION_PLAN.md)**
+3. **[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)**
    - Phase-by-phase breakdown
    - Timeline estimates
    - Code structure
 
-4. **[CONCEPTUAL_SEARCH_USAGE.md](.ai/CONCEPTUAL_SEARCH_USAGE.md)**
+4. **[CONCEPTUAL_SEARCH_USAGE.md](../2025-11-13-search-improvements/CONCEPTUAL_SEARCH_USAGE.md)**
    - Quick start guide
    - Example queries
    - Troubleshooting
@@ -292,7 +294,7 @@ All documentation is complete:
 ## 📞 Support
 
 ### Resources
-- **Documentation:** See `.ai/` directory
+- **Documentation:** See `.engineering/artifacts/planning/` directory
 - **Test suite:** `test/conceptual_search_test.ts`
 - **Example queries:** See CONCEPTUAL_SEARCH_USAGE.md
 

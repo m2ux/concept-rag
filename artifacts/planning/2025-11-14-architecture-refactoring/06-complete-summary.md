@@ -364,38 +364,38 @@ it('should do something', () => {
 ## Documentation Created
 
 ### Planning Documents
-1. **Architecture Review** (`.ai/reviews/2025-11-14-concept-rag-architecture-review-analysis.md`)
+1. **Architecture Review** (`.engineering/artifacts/reviews/2025-11-14-concept-rag-architecture-review-analysis.md`)
    - Initial findings
    - Issues identified
    - Recommendations with priorities
 
-2. **Implementation Plan** (`.ai/planning/2025-11-14-architecture-refactoring-implementation-plan.md`)
+2. **Implementation Plan** (`.engineering/artifacts/planning/2025-11-14-architecture-refactoring-implementation-plan.md`)
    - 3 phases, ~20 tasks
    - Commit boundaries
    - Time estimates
 
-3. **Testing Strategy** (`.ai/planning/2025-11-14-testing-strategy.md`)
+3. **Testing Strategy** (`.engineering/artifacts/planning/2025-11-14-testing-strategy.md`)
    - Testing approach
    - Knowledge base references
    - Test patterns
 
-4. **Optional Enhancements** (`.ai/planning/2025-11-14-optional-enhancements-roadmap.md`)
+4. **Optional Enhancements** (`.engineering/artifacts/planning/2025-11-14-optional-enhancements-roadmap.md`)
    - Future improvements
    - Priority matrix
    - Implementation guidance
 
 ### Summary Documents
-5. **Architecture Summary** (`.ai/summaries/2025-11-14-architecture-refactoring-complete.md`)
+5. **Architecture Summary** (`.engineering/artifacts/planning/2025-11-14-architecture-refactoring-complete.md`)
    - Phase 1 & 2 completion
    - Detailed commit history
    - Performance improvements
 
-6. **Testing Summary** (`.ai/summaries/2025-11-14-testing-infrastructure-complete.md`)
+6. **Testing Summary** (`.engineering/artifacts/planning/2025-11-14-testing-infrastructure-complete.md`)
    - Test coverage details
    - Knowledge base application
    - Testing patterns demonstrated
 
-7. **This Complete Summary** (`.ai/summaries/2025-11-14-complete-refactoring-and-testing-summary.md`)
+7. **This Complete Summary** (`.engineering/artifacts/planning/2025-11-14-complete-refactoring-and-testing-summary.md`)
    - End-to-end overview
    - All phases covered
    - Final status
@@ -540,12 +540,12 @@ git push origin main
 - "Introduction to Software Design and Architecture With TypeScript" (Stemmler)
 
 ### Related Documents
-- [Architecture Review](.ai/reviews/2025-11-14-concept-rag-architecture-review-analysis.md)
-- [Implementation Plan](.ai/planning/2025-11-14-architecture-refactoring-implementation-plan.md)
-- [Testing Strategy](.ai/planning/2025-11-14-testing-strategy.md)
-- [Architecture Summary](.ai/summaries/2025-11-14-architecture-refactoring-complete.md)
-- [Testing Summary](.ai/summaries/2025-11-14-testing-infrastructure-complete.md)
-- [Optional Enhancements](.ai/planning/2025-11-14-optional-enhancements-roadmap.md)
+- [Architecture Review](.engineering/artifacts/reviews/2025-11-14-concept-rag-architecture-review-analysis.md)
+- [Implementation Plan](.engineering/artifacts/planning/2025-11-14-architecture-refactoring-implementation-plan.md)
+- [Testing Strategy](.engineering/artifacts/planning/2025-11-14-testing-strategy.md)
+- [Architecture Summary](.engineering/artifacts/planning/2025-11-14-architecture-refactoring-complete.md)
+- [Testing Summary](.engineering/artifacts/planning/2025-11-14-testing-infrastructure-complete.md)
+- [Optional Enhancements](.engineering/artifacts/planning/2025-11-14-optional-enhancements-roadmap.md)
 
 ---
 

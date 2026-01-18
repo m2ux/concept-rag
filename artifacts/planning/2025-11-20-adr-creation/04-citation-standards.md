@@ -53,8 +53,8 @@ Each ADR must have a **References** section listing all sources:
 ## References
 
 ### Planning Documents
-- [2025-10-13-conceptual-search-implementation/README.md](.ai/planning/2025-10-13-conceptual-search-implementation/README.md)
-- [2025-10-13-conceptual-search-implementation/IMPLEMENTATION_PLAN.md](.ai/planning/2025-10-13-conceptual-search-implementation/IMPLEMENTATION_PLAN.md)
+- [2025-10-13-conceptual-search-implementation/README.md](.engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/README.md)
+- [2025-10-13-conceptual-search-implementation/IMPLEMENTATION_PLAN.md](.engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/IMPLEMENTATION_PLAN.md)
 
 ### Code Evidence
 - Hybrid search implementation: `src/lancedb/hybrid_search_client.ts`

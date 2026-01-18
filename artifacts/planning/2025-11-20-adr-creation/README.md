@@ -11,7 +11,7 @@ This folder contains the work to create Architectural Decision Records (ADRs) fo
 ## Information Sources Available
 
 ### 1. Planning Documents ✅ (Primary Source)
-**Location:** `.ai/planning/*/`
+**Location:** `.engineering/artifacts/planning/*/`
 
 Rich source of decision rationale:
 - **2025-11-19-category-search-feature/** - Hash-based IDs, category design

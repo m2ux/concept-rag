@@ -54,8 +54,8 @@ Co-locate planning artifacts with code using an **orphan branch architecture** t
 
 - [ ] Create orphan `planning` branch with public structure
 - [ ] Migrate ADRs from `docs/architecture/` to `planning` branch
-- [ ] Migrate work package plans from `.ai/planning/` (after filtering)
-- [ ] Copy prompts/templates from `.ai/prompts/`
+- [ ] Migrate work package plans from `.engineering/artifacts/planning/` (after filtering)
+- [ ] Copy prompts/templates from `.engineering/artifacts/templates/`
 - [ ] Migrate `AGENTS.md`
 - [ ] Maintain existing symlink during transition
 - [ ] Document new structure and navigation
@@ -66,7 +66,7 @@ Co-locate planning artifacts with code using an **orphan branch architecture** t
 | Item | Phase |
 |------|-------|
 | Workflows submodule (`workflows/`) for prompts/AGENTS.md | Phase 2 |
-| Metadata submodule (`metadata/`) for `.ai/history/` | Phase 3 |
+| Metadata submodule (`metadata/`) for `.engineering/artifacts/history/` | Phase 3 |
 | CI/CD automation for planning docs | Future |
 | Cleanup of separate planning repo | After full migration |
 

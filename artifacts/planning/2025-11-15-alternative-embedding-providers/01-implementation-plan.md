@@ -336,7 +336,7 @@ HUGGINGFACE_MODEL=Xenova/all-MiniLM-L6-v2
 
 #### B. Configuration Guide
 
-Create `.ai/planning/2025-11-15-alternative-embedding-providers/02-configuration-guide.md`
+Create `.engineering/artifacts/planning/2025-11-15-alternative-embedding-providers/02-configuration-guide.md`
 
 ---
 
@@ -470,7 +470,7 @@ describe('Embedding Provider Integration', () => {
 ## References
 
 **Source Document**: 
-- `.ai/planning/2025-11-14-architecture-refactoring/07-optional-enhancements-roadmap.md` (Item #6)
+- `.engineering/artifacts/planning/2025-11-14-architecture-refactoring/07-optional-enhancements-roadmap.md` (Item #6)
 
 **Related Code**:
 - `src/domain/interfaces/services/embedding-service.ts` - Interface definition

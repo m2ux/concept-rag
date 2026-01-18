@@ -26,7 +26,7 @@
 - 1 Master Index  
 - 1 Template
 
-**20 files in .ai/planning/2025-11-20-adr-creation/:**
+**20 files in .engineering/artifacts/planning/2025-11-20-adr-creation/:**
 - Complete planning & tracking
 
 ---

@@ -145,8 +145,8 @@ node scripts/validate-wordnet-enhancement.ts
 
 ## Documentation
 
-- Work package summary: `.ai/planning/2025-12-03-wordnet-enhancement/wp-summary.md`
-- This PR description: `.ai/planning/2025-12-03-wordnet-enhancement/PR-DESCRIPTION.md`
+- Work package summary: `.engineering/artifacts/planning/2025-12-03-wordnet-enhancement/wp-summary.md`
+- This PR description: `.engineering/artifacts/planning/2025-12-03-wordnet-enhancement/PR-DESCRIPTION.md`
 
 
 

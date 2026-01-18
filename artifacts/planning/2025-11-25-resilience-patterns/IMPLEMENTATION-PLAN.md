@@ -983,9 +983,9 @@ export class ApplicationContainer {
 1. Review justifications above
 2. Choose implementation option (Full/MVP/Deferred)
 3. Mark tasks in selection matrix (✓ or X)
-4. Proceed with implementation using [Feature Implementation Workflow](../../.ai/prompts/feature-_workflow.md)
+4. Proceed with implementation using [Feature Implementation Workflow](../../.engineering/artifacts/templates/feature-_workflow.md)
 
 **Related Documents:**
 - Original plan: [06-resilience-patterns-plan.md](06-resilience-patterns-plan.md)
-- Implementation workflow: [feature-_workflow.md](../../.ai/prompts/feature-_workflow.md)
+- Implementation workflow: [feature-_workflow.md](../../.engineering/artifacts/templates/feature-_workflow.md)
 

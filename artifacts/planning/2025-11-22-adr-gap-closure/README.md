@@ -76,16 +76,16 @@ This session identified and documented architectural decisions from recent work 
 ## Evidence Sources
 
 ### Planning Documents
-- `.ai/planning/2025-11-22-error-handling-implementation/`
+- `.engineering/artifacts/planning/2025-11-22-error-handling-implementation/`
   - IMPLEMENTATION-SUMMARY.md
   - PR-DESCRIPTION.md
   - TEST-RESULTS.md
 
-- `.ai/planning/2025-11-22-test-coverage-updates/`
+- `.engineering/artifacts/planning/2025-11-22-test-coverage-updates/`
   - PR_TESTING_IMPROVEMENTS.md
   - COVERAGE-BASELINE.md
 
-- `.ai/planning/2025-11-22-architecture-refinement/`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/`
   - IMPLEMENTATION-COMPLETE.md
   - 01-interface-audit.md
   - 02-dependency-analysis.md
@@ -147,9 +147,9 @@ b62ee6b test: add integration tests for error handling
 ## Related Folders
 
 - `docs/architecture/` - All ADR files and README
-- `.ai/planning/2025-11-22-error-handling-implementation/` - Error handling docs
-- `.ai/planning/2025-11-22-test-coverage-updates/` - Test suite docs
-- `.ai/planning/2025-11-22-architecture-refinement/` - Architecture docs
+- `.engineering/artifacts/planning/2025-11-22-error-handling-implementation/` - Error handling docs
+- `.engineering/artifacts/planning/2025-11-22-test-coverage-updates/` - Test suite docs
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/` - Architecture docs
 
 ## Next Steps
 

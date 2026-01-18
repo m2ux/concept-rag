@@ -10,7 +10,7 @@
 **Header Format:**
 ```
 **Sources:**
-- Planning: .ai/planning/folder/
+- Planning: .engineering/artifacts/planning/folder/
 - Git Commit: [hash] ([date])
 ```
 

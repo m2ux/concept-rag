@@ -127,10 +127,10 @@ This phase focused on hardening the infrastructure with comprehensive error hand
 ## Related Documentation
 
 ### Planning Documents
-- `.ai/planning/2025-11-22-error-handling-implementation/`
-- `.ai/planning/2025-11-22-test-coverage-updates/`
-- `.ai/planning/2025-11-22-architecture-refinement/`
-- `.ai/planning/2025-11-20-knowledge-base-recommendations/`
+- `.engineering/artifacts/planning/2025-11-22-error-handling-implementation/`
+- `.engineering/artifacts/planning/2025-11-22-test-coverage-updates/`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/`
+- `.engineering/artifacts/planning/2025-11-20-knowledge-base-recommendations/`
 
 ### Pull Requests
 - PR #12 - Error Handling Infrastructure (merged 2025-11-22)

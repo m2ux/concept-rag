@@ -163,11 +163,11 @@ Run with: `npm test concept-search-regression`
    - 30+ test cases
 
 ### Documentation
-3. `.ai/planning/2025-11-17-empty-chunk-investigation/INVESTIGATION_REPORT.md`
+3. `.engineering/artifacts/planning/2025-11-17-empty-chunk-investigation/INVESTIGATION_REPORT.md`
    - Full technical investigation report
-4. `.ai/planning/2025-11-17-empty-chunk-investigation/SUMMARY.md`
+4. `.engineering/artifacts/planning/2025-11-17-empty-chunk-investigation/SUMMARY.md`
    - Quick reference guide
-5. `.ai/planning/2025-11-17-empty-chunk-investigation/FIX_SUMMARY.md`
+5. `.engineering/artifacts/planning/2025-11-17-empty-chunk-investigation/FIX_SUMMARY.md`
    - This file
 
 ### Investigation Scripts

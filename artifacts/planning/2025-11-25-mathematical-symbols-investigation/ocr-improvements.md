@@ -395,7 +395,7 @@ interface OCRQualityMetrics {
 1. Create test set with known mathematical content
 2. Process with each OCR method
 3. Compare accuracy, speed, cost
-4. Document results in `.ai/planning/ocr-comparison.md`
+4. Document results in `.engineering/artifacts/planning/ocr-comparison.md`
 
 ## Next Steps
 
@@ -412,7 +412,7 @@ interface OCRQualityMetrics {
 - Mathpix: https://mathpix.com/ocr
 - Nougat: https://github.com/facebookresearch/nougat
 - Tesseract Math Data: https://github.com/Shreeshrii/tessdata_shreetest
-- Related Investigation: `.ai/planning/2025-11-25-mathematical-symbols-investigation/`
+- Related Investigation: `.engineering/artifacts/planning/2025-11-25-mathematical-symbols-investigation/`
 
 
 

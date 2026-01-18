@@ -29,7 +29,7 @@ npx tsx -e "
     const table = await db.openTable(name);
     console.log(\`\${name}: \${await table.countRows()} rows\`);
   }
-" > .ai/planning/2025-11-19-integer-id-optimization/pre-migration-counts.txt
+" > .engineering/artifacts/planning/2025-11-19-integer-id-optimization/pre-migration-counts.txt
 
 # 5. Check disk space
 df -h ~/.concept_rag

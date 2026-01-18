@@ -22,7 +22,7 @@ The concept-RAG project has **extensive planning documentation** covering 24+ fe
 
 ### 1. Planning Documents (Primary Source)
 
-**Location:** `.ai/planning/*/`  
+**Location:** `.engineering/artifacts/planning/*/`  
 **Count:** 24+ folders  
 **Quality:** Exceptional - structured decision documentation
 

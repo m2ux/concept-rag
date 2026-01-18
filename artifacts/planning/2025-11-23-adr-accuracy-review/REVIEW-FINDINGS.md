@@ -272,7 +272,7 @@ ls: cannot access '.husky/': No such file or directory
 `.dependency-cruiser.cjs` exists with 3 core rules (~85 lines)
 
 ✅ **Planning Documentation**:
-`.ai/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md`
+`.engineering/artifacts/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md`
 
 ### Corrections Made
 

@@ -9,7 +9,7 @@
 2.  **Clarification on Categories**: The user asked if categories are stored in the DB or inferred. I verified they are inferred by AI during ingestion but stored/retrieved from the database.
 3.  **Feature Request**: The user requested a tool to search specifically by "category", as no existing tool supported this directly.
 4.  **Planning**:
-    *   Created a plan in `.ai/planning/2025-11-19-category-search-tool/`.
+    *   Created a plan in `.engineering/artifacts/planning/2025-11-19-category-search-tool/`.
     *   Architecture involves updating `ChunkRepository` and `ConceptRepository`, creating `CategorySearchService`, and the `category_search` MCP tool.
 5.  **Implementation**:
     *   Updated repositories to add `findByCategory`.
@@ -28,9 +28,9 @@
 - **New Artifacts**:
     - `src/tools/operations/category_search.ts`
     - `src/domain/services/category-search-service.ts`
-    - `.ai/planning/2025-11-19-category-search-tool/2025-11-19-plan-category-search-tool.md`
-    - `.ai/planning/2025-11-19-category-search-tool/2025-11-19-software-engineering-report.md`
-    - `.ai/planning/2025-11-19-category-search-tool/generate_category_report.ts`
+    - `.engineering/artifacts/planning/2025-11-19-category-search-tool/2025-11-19-plan-category-search-tool.md`
+    - `.engineering/artifacts/planning/2025-11-19-category-search-tool/2025-11-19-software-engineering-report.md`
+    - `.engineering/artifacts/planning/2025-11-19-category-search-tool/generate_category_report.ts`
 
 ## Lessons Learned
 - **Strict adherence to `AGENTS.md`**: All artifacts, including temporary scripts and verification reports, must be stored in the `.ai` hierarchy.

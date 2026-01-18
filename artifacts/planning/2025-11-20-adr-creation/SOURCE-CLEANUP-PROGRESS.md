@@ -66,7 +66,7 @@ From all ADRs, removing:
 
 Keeping ONLY:
 - ✅ Git commits (hash, date, message)
-- ✅ Planning documents (.ai/planning/*)
+- ✅ Planning documents (.engineering/artifacts/planning/*)
 - ✅ Chat histories (if any exist)
 
 ---

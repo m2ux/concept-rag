@@ -24,7 +24,7 @@
 
 ✅ **Kept ONLY valid sources:**
 - Git commits (hash, date, message)
-- Planning documents (.ai/planning/*)
+- Planning documents (.engineering/artifacts/planning/*)
 - Chat histories/summaries (if exist)
 
 ---
@@ -51,7 +51,7 @@
 ## References
 
 ### Planning Documents
-- [Doc](.ai/planning/folder/file.md) - Lines X-Y
+- [Doc](.engineering/artifacts/planning/folder/file.md) - Lines X-Y
 
 ### Git Commit (where applicable)
 - Commit: [hash]
@@ -98,7 +98,7 @@ Added explicit source restrictions:
 - 1 Master Index (README.md)
 - 1 Template (with source restrictions)
 
-**18 files in .ai/planning/2025-11-20-adr-creation/:**
+**18 files in .engineering/artifacts/planning/2025-11-20-adr-creation/:**
 - Complete planning documentation
 - Cleanup tracking
 - Final summaries

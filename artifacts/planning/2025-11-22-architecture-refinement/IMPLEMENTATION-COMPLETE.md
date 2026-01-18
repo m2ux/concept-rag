@@ -41,7 +41,7 @@ Successfully completed comprehensive architecture refinement for Concept-RAG, im
 
 **Files Created**:
 - `.dependency-cruiser.cjs`
-- `.ai/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md`
 
 **Tools Installed**:
 - `madge` - Dependency graph visualization
@@ -66,7 +66,7 @@ Successfully completed comprehensive architecture refinement for Concept-RAG, im
 **Files Created**:
 - `src/domain/validation/validation.ts`
 - `src/domain/validation/index.ts`
-- `.ai/planning/2025-11-22-architecture-refinement/03-validation-layer.md`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/03-validation-layer.md`
 
 **Features**:
 - Functional result types (no exceptions)
@@ -113,7 +113,7 @@ Successfully completed comprehensive architecture refinement for Concept-RAG, im
 
 **Files Created**:
 - `src/infrastructure/embeddings/embedding-provider-factory.ts`
-- `.ai/planning/2025-11-22-architecture-refinement/04-factory-patterns.md`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/04-factory-patterns.md`
 
 **Files Modified**:
 - `src/infrastructure/embeddings/index.ts`
@@ -164,12 +164,12 @@ Successfully completed comprehensive architecture refinement for Concept-RAG, im
 - `.dependency-cruiser.cjs`
 
 **Documentation**:
-- `.ai/planning/2025-11-22-architecture-refinement/00-implementation-kickoff.md`
-- `.ai/planning/2025-11-22-architecture-refinement/01-interface-audit.md`
-- `.ai/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md`
-- `.ai/planning/2025-11-22-architecture-refinement/03-validation-layer.md`
-- `.ai/planning/2025-11-22-architecture-refinement/04-factory-patterns.md`
-- `.ai/planning/2025-11-22-architecture-refinement/agentic-time-guide.md`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/00-implementation-kickoff.md`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/01-interface-audit.md`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/02-dependency-analysis.md`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/03-validation-layer.md`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/04-factory-patterns.md`
+- `.engineering/artifacts/planning/2025-11-22-architecture-refinement/agentic-time-guide.md`
 
 ### Modified (5 files)
 
@@ -177,7 +177,7 @@ Successfully completed comprehensive architecture refinement for Concept-RAG, im
 - `src/infrastructure/cache/concept-id-cache.ts`
 - `src/infrastructure/cache/category-id-cache.ts`
 - `src/infrastructure/embeddings/index.ts`
-- `.ai/planning/2025-11-20-knowledge-base-recommendations/03-architecture-refinement-plan.md`
+- `.engineering/artifacts/planning/2025-11-20-knowledge-base-recommendations/03-architecture-refinement-plan.md`
 
 ## Breaking Changes
 

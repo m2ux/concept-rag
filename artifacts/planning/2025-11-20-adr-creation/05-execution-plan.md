@@ -96,7 +96,7 @@ Validated by:
 ## References
 
 ### Planning Documents
-- [Folder/File](../../.ai/planning/folder/file.md)
+- [Folder/File](../../.engineering/artifacts/planning/folder/file.md)
 
 ### Code Evidence
 - Implementation: `src/path/to/code.ts`

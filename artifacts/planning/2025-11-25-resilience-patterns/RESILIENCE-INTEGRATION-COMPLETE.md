@@ -410,8 +410,8 @@ All high and medium priority resilience integrations are **complete and tested**
 
 ## References
 
-- **Integration Status:** `.ai/planning/2025-11-25-resilience-patterns/RESILIENCE-INTEGRATION-STATUS.md`
-- **Implementation History:** `.ai/history/2025-11-25_09-02Z-create-feature-plan-with-justifications.md`
+- **Integration Status:** `.engineering/artifacts/planning/2025-11-25-resilience-patterns/RESILIENCE-INTEGRATION-STATUS.md`
+- **Implementation History:** `.engineering/artifacts/history/2025-11-25_09-02Z-create-feature-plan-with-justifications.md`
 - **Architecture Decision:** `docs/architecture/adr0042-system-resilience-patterns.md`
 - **Implementation Code:** `src/infrastructure/resilience/`
 - **Integration Tests:** `src/__tests__/integration/resilience-integration.test.ts`

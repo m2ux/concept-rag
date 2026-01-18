@@ -31,7 +31,7 @@ Successfully extracted and documented **all 33 architectural decisions** from th
 
 ### Supporting Documentation (10 files)
 
-**Planning Folder:** `.ai/planning/2025-11-20-adr-creation/`
+**Planning Folder:** `.engineering/artifacts/planning/2025-11-20-adr-creation/`
 
 1. **README.md** - Overview and strategy
 2. **00-information-sources-analysis.md** - Source assessment (HIGH quality)
@@ -181,9 +181,9 @@ Successfully extracted and documented **all 33 architectural decisions** from th
 ### Primary Sources (Excellent Quality)
 
 **Planning Documents:** 24 folders analyzed
-- `.ai/planning/2025-10-13-conceptual-search-implementation/` ⭐
-- `.ai/planning/2025-11-14-architecture-refactoring/` ⭐⭐⭐ (17 docs)
-- `.ai/planning/2025-11-19-category-search-feature/` ⭐⭐ (18 docs)
+- `.engineering/artifacts/planning/2025-10-13-conceptual-search-implementation/` ⭐
+- `.engineering/artifacts/planning/2025-11-14-architecture-refactoring/` ⭐⭐⭐ (17 docs)
+- `.engineering/artifacts/planning/2025-11-19-category-search-feature/` ⭐⭐ (18 docs)
 - Plus 21 other planning folders
 
 **Key Finding:** Planning documentation is MORE comprehensive than typical git commit messages
@@ -419,7 +419,7 @@ Successfully extracted and documented **all 33 architectural decisions** from th
 - README.md (master index)
 - template.md (ADR template)
 
-### In `.ai/planning/2025-11-20-adr-creation/` (10 files)
+### In `.engineering/artifacts/planning/2025-11-20-adr-creation/` (10 files)
 
 **Analysis & Planning:**
 - README.md - Overview
@@ -441,7 +441,7 @@ Successfully extracted and documented **all 33 architectural decisions** from th
 
 **Every ADR:**
 - Metrics cited inline: `[Source: file, line]`
-- Planning docs referenced: `.ai/planning/folder/file.md`
+- Planning docs referenced: `.engineering/artifacts/planning/folder/file.md`
 - Code files referenced: `src/path/to/file.ts`
 - Complete References section
 - Traceability statement
@@ -550,7 +550,7 @@ User can verify: Open file → Go to line → Confirm fact
 **Pick Any ADR, Any Fact:**
 1. Find inline citation: `[Source: file.md, line X]`
 2. Check References section
-3. Navigate to source file: `.ai/planning/folder/file.md`
+3. Navigate to source file: `.engineering/artifacts/planning/folder/file.md`
 4. Go to cited line
 5. Verify fact exists
 
@@ -558,7 +558,7 @@ User can verify: Open file → Go to line → Confirm fact
 - ADR: adr0021
 - Fact: "80x-240x faster"
 - Citation: `[Source: PR-DESCRIPTION.md, line 21]`
-- Reference: `.ai/planning/2025-11-14-architecture-refactoring/PR-DESCRIPTION.md`
+- Reference: `.engineering/artifacts/planning/2025-11-14-architecture-refactoring/PR-DESCRIPTION.md`
 - Line 21: "| **Concept Search** | 8-12s | 50-100ms | **80x-240x faster** ⚡ |"
 - ✅ Verified
 

@@ -88,8 +88,8 @@ Before approving:
 
 ### Files to Review
 
-- Test results: `.ai/planning/2025-11-19-category-search-feature/test-results-summary.md`
-- Detailed JSON: `.ai/planning/2025-11-19-category-search-feature/test-results.json`
+- Test results: `.engineering/artifacts/planning/2025-11-19-category-search-feature/test-results-summary.md`
+- Detailed JSON: `.engineering/artifacts/planning/2025-11-19-category-search-feature/test-results.json`
 - Test database: `~/.concept_rag_test/`
 
 ---

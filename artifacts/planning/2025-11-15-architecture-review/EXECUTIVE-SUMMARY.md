@@ -206,7 +206,7 @@ The only path to 10/10 would require architectural innovations beyond current be
 All detailed analysis and recommendations are available in:
 
 ```
-.ai/planning/2025-11-15-architecture-review/
+.engineering/artifacts/planning/2025-11-15-architecture-review/
 ├── README.md                          # Review overview
 ├── EXECUTIVE-SUMMARY.md               # This document (UPDATED Nov 15, 2025)
 ├── 01-architecture-review.md          # Full analysis (11 sections, 10K+ words)
