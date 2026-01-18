@@ -12,13 +12,9 @@
         <meta name="author" content="Alex Komyagin">
       
       
-        <link rel="canonical" href="https://m2ux.github.io/concept-rag/stage-cache-structure/">
+        <link rel="canonical" href="https://m2ux.github.io/concept-rag/development/">
       
       
-        <link rel="prev" href="../database-schema/">
-      
-      
-        <link rel="next" href="../architecture/adr0001-typescript-nodejs-runtime/">
       
       
         
@@ -29,7 +25,7 @@
     
     
       
-        <title>Stage Cache - Concept-RAG Documentation</title>
+        <title>Development Guide - Concept-RAG Documentation</title>
       
     
     
@@ -80,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#stage-cache-structure" class="md-skip">
+        <a href="#development-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +110,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Stage Cache
+              Development Guide
             
           </span>
         </div>
@@ -323,12 +319,10 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
+      <li class="md-tabs__item">
         <a href="../architecture/" class="md-tabs__link">
           
   
@@ -666,8 +660,6 @@
       
   
   
-    
-  
   
   
     
@@ -691,19 +683,18 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -725,13 +716,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -860,37 +851,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Stage Cache
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../stage-cache-structure/" class="md-nav__link">
         
   
   
@@ -906,276 +870,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#directory-location" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Directory Location
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#collection-based-organization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Collection-Based Organization
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Collection-Based Organization">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#collection-hash-computation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Collection Hash Computation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#file-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        File Structure
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="File Structure">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#file-naming" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        File Naming
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cache-file-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cache File Format
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Cache File Format">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#field-descriptions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Field Descriptions
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#concepts-object" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Concepts Object
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#example-cache-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Cache File
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cache-lifecycle" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cache Lifecycle
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Cache Lifecycle">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#write-operations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Write Operations
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#read-operations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Read Operations
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#expiration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Expiration
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#automatic-cleanup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Automatic Cleanup
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cli-options" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CLI Options
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="CLI Options">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#resume-from-cached-collections" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Resume from Cached Collections
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#disk-space" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Disk Space
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#atomic-writes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Atomic Writes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related-documentation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related Documentation
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2918,230 +2612,99 @@
   
 
 
-<h1 id="stage-cache-structure">Stage Cache Structure<a class="headerlink" href="#stage-cache-structure" title="Permanent link">&para;</a></h1>
-<p>This document describes the on-disk structure of the Stage Cache, which persists LLM extraction results to enable resume from interrupted seeding operations.</p>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>The Stage Cache stores the results of expensive LLM operations (concept extraction, content overview generation) immediately after completion, before any database writes. This enables recovery from failures at any point in the seeding pipeline without re-running LLM calls.</p>
-<h2 id="directory-location">Directory Location<a class="headerlink" href="#directory-location" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>&lt;database-dir&gt;/.stage-cache/&lt;collection-hash&gt;/
-</code></pre></div>
-<p><strong>Examples:</strong>
-- Default: <code>~/.concept_rag/.stage-cache/a1b2c3d4e5f67890/</code>
-- Custom: <code>/path/to/db/.stage-cache/a1b2c3d4e5f67890/</code></p>
-<p>The cache directory is created automatically when the first document is cached.</p>
-<h2 id="collection-based-organization">Collection-Based Organization<a class="headerlink" href="#collection-based-organization" title="Permanent link">&para;</a></h2>
-<p>Caches are organized by <strong>collection hash</strong>, which is computed from the content hashes of all files at the source path. This provides:</p>
+<h1 id="development-guide">Development Guide<a class="headerlink" href="#development-guide" title="Permanent link">&para;</a></h1>
+<h2 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Permanent link">&para;</a></h2>
+<p>This fork extends the original <a href="https://github.com/adiom-data/lance-mcp">lance-mcp</a> with:</p>
 <ul>
-<li><strong>Source path independence</strong>: Renaming a folder doesn't invalidate the cache</li>
-<li><strong>Automatic cleanup</strong>: When all documents in a collection are seeded, the cache is removed</li>
-<li><strong>Isolation</strong>: Different source paths maintain independent caches</li>
+<li>🔄 <strong>Recursive self-improvement</strong> - Used its own tools to discover and apply design patterns</li>
+<li>📚 <strong>Formal concept model</strong> - Rigorous definition ensuring semantic matching and disambiguation</li>
+<li>🧠 <strong>Enhanced concept extraction</strong> - 80-150+ concepts per document (Claude Sonnet 4.5)</li>
+<li>🌐 <strong>WordNet semantic enrichment</strong> - Synonym expansion and hierarchical navigation</li>
+<li>🔍 <strong>Multi-signal hybrid ranking</strong> - Vector + BM25 + title + concept + WordNet (4-signal scoring)</li>
+<li>📖 <strong>Large document support</strong> - Multi-pass extraction for &gt;100k token documents</li>
+<li>⚡ <strong>Parallel concept extraction</strong> - Process up to 25 documents concurrently with shared rate limiting</li>
+<li>🔁 <strong>Resumable seeding</strong> - Checkpoint-based recovery from interrupted runs</li>
+<li>🛡️ <strong>System resilience</strong> - Circuit breaker, bulkhead, and timeout patterns for external services</li>
+<li>📊 <strong>Normalized schema (v7)</strong> - Derived text fields eliminate ID cache lookups at runtime</li>
+<li>🔗 <strong>Concept relationships</strong> - Adjacent (co-occurrence) and related (lexical) concept linking</li>
+<li>🏥 <strong>Health checks</strong> - Database integrity verification with detailed reporting</li>
+<li>🏗️ <strong>Clean Architecture</strong> - Domain-Driven Design patterns throughout (see <a href="../REFERENCES.md">REFERENCES.md</a>)</li>
 </ul>
-<h3 id="collection-hash-computation">Collection Hash Computation<a class="headerlink" href="#collection-hash-computation" title="Permanent link">&para;</a></h3>
-<ol>
-<li>Scan source directory for all document files (recursive)</li>
-<li>Compute SHA-256 hash of each file's content</li>
-<li>Sort all hashes alphabetically</li>
-<li>Compute SHA-256 of the joined hashes</li>
-<li>Use first 16 characters as collection folder name</li>
-</ol>
-<p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Files: doc1.pdf (hash: abc...), doc2.pdf (hash: xyz...)
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>Sorted: [abc..., xyz...]
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Collection hash: a1b2c3d4e5f67890
-</code></pre></div></p>
-<h2 id="file-structure">File Structure<a class="headerlink" href="#file-structure" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>&lt;database-dir&gt;/
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>├── catalog.lance/              # LanceDB catalog table
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>├── chunks.lance/               # LanceDB chunks table
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>├── concepts.lance/             # LanceDB concepts table
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>├── .seeding-checkpoint.json    # Checkpoint for resumable seeding
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>└── .stage-cache/               # Stage cache base directory
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    └── a1b2c3d4e5f67890/       # Collection-specific cache folder
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        ├── &lt;file-hash-1&gt;.json  # Cached LLM results for document 1
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        ├── &lt;file-hash-2&gt;.json  # Cached LLM results for document 2
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        └── ...
+<h2 id="project-structure">Project Structure<a class="headerlink" href="#project-structure" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>src/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── conceptual_index.ts           # MCP server entry point
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── application/                  # Composition root (DI)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── domain/                       # Domain models, services, interfaces
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   ├── models/                   # Chunk, Concept, SearchResult
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   ├── services/                 # Domain services (search logic)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   └── interfaces/               # Repository and service interfaces
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── infrastructure/               # External integrations
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── lancedb/                  # Database adapters (normalized schema v7)
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── embeddings/               # Embedding service
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── search/                   # Hybrid search with 4-signal scoring
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── resilience/               # Circuit breaker, bulkhead, timeout patterns
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── checkpoint/               # Resumable seeding with progress tracking
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── cli/                      # Progress bar display utilities
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   └── document-loaders/         # PDF, EPUB loaders with OCR fallback
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>├── concepts/                     # Concept extraction &amp; indexing
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── concept_extractor.ts      # LLM-based extraction
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── parallel-concept-extractor.ts  # Concurrent document processing
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── concept_index.ts          # Index builder with lexical linking
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   ├── query_expander.ts         # Query expansion with WordNet
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   └── summary_generator.ts      # LLM summary generation
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>├── wordnet/                      # WordNet integration
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>└── tools/                        # MCP tools (10 operations)
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>scripts/
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>├── health-check.ts               # Database integrity verification
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>├── rebuild_derived_names.ts      # Regenerate derived text fields
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>├── link_related_concepts.ts      # Build concept relationship graph
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>├── seed_specific.ts              # Targeted document re-seeding
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>└── analyze-backups.ts            # Backup comparison and analysis
 </code></pre></div>
-<h3 id="file-naming">File Naming<a class="headerlink" href="#file-naming" title="Permanent link">&para;</a></h3>
-<p>Each cache file is named using the document's SHA-256 content hash:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>&lt;64-character-hex-hash&gt;.json
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>     PDF/EPUB Documents
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>            ↓
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>   Processing + OCR fallback
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>            ↓
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  ┌─────────┼─────────┐
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  ↓         ↓         ↓
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>Catalog   Chunks   Concepts   Categories
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>(docs)    (text)   (index)    (taxonomy)
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  └─────────┴─────────┴─────────┘
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>            ↓
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    Hybrid Search Engine
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>   (Vector + BM25 + Concepts + WordNet)
 </code></pre></div>
-<p><strong>Example:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>a1d93afdd8d4213106b926a6efa0893569ba5b2c94c02475479ebd2b8b3f1723.json
-</code></pre></div></p>
-<p>This ensures:
-- Unique identification based on file content
-- Automatic cache invalidation when file content changes
-- No collisions between different documents</p>
-<h2 id="cache-file-format">Cache File Format<a class="headerlink" href="#cache-file-format" title="Permanent link">&para;</a></h2>
-<p>Each cache file is a JSON document with the following structure:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">&quot;hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;sha256-hash&gt;&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;relative-path-to-document&gt;&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">&quot;processedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;iso-8601-timestamp&gt;&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="nt">&quot;concepts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nt">&quot;primary_concepts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="nt">&quot;categories&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nt">&quot;technical_terms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="nt">&quot;related_concepts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">]</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">  </span><span class="nt">&quot;contentOverview&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;document-summary-text&gt;&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;extracted-title&gt;&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">    </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;extracted-author&gt;&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">    </span><span class="nt">&quot;year&quot;</span><span class="p">:</span><span class="w"> </span><span class="err">&lt;publica</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="mi">-</span><span class="err">year&gt;</span>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">  </span><span class="p">}</span>
-<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="p">}</span>
+<h3 id="four-table-normalized-schema">Four-Table Normalized Schema<a class="headerlink" href="#four-table-normalized-schema" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Catalog</strong>: Document metadata with derived <code>concept_names</code>, <code>category_names</code></li>
+<li><strong>Chunks</strong>: Text segments with <code>catalog_title</code>, <code>concept_names</code></li>
+<li><strong>Concepts</strong>: Deduplicated index with lexical/adjacent relationships</li>
+<li><strong>Categories</strong>: Hierarchical taxonomy with statistics</li>
+</ul>
+<p>See <a href="../database-schema/">database-schema.md</a> for complete schema documentation.</p>
+<h2 id="design-principles">Design Principles<a class="headerlink" href="#design-principles" title="Permanent link">&para;</a></h2>
+<p>This project follows Clean Architecture and Domain-Driven Design patterns.</p>
+<h3 id="architecture-decision-records-adrs">Architecture Decision Records (ADRs)<a class="headerlink" href="#architecture-decision-records-adrs" title="Permanent link">&para;</a></h3>
+<p>All major technical decisions are documented in <strong><a href="../architecture/">Architecture Decision Records</a></strong>.</p>
+<h3 id="key-documentation">Key Documentation<a class="headerlink" href="#key-documentation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><a href="../api-reference/">API Reference</a></strong> - Complete MCP tool documentation with JSON I/O schemas</li>
+<li><strong><a href="../architecture/skills-interface/">Intent/Skill Architecture</a></strong> - Intent-based tool selection</li>
+<li><strong><a href="../database-schema/">Database Schema</a></strong> - Four-table normalized schema with derived fields</li>
+<li><strong><a href="../src/__tests__/README.md">Test Suite</a></strong> - Comprehensive test documentation</li>
+</ul>
+<h2 id="building">Building<a class="headerlink" href="#building" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>npm<span class="w"> </span>install
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>npm<span class="w"> </span>run<span class="w"> </span>build
 </code></pre></div>
-<h3 id="field-descriptions">Field Descriptions<a class="headerlink" href="#field-descriptions" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>hash</code></td>
-<td>string</td>
-<td>SHA-256 hash of the source document content</td>
-</tr>
-<tr>
-<td><code>source</code></td>
-<td>string</td>
-<td>Relative path to the source document</td>
-</tr>
-<tr>
-<td><code>processedAt</code></td>
-<td>string</td>
-<td>ISO 8601 timestamp when LLM processing completed</td>
-</tr>
-<tr>
-<td><code>concepts</code></td>
-<td>object</td>
-<td>Extracted concept data from LLM</td>
-</tr>
-<tr>
-<td><code>contentOverview</code></td>
-<td>string</td>
-<td>Generated document summary (1-3 sentences)</td>
-</tr>
-<tr>
-<td><code>metadata</code></td>
-<td>object</td>
-<td>Optional extracted document metadata</td>
-</tr>
-</tbody>
-</table>
-<h3 id="concepts-object">Concepts Object<a class="headerlink" href="#concepts-object" title="Permanent link">&para;</a></h3>
-<p>The <code>concepts</code> field contains the LLM extraction results:</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>primary_concepts</code></td>
-<td>array</td>
-<td>Main concepts with name and summary</td>
-</tr>
-<tr>
-<td><code>categories</code></td>
-<td>array</td>
-<td>Document categories (e.g., "blockchain technology")</td>
-</tr>
-<tr>
-<td><code>technical_terms</code></td>
-<td>array</td>
-<td>Technical terminology extracted</td>
-</tr>
-<tr>
-<td><code>related_concepts</code></td>
-<td>array</td>
-<td>Related concept names for co-occurrence analysis</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Primary Concept Format:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;blockchain interoperability&quot;</span><span class="p">,</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The ability of different blockchain networks to communicate...&quot;</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="p">}</span>
-</code></pre></div></p>
-<h2 id="example-cache-file">Example Cache File<a class="headerlink" href="#example-cache-file" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">&quot;hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1d93afdd8d4213106b926a6efa0893569ba5b2c94c02475479ebd2b8b3f1723&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sample-docs/Papers/blockchain-interoperability.pdf&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">&quot;processedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2025-12-11T11:58:25.944Z&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">&quot;concepts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="nt">&quot;primary_concepts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">      </span><span class="p">{</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;blockchain interoperability&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">        </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The ability of different blockchain networks to communicate, share data, and interact with each other.&quot;</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">      </span><span class="p">},</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">      </span><span class="p">{</span>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cross-chain communication&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">        </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The process of enabling message transmission and data exchange between different blockchain networks.&quot;</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">      </span><span class="p">}</span>
-<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">    </span><span class="p">],</span>
-<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">    </span><span class="nt">&quot;categories&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">      </span><span class="s2">&quot;blockchain technology&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">      </span><span class="s2">&quot;distributed systems&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">      </span><span class="s2">&quot;cryptography&quot;</span>
-<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="w">    </span><span class="p">],</span>
-<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="w">    </span><span class="nt">&quot;technical_terms&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">    </span><span class="nt">&quot;related_concepts&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
-<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="w">  </span><span class="nt">&quot;contentOverview&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;This comprehensive survey reviews cross-chain solutions for blockchain interoperability, proposing conceptual models for asset and data exchange.&quot;</span><span class="p">,</span>
-<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a><span class="w">    </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Wenqing Li&quot;</span>
-<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="w">  </span><span class="p">}</span>
-<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="p">}</span>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>npm<span class="w"> </span><span class="nb">test</span><span class="w">                    </span><span class="c1"># Run all tests</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>npm<span class="w"> </span>run<span class="w"> </span>test:unit<span class="w">           </span><span class="c1"># Unit tests only</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>npm<span class="w"> </span>run<span class="w"> </span>test:integration<span class="w">    </span><span class="c1"># Integration tests only</span>
 </code></pre></div>
-<h2 id="cache-lifecycle">Cache Lifecycle<a class="headerlink" href="#cache-lifecycle" title="Permanent link">&para;</a></h2>
-<h3 id="write-operations">Write Operations<a class="headerlink" href="#write-operations" title="Permanent link">&para;</a></h3>
-<p>Cache entries are written immediately after successful LLM extraction:</p>
-<ol>
-<li>Document text extracted from PDF/EPUB</li>
-<li>LLM generates content overview</li>
-<li>LLM extracts concepts</li>
-<li><strong>Cache entry written to disk</strong> (atomic write via temp file + rename)</li>
-<li>Database operations proceed</li>
-</ol>
-<h3 id="read-operations">Read Operations<a class="headerlink" href="#read-operations" title="Permanent link">&para;</a></h3>
-<p>On subsequent seeding runs, the cache is checked before LLM calls:</p>
-<ol>
-<li>Compute document hash</li>
-<li>Check if <code>&lt;hash&gt;.json</code> exists in cache</li>
-<li>Verify entry is not expired (TTL check via file mtime)</li>
-<li>If valid, load cached data and skip LLM calls</li>
-<li>If missing/expired, perform LLM extraction and cache result</li>
-</ol>
-<h3 id="expiration">Expiration<a class="headerlink" href="#expiration" title="Permanent link">&para;</a></h3>
-<p>Cache entries expire based on Time-To-Live (TTL):
-- Default TTL: 7 days
-- Expiration checked via file modification time
-- Expired entries are not used and can be cleaned</p>
-<h3 id="automatic-cleanup">Automatic Cleanup<a class="headerlink" href="#automatic-cleanup" title="Permanent link">&para;</a></h3>
-<p>At the end of a successful seeding run, the cache is automatically cleaned up when:</p>
-<ol>
-<li>All documents from the source path are present in the catalog table</li>
-<li>The seeding completed without fatal errors</li>
-</ol>
-<p><strong>Cleanup behavior:</strong>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>🗑️  All documents seeded - cleaning up collection cache (a1b2c3d4e5f67890)...
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>   ✅ Removed collection cache
-</code></pre></div></p>
-<p>This ensures:
-- No stale caches accumulate over time
-- Disk space is reclaimed after successful seeding
-- Interrupted runs preserve cache for resume</p>
-<h2 id="cli-options">CLI Options<a class="headerlink" href="#cli-options" title="Permanent link">&para;</a></h2>
+<h2 id="seeding-options">Seeding Options<a class="headerlink" href="#seeding-options" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3151,64 +2714,68 @@
 </thead>
 <tbody>
 <tr>
-<td><code>--no-cache</code></td>
-<td>Disable stage cache entirely</td>
+<td><code>--filesdir</code></td>
+<td>Directory containing PDF/EPUB files (required)</td>
 </tr>
 <tr>
-<td><code>--clear-cache</code></td>
-<td>Clear cache before processing</td>
+<td><code>--dbpath</code></td>
+<td>Database path (default: <code>~/.concept_rag</code>)</td>
 </tr>
 <tr>
-<td><code>--cache-only</code></td>
-<td>Only use cached results, fail if not cached</td>
+<td><code>--overwrite</code></td>
+<td>Drop and recreate all database tables</td>
 </tr>
 <tr>
-<td><code>--cache-dir PATH</code></td>
-<td>Use custom cache directory</td>
+<td><code>--parallel N</code></td>
+<td>Process N documents concurrently (default: 10, max: 25)</td>
 </tr>
 <tr>
-<td>(no <code>--filesdir</code>)</td>
-<td>Resume from cached collections in chronological order</td>
+<td><code>--resume</code></td>
+<td>Skip documents already in checkpoint (for interrupted runs)</td>
+</tr>
+<tr>
+<td><code>--clean-checkpoint</code></td>
+<td>Clear checkpoint file and start fresh</td>
+</tr>
+<tr>
+<td><code>--rebuild-concepts</code></td>
+<td>Rebuild concept index even if no new documents</td>
+</tr>
+<tr>
+<td><code>--auto-reseed</code></td>
+<td>Re-process documents with incomplete metadata</td>
+</tr>
+<tr>
+<td><code>--max-docs N</code></td>
+<td>Process at most N new documents (for batching)</td>
+</tr>
+<tr>
+<td><code>--with-wordnet</code></td>
+<td>Enable WordNet enrichment (disabled by default)</td>
 </tr>
 </tbody>
 </table>
-<h3 id="resume-from-cached-collections">Resume from Cached Collections<a class="headerlink" href="#resume-from-cached-collections" title="Permanent link">&para;</a></h3>
-<p>If you run the seeding script without <code>--filesdir</code> and cached collections exist, they will be processed automatically in chronological order (oldest first):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># First run - interrupted</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span>--filesdir<span class="w"> </span>/path/to/docs1
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="c1"># ^C (interrupted)</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1"># Second run - different path, interrupted</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts<span class="w"> </span>--filesdir<span class="w"> </span>/path/to/docs2
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># ^C (interrupted)</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="c1"># Third run - no path, resumes both in order</span>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>npx<span class="w"> </span>tsx<span class="w"> </span>hybrid_fast_seed.ts
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="c1"># Output:</span>
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="c1"># 📦 Found 2 cached collection(s) to resume:</span>
-<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="c1">#    └─ a1b2c3d4e5f67890: 5 files, 45min ago → /path/to/docs1</span>
-<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="c1">#    └─ f8e7d6c5b4a39281: 3 files, 15min ago → /path/to/docs2</span>
-<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="c1"># 🔄 Will process 2 cached collection(s) in chronological order</span>
+<p><strong>Seed specific documents:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># By hash prefix (shown in seeding output)</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/seed_specific.ts<span class="w"> </span>--hash<span class="w"> </span>3cde<span class="w"> </span>7f2b
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># By filename pattern</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/seed_specific.ts<span class="w"> </span>--pattern<span class="w"> </span><span class="s2">&quot;Transaction Processing&quot;</span>
 </code></pre></div>
-<p>If no caches exist, the original error is shown requiring <code>--filesdir</code>.</p>
-<h2 id="disk-space">Disk Space<a class="headerlink" href="#disk-space" title="Permanent link">&para;</a></h2>
-<p>Typical cache file sizes:
-- Small documents (10-20 pages): 20-30 KB
-- Medium documents (50-100 pages): 40-60 KB
-- Large documents (200+ pages): 80-120 KB</p>
-<p>The cache grows linearly with the number of processed documents. For a library of 100 documents, expect approximately 5-10 MB of cache storage.</p>
-<h2 id="atomic-writes">Atomic Writes<a class="headerlink" href="#atomic-writes" title="Permanent link">&para;</a></h2>
-<p>Cache writes use atomic operations to prevent corruption:</p>
-<ol>
-<li>Write to temporary file: <code>&lt;hash&gt;.json.tmp</code></li>
-<li>Rename to final path: <code>&lt;hash&gt;.json</code></li>
-</ol>
-<p>This ensures cache files are never partially written, even if the process is killed mid-write.</p>
-<h2 id="related-documentation">Related Documentation<a class="headerlink" href="#related-documentation" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="../architecture/adr0048-stage-caching/">ADR-0048: Stage Caching</a> - Architecture decision record</li>
-<li><a href="../database-schema/">Database Schema</a> - LanceDB table structures</li>
-</ul>
+<h2 id="maintenance-scripts">Maintenance Scripts<a class="headerlink" href="#maintenance-scripts" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Health check - verify database integrity</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/health-check.ts
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Rebuild derived name fields (after schema changes)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/rebuild_derived_names.ts<span class="w"> </span>--dbpath<span class="w"> </span>~/.concept_rag
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Link related concepts (lexical similarity)</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/link_related_concepts.ts<span class="w"> </span>--dbpath<span class="w"> </span>~/.concept_rag
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="c1"># Analyze backup differences</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>npx<span class="w"> </span>tsx<span class="w"> </span>scripts/analyze-backups.ts<span class="w"> </span>backup1/<span class="w"> </span>backup2/
+</code></pre></div>
+<p>See <a href="../scripts/README.md">../scripts/README.md</a> for all maintenance utilities.</p>
 
 
 
