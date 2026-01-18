@@ -24,21 +24,6 @@ const PROJECT_ROOT = path.resolve(__dirname, '../');
  * Unlike tools, resources are read-only and don't execute any logic.
  */
 const RESOURCES = [
-  // Legacy guidance resources (kept for backward compatibility)
-  {
-    uri: 'concept-rag://get-guidance',
-    name: 'Agent Research Rules',
-    description: 'Guidelines for AI agents to improve answer synthesis, tool selection, and efficiency when using concept-rag tools.',
-    mimeType: 'text/markdown',
-    filePath: 'prompts/get-guidance.md',
-  },
-  {
-    uri: 'concept-rag://tool-selection-guide',
-    name: 'Tool Selection Guide',
-    description: 'Decision tree and best practices for selecting the right MCP tool for each task.',
-    mimeType: 'text/markdown',
-    filePath: 'docs/tool-selection-guide.md',
-  },
   // Intent resources (problem domain - user goals)
   {
     uri: 'concept-rag://intents',
