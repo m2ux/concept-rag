@@ -13,6 +13,7 @@ Match the user's goal to an intent. Each intent may use multiple skills in seque
 | [explore-category](explore-category.md) | Understand a domain's concepts | `category-exploration` | `library-discovery`, `concept-exploration` |
 | [identify-patterns](identify-patterns.md) | Find applicable design patterns | `pattern-research` | `deep-research`, `document-analysis` |
 | [identify-best-practices](identify-best-practices.md) | Find proven approaches | `practice-research` | `deep-research`, `concept-exploration` |
+| [curate-lexicon](curate-lexicon.md) | Create a concept vocabulary for a project | `category-exploration` | `concept-exploration`, `library-discovery`, `document-analysis` |
 
 ## Quick Match
 
@@ -26,3 +27,5 @@ Match the user's goal to an intent. Each intent may use multiple skills in seque
 - "What concepts are in [category]?" → `explore-category`
 - "What patterns apply to X?" → `identify-patterns`
 - "Best practices for X" → `identify-best-practices`
+- "Create a concept lexicon for [project]" → `curate-lexicon`
+- "What concepts apply to my project?" → `curate-lexicon`

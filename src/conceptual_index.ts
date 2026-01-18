@@ -89,6 +89,13 @@ const RESOURCES = [
     mimeType: 'text/markdown',
     filePath: 'prompts/intents/identify-best-practices.md',
   },
+  {
+    uri: 'concept-rag://intents/curate-lexicon',
+    name: 'Intent: Curate Concept Lexicon',
+    description: 'Intent for creating a curated vocabulary of concepts applicable to a project.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/intents/curate-lexicon.md',
+  },
   // Skill resources (solution domain - capabilities)
   {
     uri: 'concept-rag://skills',

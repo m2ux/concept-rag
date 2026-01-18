@@ -38,6 +38,7 @@ const EXPECTED_RESOURCES = {
   'concept-rag://intents/explore-category': 'prompts/intents/explore-category.md',
   'concept-rag://intents/identify-patterns': 'prompts/intents/identify-patterns.md',
   'concept-rag://intents/identify-best-practices': 'prompts/intents/identify-best-practices.md',
+  'concept-rag://intents/curate-lexicon': 'prompts/intents/curate-lexicon.md',
   
   // Skills
   'concept-rag://skills': 'prompts/skills/index.md',
@@ -88,6 +89,7 @@ describe('MCP Resources E2E Tests', () => {
       expect(content).toContain('explore-category');
       expect(content).toContain('identify-patterns');
       expect(content).toContain('identify-best-practices');
+      expect(content).toContain('curate-lexicon');
     });
     
     it('should have skill index with all skills listed', () => {
@@ -113,6 +115,7 @@ describe('MCP Resources E2E Tests', () => {
         'prompts/intents/explore-category.md',
         'prompts/intents/identify-patterns.md',
         'prompts/intents/identify-best-practices.md',
+        'prompts/intents/curate-lexicon.md',
       ];
       
       intentFiles.forEach(filePath => {
@@ -168,14 +171,14 @@ describe('MCP Resources E2E Tests', () => {
     it('should have expected number of resources', () => {
       const resourceCount = Object.keys(EXPECTED_RESOURCES).length;
       
-      // 1 guidance + 8 intents (1 index + 7 intents) + 8 skills (1 index + 7 skills) = 17
-      expect(resourceCount).toBe(17);
+      // 1 guidance + 9 intents (1 index + 8 intents) + 8 skills (1 index + 7 skills) = 18
+      expect(resourceCount).toBe(18);
     });
     
     it('should have 7 intent files plus index', () => {
       const intentDir = path.join(PROJECT_ROOT, 'prompts/intents');
       const files = fs.readdirSync(intentDir).filter(f => f.endsWith('.md'));
-      expect(files.length).toBe(8); // 7 intents + index
+      expect(files.length).toBe(9); // 8 intents + index
     });
     
     it('should have 7 skill files plus index', () => {
