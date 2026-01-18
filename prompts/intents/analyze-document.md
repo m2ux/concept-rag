@@ -14,7 +14,10 @@
 
 ## Maps To
 
-**Skill:** [document-analysis](../skills/document-analysis.md)
+**Primary Skill:** [document-analysis](../skills/document-analysis.md)
+
+**Supporting Skills:**
+- [concept-exploration](../skills/concept-exploration.md) — Follow up on interesting concepts found
 
 ## Expected Outcome
 
@@ -22,3 +25,4 @@
 - Technical terms and terminology
 - Related concepts and categories
 - Document summary
+- Links to where key concepts appear elsewhere

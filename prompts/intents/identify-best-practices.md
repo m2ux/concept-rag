@@ -14,7 +14,11 @@
 
 ## Maps To
 
-**Skill:** [practice-research](../skills/practice-research.md)
+**Primary Skill:** [practice-research](../skills/practice-research.md)
+
+**Supporting Skills:**
+- [deep-research](../skills/deep-research.md) — Find detailed explanations and rationale
+- [concept-exploration](../skills/concept-exploration.md) — Discover related practices and concepts
 
 ## Expected Outcome
 
@@ -22,3 +26,4 @@
 - Recommended approaches
 - Anti-patterns to avoid
 - Trade-offs and considerations
+- Related concepts and practices

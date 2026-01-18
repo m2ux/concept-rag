@@ -13,7 +13,11 @@
 
 ## Maps To
 
-**Skill:** [category-exploration](../skills/category-exploration.md)
+**Primary Skill:** [category-exploration](../skills/category-exploration.md)
+
+**Supporting Skills:**
+- [library-discovery](../skills/library-discovery.md) — Understand category scope and document coverage
+- [concept-exploration](../skills/concept-exploration.md) — Drill into specific concepts discovered
 
 ## Expected Outcome
 
@@ -21,3 +25,4 @@
 - Concept frequency across documents
 - Related categories
 - Representative documents
+- Deeper exploration of notable concepts

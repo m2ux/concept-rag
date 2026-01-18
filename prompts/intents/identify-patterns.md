@@ -14,11 +14,16 @@
 
 ## Maps To
 
-**Skill:** [pattern-research](../skills/pattern-research.md)
+**Primary Skill:** [pattern-research](../skills/pattern-research.md)
+
+**Supporting Skills:**
+- [deep-research](../skills/deep-research.md) — Find detailed pattern implementations
+- [document-analysis](../skills/document-analysis.md) — Extract concepts from pattern-rich sources
 
 ## Expected Outcome
 
 - Applicable design patterns with sources
 - Pattern descriptions and trade-offs
 - How to apply patterns to the problem
+- Detailed implementations from key sources
 - Confidence level for each pattern

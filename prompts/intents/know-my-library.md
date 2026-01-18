@@ -17,7 +17,10 @@ Match this intent when the user says:
 
 ## Maps To
 
-**Skill:** [library-discovery](../skills/library-discovery.md)
+**Primary Skill:** [library-discovery](../skills/library-discovery.md)
+
+**Supporting Skills:**
+- [category-exploration](../skills/category-exploration.md) — Drill into specific domains of interest
 
 ## Expected Outcome
 
@@ -25,17 +28,16 @@ An organized overview that:
 - Shows available categories/domains
 - Lists representative documents
 - Provides document counts and coverage
-- Enables further exploration
+- Enables further exploration into specific areas
 
 ## Example Flow
 
 ```
 User: "What do I have in my library?"
 
-1. Read library-discovery skill
-2. Use list_categories to get domain overview
-3. Use category_search for specific domains if asked
-4. Present organized summary
+1. Use library-discovery skill to get overview
+2. If user shows interest in a domain, use category-exploration
+3. Present organized summary with drill-down options
 ```
 
 ## Context to Preserve

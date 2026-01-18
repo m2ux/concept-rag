@@ -104,7 +104,7 @@ describe('MCP Resources E2E Tests', () => {
       expect(content).toContain('practice-research');
     });
     
-    it('should have each intent link to a skill', () => {
+    it('should have each intent link to primary and supporting skills', () => {
       const intentFiles = [
         'prompts/intents/understand-topic.md',
         'prompts/intents/know-my-library.md',
@@ -119,9 +119,13 @@ describe('MCP Resources E2E Tests', () => {
         const fullPath = path.join(PROJECT_ROOT, filePath);
         const content = fs.readFileSync(fullPath, 'utf-8');
         
-        // Should have "Maps To" section with skill link
+        // Should have "Maps To" section with primary skill
         expect(content).toContain('Maps To');
+        expect(content).toContain('Primary Skill');
         expect(content).toMatch(/skills\/.*\.md/);
+        
+        // Should have supporting skills section
+        expect(content).toContain('Supporting Skills');
       });
     });
     
