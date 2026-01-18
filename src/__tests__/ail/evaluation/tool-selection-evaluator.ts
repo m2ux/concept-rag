@@ -87,19 +87,33 @@ const ALWAYS_VALID_TOOLS: string[] = [];
  * Recommended tool workflows based on skills interface
  */
 const VALID_WORKFLOWS: string[][] = [
+  // Document research workflows
   ['catalog_search'],
   ['catalog_search', 'chunks_search'],
   ['catalog_search', 'chunks_search', 'chunks_search'],
+  ['catalog_search', 'extract_concepts'],
+  
+  // Category exploration workflows
   ['list_categories'],
   ['list_categories', 'category_search'],
+  ['list_categories', 'category_search', 'list_concepts_in_category'],
+  ['list_categories', 'list_concepts_in_category'],
   ['category_search'],
   ['category_search', 'chunks_search'],
+  ['category_search', 'list_concepts_in_category'],
+  ['list_concepts_in_category'],
+  
+  // Concept exploration workflows
   ['concept_search'],
+  ['concept_search', 'source_concepts'],
+  ['concept_search', 'chunks_search'],
   ['source_concepts'],
   ['concept_sources'],
+  
+  // Research workflows
   ['broad_chunks_search'],
+  ['broad_chunks_search', 'chunks_search'],
   ['extract_concepts'],
-  ['list_concepts_in_category'],
 ];
 
 /**

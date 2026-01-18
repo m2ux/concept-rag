@@ -34,10 +34,10 @@ export const DATABASE_URL = "~/.concept_rag";
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
 /** @deprecated Use config.llm.summaryModel */
-export const OPENROUTER_SUMMARY_MODEL = "x-ai/grok-4-fast"; // Fast summarization
+export const OPENROUTER_SUMMARY_MODEL = "google/gemini-3-flash-preview"; // Fast summarization
 
 /** @deprecated Use config.llm.conceptModel */
-export const OPENROUTER_CONCEPT_MODEL = "anthropic/claude-sonnet-4.5"; // Comprehensive concept extraction
+export const OPENROUTER_CONCEPT_MODEL = "google/gemini-3-flash-preview"; // Comprehensive concept extraction
 
 // Prompt configuration
 const __filename = fileURLToPath(import.meta.url);

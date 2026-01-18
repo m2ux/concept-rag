@@ -39,9 +39,9 @@ export interface AILConfig {
  */
 export function loadAILConfig(): AILConfig {
   return {
-    // Model configuration - Haiku is more cost-effective
-    model: process.env.AIL_MODEL || 'anthropic/claude-haiku-4.5',
-    evalModel: process.env.AIL_EVAL_MODEL || 'anthropic/claude-haiku-4.5',
+    // Model configuration - Gemini Flash for speed and cost-effectiveness
+    model: process.env.AIL_MODEL || 'google/gemini-3-flash-preview',
+    evalModel: process.env.AIL_EVAL_MODEL || 'google/gemini-3-flash-preview',
     
     // API configuration
     apiKey: process.env.OPENROUTER_API_KEY || '',
