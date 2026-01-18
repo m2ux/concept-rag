@@ -18,7 +18,7 @@ import {
 import { ToolCallRecorder } from './tool-call-recorder.js';
 
 /**
- * System prompt for the agent - kept minimal since detailed rules are injected via get_guidance
+ * System prompt for the agent - kept minimal since detailed rules are injected via resources
  */
 function loadSystemPrompt(): string {
   return `You are a research assistant with access to a document knowledge base.
@@ -64,30 +64,38 @@ export class LLMAgentRunner {
     let totalPromptTokens = 0;
     let totalCompletionTokens = 0;
     
-    // MANDATORY: Call get_guidance first to ensure agent has research rules
-    // This guarantees consistent behavior regardless of LLM instruction-following
-    const guidanceResult = await recorder.execute('get_guidance', {});
+    // Load skills interface content (intents, skills, guidance)
+    const projectRoot = process.cwd();
+    const skillsFiles = [
+      { path: 'prompts/intents/index.md', label: 'Intent Index' },
+      { path: 'prompts/skills/index.md', label: 'Skill Index' },
+      { path: 'prompts/guidance.md', label: 'Research Guidelines' },
+    ];
     
-    // Load compact quick rules from prompt file
-    const quickRulesPath = path.resolve(process.cwd(), 'prompts/agent-quick-rules.md');
-    let quickRules = '';
-    try {
-      if (fs.existsSync(quickRulesPath)) {
-        quickRules = fs.readFileSync(quickRulesPath, 'utf-8');
+    const skillsContext: string[] = [];
+    for (const file of skillsFiles) {
+      const filePath = path.resolve(projectRoot, file.path);
+      try {
+        if (fs.existsSync(filePath)) {
+          skillsContext.push(`## ${file.label}\n\n${fs.readFileSync(filePath, 'utf-8')}`);
+        }
+      } catch {
+        // Skip if file not found
       }
-    } catch {
-      // Fall back to basic rules if file not found
-      quickRules = 'Use catalog_search to find documents, then chunks_search for content. Synthesize answers from results.';
     }
     
-    // Inject compact guidance as a prior exchange
+    const fullContext = skillsContext.length > 0 
+      ? skillsContext.join('\n\n---\n\n')
+      : 'Use catalog_search to find documents, then chunks_search for content. Synthesize answers from results.';
+    
+    // Inject skills interface context as a prior exchange
     messages.push({
       role: 'user',
-      content: 'Please review these research guidelines before answering my question.',
+      content: 'Please review these research guidelines and tool selection guidance before answering my question.',
     });
     messages.push({
       role: 'assistant',
-      content: `I've reviewed the guidelines:\n\n${quickRules}\n\nReady for your question.`,
+      content: `I've reviewed the intent→skill→tool guidance:\n\n${fullContext}\n\nReady for your question.`,
     });
     
     // Now add the actual user question
