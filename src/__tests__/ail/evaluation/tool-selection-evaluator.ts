@@ -84,37 +84,33 @@ const TOOL_SELECTION_PATTERNS: Array<{
 const ALWAYS_VALID_TOOLS: string[] = [];
 
 /**
- * Recommended tool workflows based on skills interface
+ * Valid tool sets for each skill (tools that may be used, in any order with loops)
+ * 
+ * Skills define ITERATIVE workflows - tools can be repeated and interleaved.
+ * Validation checks that tools belong to a coherent skill, not strict sequencing.
  */
-const VALID_WORKFLOWS: string[][] = [
-  // Document research workflows
-  ['catalog_search'],
-  ['catalog_search', 'chunks_search'],
-  ['catalog_search', 'chunks_search', 'chunks_search'],
-  ['catalog_search', 'extract_concepts'],
-  
-  // Category exploration workflows
-  ['list_categories'],
-  ['list_categories', 'category_search'],
-  ['list_categories', 'category_search', 'list_concepts_in_category'],
-  ['list_categories', 'list_concepts_in_category'],
-  ['category_search'],
-  ['category_search', 'chunks_search'],
-  ['category_search', 'list_concepts_in_category'],
-  ['list_concepts_in_category'],
-  
-  // Concept exploration workflows
-  ['concept_search'],
-  ['concept_search', 'source_concepts'],
-  ['concept_search', 'chunks_search'],
-  ['source_concepts'],
-  ['concept_sources'],
-  
-  // Research workflows
-  ['broad_chunks_search'],
-  ['broad_chunks_search', 'chunks_search'],
-  ['extract_concepts'],
-];
+const SKILL_TOOL_SETS: Record<string, Set<string>> = {
+  'deep-research': new Set(['catalog_search', 'chunks_search']),
+  'library-discovery': new Set(['list_categories', 'category_search']),
+  'concept-exploration': new Set(['concept_search', 'source_concepts', 'chunks_search']),
+  'document-analysis': new Set(['catalog_search', 'extract_concepts', 'chunks_search']),
+  'category-exploration': new Set(['list_categories', 'category_search', 'list_concepts_in_category']),
+  'pattern-research': new Set(['concept_search', 'source_concepts', 'chunks_search']),
+  'practice-research': new Set(['broad_chunks_search', 'catalog_search', 'chunks_search']),
+};
+
+/**
+ * Typical starting tools for each skill (used to identify which skill is being used)
+ */
+const SKILL_ENTRY_TOOLS: Record<string, string[]> = {
+  'deep-research': ['catalog_search'],
+  'library-discovery': ['list_categories'],
+  'concept-exploration': ['concept_search'],
+  'document-analysis': ['catalog_search'],
+  'category-exploration': ['list_categories'],
+  'pattern-research': ['concept_search'],
+  'practice-research': ['broad_chunks_search'],
+};
 
 /**
  * Evaluates tool selection quality
@@ -194,6 +190,10 @@ export class ToolSelectionEvaluator {
   
   /**
    * Check if the tool sequence is a valid workflow
+   * 
+   * Skills define iterative workflows - validation checks that:
+   * 1. All tools belong to a coherent skill
+   * 2. Tools are used appropriately (repeated calls OK)
    */
   private isValidWorkflow(tools: string[]): boolean {
     // Empty is valid (though not useful)
@@ -203,59 +203,64 @@ export class ToolSelectionEvaluator {
     const filteredTools = tools.filter(t => !ALWAYS_VALID_TOOLS.includes(t));
     if (filteredTools.length === 0) return true;
     
-    // Normalize to unique tools in order
-    const normalizedTools: string[] = [];
-    for (const tool of filteredTools) {
-      if (normalizedTools.length === 0 || normalizedTools[normalizedTools.length - 1] !== tool) {
-        normalizedTools.push(tool);
-      }
+    // Get unique tools used (order doesn't matter for skill matching)
+    const uniqueTools = new Set(filteredTools);
+    
+    // Find which skill(s) this tool set belongs to
+    const matchingSkill = this.identifySkill(filteredTools);
+    if (!matchingSkill) {
+      return false;
     }
     
-    // Check against valid workflows
-    for (const workflow of VALID_WORKFLOWS) {
-      if (this.matchesWorkflow(normalizedTools, workflow)) {
-        return true;
-      }
-    }
-    
-    // Also valid if it's a subset/prefix of a valid workflow
-    for (const workflow of VALID_WORKFLOWS) {
-      if (normalizedTools.length <= workflow.length) {
-        const prefix = workflow.slice(0, normalizedTools.length);
-        if (this.arraysEqual(normalizedTools, prefix)) {
-          return true;
-        }
-      }
-    }
-    
-    return false;
-  }
-  
-  /**
-   * Check if tools match a workflow (allowing repetition)
-   */
-  private matchesWorkflow(tools: string[], workflow: string[]): boolean {
-    if (tools.length === 0) return workflow.length === 0;
-    
-    let workflowIdx = 0;
-    for (const tool of tools) {
-      // Tool must match current or future workflow step
-      while (workflowIdx < workflow.length && workflow[workflowIdx] !== tool) {
-        workflowIdx++;
-      }
-      if (workflowIdx >= workflow.length) {
+    // Verify all tools belong to the identified skill
+    const skillTools = SKILL_TOOL_SETS[matchingSkill];
+    for (const tool of uniqueTools) {
+      if (!skillTools.has(tool)) {
         return false;
       }
     }
+    
     return true;
   }
   
   /**
-   * Check if two arrays are equal
+   * Identify which skill is being used based on the first tool call
    */
-  private arraysEqual(a: string[], b: string[]): boolean {
-    if (a.length !== b.length) return false;
-    return a.every((val, idx) => val === b[idx]);
+  private identifySkill(tools: string[]): string | null {
+    if (tools.length === 0) return null;
+    
+    const firstTool = tools[0];
+    
+    // Find skill by entry tool
+    for (const [skill, entryTools] of Object.entries(SKILL_ENTRY_TOOLS)) {
+      if (entryTools.includes(firstTool)) {
+        return skill;
+      }
+    }
+    
+    // Fall back to finding any skill that contains this tool
+    for (const [skill, toolSet] of Object.entries(SKILL_TOOL_SETS)) {
+      if (toolSet.has(firstTool)) {
+        return skill;
+      }
+    }
+    
+    return null;
+  }
+  
+  /**
+   * Check if all tools belong to a single skill's tool set
+   */
+  private toolsBelongToSkill(tools: Set<string>, skill: string): boolean {
+    const skillTools = SKILL_TOOL_SETS[skill];
+    if (!skillTools) return false;
+    
+    for (const tool of tools) {
+      if (!skillTools.has(tool)) {
+        return false;
+      }
+    }
+    return true;
   }
   
   /**

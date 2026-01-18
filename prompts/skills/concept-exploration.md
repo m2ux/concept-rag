@@ -11,11 +11,33 @@ Track where a concept appears across the library and find source attribution.
 ## Tool Workflow
 
 ```
-1. concept_search(concept) → Find concept and where it's discussed
-   ↓ preserve: sources, chunk locations
-2. source_concepts(concept) → Get full source list with metadata
-   ↓ preserve: document titles, authors
-3. Synthesize → Present sources and key passages
+┌─────────────────────────────────────┐
+│ 1. concept_search(concept)          │
+│    Find concept and discussions     │
+│    → preserve: sources, chunks      │
+└────────────┬────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 2. source_concepts(concept)         │
+│    Get full source list             │
+│    → preserve: titles, authors      │
+└────────────┬────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 3. chunks_search(source, concept)   │◄──┐
+│    Get specific passages            │   │ LOOP: for key
+│    → preserve: quotes, pages        │   │ sources (2-3)
+└────────────┬────────────────────────┘   │
+             │                            │
+             ├── need more detail? ───────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 4. SYNTHESIZE                       │
+│    Present sources and passages     │
+└─────────────────────────────────────┘
 ```
 
 ## Tool Details

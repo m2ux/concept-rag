@@ -11,11 +11,33 @@ Extract and analyze concepts from a specific document.
 ## Tool Workflow
 
 ```
-1. catalog_search(document) → Find the document, get source path
-   ↓ preserve: source path
-2. extract_concepts(document_query) → Get all concepts
-   ↓ preserve: concept list, categories
-3. Synthesize → Present organized concept inventory
+┌─────────────────────────────────────┐
+│ 1. catalog_search(document)         │
+│    Find document, get source path   │
+│    → preserve: source path          │
+└────────────┬────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 2. extract_concepts(document_query) │
+│    Get all concepts from document   │
+│    → preserve: concepts, categories │
+└────────────┬────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 3. chunks_search(source, concept)   │◄──┐
+│    Get context for key concepts     │   │ LOOP: for 
+│    → preserve: excerpts             │   │ interesting concepts
+└────────────┬────────────────────────┘   │
+             │                            │
+             ├── explore concept? ────────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 4. SYNTHESIZE                       │
+│    Present concept inventory        │
+└─────────────────────────────────────┘
 ```
 
 ## Tool Details

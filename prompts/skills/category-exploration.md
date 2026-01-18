@@ -10,16 +10,34 @@ Understand what concepts appear in a specific domain/category.
 
 ## Tool Workflow
 
-Execute in sequence:
-
 ```
-1. list_categories() → Discover available categories
-   ↓
-2. category_search(category) → Get documents in category
-   ↓
-3. list_concepts_in_category(category) → Get concepts in domain
-   ↓
-4. Synthesize with citations
+┌─────────────────────────────────────┐
+│ 1. list_categories()                │
+│    Discover available categories    │
+│    → preserve: category names       │
+└────────────┬────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 2. category_search(category)        │◄──┐
+│    Get documents in category        │   │
+│    → preserve: doc titles, summaries│   │
+└────────────┬────────────────────────┘   │
+             │                            │
+             ▼                            │
+┌─────────────────────────────────────┐   │ LOOP: for each
+│ 3. list_concepts_in_category(cat)   │   │ category of
+│    Get concepts in domain           │   │ interest
+│    → preserve: concept list         │   │
+└────────────┬────────────────────────┘   │
+             │                            │
+             ├── explore more categories?─┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 4. SYNTHESIZE                       │
+│    Domain overview with concepts    │
+└─────────────────────────────────────┘
 ```
 
 ## Tool Details

@@ -11,11 +11,26 @@ Synthesize knowledge across multiple documents to answer a user's question.
 ## Tool Workflow
 
 ```
-1. catalog_search(query) → Find relevant documents
-   ↓ preserve: document paths, titles
-2. chunks_search(source, query) → Extract specific content (repeat per document)
-   ↓ preserve: key findings, quotes
-3. Synthesize → Combine findings into coherent answer
+┌─────────────────────────────────────┐
+│ 1. catalog_search(query)            │
+│    Find relevant documents          │
+│    → preserve: document paths       │
+└────────────┬────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 2. chunks_search(source, query)     │◄──┐
+│    Extract content from document    │   │
+│    → preserve: findings, quotes     │   │ LOOP: for each
+└────────────┬────────────────────────┘   │ relevant document
+             │                            │ (typically 2-3)
+             ├── more documents? ─────────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 3. SYNTHESIZE                       │
+│    Combine findings with citations  │
+└─────────────────────────────────────┘
 ```
 
 ## Tool Details

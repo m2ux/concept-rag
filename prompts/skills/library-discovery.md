@@ -11,11 +11,26 @@ Browse and inventory available content to help users understand their library.
 ## Tool Workflow
 
 ```
-1. list_categories() → Get domain overview
-   ↓ preserve: category names, document counts
-2. category_search(category) → Browse specific domains (if user asks)
-   ↓ preserve: document titles, summaries
-3. Present → Organized library overview
+┌─────────────────────────────────────┐
+│ 1. list_categories()                │
+│    Get domain overview              │
+│    → preserve: categories, counts   │
+└────────────┬────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 2. category_search(category)        │◄──┐
+│    Browse specific domain           │   │ LOOP: for each
+│    → preserve: document summaries   │   │ category of interest
+└────────────┬────────────────────────┘   │
+             │                            │
+             ├── explore more? ───────────┘
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 3. PRESENT                          │
+│    Organized library overview       │
+└─────────────────────────────────────┘
 ```
 
 ## Tool Details

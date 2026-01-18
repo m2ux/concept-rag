@@ -11,13 +11,36 @@ Discover industry best practices and anti-patterns for a domain.
 ## Tool Workflow
 
 ```
-1. broad_chunks_search(practice query) → Find practice discussions
-   ↓ preserve: key recommendations, sources
-2. catalog_search(domain) → Find authoritative sources
-   ↓ preserve: document paths
-3. chunks_search(source, practice) → Extract specific guidance
-   ↓ preserve: do's, don'ts, rationale
-4. Synthesize → Present practices with sources
+┌─────────────────────────────────────┐
+│ 1. broad_chunks_search(practice)    │◄──────────────────┐
+│    Find practice discussions        │                   │
+│    → preserve: recommendations      │                   │
+└────────────┬────────────────────────┘                   │
+             │                                            │
+             ▼                                            │
+┌─────────────────────────────────────┐                   │
+│ 2. catalog_search(domain)           │                   │
+│    Find authoritative sources       │                   │
+│    → preserve: document paths       │                   │
+└────────────┬────────────────────────┘                   │
+             │                                            │
+             ▼                                            │
+┌─────────────────────────────────────┐                   │
+│ 3. chunks_search(source, practice)  │◄──┐               │
+│    Extract specific guidance        │   │ LOOP: for     │
+│    → preserve: do's, don'ts         │   │ each source   │
+└────────────┬────────────────────────┘   │               │
+             │                            │               │
+             ├── more sources? ───────────┘               │
+             │                                            │
+             ├── found related practices? ────────────────┘
+             │   (refine search)
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 4. SYNTHESIZE                       │
+│    Practices and anti-patterns      │
+└─────────────────────────────────────┘
 ```
 
 ## Tool Details

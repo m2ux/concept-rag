@@ -10,16 +10,37 @@ Find design patterns applicable to a specific problem or domain.
 
 ## Tool Workflow
 
-Execute in sequence:
-
 ```
-1. concept_search(pattern domain) → Find pattern concepts
-   ↓
-2. source_concepts(patterns) → Get authoritative sources
-   ↓
-3. chunks_search(source, pattern) → Extract pattern details
-   ↓
-4. Synthesize with citations
+┌─────────────────────────────────────┐
+│ 1. concept_search(pattern domain)   │◄──────────────────┐
+│    Find pattern concepts            │                   │
+│    → preserve: pattern names        │                   │
+└────────────┬────────────────────────┘                   │
+             │                                            │
+             ▼                                            │
+┌─────────────────────────────────────┐                   │
+│ 2. source_concepts(patterns)        │                   │
+│    Get authoritative sources        │                   │
+│    → preserve: source paths         │                   │
+└────────────┬────────────────────────┘                   │
+             │                                            │
+             ▼                                            │
+┌─────────────────────────────────────┐                   │
+│ 3. chunks_search(source, pattern)   │◄──┐               │
+│    Extract pattern details          │   │ LOOP: for     │
+│    → preserve: descriptions         │   │ each source   │
+└────────────┬────────────────────────┘   │               │
+             │                            │               │
+             ├── more sources? ───────────┘               │
+             │                                            │
+             ├── found related patterns? ─────────────────┘
+             │   (refine search)
+             │
+             ▼
+┌─────────────────────────────────────┐
+│ 4. SYNTHESIZE                       │
+│    Pattern catalog with trade-offs  │
+└─────────────────────────────────────┘
 ```
 
 ## Tool Details
