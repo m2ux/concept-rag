@@ -79,12 +79,12 @@ const TOOL_SELECTION_PATTERNS: Array<{
 
 /**
  * Tools that are always valid (should not be penalized)
- * Note: get_guidance tool has been removed; agents now use skills resources
+ * Note: guidance is now provided via MCP resources, not tools
  */
 const ALWAYS_VALID_TOOLS: string[] = [];
 
 /**
- * Recommended tool workflows (get_guidance can always prefix these)
+ * Recommended tool workflows based on skills interface
  */
 const VALID_WORKFLOWS: string[][] = [
   ['catalog_search'],
@@ -125,7 +125,7 @@ export class ToolSelectionEvaluator {
     // Determine expected tools from patterns if not provided
     const expected = expectedTools || this.inferExpectedTools(query);
     
-    // Calculate matches (always-valid tools like get_guidance don't count as unexpected)
+    // Calculate matches (always-valid tools don't count as unexpected)
     const correctTools = uniqueActualTools.filter(t => expected.includes(t));
     const unexpectedTools = uniqueActualTools.filter(t => 
       !expected.includes(t) && !ALWAYS_VALID_TOOLS.includes(t)
@@ -185,7 +185,7 @@ export class ToolSelectionEvaluator {
     // Empty is valid (though not useful)
     if (tools.length === 0) return true;
     
-    // Filter out always-valid tools (like get_guidance) before checking workflow
+    // Filter out always-valid tools before checking workflow
     const filteredTools = tools.filter(t => !ALWAYS_VALID_TOOLS.includes(t));
     if (filteredTools.length === 0) return true;
     

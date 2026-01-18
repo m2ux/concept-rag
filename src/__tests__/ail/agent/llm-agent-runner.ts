@@ -18,7 +18,7 @@ import {
 import { ToolCallRecorder } from './tool-call-recorder.js';
 
 /**
- * System prompt for the agent - kept minimal since detailed rules are injected via get_guidance
+ * System prompt for the agent - kept minimal since detailed rules are injected via resources
  */
 function loadSystemPrompt(): string {
   return `You are a research assistant with access to a document knowledge base.
@@ -64,12 +64,19 @@ export class LLMAgentRunner {
     let totalPromptTokens = 0;
     let totalCompletionTokens = 0;
     
-    // MANDATORY: Call get_guidance first to ensure agent has research rules
-    // This guarantees consistent behavior regardless of LLM instruction-following
-    const guidanceResult = await recorder.execute('get_guidance', {});
+    // Load guidance from prompts/guidance.md (skills interface replaces get_guidance tool)
+    const guidancePath = path.resolve(process.cwd(), 'prompts/guidance.md');
+    let guidanceContent = '';
+    try {
+      if (fs.existsSync(guidancePath)) {
+        guidanceContent = fs.readFileSync(guidancePath, 'utf-8');
+      }
+    } catch {
+      guidanceContent = '';
+    }
     
-    // Load compact quick rules from prompt file
-    const quickRulesPath = path.resolve(process.cwd(), 'prompts/agent-quick-rules.md');
+    // Load IDE setup rules from prompt file
+    const quickRulesPath = path.resolve(process.cwd(), 'prompts/ide-setup.md');
     let quickRules = '';
     try {
       if (fs.existsSync(quickRulesPath)) {
