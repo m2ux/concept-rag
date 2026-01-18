@@ -24,6 +24,7 @@ const PROJECT_ROOT = path.resolve(__dirname, '../');
  * Unlike tools, resources are read-only and don't execute any logic.
  */
 const RESOURCES = [
+  // Legacy guidance resources (kept for backward compatibility)
   {
     uri: 'concept-rag://get-guidance',
     name: 'Agent Research Rules',
@@ -37,6 +38,50 @@ const RESOURCES = [
     description: 'Decision tree and best practices for selecting the right MCP tool for each task.',
     mimeType: 'text/markdown',
     filePath: 'docs/tool-selection-guide.md',
+  },
+  // Intent resources (problem domain - user goals)
+  {
+    uri: 'concept-rag://intents',
+    name: 'Intent Index',
+    description: 'Index of user intents (goals). Read this first to match user goals to appropriate skills.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/intents/index.md',
+  },
+  {
+    uri: 'concept-rag://intents/understand-topic',
+    name: 'Intent: Understand a Topic',
+    description: 'Intent for users who want to learn about a topic from their library.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/intents/understand-topic.md',
+  },
+  {
+    uri: 'concept-rag://intents/know-my-library',
+    name: 'Intent: Know My Library',
+    description: 'Intent for users who want to discover what content is available in their library.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/intents/know-my-library.md',
+  },
+  // Skill resources (solution domain - capabilities)
+  {
+    uri: 'concept-rag://skills',
+    name: 'Skill Index',
+    description: 'Index of available skills (multi-tool workflows). Skills fulfill user intents.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/skills/index.md',
+  },
+  {
+    uri: 'concept-rag://skills/deep-research',
+    name: 'Skill: Deep Research',
+    description: 'Skill for synthesizing knowledge across multiple documents using catalog_search and chunks_search.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/skills/deep-research.md',
+  },
+  {
+    uri: 'concept-rag://skills/library-discovery',
+    name: 'Skill: Library Discovery',
+    description: 'Skill for browsing and inventorying library content using list_categories and category_search.',
+    mimeType: 'text/markdown',
+    filePath: 'prompts/skills/library-discovery.md',
   },
 ];
 

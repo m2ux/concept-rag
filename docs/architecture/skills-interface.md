@@ -1,45 +1,106 @@
-# Skills Interface (Exploration)
+# Skills Interface
 
-> **Status:** Under Evaluation  
-> **Issue:** [#56](https://github.com/m2ux/concept-rag/issues/56)
+> **Status:** Implemented  
+> **Issue:** [#56](https://github.com/m2ux/concept-rag/issues/56)  
+> **PR:** [#70](https://github.com/m2ux/concept-rag/pull/70)
 
 ## Overview
 
-This document tracks the exploration of a "skills" interface for Concept-RAG that would provide high-level abstractions over existing MCP tools.
+The skills interface provides a three-tier abstraction layer over MCP tools:
 
-## Problem Statement
+```
+Intent (Problem Domain) → Skill (Solution Domain) → Tool (Atomic Operation)
+```
 
-LLM agents struggle to select the appropriate MCP tool from 11 granular options despite detailed descriptions and tool-selection guides. Multi-step workflows require manual context threading, and empirical testing shows tool selection critically impacts relevance.
+This reduces tool selection errors and enables successful multi-step workflows by providing intent-based abstractions with context preservation.
 
-## Desired Outcome
+## Architecture
 
-A skills-based abstraction layer that:
-- Bundles related tools with appropriate sequencing
-- Preserves context across multi-step workflows  
-- Provides intent-based interaction ("research topic X")
-- Reduces cognitive load on LLM agents
+```
+Cursor Rule (prompts/agent-quick-rules.md)
+    ↓ instructs agent to read
+Intent Index (concept-rag://intents)
+    ↓ agent matches user goal
+Intent Description (concept-rag://intents/{id})
+    ↓ maps to skill
+Skill Description (concept-rag://skills/{id})
+    ↓ guides tool workflow
+MCP Tools (existing 11 tools)
+```
 
-## Research Areas
+## Semantic Model
 
-### Existing Frameworks
+| Layer | Domain | Focus | Example |
+|-------|--------|-------|---------|
+| **Intent** | Problem | User goals, needs | "I want to understand X" |
+| **Skill** | Solution | Multi-tool workflows | `catalog_search` → `chunks_search` → synthesize |
+| **Tool** | Solution | Atomic operations | `catalog_search`, `chunks_search` |
 
-Survey of skills frameworks and their tradeoffs:
-- skill-mcp-fastmcp
-- Custom implementations
-- Emerging MCP extensions
+## Available Intents
 
-### MCP Ecosystem
+| Intent | User Goal | Skill |
+|--------|-----------|-------|
+| `understand-topic` | Learn about a topic from the library | deep-research |
+| `know-my-library` | Discover available content | library-discovery |
 
-- Emerging standards for skills/workflows in MCP
-- Major client support (Cursor, Claude Desktop, claude.ai)
+## Available Skills
 
-### Implementation Approaches
+| Skill | Capability | Tools Used |
+|-------|------------|------------|
+| `deep-research` | Synthesize knowledge across documents | `catalog_search` → `chunks_search` |
+| `library-discovery` | Browse and inventory content | `list_categories` → `category_search` |
 
-- External package integration
-- Custom implementation
-- Wrapper layer vs. MCP extension vs. prompt engineering
+## MCP Resources
+
+| Resource URI | Description |
+|--------------|-------------|
+| `concept-rag://intents` | Intent index (read first) |
+| `concept-rag://intents/understand-topic` | Understand a topic intent |
+| `concept-rag://intents/know-my-library` | Know my library intent |
+| `concept-rag://skills` | Skill index |
+| `concept-rag://skills/deep-research` | Deep research skill |
+| `concept-rag://skills/library-discovery` | Library discovery skill |
+
+## File Structure
+
+```
+prompts/
+├── intents/
+│   ├── index.md              # Intent index
+│   ├── understand-topic.md   # Intent definition
+│   └── know-my-library.md    # Intent definition
+├── skills/
+│   ├── index.md              # Skill index
+│   ├── deep-research.md      # Skill definition
+│   └── library-discovery.md  # Skill definition
+└── agent-quick-rules.md      # Cursor rule
+```
+
+## Usage
+
+### For Agents
+
+1. Read the intent index: `concept-rag://intents`
+2. Match user's goal to an intent
+3. Read the intent's linked skill
+4. Follow the skill's tool workflow
+5. Synthesize answer with citations
+
+### For Developers
+
+- Add new intents to `prompts/intents/`
+- Add new skills to `prompts/skills/`
+- Register resources in `src/conceptual_index.ts`
+- Update indexes to include new entries
+
+## Design Decisions
+
+- **MCP Resources over Tools**: Reduces tool count, leverages existing infrastructure
+- **Static .md files**: Editable, version controlled, no runtime logic
+- **Tiered loading**: Index < 50 lines; verbose loaded on demand
+- **Separation of concerns**: Problem domain (intents) vs. solution domain (skills/tools)
 
 ## References
 
-- [Tool Selection Guide](../tool-selection-guide.md) - Current tool selection documentation
+- [Tool Selection Guide](../tool-selection-guide.md) - Detailed tool selection criteria
 - [MCP Specification](https://modelcontextprotocol.io/) - Official MCP specification
