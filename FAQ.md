@@ -88,7 +88,7 @@ WordNet provides:
 4. Searching within known document? → `chunks_search`
 5. Extracting concept list? → `extract_concepts`
 
-See [tool-selection-guide.md](docs/tool-selection-guide.md) for detailed guidance.
+See [api-reference.md](docs/api-reference.md) for detailed tool documentation.
 
 ### How accurate is concept extraction?
 

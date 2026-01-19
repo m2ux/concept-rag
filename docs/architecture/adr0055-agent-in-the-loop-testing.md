@@ -332,7 +332,7 @@ src/__tests__/ail/
 ## References
 
 - [Issue #49](https://github.com/m2ux/concept-rag/issues/49) - Original issue
-- [Tool Selection Guide](../tool-selection-guide.md) - Expected tool selection patterns
+- [API Reference](../api-reference.md) - Tool documentation and patterns
 - [MCP Tools Integration Tests](../../src/__tests__/integration/mcp-tools-integration.test.ts) - Existing tool tests
 
 ---

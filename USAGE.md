@@ -10,7 +10,7 @@
 
 ## 🎯 Quick Tool Selection
 
-**For AI Agents:** See [tool-selection-guide.md](docs/tool-selection-guide.md) for comprehensive tool selection decision tree and comparison matrix. See [api-reference.md](docs/api-reference.md) for JSON I/O specifications.
+**For AI Agents:** See [api-reference.md](docs/api-reference.md) for comprehensive tool documentation and JSON I/O specifications.
 
 **Quick Decision:**
 1. Looking for documents? → `catalog_search`
@@ -514,7 +514,7 @@ npx tsx scripts/view_document_metadata.ts "Sun Tzu"
 
 **Important:** For conceptual research (e.g., "innovation", "leadership"), use `concept_search` for 100% precision with semantically-tagged results. Use `broad_chunks_search` for keyword/phrase searches.
 
-See [tool-selection-guide.md](docs/tool-selection-guide.md) for detailed selection criteria. See [api-reference.md](docs/api-reference.md) for JSON response schemas.
+See [api-reference.md](docs/api-reference.md) for detailed tool documentation and JSON response schemas.
 
 ### Performance
 

@@ -102,5 +102,5 @@ prompts/
 
 ## References
 
-- [Tool Selection Guide](../tool-selection-guide.md) - Detailed tool selection criteria
+- [API Reference](../api-reference.md) - Detailed tool documentation
 - [MCP Specification](https://modelcontextprotocol.io/) - Official MCP specification
