@@ -1,4 +1,4 @@
-# 🧠 Conceptual Knowledge Base RAG Search Server
+# 🧠 Conceptual KB Base Search Server
 
 [![Node.js 18+](https://img.shields.io/badge/node-18%2B-blue.svg)](https://nodejs.org/en/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
