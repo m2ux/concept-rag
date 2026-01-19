@@ -5,28 +5,26 @@
 [![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
 
-A RAG MCP server that enables LLMs to interact with a vector database chunked library of local PDF/EPUB documents through conceptual search. Combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking powered by LanceDB for superior retrieval accuracy.
+A RAG MCP server that enables LLMs to interact with a vector database chunked library of local PDF/EPUB documents through conceptual search. Combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking powered by LanceDB for superior retrieval accuracy. 
+
+Concept-RAG uses an **Intent → Skill → Tool** architecture to help AI agents to efficiently acquire knowledge.
+
+```
+User Goal → Intent (problem domain) → Skill (solution domain) → Tools
+```
+
+After initial setup of an always-applied [rule](prompts/ide-setup.md), agents are able to use an exposed [guidance]((prompts/guidance.md)) resource to:
+1. **Match the user's goal** to an [intent](prompts/intents/index.md) (e.g., "understand a topic", "explore a concept")
+2. **Follow the [skill](prompts/skills/index.md) workflow** which orchestrates the right [tool](docs/api-reference.md) sequence
+3. **Synthesize the answer** with citations
+
+This reduces context overhead and provides deterministic tool selection.
 
 ---
 
 **[Quick Start](#-quick-start)** • **[Setup](SETUP.md)** • **[Development](docs/development.md)** • **[Contributing](CONTRIBUTING.md)**
 
 ---
-
-## 🎯 Intent-Based Tool Selection
-
-Concept-RAG uses a [guided](prompts/guidance.md) **[Intent](prompts/intents/index.md) → [Skill](prompts/skills/index.md) → [Tool](docs/api-reference.md)** architecture to help AI agents select the right tools efficiently.
-
-```
-User Goal → Intent (problem domain) → Skill (solution domain) → Tools
-```
-
-Instead of choosing from 10 individual tools, agents:
-1. **Match the user's goal** to an intent (e.g., "understand a topic", "explore a concept")
-2. **Follow the skill workflow** which orchestrates the right tool sequence
-3. **Synthesize the answer** with citations
-
-This reduces context overhead and improves tool selection accuracy.
 
 ## 🚀 Quick Start
 
@@ -95,7 +93,6 @@ Restart your MCP client and start searching. See [SETUP.md](SETUP.md) for other 
 
 | Resource | Description |
 |----------|-------------|
-| [IDE Setup](prompts/ide-setup.md) | IDE integration instructions |
 | [Database Schema](docs/database-schema.md) | Four-table normalized schema |
 | [Architecture Decisions](docs/architecture/README.md) | ADRs for major decisions |
 | [Development Guide](docs/development.md) | Project structure, build, scripts |
