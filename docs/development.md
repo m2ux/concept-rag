@@ -1,4 +1,4 @@
-# Development Guide
+# Development
 
 ## Key Features
 
