@@ -183,7 +183,6 @@ npx @modelcontextprotocol/inspector \
 
 ## What's Next?
 
-- **[Tool Selection Guide](tool-selection-guide.md)** — Learn which search tool to use
 - **[API Reference](api-reference.md)** — Complete MCP tool documentation
 - **[FAQ](faq.md)** — Common questions answered
 - **[Troubleshooting](troubleshooting.md)** — Fix common issues

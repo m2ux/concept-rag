@@ -69,11 +69,34 @@ nav:
 
   - How It Works: how-it-works.md
 
+  - Agent Guidance:
+    - Overview: prompts/guidance.md
+    - IDE Setup: prompts/ide-setup.md
+
+  - Intents:
+    - Overview: prompts/intents/index.md
+    - Understand Topic: prompts/intents/understand-topic.md
+    - Explore Concept: prompts/intents/explore-concept.md
+    - Explore Category: prompts/intents/explore-category.md
+    - Analyze Document: prompts/intents/analyze-document.md
+    - Know My Library: prompts/intents/know-my-library.md
+    - Identify Patterns: prompts/intents/identify-patterns.md
+    - Identify Best Practices: prompts/intents/identify-best-practices.md
+    - Curate Lexicon: prompts/intents/curate-lexicon.md
+
+  - Skills:
+    - Overview: prompts/skills/index.md
+    - Deep Research: prompts/skills/deep-research.md
+    - Concept Exploration: prompts/skills/concept-exploration.md
+    - Category Exploration: prompts/skills/category-exploration.md
+    - Document Analysis: prompts/skills/document-analysis.md
+    - Library Discovery: prompts/skills/library-discovery.md
+    - Pattern Research: prompts/skills/pattern-research.md
+    - Practice Research: prompts/skills/practice-research.md
+
   - Getting Started:
     - Quick Start: getting-started.md
     - Troubleshooting: troubleshooting.md
-
-  - Tool Selection: tool-selection-guide.md
 
   - API Reference: api-reference.md
 

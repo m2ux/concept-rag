@@ -22,14 +22,6 @@ Concept-RAG is an MCP server that enables AI assistants to interact with your PD
 
     [:octicons-arrow-right-24: Quick start](getting-started.md)
 
--   :material-compass:{ .lg .middle } **Tool Selection**
-
-    ---
-
-    Choose the right MCP tool for your query type
-
-    [:octicons-arrow-right-24: Selection guide](tool-selection-guide.md)
-
 -   :material-api:{ .lg .middle } **API Reference**
 
     ---

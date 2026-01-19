@@ -583,7 +583,6 @@ These performance caches remain for CPU/DB optimization:
 - [ADR-0043: Schema Normalization](architecture/adr0043-schema-normalization.md)
 - Domain Models: `src/domain/models/`
 - Schema Validators: `src/infrastructure/lancedb/utils/schema-validators.ts`
-- Migration Script: `scripts/migrate_to_normalized_schema.ts`
 - Lexical Linking: `scripts/link_related_concepts.ts`
 - Derived Fields Regeneration: `scripts/rebuild_derived_names.ts`
 - Seeding Script: `hybrid_fast_seed.ts` (supports `--parallel N` for parallel concept extraction)

@@ -75,7 +75,7 @@ Currently, Concept-RAG requires OpenRouter for concept extraction. However:
 | Search in known doc | `chunks_search` | "SOLID principles" + source |
 | Extract concept list | `extract_concepts` | "Clean Architecture" |
 
-See [Tool Selection Guide](tool-selection-guide.md) for detailed guidance.
+See [API Reference](api-reference.md) for detailed tool documentation.
 
 ### What document formats are supported?
 

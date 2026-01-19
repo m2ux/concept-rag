@@ -135,7 +135,7 @@ Use the right tool for your goal:
 | Find by concept | `concept_search` | `broad_chunks_search` |
 | Search in document | `chunks_search` | `catalog_search` |
 
-See [Tool Selection Guide](tool-selection-guide.md).
+See [API Reference](api-reference.md) for tool documentation.
 
 ### Slow search queries
 
@@ -220,8 +220,8 @@ npx tsx hybrid_fast_seed.ts \
 ### Missing concepts for document
 
 ```bash
-# Re-extract concepts
-npx tsx scripts/repair_missing_concepts.ts --min-concepts 50
+# Re-seed with auto-reseed flag
+npx tsx hybrid_fast_seed.ts --dbpath ~/.concept_rag --filesdir ~/docs --auto-reseed
 
 # Or full re-seed
 npx tsx hybrid_fast_seed.ts --dbpath ~/.concept_rag --filesdir ~/docs --overwrite

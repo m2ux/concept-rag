@@ -9,7 +9,7 @@ A RAG MCP server that enables LLMs to interact with a vector database chunked li
 
 ---
 
-**[Quick Start](#-quick-start)** • **[Setup](SETUP.md)** • **[Development](docs/development.md)** • **[Contributing](CONTRIBUTING.md)**
+**[Quick Start](#-quick-start)** • **[Docs](https://m2ux.github.io/concept-rag/)** • **[Setup](SETUP.md)** • **[Development](docs/development.md)** • **[Contributing](CONTRIBUTING.md)**
 
 ---
 

@@ -3,7 +3,7 @@
 **Schema Version:** v7 (December 2025)  
 **Tools:** 10 MCP tools
 
-This document provides JSON input and output schemas for all MCP tools. For tool selection guidance, decision trees, and usage patterns, see [tool-selection-guide.md](tool-selection-guide.md).
+This document provides JSON input and output schemas for all MCP tools.
 
 ---
 
