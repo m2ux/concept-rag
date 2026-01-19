@@ -7,6 +7,13 @@
 
 A RAG MCP server that enables LLMs to interact with a vector database chunked library of local PDF/EPUB documents through conceptual search. Combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking powered by LanceDB to augment retrieval accuracy. 
 
+---
+
+**[Quick Start](#-quick-start)** • **[Setup](SETUP.md)** • **[Development](docs/development.md)** • **[Contributing](CONTRIBUTING.md)**
+
+---
+
+## 🎯 Overview
 Concept-RAG uses an **Intent → Skill → Tool** architecture to help AI agents to efficiently acquire knowledge.
 
 ```
@@ -19,10 +26,6 @@ After initial setup of an always-applied [rule](prompts/ide-setup.md), agents ar
 3. **Synthesize the answer** with citations
 
 This reduces context overhead and provides deterministic tool selection.
-
----
-
-**[Quick Start](#-quick-start)** • **[Setup](SETUP.md)** • **[Development](docs/development.md)** • **[Contributing](CONTRIBUTING.md)**
 
 ---
 
