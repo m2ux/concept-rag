@@ -25,7 +25,7 @@ Fetch `concept-rag://intents` to see available intents and match the user's goal
 
 ## Step 2: Follow the Skill
 
-Each intent links to a skill. The skill describes:
+Each intent links to a set of skills. The skills describe:
 - Which tools to use and in what order
 - What context to preserve between calls
 - Expected output format
