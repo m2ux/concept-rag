@@ -97,7 +97,7 @@ Restart your MCP client and start searching. See [SETUP.md](SETUP.md) for other 
 | Resource | Description |
 |----------|-------------|
 | [Database Schema](docs/database-schema.md) | Four-table normalized schema |
-| [Architecture Decisions](docs/architecture/README.md) | ADRs for major decisions |
+| [Architecture](docs/architecture/README.md) | ADRs for major decisions |
 | [Test Suite](src/__tests__/README.md) | Test documentation |
 
 ## 🙏 Acknowledgments
