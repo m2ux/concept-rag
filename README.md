@@ -92,17 +92,9 @@ npx tsx hybrid_fast_seed.ts \
 
 Restart your MCP client and start searching. See [SETUP.md](SETUP.md) for other IDEs.
 
-## 📚 Documentation
-
-| Resource | Description |
-|----------|-------------|
-| [Database Schema](docs/database-schema.md) | Four-table normalized schema |
-| [Architecture](docs/architecture/README.md) | ADRs for major decisions |
-| [Test Suite](src/__tests__/README.md) | Test documentation |
-
 ## 🙏 Acknowledgments
 
-Forked from [lance-mcp](https://github.com/adiom-data/lance-mcp) by [adiom-data](https://github.com/adiom-data). See [development guide](docs/development.md) for the full list of extensions.
+Forked from [lance-mcp](https://github.com/adiom-data/lance-mcp) by [adiom-data](https://github.com/adiom-data).
 
 ## 📜 License
 
