@@ -5,7 +5,7 @@
 [![MCP Compatible](https://img.shields.io/badge/MCP-Compatible-green.svg)](https://modelcontextprotocol.io/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
 
-A RAG MCP server that enables LLMs to interact with a vector database chunked library of local PDF/EPUB documents through conceptual search. Combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking powered by LanceDB for superior retrieval accuracy. 
+A RAG MCP server that enables LLMs to interact with a vector database chunked library of local PDF/EPUB documents through conceptual search. Combines corpus-driven concept extraction, WordNet semantic enrichment, and multi-signal hybrid ranking powered by LanceDB to augment retrieval accuracy. 
 
 Concept-RAG uses an **Intent → Skill → Tool** architecture to help AI agents to efficiently acquire knowledge.
 
