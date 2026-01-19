@@ -21,11 +21,6 @@ User Goal → Intent (problem domain) → Skill (solution domain) → Tools
 
 Fetch `concept-rag://intents` to see available intents and match the user's goal.
 
-| User Goal | Intent |
-|-----------|--------|
-| Learn about a topic | `understand-topic` |
-| Discover library content | `know-my-library` |
-
 ---
 
 ## Step 2: Follow the Skill
