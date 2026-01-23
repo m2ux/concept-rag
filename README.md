@@ -14,11 +14,7 @@ A RAG MCP server that enables LLMs to interact with a vector database chunked li
 ---
 
 ## 🎯 Overview
-Concept-RAG uses an **Activity → Skill → Tool** architecture to help AI agents to efficiently acquire knowledge.
-
-```
-User Goal → Activity (problem domain) → Skill (solution domain) → Tools
-```
+Concept-RAG uses an **Goal → Activity → Skill → Tool** architecture to help AI agents to efficiently acquire knowledge.
 
 After initial setup of an always-applied [rule](prompts/ide-setup.md), agents are able to use an exposed [guidance](prompts/guidance.md) resource to:
 1. **Match the user's goal** to an [activity](prompts/activities/index.md) (e.g., "understand a topic", "explore a concept")
