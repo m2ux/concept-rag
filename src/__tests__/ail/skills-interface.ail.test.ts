@@ -1,9 +1,9 @@
 /**
  * Agent-in-the-Loop E2E Tests - Skills Interface
  * 
- * Tests the intent→skill→tool workflow:
- * - Agent receives intent/skill guidance as context
- * - Agent matches query to appropriate intent
+ * Tests the activity→skill→tool workflow:
+ * - Agent receives activity/skill guidance as context
+ * - Agent matches query to appropriate activity
  * - Agent follows skill workflow for tool selection
  * 
  * Success Criteria:
@@ -34,7 +34,7 @@ const SKIP_AIL = process.env.AIL_TESTS !== 'true' || !config.apiKey;
 function loadSkillsContext(): string {
   const projectRoot = process.cwd();
   const files = [
-    'prompts/intents/index.md',
+    'prompts/activities/index.md',
     'prompts/skills/index.md',
     'prompts/guidance.md',
   ];
@@ -53,13 +53,13 @@ function loadSkillsContext(): string {
 /**
  * Skills Interface Test Scenarios
  * 
- * Each scenario maps to a specific intent and tests the expected skill workflow.
+ * Each scenario maps to a specific activity and tests the expected skill workflow.
  */
 const SKILLS_SCENARIOS: TestScenario[] = [
-  // Intent: understand-topic → deep-research skill
+  // Activity: understand-topic → deep-research skill
   {
     id: 'skills-understand-topic',
-    name: 'Intent: Understand Topic → Deep Research Skill',
+    name: 'Activity: Understand Topic → Deep Research Skill',
     tier: 2,
     goal: 'What does my library say about microservices architecture?',
     groundTruth: {
@@ -72,14 +72,14 @@ const SKILLS_SCENARIOS: TestScenario[] = [
     },
     expectedTools: ['catalog_search', 'broad_chunks_search', 'chunks_search'],
     maxToolCalls: 12,
-    description: 'Tests understand-topic intent → deep-research skill workflow',
+    description: 'Tests understand-topic activity → deep-research skill workflow',
     tags: ['skills-interface', 'understand-topic', 'deep-research'],
   },
   
-  // Intent: know-my-library → library-discovery skill
+  // Activity: know-my-library → library-discovery skill
   {
     id: 'skills-know-library',
-    name: 'Intent: Know My Library → Library Discovery Skill',
+    name: 'Activity: Know My Library → Library Discovery Skill',
     tier: 1,
     goal: 'What categories of documents do I have in my library?',
     groundTruth: {
@@ -91,14 +91,14 @@ const SKILLS_SCENARIOS: TestScenario[] = [
     },
     expectedTools: ['list_categories', 'category_search'],
     maxToolCalls: 5,
-    description: 'Tests know-my-library intent → library-discovery skill workflow',
+    description: 'Tests know-my-library activity → library-discovery skill workflow',
     tags: ['skills-interface', 'know-my-library', 'library-discovery'],
   },
   
-  // Intent: explore-concept → concept-exploration skill
+  // Activity: explore-concept → concept-exploration skill
   {
     id: 'skills-explore-concept',
-    name: 'Intent: Explore Concept → Concept Exploration Skill',
+    name: 'Activity: Explore Concept → Concept Exploration Skill',
     tier: 2,
     goal: 'Where is the concept of "dependency injection" discussed in my library?',
     groundTruth: {
@@ -110,14 +110,14 @@ const SKILLS_SCENARIOS: TestScenario[] = [
     },
     expectedTools: ['concept_search', 'source_concepts'],
     maxToolCalls: 6,
-    description: 'Tests explore-concept intent → concept-exploration skill workflow',
+    description: 'Tests explore-concept activity → concept-exploration skill workflow',
     tags: ['skills-interface', 'explore-concept', 'concept-exploration'],
   },
   
-  // Intent: analyze-document → document-analysis skill
+  // Activity: analyze-document → document-analysis skill
   {
     id: 'skills-analyze-document',
-    name: 'Intent: Analyze Document → Document Analysis Skill',
+    name: 'Activity: Analyze Document → Document Analysis Skill',
     tier: 2,
     goal: 'Extract the key concepts from Clean Architecture.',
     groundTruth: {
@@ -129,14 +129,14 @@ const SKILLS_SCENARIOS: TestScenario[] = [
     },
     expectedTools: ['catalog_search', 'extract_concepts', 'chunks_search'],
     maxToolCalls: 6,
-    description: 'Tests analyze-document intent → document-analysis skill workflow',
+    description: 'Tests analyze-document activity → document-analysis skill workflow',
     tags: ['skills-interface', 'analyze-document', 'document-analysis'],
   },
   
-  // Intent: explore-category → category-exploration skill
+  // Activity: explore-category → category-exploration skill
   {
     id: 'skills-explore-category',
-    name: 'Intent: Explore Category → Category Exploration Skill',
+    name: 'Activity: Explore Category → Category Exploration Skill',
     tier: 2,
     goal: 'What concepts are covered in the software engineering category?',
     groundTruth: {
@@ -148,14 +148,14 @@ const SKILLS_SCENARIOS: TestScenario[] = [
     },
     expectedTools: ['list_categories', 'category_search', 'list_concepts_in_category'],
     maxToolCalls: 6,
-    description: 'Tests explore-category intent → category-exploration skill workflow',
+    description: 'Tests explore-category activity → category-exploration skill workflow',
     tags: ['skills-interface', 'explore-category', 'category-exploration'],
   },
   
-  // Intent: identify-patterns → pattern-research skill
+  // Activity: identify-patterns → pattern-research skill
   {
     id: 'skills-identify-patterns',
-    name: 'Intent: Identify Patterns → Pattern Research Skill',
+    name: 'Activity: Identify Patterns → Pattern Research Skill',
     tier: 2,
     goal: 'What design patterns are recommended for handling errors in distributed systems?',
     groundTruth: {
@@ -167,14 +167,14 @@ const SKILLS_SCENARIOS: TestScenario[] = [
     },
     expectedTools: ['broad_chunks_search', 'concept_search', 'chunks_search'],
     maxToolCalls: 20,
-    description: 'Tests identify-patterns intent → pattern-research skill workflow',
+    description: 'Tests identify-patterns activity → pattern-research skill workflow',
     tags: ['skills-interface', 'identify-patterns', 'pattern-research'],
   },
   
-  // Intent: identify-best-practices → practice-research skill
+  // Activity: identify-best-practices → practice-research skill
   {
     id: 'skills-identify-practices',
-    name: 'Intent: Identify Best Practices → Practice Research Skill',
+    name: 'Activity: Identify Best Practices → Practice Research Skill',
     tier: 2,
     goal: 'What are the best practices for API design?',
     groundTruth: {
@@ -186,7 +186,7 @@ const SKILLS_SCENARIOS: TestScenario[] = [
     },
     expectedTools: ['catalog_search', 'broad_chunks_search', 'chunks_search'],
     maxToolCalls: 20,
-    description: 'Tests identify-best-practices intent → practice-research skill workflow',
+    description: 'Tests identify-best-practices activity → practice-research skill workflow',
     tags: ['skills-interface', 'identify-best-practices', 'practice-research'],
   },
 ];
@@ -223,14 +223,14 @@ describe('AIL Skills Interface Tests', () => {
   describe('Skills Context Validation', () => {
     it('should have skills context available', () => {
       const context = loadSkillsContext();
-      expect(context).toContain('Intent Index');
+      expect(context).toContain('Activity Index');
       expect(context).toContain('Skill Index');
       expect(context).toContain('understand-topic');
       expect(context).toContain('deep-research');
     });
   });
   
-  describe.skipIf(shouldSkip)('Intent → Skill → Tool Workflow', () => {
+  describe.skipIf(shouldSkip)('Activity → Skill → Tool Workflow', () => {
     
     it('should follow understand-topic → deep-research workflow', async () => {
       const scenario = SKILLS_SCENARIOS.find(s => s.id === 'skills-understand-topic')!;

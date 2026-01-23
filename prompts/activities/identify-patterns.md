@@ -1,4 +1,4 @@
-# Intent: Identify Patterns
+# Activity: Identify Patterns
 
 ## Problem Domain
 

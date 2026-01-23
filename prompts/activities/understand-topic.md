@@ -1,4 +1,4 @@
-# Intent: Understand a Topic
+# Activity: Understand a Topic
 
 ## Problem Domain
 
@@ -6,7 +6,7 @@
 
 ## Recognition
 
-Match this intent when the user says:
+Match this activity when the user says:
 - "What does my library say about X?"
 - "Research topic X"
 - "I want to understand X"

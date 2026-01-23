@@ -4,9 +4,9 @@
 
 Track where a concept appears across the library and find source attribution.
 
-## Fulfills Intent
+## Fulfills Activity
 
-[explore-concept](../intents/explore-concept.md)
+[explore-concept](../activities/explore-concept.md)
 
 ## Tool Workflow
 

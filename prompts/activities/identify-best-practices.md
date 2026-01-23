@@ -1,4 +1,4 @@
-# Intent: Identify Best Practices
+# Activity: Identify Best Practices
 
 ## Problem Domain
 

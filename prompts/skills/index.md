@@ -1,6 +1,6 @@
 # Skill Index
 
-Skills define tool workflows to fulfill user intents. Workflows may include **loops** for iterative refinement.
+Skills define tool workflows to fulfill user activities. Workflows may include **loops** for iterative refinement.
 
 ## Available Skills
 
@@ -17,7 +17,7 @@ Skills define tool workflows to fulfill user intents. Workflows may include **lo
 ## Execution Model
 
 ```
-1. Match intent to skill(s)
+1. Match activity to skill(s)
    │
 2. Execute skill workflow
    ├─ Tools may be called multiple times

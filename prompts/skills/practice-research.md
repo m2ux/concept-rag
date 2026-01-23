@@ -4,9 +4,9 @@
 
 Discover industry best practices and anti-patterns for a domain.
 
-## Fulfills Intent
+## Fulfills Activity
 
-[identify-best-practices](../intents/identify-best-practices.md)
+[identify-best-practices](../activities/identify-best-practices.md)
 
 ## Tool Workflow
 

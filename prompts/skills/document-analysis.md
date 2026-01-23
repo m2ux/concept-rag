@@ -4,9 +4,9 @@
 
 Extract and analyze concepts from a specific document.
 
-## Fulfills Intent
+## Fulfills Activity
 
-[analyze-document](../intents/analyze-document.md)
+[analyze-document](../activities/analyze-document.md)
 
 ## Tool Workflow
 

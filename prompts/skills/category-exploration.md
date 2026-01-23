@@ -4,9 +4,9 @@
 
 Understand what concepts appear in a specific domain/category.
 
-## Fulfills Intent
+## Fulfills Activity
 
-[explore-category](../intents/explore-category.md)
+[explore-category](../activities/explore-category.md)
 
 ## Tool Workflow
 

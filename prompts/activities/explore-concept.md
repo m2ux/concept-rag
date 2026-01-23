@@ -1,4 +1,4 @@
-# Intent: Explore a Concept
+# Activity: Explore a Concept
 
 ## Problem Domain
 

@@ -4,9 +4,9 @@
 
 Find design patterns applicable to a specific problem or domain.
 
-## Fulfills Intent
+## Fulfills Activity
 
-[identify-patterns](../intents/identify-patterns.md)
+[identify-patterns](../activities/identify-patterns.md)
 
 ## Tool Workflow
 

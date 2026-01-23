@@ -73,16 +73,16 @@ nav:
     - Overview: prompts/guidance.md
     - IDE Setup: prompts/ide-setup.md
 
-  - Intents:
-    - Overview: prompts/intents/index.md
-    - Understand Topic: prompts/intents/understand-topic.md
-    - Explore Concept: prompts/intents/explore-concept.md
-    - Explore Category: prompts/intents/explore-category.md
-    - Analyze Document: prompts/intents/analyze-document.md
-    - Know My Library: prompts/intents/know-my-library.md
-    - Identify Patterns: prompts/intents/identify-patterns.md
-    - Identify Best Practices: prompts/intents/identify-best-practices.md
-    - Curate Lexicon: prompts/intents/curate-lexicon.md
+  - Activities:
+    - Overview: prompts/activities/index.md
+    - Understand Topic: prompts/activities/understand-topic.md
+    - Explore Concept: prompts/activities/explore-concept.md
+    - Explore Category: prompts/activities/explore-category.md
+    - Analyze Document: prompts/activities/analyze-document.md
+    - Know My Library: prompts/activities/know-my-library.md
+    - Identify Patterns: prompts/activities/identify-patterns.md
+    - Identify Best Practices: prompts/activities/identify-best-practices.md
+    - Curate Lexicon: prompts/activities/curate-lexicon.md
 
   - Skills:
     - Overview: prompts/skills/index.md
