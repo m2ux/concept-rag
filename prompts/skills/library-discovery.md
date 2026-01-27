@@ -4,9 +4,9 @@
 
 Browse and inventory available content to help users understand their library.
 
-## Fulfills Intent
+## Fulfills Activity
 
-[know-my-library](../intents/know-my-library.md)
+[know-my-library](../activities/know-my-library.md)
 
 ## Tool Workflow
 

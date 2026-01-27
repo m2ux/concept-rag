@@ -7,7 +7,7 @@
  * Run with: npm test -- src/__tests__/e2e/mcp-resources.e2e.test.ts
  * 
  * Tests validate:
- * - All intent/skill resources are registered
+ * - All activity/skill resources are registered
  * - Resources return valid markdown content
  * - Resource URIs follow naming conventions
  * - Content contains expected sections
@@ -29,16 +29,16 @@ const EXPECTED_RESOURCES = {
   // Guidance
   'concept-rag://guidance': 'prompts/guidance.md',
   
-  // Intents
-  'concept-rag://intents': 'prompts/intents/index.md',
-  'concept-rag://intents/understand-topic': 'prompts/intents/understand-topic.md',
-  'concept-rag://intents/know-my-library': 'prompts/intents/know-my-library.md',
-  'concept-rag://intents/explore-concept': 'prompts/intents/explore-concept.md',
-  'concept-rag://intents/analyze-document': 'prompts/intents/analyze-document.md',
-  'concept-rag://intents/explore-category': 'prompts/intents/explore-category.md',
-  'concept-rag://intents/identify-patterns': 'prompts/intents/identify-patterns.md',
-  'concept-rag://intents/identify-best-practices': 'prompts/intents/identify-best-practices.md',
-  'concept-rag://intents/curate-lexicon': 'prompts/intents/curate-lexicon.md',
+  // Activities
+  'concept-rag://activities': 'prompts/activities/index.md',
+  'concept-rag://activities/understand-topic': 'prompts/activities/understand-topic.md',
+  'concept-rag://activities/know-my-library': 'prompts/activities/know-my-library.md',
+  'concept-rag://activities/explore-concept': 'prompts/activities/explore-concept.md',
+  'concept-rag://activities/analyze-document': 'prompts/activities/analyze-document.md',
+  'concept-rag://activities/explore-category': 'prompts/activities/explore-category.md',
+  'concept-rag://activities/identify-patterns': 'prompts/activities/identify-patterns.md',
+  'concept-rag://activities/identify-best-practices': 'prompts/activities/identify-best-practices.md',
+  'concept-rag://activities/curate-lexicon': 'prompts/activities/curate-lexicon.md',
   
   // Skills
   'concept-rag://skills': 'prompts/skills/index.md',
@@ -77,11 +77,11 @@ describe('MCP Resources E2E Tests', () => {
       });
     });
     
-    it('should have intent index with all intents listed', () => {
-      const indexPath = path.join(PROJECT_ROOT, 'prompts/intents/index.md');
+    it('should have activity index with all activities listed', () => {
+      const indexPath = path.join(PROJECT_ROOT, 'prompts/activities/index.md');
       const content = fs.readFileSync(indexPath, 'utf-8');
       
-      // Should reference all intent files
+      // Should reference all activity files
       expect(content).toContain('understand-topic');
       expect(content).toContain('know-my-library');
       expect(content).toContain('explore-concept');
@@ -106,19 +106,19 @@ describe('MCP Resources E2E Tests', () => {
       expect(content).toContain('practice-research');
     });
     
-    it('should have each intent link to primary and supporting skills', () => {
-      const intentFiles = [
-        'prompts/intents/understand-topic.md',
-        'prompts/intents/know-my-library.md',
-        'prompts/intents/explore-concept.md',
-        'prompts/intents/analyze-document.md',
-        'prompts/intents/explore-category.md',
-        'prompts/intents/identify-patterns.md',
-        'prompts/intents/identify-best-practices.md',
-        'prompts/intents/curate-lexicon.md',
+    it('should have each activity link to primary and supporting skills', () => {
+      const activityFiles = [
+        'prompts/activities/understand-topic.md',
+        'prompts/activities/know-my-library.md',
+        'prompts/activities/explore-concept.md',
+        'prompts/activities/analyze-document.md',
+        'prompts/activities/explore-category.md',
+        'prompts/activities/identify-patterns.md',
+        'prompts/activities/identify-best-practices.md',
+        'prompts/activities/curate-lexicon.md',
       ];
       
-      intentFiles.forEach(filePath => {
+      activityFiles.forEach(filePath => {
         const fullPath = path.join(PROJECT_ROOT, filePath);
         const content = fs.readFileSync(fullPath, 'utf-8');
         
@@ -171,14 +171,14 @@ describe('MCP Resources E2E Tests', () => {
     it('should have expected number of resources', () => {
       const resourceCount = Object.keys(EXPECTED_RESOURCES).length;
       
-      // 1 guidance + 9 intents (1 index + 8 intents) + 8 skills (1 index + 7 skills) = 18
+      // 1 guidance + 9 activities (1 index + 8 activities) + 8 skills (1 index + 7 skills) = 18
       expect(resourceCount).toBe(18);
     });
     
-    it('should have 7 intent files plus index', () => {
-      const intentDir = path.join(PROJECT_ROOT, 'prompts/intents');
-      const files = fs.readdirSync(intentDir).filter(f => f.endsWith('.md'));
-      expect(files.length).toBe(9); // 8 intents + index
+    it('should have 8 activity files plus index', () => {
+      const activityDir = path.join(PROJECT_ROOT, 'prompts/activities');
+      const files = fs.readdirSync(activityDir).filter(f => f.endsWith('.md'));
+      expect(files.length).toBe(9); // 8 activities + index
     });
     
     it('should have 7 skill files plus index', () => {
@@ -194,10 +194,10 @@ describe('MCP Resources E2E Tests', () => {
       expect(fs.existsSync(ideSetupPath)).toBe(true);
     });
     
-    it('should reference intents resource in ide-setup', () => {
+    it('should reference activities resource in ide-setup', () => {
       const ideSetupPath = path.join(PROJECT_ROOT, 'prompts/ide-setup.md');
       const content = fs.readFileSync(ideSetupPath, 'utf-8');
-      expect(content).toContain('concept-rag://intents');
+      expect(content).toContain('concept-rag://activities');
     });
   });
 });

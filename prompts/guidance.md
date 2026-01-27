@@ -4,28 +4,28 @@ How to use concept-rag effectively.
 
 ---
 
-## The Intent → Skill → Tool Model
+## The Activity → Skill → Tool Model
 
 ```
-User Goal → Intent (problem domain) → Skill (solution domain) → Tools
+User Goal → Activity (problem domain) → Skill (solution domain) → Tools
 ```
 
-1. **Identify the intent** — What is the user trying to accomplish?
-2. **Follow the skill** — Each intent maps to a skill with a tool workflow
+1. **Identify the activity** — What is the user trying to accomplish?
+2. **Follow the skill** — Each activity maps to a skill with a tool workflow
 3. **Execute tools** — Follow the skill's tool sequence
 4. **Synthesize answer** — Combine findings with citations
 
 ---
 
-## Step 1: Identify the Intent
+## Step 1: Identify the Activity
 
-Fetch `concept-rag://intents` to see available intents and match the user's goal.
+Fetch `concept-rag://activities` to see available activities and match the user's goal.
 
 ---
 
 ## Step 2: Follow the Skill
 
-Each intent links to a skill. The skill describes:
+Each activity links to a skill. The skill describes:
 - Which tools to use and in what order
 - What context to preserve between calls
 - Expected output format

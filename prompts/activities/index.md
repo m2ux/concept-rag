@@ -1,10 +1,10 @@
-# Intent Index
+# Activity Index
 
-Match the user's goal to an intent. Each intent may use multiple skills in sequence.
+Match the user's goal to an activity. Each activity may use multiple skills in sequence.
 
-## Available Intents
+## Available Activities
 
-| Intent | User Goal | Primary Skill | Supporting Skills |
+| Activity | User Goal | Primary Skill | Supporting Skills |
 |--------|-----------|---------------|-------------------|
 | [understand-topic](understand-topic.md) | Learn about a topic | `deep-research` | `concept-exploration`, `document-analysis` |
 | [know-my-library](know-my-library.md) | Discover available content | `library-discovery` | `category-exploration` |

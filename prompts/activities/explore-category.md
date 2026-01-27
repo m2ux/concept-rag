@@ -1,4 +1,4 @@
-# Intent: Explore a Category
+# Activity: Explore a Category
 
 ## Problem Domain
 

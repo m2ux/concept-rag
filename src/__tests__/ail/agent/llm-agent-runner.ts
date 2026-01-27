@@ -64,10 +64,10 @@ export class LLMAgentRunner {
     let totalPromptTokens = 0;
     let totalCompletionTokens = 0;
     
-    // Load skills interface content (intents, skills, guidance)
+    // Load skills interface content (activities, skills, guidance)
     const projectRoot = process.cwd();
     const skillsFiles = [
-      { path: 'prompts/intents/index.md', label: 'Intent Index' },
+      { path: 'prompts/activities/index.md', label: 'Activity Index' },
       { path: 'prompts/skills/index.md', label: 'Skill Index' },
       { path: 'prompts/guidance.md', label: 'Research Guidelines' },
     ];
@@ -95,7 +95,7 @@ export class LLMAgentRunner {
     });
     messages.push({
       role: 'assistant',
-      content: `I've reviewed the intent→skill→tool guidance:\n\n${fullContext}\n\nReady for your question.`,
+      content: `I've reviewed the activity→skill→tool guidance:\n\n${fullContext}\n\nReady for your question.`,
     });
     
     // Now add the actual user question

@@ -1,4 +1,4 @@
-# Intent: Curate Concept Lexicon
+# Activity: Curate Concept Lexicon
 
 ## Problem Domain
 
@@ -6,7 +6,7 @@
 
 ## Recognition
 
-Match this intent when the user says:
+Match this activity when the user says:
 - "Create a concept lexicon for [project/domain]"
 - "What concepts from my library apply to [project]?"
 - "Build a vocabulary reference for [domain]"

@@ -4,9 +4,9 @@
 
 Synthesize knowledge across multiple documents to answer a user's question.
 
-## Fulfills Intent
+## Fulfills Activity
 
-[understand-topic](../intents/understand-topic.md)
+[understand-topic](../activities/understand-topic.md)
 
 ## Tool Workflow
 

@@ -90,7 +90,7 @@ All major technical decisions are documented in **[Architecture Decision Records
 ### Key Documentation
 
 - **[API Reference](api-reference.md)** - Complete MCP tool documentation with JSON I/O schemas
-- **[Intent/Skill Architecture](architecture/skills-interface.md)** - Intent-based tool selection
+- **[Activity/Skill Architecture](architecture/skills-interface.md)** - Activity-based tool selection
 - **[Database Schema](database-schema.md)** - Four-table normalized schema with derived fields
 - **[Test Suite](../src/__tests__/README.md)** - Comprehensive test documentation
 

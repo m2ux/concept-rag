@@ -1,4 +1,4 @@
-# Intent: Analyze a Document
+# Activity: Analyze a Document
 
 ## Problem Domain
 

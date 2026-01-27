@@ -1,4 +1,4 @@
-# Intent: Know My Library
+# Activity: Know My Library
 
 ## Problem Domain
 
@@ -6,7 +6,7 @@
 
 ## Recognition
 
-Match this intent when the user says:
+Match this activity when the user says:
 - "What do I have?"
 - "What's in my library?"
 - "What documents do I have?"
