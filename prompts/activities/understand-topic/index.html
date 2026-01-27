@@ -12,13 +12,13 @@
         <meta name="author" content="Alex Komyagin">
       
       
-        <link rel="canonical" href="https://m2ux.github.io/concept-rag/prompts/intents/know-my-library/">
+        <link rel="canonical" href="https://m2ux.github.io/concept-rag/prompts/activities/understand-topic/">
       
       
-        <link rel="prev" href="../analyze-document/">
+        <link rel="prev" href="../">
       
       
-        <link rel="next" href="../identify-patterns/">
+        <link rel="next" href="../explore-concept/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Know My Library - Concept-RAG Documentation</title>
+        <title>Understand Topic - Concept-RAG Documentation</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#intent-know-my-library" class="md-skip">
+        <a href="#activity-understand-a-topic" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Know My Library
+              Understand Topic
             
           </span>
         </div>
@@ -297,7 +297,7 @@
   
     
   
-  Intents
+  Activities
 
         </a>
       </li>
@@ -713,7 +713,7 @@
   <span class="md-ellipsis">
     
   
-    Intents
+    Activities
   
 
     
@@ -735,124 +735,12 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Intents
+    Activities
   
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../understand-topic/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Understand Topic
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../explore-concept/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Explore Concept
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../explore-category/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Explore Category
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../analyze-document/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Analyze Document
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
               
             
               
@@ -878,7 +766,7 @@
   <span class="md-ellipsis">
     
   
-    Know My Library
+    Understand Topic
   
 
     
@@ -896,7 +784,7 @@
   <span class="md-ellipsis">
     
   
-    Know My Library
+    Understand Topic
   
 
     
@@ -991,6 +879,118 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../explore-concept/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explore Concept
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../explore-category/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explore Category
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../analyze-document/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Analyze Document
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../know-my-library/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Know My Library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -3479,40 +3479,42 @@
   
 
 
-<h1 id="intent-know-my-library">Intent: Know My Library<a class="headerlink" href="#intent-know-my-library" title="Permanent link">&para;</a></h1>
+<h1 id="activity-understand-a-topic">Activity: Understand a Topic<a class="headerlink" href="#activity-understand-a-topic" title="Permanent link">&para;</a></h1>
 <h2 id="problem-domain">Problem Domain<a class="headerlink" href="#problem-domain" title="Permanent link">&para;</a></h2>
-<p><strong>User Goal:</strong> The user doesn't know what content is available in their library and wants to discover or explore it.</p>
+<p><strong>User Goal:</strong> The user has a knowledge gap about a specific topic and wants to learn what their library says about it.</p>
 <h2 id="recognition">Recognition<a class="headerlink" href="#recognition" title="Permanent link">&para;</a></h2>
-<p>Match this intent when the user says:
-- "What do I have?"
-- "What's in my library?"
-- "What documents do I have?"
-- "Show me my library"
-- "What categories exist?"
-- "What can I learn from?"
-- "Browse my collection"</p>
+<p>Match this activity when the user says:
+- "What does my library say about X?"
+- "Research topic X"
+- "I want to understand X"
+- "Deep dive into X"
+- "Learn about X from my documents"
+- "What do my sources say about X?"</p>
 <h2 id="maps-to">Maps To<a class="headerlink" href="#maps-to" title="Permanent link">&para;</a></h2>
-<p><strong>Primary Skill:</strong> <a href="../../skills/library-discovery/">library-discovery</a></p>
+<p><strong>Primary Skill:</strong> <a href="../../skills/deep-research/">deep-research</a></p>
 <p><strong>Supporting Skills:</strong>
-- <a href="../../skills/category-exploration/">category-exploration</a> — Drill into specific domains of interest</p>
+- <a href="../../skills/concept-exploration/">concept-exploration</a> — Find related concepts and where they appear
+- <a href="../../skills/document-analysis/">document-analysis</a> — Extract key concepts from important sources</p>
 <h2 id="expected-outcome">Expected Outcome<a class="headerlink" href="#expected-outcome" title="Permanent link">&para;</a></h2>
-<p>An organized overview that:
-- Shows available categories/domains
-- Lists representative documents
-- Provides document counts and coverage
-- Enables further exploration into specific areas</p>
+<p>A synthesized answer that:
+- Addresses the user's question directly
+- Draws from multiple relevant documents
+- Includes citations to sources
+- Provides key points and insights
+- Surfaces related concepts for further exploration</p>
 <h2 id="example-flow">Example Flow<a class="headerlink" href="#example-flow" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>User: &quot;What do I have in my library?&quot;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>User: &quot;What does my library say about microservices?&quot;
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>1. Use library-discovery skill to get overview
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>2. If user shows interest in a domain, use category-exploration
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>3. Present organized summary with drill-down options
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>1. Use deep-research skill to find and extract content
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>2. If key documents emerge, use document-analysis to extract concepts
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>3. Use concept-exploration to find related concepts (e.g., &quot;distributed systems&quot;)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>4. Synthesize comprehensive answer with citations
 </code></pre></div>
 <h2 id="context-to-preserve">Context to Preserve<a class="headerlink" href="#context-to-preserve" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Categories discovered</li>
-<li>Document counts per category</li>
-<li>User's areas of interest (if stated)</li>
+<li>The topic being researched</li>
+<li>Documents found relevant</li>
+<li>Key findings from each source</li>
 </ul>
 
 

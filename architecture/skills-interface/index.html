@@ -285,13 +285,13 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../prompts/intents/" class="md-tabs__link">
+        <a href="../../prompts/activities/" class="md-tabs__link">
           
   
   
     
   
-  Intents
+  Activities
 
         </a>
       </li>
@@ -697,14 +697,14 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../prompts/intents/" class="md-nav__link ">
+            <a href="../../prompts/activities/" class="md-nav__link ">
               
   
   
   <span class="md-ellipsis">
     
   
-    Intents
+    Activities
   
 
     
@@ -726,7 +726,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Intents
+    Activities
   
 
           </label>
@@ -741,7 +741,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../prompts/intents/understand-topic/" class="md-nav__link">
+      <a href="../../prompts/activities/understand-topic/" class="md-nav__link">
         
   
   
@@ -769,7 +769,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../prompts/intents/explore-concept/" class="md-nav__link">
+      <a href="../../prompts/activities/explore-concept/" class="md-nav__link">
         
   
   
@@ -797,7 +797,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../prompts/intents/explore-category/" class="md-nav__link">
+      <a href="../../prompts/activities/explore-category/" class="md-nav__link">
         
   
   
@@ -825,7 +825,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../prompts/intents/analyze-document/" class="md-nav__link">
+      <a href="../../prompts/activities/analyze-document/" class="md-nav__link">
         
   
   
@@ -853,7 +853,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../prompts/intents/know-my-library/" class="md-nav__link">
+      <a href="../../prompts/activities/know-my-library/" class="md-nav__link">
         
   
   
@@ -881,7 +881,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../prompts/intents/identify-patterns/" class="md-nav__link">
+      <a href="../../prompts/activities/identify-patterns/" class="md-nav__link">
         
   
   
@@ -909,7 +909,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../prompts/intents/identify-best-practices/" class="md-nav__link">
+      <a href="../../prompts/activities/identify-best-practices/" class="md-nav__link">
         
   
   
@@ -937,7 +937,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../prompts/intents/curate-lexicon/" class="md-nav__link">
+      <a href="../../prompts/activities/curate-lexicon/" class="md-nav__link">
         
   
   
@@ -3365,15 +3365,15 @@
 </blockquote>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>The skills interface provides a three-tier abstraction layer over MCP tools:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Intent (Problem Domain) → Skill (Solution Domain) → Tool (Atomic Operation)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Activity (Problem Domain) → Skill (Solution Domain) → Tool (Atomic Operation)
 </code></pre></div>
-<p>This reduces tool selection errors and enables successful multi-step workflows by providing intent-based abstractions with context preservation.</p>
+<p>This reduces tool selection errors and enables successful multi-step workflows by providing activity-based abstractions with context preservation.</p>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Cursor Rule (prompts/agent-quick-rules.md)
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    ↓ instructs agent to read
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Intent Index (concept-rag://intents)
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Activity Index (concept-rag://activities)
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    ↓ agent matches user goal
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>Intent Description (concept-rag://intents/{id})
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>Activity Description (concept-rag://activities/{id})
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    ↓ maps to skill
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>Skill Description (concept-rag://skills/{id})
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    ↓ guides tool workflow
@@ -3391,7 +3391,7 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>Intent</strong></td>
+<td><strong>Activity</strong></td>
 <td>Problem</td>
 <td>User goals, needs</td>
 <td>"I want to understand X"</td>
@@ -3410,11 +3410,11 @@
 </tr>
 </tbody>
 </table>
-<h2 id="available-intents">Available Intents<a class="headerlink" href="#available-intents" title="Permanent link">&para;</a></h2>
+<h2 id="available-activities">Available Activities<a class="headerlink" href="#available-activities" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Intent</th>
+<th>Activity</th>
 <th>User Goal</th>
 <th>Skill</th>
 </tr>
@@ -3464,16 +3464,16 @@
 </thead>
 <tbody>
 <tr>
-<td><code>concept-rag://intents</code></td>
-<td>Intent index (read first)</td>
+<td><code>concept-rag://activities</code></td>
+<td>Activity index (read first)</td>
 </tr>
 <tr>
-<td><code>concept-rag://intents/understand-topic</code></td>
-<td>Understand a topic intent</td>
+<td><code>concept-rag://activities/understand-topic</code></td>
+<td>Understand a topic activity</td>
 </tr>
 <tr>
-<td><code>concept-rag://intents/know-my-library</code></td>
-<td>Know my library intent</td>
+<td><code>concept-rag://activities/know-my-library</code></td>
+<td>Know my library activity</td>
 </tr>
 <tr>
 <td><code>concept-rag://skills</code></td>
@@ -3491,10 +3491,10 @@
 </table>
 <h2 id="file-structure">File Structure<a class="headerlink" href="#file-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>prompts/
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>├── intents/
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>│   ├── index.md              # Intent index
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>│   ├── understand-topic.md   # Intent definition
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>│   └── know-my-library.md    # Intent definition
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>├── activities/
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>│   ├── index.md              # Activity index
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>│   ├── understand-topic.md   # Activity definition
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>│   └── know-my-library.md    # Activity definition
 <a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>├── skills/
 <a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>│   ├── index.md              # Skill index
 <a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>│   ├── deep-research.md      # Skill definition
@@ -3504,15 +3504,15 @@
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="for-agents">For Agents<a class="headerlink" href="#for-agents" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Read the intent index: <code>concept-rag://intents</code></li>
-<li>Match user's goal to an intent</li>
-<li>Read the intent's linked skill</li>
+<li>Read the activity index: <code>concept-rag://activities</code></li>
+<li>Match user's goal to an activity</li>
+<li>Read the activity's linked skill</li>
 <li>Follow the skill's tool workflow</li>
 <li>Synthesize answer with citations</li>
 </ol>
 <h3 id="for-developers">For Developers<a class="headerlink" href="#for-developers" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Add new intents to <code>prompts/intents/</code></li>
+<li>Add new activities to <code>prompts/activities/</code></li>
 <li>Add new skills to <code>prompts/skills/</code></li>
 <li>Register resources in <code>src/conceptual_index.ts</code></li>
 <li>Update indexes to include new entries</li>
@@ -3522,7 +3522,7 @@
 <li><strong>MCP Resources over Tools</strong>: Reduces tool count, leverages existing infrastructure</li>
 <li><strong>Static .md files</strong>: Editable, version controlled, no runtime logic</li>
 <li><strong>Tiered loading</strong>: Index &lt; 50 lines; verbose loaded on demand</li>
-<li><strong>Separation of concerns</strong>: Problem domain (intents) vs. solution domain (skills/tools)</li>
+<li><strong>Separation of concerns</strong>: Problem domain (activities) vs. solution domain (skills/tools)</li>
 </ul>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <ul>

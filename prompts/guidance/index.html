@@ -291,13 +291,13 @@
     
     
       <li class="md-tabs__item">
-        <a href="../intents/" class="md-tabs__link">
+        <a href="../activities/" class="md-tabs__link">
           
   
   
     
   
-  Intents
+  Activities
 
         </a>
       </li>
@@ -662,10 +662,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-intent-skill-tool-model" class="md-nav__link">
+  <a href="#the-activity-skill-tool-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Intent → Skill → Tool Model
+        The Activity → Skill → Tool Model
       
     </span>
   </a>
@@ -673,10 +673,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-identify-the-intent" class="md-nav__link">
+  <a href="#step-1-identify-the-activity" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1: Identify the Intent
+        Step 1: Identify the Activity
       
     </span>
   </a>
@@ -897,14 +897,14 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../intents/" class="md-nav__link ">
+            <a href="../activities/" class="md-nav__link ">
               
   
   
   <span class="md-ellipsis">
     
   
-    Intents
+    Activities
   
 
     
@@ -926,7 +926,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Intents
+    Activities
   
 
           </label>
@@ -941,7 +941,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../intents/understand-topic/" class="md-nav__link">
+      <a href="../activities/understand-topic/" class="md-nav__link">
         
   
   
@@ -969,7 +969,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../intents/explore-concept/" class="md-nav__link">
+      <a href="../activities/explore-concept/" class="md-nav__link">
         
   
   
@@ -997,7 +997,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../intents/explore-category/" class="md-nav__link">
+      <a href="../activities/explore-category/" class="md-nav__link">
         
   
   
@@ -1025,7 +1025,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../intents/analyze-document/" class="md-nav__link">
+      <a href="../activities/analyze-document/" class="md-nav__link">
         
   
   
@@ -1053,7 +1053,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../intents/know-my-library/" class="md-nav__link">
+      <a href="../activities/know-my-library/" class="md-nav__link">
         
   
   
@@ -1081,7 +1081,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../intents/identify-patterns/" class="md-nav__link">
+      <a href="../activities/identify-patterns/" class="md-nav__link">
         
   
   
@@ -1109,7 +1109,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../intents/identify-best-practices/" class="md-nav__link">
+      <a href="../activities/identify-best-practices/" class="md-nav__link">
         
   
   
@@ -1137,7 +1137,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../intents/curate-lexicon/" class="md-nav__link">
+      <a href="../activities/curate-lexicon/" class="md-nav__link">
         
   
   
@@ -3560,21 +3560,21 @@
 <h1 id="agent-guidance">Agent Guidance<a class="headerlink" href="#agent-guidance" title="Permanent link">&para;</a></h1>
 <p>How to use concept-rag effectively.</p>
 <hr />
-<h2 id="the-intent-skill-tool-model">The Intent → Skill → Tool Model<a class="headerlink" href="#the-intent-skill-tool-model" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>User Goal → Intent (problem domain) → Skill (solution domain) → Tools
+<h2 id="the-activity-skill-tool-model">The Activity → Skill → Tool Model<a class="headerlink" href="#the-activity-skill-tool-model" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>User Goal → Activity (problem domain) → Skill (solution domain) → Tools
 </code></pre></div>
 <ol>
-<li><strong>Identify the intent</strong> — What is the user trying to accomplish?</li>
-<li><strong>Follow the skill</strong> — Each intent maps to a skill with a tool workflow</li>
+<li><strong>Identify the activity</strong> — What is the user trying to accomplish?</li>
+<li><strong>Follow the skill</strong> — Each activity maps to a skill with a tool workflow</li>
 <li><strong>Execute tools</strong> — Follow the skill's tool sequence</li>
 <li><strong>Synthesize answer</strong> — Combine findings with citations</li>
 </ol>
 <hr />
-<h2 id="step-1-identify-the-intent">Step 1: Identify the Intent<a class="headerlink" href="#step-1-identify-the-intent" title="Permanent link">&para;</a></h2>
-<p>Fetch <code>concept-rag://intents</code> to see available intents and match the user's goal.</p>
+<h2 id="step-1-identify-the-activity">Step 1: Identify the Activity<a class="headerlink" href="#step-1-identify-the-activity" title="Permanent link">&para;</a></h2>
+<p>Fetch <code>concept-rag://activities</code> to see available activities and match the user's goal.</p>
 <hr />
 <h2 id="step-2-follow-the-skill">Step 2: Follow the Skill<a class="headerlink" href="#step-2-follow-the-skill" title="Permanent link">&para;</a></h2>
-<p>Each intent links to a skill. The skill describes:
+<p>Each activity links to a skill. The skill describes:
 - Which tools to use and in what order
 - What context to preserve between calls
 - Expected output format</p>
