@@ -1304,9 +1304,6 @@ Key Concepts: ${conceptNames.join(', ')}
 Categories: ${concepts.categories.join(', ')}
 `.trim();
         
-        // Get paper metadata from first page (shared across all pages)
-        const paperMetadata = docs[0]?.metadata?.paperMetadata;
-        
         // Content-based metadata extraction for fallback when filename parsing is incomplete
         // Extract from first few pages (front matter, copyright pages)
         let contentMetadata: ExtractedMetadata | undefined;
