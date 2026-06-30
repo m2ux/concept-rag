@@ -76,3 +76,11 @@ export {
   DocumentTooLargeError
 } from './document.js';
 
+// Data-integrity errors (read path: stored data doesn't match expectations)
+export {
+  DataIntegrityError,
+  ConceptNotFoundError,
+  InvalidEmbeddingsError,
+  SchemaValidationError
+} from './data-integrity.js';
+

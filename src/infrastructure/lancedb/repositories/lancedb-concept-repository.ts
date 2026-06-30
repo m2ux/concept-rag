@@ -1,8 +1,7 @@
 import * as lancedb from "@lancedb/lancedb";
 import { ConceptRepository, ScoredConcept } from '../../../domain/interfaces/repositories/concept-repository.js';
 import { Concept } from '../../../domain/models/index.js';
-import { ConceptNotFoundError, InvalidEmbeddingsError } from '../../../domain/exceptions.js';
-import { DatabaseError } from '../../../domain/exceptions/index.js';
+import { ConceptNotFoundError, InvalidEmbeddingsError, DatabaseError } from '../../../domain/exceptions/index.js';
 import { parseJsonField, escapeSqlString } from '../utils/field-parsers.js';
 import { validateConceptRow, detectVectorField } from '../utils/schema-validators.js';
 import {
