@@ -135,6 +135,7 @@ flowchart TB
 
 - [Getting Started](../getting-started.md) — Quick start guide with seeding commands
 - [Stage Cache](../stage-cache-structure.md) — Intermediate caching during seeding
-- [ADR-0013: Incremental Seeding](adr0013-incremental-seeding.md) — Design decision for incremental processing
-- [ADR-0044: Seeding Modularization](adr0044-seeding-script-modularization.md) — Script architecture
+
+The incremental-seeding and seeding-modularization design decisions are recorded
+in ADRs (ADR-0013, ADR-0044), kept in the repository under `docs/architecture/`.
 

@@ -114,15 +114,16 @@ flowchart TB
 
 ## Integration in Hybrid Search
 
-BM25 is one of four signals in the hybrid ranking system:
+BM25 is one of five signals in the hybrid ranking system:
 
 ```mermaid
 flowchart TB
     subgraph Signals["Search Signals"]
-        Vector["Vector Similarity<br/>35%"]
-        BM25["BM25 Keywords<br/>30-35%"]
-        Concept["Concept Matching<br/>15-20%"]
-        WN["WordNet Expansion<br/>15%"]
+        Vector["Vector Similarity<br/>30-35%"]
+        BM25["BM25 Keywords<br/>20-30%"]
+        Title["Title / Name Match<br/>0-40%"]
+        Concept["Concept Matching<br/>0-20%"]
+        WN["WordNet Expansion<br/>10-15%"]
     end
 
     subgraph Combined["Hybrid Score"]
@@ -132,6 +133,7 @@ flowchart TB
 
     Vector --> Combine
     BM25 --> Combine
+    Title --> Combine
     Concept --> Combine
     WN --> Combine
     Combine --> Results
@@ -249,7 +251,8 @@ The hybrid approach preserves these benefits while adding keyword precision.
 
 ## Related Documentation
 
-- [ADR-0006: Hybrid Search Strategy](adr0006-hybrid-search-strategy.md) — Design decision
 - [WordNet Enrichment](wordnet-enrichment.md) — Synonym expansion
-- [ADR-0010: Query Expansion](adr0010-query-expansion.md) — Term weighting
+
+The hybrid-search and query-expansion design decisions are recorded in ADRs
+(ADR-0006, ADR-0010), kept in the repository under `docs/architecture/`.
 

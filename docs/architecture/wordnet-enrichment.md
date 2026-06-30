@@ -83,15 +83,16 @@ Expanded terms receive lower weights than original terms to maintain search prec
 
 ### Integration in Hybrid Search
 
-WordNet contributes to the 4-signal hybrid search ranking:
+WordNet contributes to the 5-signal hybrid search ranking:
 
 ```mermaid
 flowchart TB
     subgraph Signals["Search Signals"]
-        Vector["Vector Similarity<br/>35%"]
-        BM25["BM25 Keywords<br/>35%"]
-        Concept["Concept Matching<br/>15%"]
-        WN["WordNet Expansion<br/>15%"]
+        Vector["Vector Similarity<br/>30-35%"]
+        BM25["BM25 Keywords<br/>20-30%"]
+        Title["Title / Name Match<br/>0-40%"]
+        Concept["Concept Matching<br/>0-20%"]
+        WN["WordNet Expansion<br/>10-15%"]
     end
 
     subgraph Score["Final Ranking"]
@@ -101,6 +102,7 @@ flowchart TB
 
     Vector --> Combine
     BM25 --> Combine
+    Title --> Combine
     Concept --> Combine
     WN --> Combine
     Combine --> Results
@@ -223,7 +225,7 @@ python3 -c "from nltk.corpus import wordnet as wn; print(f'✅ WordNet: {len(lis
 
 ## Related Documentation
 
-- [ADR-0008: WordNet Integration](adr0008-wordnet-integration.md) — Design decision
-- [ADR-0010: Query Expansion](adr0010-query-expansion.md) — Query expansion strategy
-- [ADR-0006: Hybrid Search](adr0006-hybrid-search-strategy.md) — Multi-signal ranking
+The WordNet-integration, query-expansion, and hybrid-search design decisions are
+recorded in ADRs (ADR-0008, ADR-0010, ADR-0006), kept in the repository under
+`docs/architecture/`.
 

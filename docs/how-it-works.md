@@ -28,6 +28,7 @@ flowchart TB
     subgraph Search["🔍 Hybrid Search"]
         Vector[Vector Similarity]
         BM25[BM25 Keywords]
+        Title[Title / Name Match]
         ConceptMatch[Concept Matching]
         WordNet[WordNet Expansion]
         Rank[Weighted Ranking]
@@ -52,11 +53,13 @@ flowchart TB
     Extract --> Categories
 
     Catalog --> Vector
+    Catalog --> Title
     Chunks --> Vector
     Concepts --> ConceptMatch
     
     Vector --> Rank
     BM25 --> Rank
+    Title --> Rank
     ConceptMatch --> Rank
     WordNet --> Rank
     
@@ -98,16 +101,20 @@ Vector embeddings are generated for:
 
 ### 5. Hybrid Search
 
-Queries are scored using four signals:
+Queries are scored by combining five signals:
 
-| Signal | Weight | Purpose |
-|--------|--------|---------|
-| Vector Similarity | 35% | Semantic meaning match |
-| BM25 Keywords | 35% | Exact term matching |
-| Concept Matching | 15% | Extracted concept overlap |
-| WordNet Expansion | 15% | Synonym and hypernym matching |
+| Signal | Purpose |
+|--------|---------|
+| Vector Similarity | Semantic meaning match |
+| BM25 Keywords | Exact term matching |
+| Title / Name Match | Document title or concept-name relevance |
+| Concept Matching | Extracted concept overlap |
+| WordNet Expansion | Synonym and hypernym matching |
 
-Results are combined using weighted ranking for optimal retrieval accuracy.
+Signal weights are tuned per search type — for example, document (catalog) search
+weights them 30% / 25% / 20% / 15% / 10%, while passage and concept searches use
+different profiles. See the [API Reference](api-reference.md#scoring-weights) for the
+full per-tool weighting table.
 
 ### 6. Gap Detection (Elbow Method)
 
