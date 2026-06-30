@@ -8,7 +8,7 @@ This fork extends the original [lance-mcp](https://github.com/adiom-data/lance-m
 - 📚 **Formal concept model** - Rigorous definition ensuring semantic matching and disambiguation
 - 🧠 **Enhanced concept extraction** - 80-150+ concepts per document (Claude Sonnet 4.5)
 - 🌐 **WordNet semantic enrichment** - Synonym expansion and hierarchical navigation
-- 🔍 **Multi-signal hybrid ranking** - Vector + BM25 + title + concept + WordNet (4-signal scoring)
+- 🔍 **Multi-signal hybrid ranking** - Vector + BM25 + title + concept + WordNet (5-signal scoring)
 - 📖 **Large document support** - Multi-pass extraction for >100k token documents
 - ⚡ **Parallel concept extraction** - Process up to 25 documents concurrently with shared rate limiting
 - 🔁 **Resumable seeding** - Checkpoint-based recovery from interrupted runs
@@ -31,7 +31,7 @@ src/
 ├── infrastructure/               # External integrations
 │   ├── lancedb/                  # Database adapters (normalized schema v7)
 │   ├── embeddings/               # Embedding service
-│   ├── search/                   # Hybrid search with 4-signal scoring
+│   ├── search/                   # Hybrid search with 5-signal scoring
 │   ├── resilience/               # Circuit breaker, bulkhead, timeout patterns
 │   ├── checkpoint/               # Resumable seeding with progress tracking
 │   ├── cli/                      # Progress bar display utilities
@@ -67,7 +67,7 @@ Catalog   Chunks   Concepts   Categories
   └─────────┴─────────┴─────────┘
             ↓
     Hybrid Search Engine
-   (Vector + BM25 + Concepts + WordNet)
+   (Vector + BM25 + Title + Concepts + WordNet)
 ```
 
 ### Four-Table Normalized Schema

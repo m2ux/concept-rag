@@ -262,6 +262,8 @@ This ensures cache files are never partially written, even if the process is kil
 
 ## Related Documentation
 
-- [ADR-0048: Stage Caching](architecture/adr0048-stage-caching.md) - Architecture decision record
 - [Database Schema](database-schema.md) - LanceDB table structures
+
+The stage-caching design decision is recorded in ADR-0048, kept in the repository
+under `docs/architecture/`.
 

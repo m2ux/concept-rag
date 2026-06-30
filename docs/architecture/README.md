@@ -14,7 +14,7 @@ This section covers the technical architecture of Concept-RAG.
 | `src/tools/` | MCP tool implementations (10 tools) |
 | `src/wordnet/` | WordNet integration and strategies |
 | `docs/` | MkDocs documentation site |
-| `docs/architecture/` | Architecture Decision Records |
+| `docs/architecture/` | Architecture deep-dives and decision records (ADRs) |
 | `scripts/` | Maintenance and diagnostic utilities |
 | `prompts/` | LLM prompt templates |
 
@@ -26,4 +26,6 @@ This section covers the technical architecture of Concept-RAG.
 - **[Database Schema](../database-schema.md)** - LanceDB table structures
 - **[Stage Cache](../stage-cache-structure.md)** - Intermediate processing cache
 
-For architectural decisions and their rationale, see the **[ADRs](../architecture/adr0001-typescript-nodejs-runtime.md)** section.
+Architectural decisions and their rationale are recorded as Architecture Decision
+Records (ADRs) in the repository under `docs/architecture/`. ADRs are point-in-time
+engineering artifacts and are not published to this site.

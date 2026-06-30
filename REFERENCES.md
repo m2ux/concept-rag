@@ -94,7 +94,7 @@ This recursive approach demonstrates the power of RAG (Retrieval-Augmented Gener
 - **Structured Error Handling** - Consistent error propagation and handling
 
 **Files using these concepts:**
-- `src/domain/exceptions.ts` - Exception hierarchy implementation
+- `src/domain/exceptions/` - Modular exception hierarchy (base `ConceptRAGError` with domain-specific subtypes)
 
 ## Testing Patterns
 

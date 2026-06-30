@@ -533,7 +533,7 @@ Default: `~/.concept_rag`
 
 Custom:
 ```bash
-export CONCEPT_RAG_DB="/custom/path"
+export DATABASE_URL="/custom/path"
 ```
 
 ### MCP Server Configuration

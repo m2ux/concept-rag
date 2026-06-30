@@ -577,12 +577,11 @@ These performance caches remain for CPU/DB optimization:
 
 ## Related Documentation
 
-- [ADR-0002: LanceDB Vector Storage](architecture/adr0002-lancedb-vector-storage.md)
-- [ADR-0009: Three-Table Architecture](architecture/adr0009-three-table-architecture.md)
-- [ADR-0027: Hash-Based Integer IDs](architecture/adr0027-hash-based-integer-ids.md)
-- [ADR-0043: Schema Normalization](architecture/adr0043-schema-normalization.md)
 - Domain Models: `src/domain/models/`
 - Schema Validators: `src/infrastructure/lancedb/utils/schema-validators.ts`
+
+Schema design decisions are recorded in ADRs (ADR-0002, ADR-0009, ADR-0027,
+ADR-0043), kept in the repository under `docs/architecture/`.
 - Lexical Linking: `scripts/link_related_concepts.ts`
 - Derived Fields Regeneration: `scripts/rebuild_derived_names.ts`
 - Seeding Script: `hybrid_fast_seed.ts` (supports `--parallel N` for parallel concept extraction)
