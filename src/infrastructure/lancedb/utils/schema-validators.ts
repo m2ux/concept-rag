@@ -13,7 +13,7 @@
  * **Safety**: All validators are non-destructive; they only read data.
  */
 
-import { SchemaValidationError, InvalidEmbeddingsError } from '../../../domain/exceptions.js';
+import { SchemaValidationError, InvalidEmbeddingsError } from '../../../domain/exceptions/index.js';
 
 /**
  * Expected embedding dimension for all vectors in the system.

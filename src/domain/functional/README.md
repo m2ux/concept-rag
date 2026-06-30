@@ -4,13 +4,12 @@ This module provides functional programming patterns for error handling and null
 
 ## Overview
 
-The module implements three core types:
+The module implements two core types:
 
 1. **Result<T, E>** - For operations that can succeed or fail
-2. **Either<L, R>** - For bi-directional choice (left/right)
-3. **Option<T>** - For safe nullable handling
+2. **Option<T>** - For safe nullable handling
 
-Plus **Railway Oriented Programming** utilities for composing these types.
+> Note: `Either<L, R>` and the Railway Oriented Programming utilities were removed as dead code — no consumers existed outside the module barrel. Reintroduce them when a real caller needs bi-directional `Either` or pipeline composition (`pipe`/`retry`/`firstSuccess`/`validateAll`).
 
 ## Installation
 
@@ -18,9 +17,7 @@ The functional types are available in the `src/domain/functional` directory:
 
 ```typescript
 import { Result, Ok, Err } from '../functional/result';
-import { Either, Left, Right } from '../functional/either';
 import { Option, Some, None } from '../functional/option';
-import * as Railway from '../functional/railway';
 ```
 
 ## Result<T, E>
@@ -86,47 +83,6 @@ const result = await fromPromise(fetch('/api/data'));
 const transformed = await mapAsync(result, data => data.json());
 ```
 
-## Either<L, R>
-
-The Either type represents a value that can be one of two types. By convention, Left is used for errors and Right for success.
-
-### Basic Usage
-
-```typescript
-import { Either, Left, Right, isRight } from '../functional/either';
-
-function parseJSON<T>(json: string): Either<string, T> {
-  try {
-    return Right(JSON.parse(json));
-  } catch (error) {
-    return Left('Invalid JSON');
-  }
-}
-
-const result = parseJSON<{name: string}>('{"name":"Alice"}');
-if (isRight(result)) {
-  console.log(result.value.name); // "Alice"
-}
-```
-
-### Transforming Either
-
-```typescript
-import { map, bimap } from '../functional/either';
-
-// Transform right value
-const upper = map(parseJSON('{"name":"alice"}'), data => 
-  data.name.toUpperCase()
-);
-
-// Transform both sides
-const formatted = bimap(
-  parseJSON('invalid'),
-  err => `JSON Error: ${err}`,
-  data => `Name: ${data.name}`
-);
-```
-
 ## Option<T>
 
 The Option type represents a value that may or may not exist, providing a type-safe alternative to null/undefined.
@@ -164,75 +120,6 @@ const userName = getOrElse(name, 'Anonymous');
 const activeUser = filter(findUser(123), user => user.active);
 ```
 
-## Railway Oriented Programming
-
-Railway utilities help you compose Result-returning functions into pipelines that short-circuit on errors.
-
-### Basic Pipeline
-
-```typescript
-import { pipe } from '../functional/railway';
-
-const validateEmail = (email: string): Result<string, string> =>
-  email.includes('@') ? Ok(email) : Err('Invalid email');
-
-const normalizeEmail = (email: string): Result<string, string> =>
-  Ok(email.toLowerCase());
-
-const saveEmail = (email: string): Result<void, string> =>
-  Ok(undefined); // Save to database
-
-const processPipeline = pipe(
-  validateEmail,
-  normalizeEmail,
-  saveEmail
-);
-
-const result = processPipeline('user@EXAMPLE.COM');
-// Ok(undefined) - email validated, normalized, and saved
-```
-
-### Error Handling Patterns
-
-```typescript
-import { retry, firstSuccess, recover } from '../functional/railway';
-
-// Retry on failure
-const result = await retry(
-  () => apiCall(),
-  { maxAttempts: 3, delayMs: 1000 }
-);
-
-// Try multiple strategies
-const fallbackResult = await firstSuccess([
-  () => primaryService(),
-  () => secondaryService(),
-  () => fallbackService()
-]);
-
-// Recover from errors
-const recovered = pipe(
-  riskyOperation,
-  recover(defaultValue)
-)(input);
-```
-
-### Validation with Error Accumulation
-
-```typescript
-import { validateAll } from '../functional/railway';
-
-const isPositive = (x: number): Result<number, string> =>
-  x > 0 ? Ok(x) : Err('Must be positive');
-
-const isLessThan100 = (x: number): Result<number, string> =>
-  x < 100 ? Ok(x) : Err('Must be less than 100');
-
-// Collects all validation errors
-const result = validateAll(150, [isPositive, isLessThan100]);
-// Err(['Must be less than 100'])
-```
-
 ## When to Use Each Type
 
 ### Use Result When:
@@ -241,79 +128,14 @@ const result = validateAll(150, [isPositive, isLessThan100]);
 - You need to compose operations that might fail
 - You want to avoid exception-based control flow
 
-### Use Either When:
-- You need a bi-directional choice between two types
-- Both sides have equal semantic importance
-- You want more generic handling than Result
-
 ### Use Option When:
 - Value might be absent (null/undefined)
 - Absence is not an error, just a missing value
 - You want type-safe nullable handling
 
-### Use Railway Utilities When:
-- Composing multiple operations that return Results
-- Building validation pipelines
-- Implementing retry/fallback strategies
-- Need error accumulation
-
 ## Practical Examples
 
-### Example 1: User Registration with Validation
-
-```typescript
-import { pipe } from '../functional/railway';
-
-interface UserInput {
-  email: string;
-  password: string;
-  age: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  passwordHash: string;
-  age: number;
-}
-
-const validateEmail = (input: UserInput): Result<UserInput, string> =>
-  input.email.includes('@')
-    ? Ok(input)
-    : Err('Invalid email format');
-
-const validatePassword = (input: UserInput): Result<UserInput, string> =>
-  input.password.length >= 8
-    ? Ok(input)
-    : Err('Password must be at least 8 characters');
-
-const parseAge = (input: UserInput): Result<User, string> => {
-  const age = parseInt(input.age, 10);
-  if (isNaN(age) || age < 18) {
-    return Err('Must be 18 or older');
-  }
-  return Ok({
-    id: generateId(),
-    email: input.email,
-    passwordHash: hashPassword(input.password),
-    age
-  });
-};
-
-const registerUser = pipe(
-  validateEmail,
-  validatePassword,
-  parseAge
-);
-
-const result = registerUser({
-  email: 'user@example.com',
-  password: 'secure123',
-  age: '25'
-});
-```
-
-### Example 2: Document Processing Pipeline
+### Example 1: Document Processing Pipeline
 
 ```typescript
 function processDocument(path: string): Result<ProcessedDoc, DocError> {
@@ -344,7 +166,7 @@ function processDocument(path: string): Result<ProcessedDoc, DocError> {
 }
 ```
 
-### Example 3: Safe Array Access with Option
+### Example 2: Safe Array Access with Option
 
 ```typescript
 function safeGet<T>(arr: T[], index: number): Option<T> {
@@ -418,13 +240,10 @@ if (isOk(result)) {
 
 See individual module files for complete API documentation:
 - `result.ts` - Result<T, E> type and utilities
-- `either.ts` - Either<L, R> type and utilities
 - `option.ts` - Option<T> type and utilities
-- `railway.ts` - Railway Oriented Programming utilities
 
 ## Further Reading
 
-- [Railway Oriented Programming](https://fsharpforfunandprofit.com/rop/) by Scott Wlaschin
 - [Rust Result Documentation](https://doc.rust-lang.org/std/result/)
 - [Functional Programming in TypeScript](https://gcanti.github.io/fp-ts/)
 
