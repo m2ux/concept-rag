@@ -1,11 +1,14 @@
 /**
- * Summary generation for concepts and categories using LLM
+ * Summary generation for documents, concepts and categories using LLM
  */
 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
-const DEFAULT_MODEL = "x-ai/grok-4-fast";
+const DEFAULT_MODEL = "x-ai/grok-4.6";
 const DEFAULT_BATCH_SIZE = 30;
 const MIN_REQUEST_INTERVAL = 1000; // 1 second between requests
+
+/** Maximum characters of document text sent to the LLM for an overview */
+export const OVERVIEW_INPUT_LIMIT = 8000;
 
 export interface SummaryResult {
   name: string;
@@ -44,6 +47,67 @@ async function rateLimitDelay(): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, delayNeeded));
   }
   lastRequestTime = Date.now();
+}
+
+/**
+ * Generate a one-sentence content overview for a single document.
+ *
+ * This is the document-level summary stored in `catalog.summary` (ahead of the
+ * "Key Concepts"/"Categories" enrichment lines). Used by both the seeding
+ * pipeline and the `--populate-summaries` backfill so the wording stays
+ * identical across both paths.
+ *
+ * @param text - Document text (only the first {@link OVERVIEW_INPUT_LIMIT} chars are sent)
+ * @param options.apiKey - OpenRouter API key (defaults to OPENROUTER_API_KEY)
+ * @param options.model - Model override (defaults to this module's DEFAULT_MODEL)
+ * @param options.rateLimit - Space requests at least 1s apart (default: false).
+ *                            Seeding runs overviews across parallel workers, so it
+ *                            opts out; the backfill opts in.
+ * @throws If the API key is missing or the API returns a non-OK response
+ */
+export async function generateDocumentOverview(
+  text: string,
+  options: {
+    apiKey?: string;
+    model?: string;
+    rateLimit?: boolean;
+  } = {}
+): Promise<string> {
+  const apiKey = options.apiKey || process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new Error('OPENROUTER_API_KEY not set');
+  }
+
+  if (options.rateLimit) {
+    await rateLimitDelay();
+  }
+
+  const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://github.com/adiom-data/lance-mcp',
+      'X-Title': 'Lance MCP Server'
+    },
+    body: JSON.stringify({
+      model: options.model || DEFAULT_MODEL,
+      messages: [{
+        role: 'user',
+        content: `Write a high-level one sentence content overview based on the text below. WRITE THE CONTENT OVERVIEW ONLY:\n\n${text.slice(0, OVERVIEW_INPUT_LIMIT)}`
+      }],
+      max_tokens: 100,
+      temperature: 0.3
+    })
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    throw new Error(`LLM API error: ${response.status} - ${errorData}`);
+  }
+
+  const data = await response.json();
+  return data.choices[0].message.content.trim();
 }
 
 /**

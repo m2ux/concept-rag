@@ -24,3 +24,20 @@ export {
   truncateFilePath,
   formatHashDisplay
 } from './string-utils.js';
+
+export {
+  backfillSummaries,
+  parseSummaryTargets,
+  splitCatalogSummary,
+  buildCatalogSummary,
+  assembleDocumentText,
+  isMissingCatalogSummary,
+  isMissingConceptSummary,
+  isMissingCategorySummary,
+  SUMMARY_TARGETS,
+  type SummaryTarget,
+  type SummaryBackfillOptions,
+  type SummaryBackfillReport,
+  type TableBackfillResult,
+  type SummaryProgress
+} from './summary-backfill.js';
