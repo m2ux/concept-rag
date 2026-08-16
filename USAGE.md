@@ -324,6 +324,7 @@ npx tsx hybrid_fast_seed.ts --filesdir <directory> [options]
 - `--overwrite` - Drop existing tables and rebuild from scratch
 - `--rebuild-concepts` - Rebuild concept index without re-processing documents
 - `--auto-reseed` - Automatically fix and re-process incomplete catalog records
+- `--populate-summaries[=targets]` - Fill in missing summaries only (see below)
 
 **Examples:**
 ```bash
@@ -339,6 +340,47 @@ npx tsx hybrid_fast_seed.ts --filesdir ~/Documents --rebuild-concepts
 # Fix database issues (duplicate/incomplete records)
 npx tsx hybrid_fast_seed.ts --filesdir ~/Documents --auto-reseed
 ```
+
+#### Rebuilding summaries only
+
+`--populate-summaries` fills in missing summaries in an existing database. It
+needs no `--filesdir`: documents are never re-loaded, re-chunked, or re-extracted.
+
+| Table | What is regenerated | Source |
+|-------|--------------------|--------|
+| `catalog.summary` | Document overview (and the embedding vector, which encodes it) | Existing chunks, in reading order |
+| `concepts.summary` | One-sentence definition | Concept name |
+| `categories.summary` | One-sentence description | Category name |
+
+A summary counts as missing when it is empty, or when it is a seeding fallback
+(`Document overview (N pages)` for documents, the generated description for
+categories).
+
+```bash
+# See what is missing - no LLM calls, no writes
+npx tsx hybrid_fast_seed.ts --populate-summaries --dry-run
+
+# Fill in everything that is missing
+RUST_LOG=error npx tsx hybrid_fast_seed.ts --populate-summaries
+
+# Restrict to one or more tables
+npx tsx hybrid_fast_seed.ts --populate-summaries=concepts,categories
+
+# Try it on a handful of rows first
+npx tsx hybrid_fast_seed.ts --populate-summaries=concepts --summary-max-items 50
+
+# Regenerate every summary, not just the missing ones
+npx tsx hybrid_fast_seed.ts --populate-summaries --force-summaries
+```
+
+**Additional options:** `--summary-batch-size N` (names per LLM request, default 30),
+`--summary-flush-size N` (summaries buffered before writing, default 250),
+`--summary-max-items N` (cap rows per table), `--summary-model ID` (defaults to the
+model configured in `src/concepts/summary_generator.ts`).
+
+Results are written back in batches with a merge-insert keyed on `id`, so all
+other columns and the table schema are left untouched. An interrupted run keeps
+everything it already wrote — re-run the same command to continue.
 
 **📝 Logging:** Each run creates a timestamped log in `logs/seed-YYYY-MM-DDTHH-MM-SS.log`.
 

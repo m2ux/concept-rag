@@ -28,9 +28,11 @@ import {
   findDocumentFilesRecursively,
   getDatabaseSize,
   truncateFilePath,
+  backfillSummaries,
+  parseSummaryTargets,
   type DataCompletenessCheck
 } from './src/infrastructure/seeding/index.js';
-import { generateCategorySummaries } from './src/concepts/summary_generator.js';
+import { generateCategorySummaries, generateDocumentOverview } from './src/concepts/summary_generator.js';
 import { parseFilenameMetadata } from './src/infrastructure/utils/filename-metadata-parser.js';
 import { SeedingCheckpoint } from './src/infrastructure/checkpoint/seeding-checkpoint.js';
 import { StageCache, type CachedDocumentData } from './src/infrastructure/checkpoint/stage-cache.js';
@@ -166,8 +168,8 @@ console.log = (...args: any[]) => {
 };
 
 const argv: minimist.ParsedArgs = minimist(process.argv.slice(2), {
-    boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume", "with-wordnet", "clear-cache", "cache-only", "no-cache"],
-    string: ["dbpath", "filesdir", "max-docs", "parallel", "cache-dir"]
+    boolean: ["overwrite", "rebuild-concepts", "auto-reseed", "clean-checkpoint", "resume", "with-wordnet", "clear-cache", "cache-only", "no-cache", "force-summaries", "dry-run"],
+    string: ["dbpath", "filesdir", "max-docs", "parallel", "cache-dir", "populate-summaries", "summary-batch-size", "summary-flush-size", "summary-max-items", "summary-model"]
 });
 
 const databaseDir = path.resolve(argv["dbpath"] || process.env.CONCEPT_RAG_DB_PATH || path.join(process.env.HOME || process.env.USERPROFILE || "~", ".concept_rag"));
@@ -187,6 +189,16 @@ const cacheOnly = argv["cache-only"];
 const useCache = !argv["no-cache"];  // Default: true (use cache), --no-cache disables
 const customCacheDir = argv["cache-dir"];
 
+// Summary backfill flags (standalone mode - operates on an existing database)
+const summaryMode = argv["populate-summaries"] !== undefined;
+const summaryTargetsArg = argv["populate-summaries"];
+const forceSummaries = argv["force-summaries"];
+const dryRun = argv["dry-run"];
+const summaryBatchSize = argv["summary-batch-size"] ? parseInt(argv["summary-batch-size"], 10) : undefined;
+const summaryFlushSize = argv["summary-flush-size"] ? parseInt(argv["summary-flush-size"], 10) : undefined;
+const summaryMaxItems = argv["summary-max-items"] ? parseInt(argv["summary-max-items"], 10) : undefined;
+const summaryModel = argv["summary-model"] || undefined;
+
 function showUsageAndExit() {
     console.error("Please provide a directory with files (--filesdir) to process");
     console.error("Usage: npx tsx hybrid_fast_seed.ts --filesdir <directory> [--dbpath <path>] [options]");
@@ -205,6 +217,17 @@ function showUsageAndExit() {
     console.error("  --with-wordnet: Enable WordNet enrichment (disabled by default)");
     console.error("  --max-docs N: Process at most N NEW documents (skips already processed, enables batching)");
     console.error("  --parallel N: Process N documents concurrently for concept extraction (default: 10, max: 25)");
+    console.error("");
+    console.error("Summary backfill (no --filesdir needed, runs against --dbpath and exits):");
+    console.error("  --populate-summaries[=TARGETS]: Fill in missing summaries in an existing database.");
+    console.error("                                  TARGETS is a comma-separated list of catalog,concepts,categories");
+    console.error("                                  (default: all three)");
+    console.error("  --force-summaries: Regenerate every summary, not just the missing ones");
+    console.error("  --dry-run: Report what is missing without calling the LLM or writing");
+    console.error("  --summary-batch-size N: Concept/category names per LLM request (default: 30)");
+    console.error("  --summary-flush-size N: Summaries buffered before writing back (default: 250)");
+    console.error("  --summary-max-items N: Process at most N rows per table (trial runs)");
+    console.error("  --summary-model ID: Model override (default: the configured summary model)");
     console.error("");
     console.error("Cache options:");
     console.error("  --no-cache: Disable stage cache (don't use cached LLM results)");
@@ -350,33 +373,10 @@ async function verifyApiKey(): Promise<void> {
 }
 
 // LLM API call for summarization
+// Shared with the --populate-summaries backfill so both produce identical overviews.
+// No rate limiting here: overviews are generated across parallel workers during seeding.
 async function callOpenRouterChat(text: string): Promise<string> {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${openrouterApiKey}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://github.com/adiom-data/lance-mcp',
-            'X-Title': 'Lance MCP Server'
-        },
-        body: JSON.stringify({
-            model: 'x-ai/grok-4-fast',  // Grok-4-fast: blazing fast for simple summaries
-            messages: [{
-                role: 'user',
-                content: `Write a high-level one sentence content overview based on the text below. WRITE THE CONTENT OVERVIEW ONLY:\n\n${text.slice(0, 8000)}`
-            }],
-            max_tokens: 100,
-            temperature: 0.3
-        })
-    });
-
-    if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`LLM API error: ${response.status} - ${errorData}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content.trim();
+    return generateDocumentOverview(text, { apiKey: openrouterApiKey });
 }
 
 async function generateContentOverview(rawDocs: Document[]): Promise<string> {
@@ -2055,7 +2055,95 @@ async function rebuildConceptIndexFromExistingData(
     await createCategoriesTable(db, catalogDocs);
 }
 
+/**
+ * Standalone mode for --populate-summaries.
+ *
+ * Fills in missing summaries in an already-seeded database: document overviews
+ * are regenerated from existing chunks, concept and category summaries from
+ * their names. No documents are loaded, chunked or re-extracted.
+ */
+async function populateMissingSummaries() {
+    let targets;
+    try {
+        targets = parseSummaryTargets(summaryTargetsArg);
+    } catch (error: any) {
+        console.error(`❌ ${error.message}`);
+        process.exit(1);
+    }
+
+    console.log("\n📝 POPULATE SUMMARIES");
+    console.log("=".repeat(70));
+    console.log(`📂 Database: ${databaseDir}`);
+    console.log(`🎯 Targets: ${targets.join(', ')}`);
+    if (forceSummaries) console.log("⚠️  Force mode: regenerating ALL summaries");
+    if (dryRun) console.log("🔍 Dry run: no LLM calls, no writes");
+    if (summaryMaxItems) console.log(`🔢 Max items per table: ${summaryMaxItems}`);
+    console.log("");
+
+    if (!fs.existsSync(databaseDir)) {
+        console.error(`❌ Database not found: ${databaseDir}`);
+        process.exit(1);
+    }
+
+    if (!dryRun) {
+        if (!openrouterApiKey) {
+            console.error("Please set OPENROUTER_API_KEY environment variable");
+            process.exit(1);
+        }
+        await verifyApiKey();
+    }
+
+    const db = await lancedb.connect(databaseDir);
+
+    const report = await backfillSummaries(db, {
+        targets,
+        apiKey: openrouterApiKey,
+        model: summaryModel,
+        batchSize: summaryBatchSize,
+        flushSize: summaryFlushSize,
+        maxItems: summaryMaxItems,
+        force: forceSummaries,
+        dryRun,
+        onProgress: ({ table, completed, total }) => {
+            const width = 30;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 100;
+            const filled = Math.round((percentage / 100) * width);
+            const bar = '█'.repeat(filled) + '░'.repeat(width - filled);
+            process.stdout.write(`\r  [${bar}] ${table}: ${completed}/${total}   `);
+            if (completed >= total) process.stdout.write('\r' + ' '.repeat(80) + '\r');
+        }
+    });
+
+    console.log("\n" + "=".repeat(70));
+    for (const result of report.results) {
+        if (result.skippedReason) {
+            console.log(`⏭️  ${result.table}: skipped (${result.skippedReason})`);
+            continue;
+        }
+        const suffix = report.dryRun
+            ? '(dry run - nothing written)'
+            : `→ ${result.written} written${result.failed > 0 ? `, ${result.failed} failed` : ''}`;
+        console.log(`   ${result.table}: ${result.missing}/${result.total} missing ${suffix}`);
+    }
+
+    if (report.dryRun) {
+        console.log("\n💡 Re-run without --dry-run to generate the missing summaries");
+    } else {
+        console.log("\n✅ Summary backfill complete!");
+    }
+}
+
 async function hybridFastSeed() {
+    // Summary backfill runs against an existing database and exits
+    if (summaryMode) {
+        await populateMissingSummaries();
+        return;
+    }
+
+    if (dryRun) {
+        console.warn("⚠️  --dry-run only applies to --populate-summaries - continuing with a normal seeding run");
+    }
+
     const sourceDirs = await validateArgs();
     
     // Preflight check: verify API key before any database operations

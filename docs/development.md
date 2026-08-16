@@ -123,6 +123,24 @@ npm run test:integration    # Integration tests only
 | `--auto-reseed` | Re-process documents with incomplete metadata |
 | `--max-docs N` | Process at most N new documents (for batching) |
 | `--with-wordnet` | Enable WordNet enrichment (disabled by default) |
+| `--populate-summaries[=targets]` | Fill in missing summaries only, no `--filesdir` needed |
+| `--force-summaries` | With `--populate-summaries`: regenerate every summary |
+| `--dry-run` | With `--populate-summaries`: report only, no LLM calls or writes |
+
+**Rebuild summaries without re-seeding:**
+
+```bash
+# Report what is missing across catalog, concepts and categories
+npx tsx hybrid_fast_seed.ts --populate-summaries --dry-run
+
+# Fill the gaps (targets default to all three tables)
+RUST_LOG=error npx tsx hybrid_fast_seed.ts --populate-summaries=concepts
+```
+
+Document overviews are regenerated from existing chunks (and the catalog vector
+re-embedded, since it encodes the summary); concept and category summaries are
+generated from their names. Writes go through a merge-insert keyed on `id`, so
+every other column survives and the run is resumable.
 
 **Seed specific documents:**
 
